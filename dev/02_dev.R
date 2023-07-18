@@ -23,6 +23,11 @@ attachment::att_amend_desc()
 golem::add_module(name = "explore", with_test = TRUE) # Name of the module
 golem::add_module(name = "name_of_module2", with_test = TRUE) # Name of the module
 
+## Add dependencies
+
+usethis::use_package("leaflet")
+usethis::use_pipe()
+
 ## Add helper functions ----
 ## Creates fct_* and utils_*
 golem::add_fct("helpers", with_test = TRUE)

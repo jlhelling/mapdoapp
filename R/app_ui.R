@@ -12,7 +12,7 @@ app_ui <- function(){
           src = "www/favicon_mapdo.png"
         ),"" # empty title only logo
       ),
-    tabPanel("Exploration", mod_explore_ui("explore_ui_1"))
+    tabPanel("Exploration", mod_explore_ui("explore_1"))
   )
 }
 
@@ -32,7 +32,7 @@ golem_add_external_resources <- function() {
   )
 
   tags$head(
-    favicon(),
+    favicon(ext = "png"),
     bundle_resources(
       path = app_sys("app/www"),
       app_title = "mapdoapp"
