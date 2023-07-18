@@ -9,11 +9,8 @@ app_ui <- function(){
     title =
       div(
         img(
-          scr = "www/favicon_mapdo.png",
-          height = 40,
-          width = 100,
-          style = "margin:-11px -12px"
-        )
+          src = "www/favicon_mapdo.png"
+        ),"" # empty title only logo
       ),
     tabPanel("Exploration", mod_explore_ui("explore_ui_1"))
   )
