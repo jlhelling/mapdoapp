@@ -1,0 +1,20 @@
+Package: mapdoapp
+Title: Application MAPDO
+Version: 0.0.0.9000
+Authors@R: 
+    person("Louis", "Manière", , "louis.maniere@ens-lyon.fr", role = c("cre", "aut"))
+Description: Application de description des caractéristiques
+    morphologiques des réseaux hydrographiques.
+License: MIT + file LICENSE
+Imports: 
+    config (>= 0.3.1),
+    golem (>= 0.4.1),
+    shiny (>= 1.7.4.1)
+Suggests: 
+    spelling,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Encoding: UTF-8
+Language: en-US
+LazyData: true
+RoxygenNote: 7.2.3
