@@ -4,16 +4,21 @@
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @noRd
-app_ui <- function(request) {
-  tagList(
-    # Leave this function for adding external resources
-    golem_add_external_resources(),
-    # Your application UI logic
-    fluidPage(
-      h1("mapdoapp")
-    )
+app_ui <- function(){
+  navbarPage(
+    title =
+      div(
+        img(
+          scr = "www/favicon_mapdo.png",
+          height = 40,
+          width = 100,
+          style = "margin:-11px -12px"
+        )
+      ),
+    tabPanel("Exploration", mod_explore_ui("explore_ui_1"))
   )
 }
+
 
 #' Add external Resources to the Application
 #'
