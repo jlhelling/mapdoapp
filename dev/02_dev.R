@@ -18,6 +18,11 @@
 ## install.package('attachment') # if needed.
 attachment::att_amend_desc()
 
+# load packages app
+pkgload::load_all()
+# run application
+run_app()
+
 ## Add modules ----
 ## Create a module infrastructure in R/
 golem::add_module(name = "explore", with_test = TRUE) # Name of the module
