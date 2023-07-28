@@ -5,8 +5,7 @@
 #' @import shiny
 #'
 #' @noRd
-library(leaflet)
 app_server <- function(input, output, session) {
   # Your application server logic
-  mod_explore_server("explore_1")
+  callModule(mod_explore_server, "explore_1")
 }
