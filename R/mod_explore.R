@@ -55,9 +55,10 @@ mod_explore_server <- function(input, output, session){
 
     output$ui_exploremap <- renderLeaflet({
       leaflet() %>%
+        # set leaflet CRS https://rstudio.github.io/leaflet/projections.html OR change data to 4326
         setView(lng = -122.4194, lat = 37.7749, zoom = 12) %>%
-        addTiles() %>%
-        addMarkers(lng = -122.4194, lat = 37.7749, popup = "San Francisco, CA")
+        addTiles()
+        # addPolylines(data = network_metrics_data, color = "blue", weight = 1)
         # addProviderTiles(providers$Stamen.TonerLite,
         #                  options = providerTileOptions(noWrap = TRUE)
         # )
