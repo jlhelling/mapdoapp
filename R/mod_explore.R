@@ -18,10 +18,29 @@ mod_explore_ui <- function(id){
     golem_add_external_resources(),
     # UI elements
     fluidPage(
-        mainPanel (
+      fluidRow(
+        column(
+          width = 2,
+          titlePanel("Metrics")
+        ), # column
+        column(
+          width = 6,
           titlePanel("Simple Leaflet Map Example"),
           leafletOutput(ns("ui_exploremap"))
-        ) # mainPanel
+        ), # column
+        column(
+          width = 2,
+          titlePanel("Filter")
+        ) # column
+      ), # fluidRow
+      fluidRow(
+        tabsetPanel(
+          tabPanel("Profil en long"
+          ), # tabPanel
+          tabPanel("Profil en travers"
+          ) # tabPanel
+        )# tabsetPanel
+      )# fluidRow
     ) # fluidPage
 ) # tagList
 }
