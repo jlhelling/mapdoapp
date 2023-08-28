@@ -30,7 +30,7 @@ golem::add_module(name = "name_of_module2", with_test = TRUE) # Name of the modu
 
 ## Add dependencies
 
-usethis::use_package("sf")
+usethis::use_package("mapdotoro")
 usethis::use_pipe()
 
 ## Add helper functions ----
