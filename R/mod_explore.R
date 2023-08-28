@@ -53,11 +53,13 @@ mod_explore_server <- function(input, output, session){
 
     ns <- session$ns
 
+    network_metrics_data_4326 <- st_transform(network_metrics_data, crs = 4326)
+
     output$ui_exploremap <- renderLeaflet({
       leaflet() %>%
-        setView(lng = -122.4194, lat = 37.7749, zoom = 12) %>%
+        setView(lng = 2.468697, lat = 46.603354, zoom = 6) %>%
         addTiles() %>%
-        addMarkers(lng = -122.4194, lat = 37.7749, popup = "San Francisco, CA")
+        addPolylines(data = network_metrics_data_4326)
         # addProviderTiles(providers$Stamen.TonerLite,
         #                  options = providerTileOptions(noWrap = TRUE)
         # )
