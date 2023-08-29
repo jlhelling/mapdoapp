@@ -7,7 +7,7 @@
 #'
 #' @rdname mod_explore
 #'
-#' @importFrom leaflet leafletOutput renderLeaflet addProviderTiles
+#' @importFrom leaflet leafletOutput renderLeaflet addProviderTiles colorQuantile
 #' @importFrom shiny NS tagList
 #' @importFrom plotly plotlyOutput
 #' @import mapdotoro
@@ -20,8 +20,20 @@ mod_explore_ui <- function(id){
     fluidPage(
       fluidRow(
         column(
-          width = 2,
-          titlePanel("Metrics")
+          width = 3,
+          titlePanel("Metrics"),
+          radioButtons(ns("rb"), "Largeurs :",
+                       choiceNames = c(
+                         "Chenal actif",
+                         "Corridor naturel",
+                         "Corridor connecté",
+                         "Fond de vallée"
+                       ),
+                       choiceValues = list("active_channel_width",
+                                           "natural_corridor_width",
+                                           "connected_corridor_width",
+                                           "valley_bottom_width")
+          ) # radioButtons
         ), # column
         column(
           width = 6,
@@ -30,7 +42,8 @@ mod_explore_ui <- function(id){
         ), # column
         column(
           width = 2,
-          titlePanel("Filter")
+          titlePanel("Filter"),
+          textOutput(ns("greeting"))
         ) # column
       ), # fluidRow
       fluidRow(
@@ -48,38 +61,34 @@ mod_explore_ui <- function(id){
 #' explore Server Functions
 #'
 #' @noRd
+#'
 # mod_explore_server <- function(id){
 mod_explore_server <- function(input, output, session){
 
     ns <- session$ns
 
-    network_metrics_data_4326 <- st_transform(network_metrics_data, crs = 4326)
+    datamap <- network_data %>%
+      left_join(metrics_data, by = join_by("AXIS"=="AXIS", "M"=="measure"),
+                suffix = c("", ".metrics"), relationship="one-to-one")
+
+    var <- reactive({
+      switch(input$rb,
+             "active_channel_width" = datamap$active_channel_width,
+             "natural_corridor_width" = datamap$natural_corridor_width,
+             "connected_corridor_width" = datamap$connected_corridor_width,
+             "valley_bottom_width" = datamap$valley_bottom_width
+      )
+    })
 
     output$ui_exploremap <- renderLeaflet({
-      leaflet() %>%
-        setView(lng = 2.468697, lat = 46.603354, zoom = 6) %>%
-        addTiles() %>%
-        addPolylines(data = network_metrics_data_4326)
-        # addProviderTiles(providers$Stamen.TonerLite,
-        #                  options = providerTileOptions(noWrap = TRUE)
-        # )
+      qpal <- colorQuantile("Reds", domain = var(), n = 5, na.color = "#808080")
+            leaflet() %>%
+              setView(lng = 2.468697, lat = 46.603354, zoom = 6) %>%
+              addTiles() %>%
+              addPolylines(data = datamap, color = ~qpal(var()))
     }) # ui_exploremap
 
-    # output$ui_metrics=renderUI({
-    #   axis=rget_axis()
-    #   available_choices=table_metrics %>%
-    #     dplyr::filter(filename %in% get_available_info(axis),
-    #                   include==1,
-    #                   typelzk=="z") %>%
-    #     dplyr::pull(varname)
-    #   result=tagList(radioButtons(inputId=ns("zvar"),
-    #                               label="variable",
-    #                               choices=available_choices))
-    #   result
-    # })
-
   }
-# }
 
 ## To be copied in the UI
 # mod_explore_ui("explore_1")
