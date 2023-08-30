@@ -10,6 +10,8 @@
 #' @importFrom leaflet leafletOutput renderLeaflet addProviderTiles colorQuantile
 #' @importFrom shiny NS tagList
 #' @importFrom plotly plotlyOutput
+#' @importFrom dplyr left_join
+#' @import sf
 #' @import mapdotoro
 mod_explore_ui <- function(id){
   ns <- NS(id)
