@@ -21,28 +21,21 @@ mod_explore_ui <- function(id){
       fluidRow(
         column(
           width = 3,
-          titlePanel("Metrics"),
-          radioButtons(ns("rb"), "Largeurs :",
-                       choiceNames = c(
-                         "Chenal actif",
-                         "Corridor naturel",
-                         "Corridor connecté",
-                         "Fond de vallée"
-                       ),
-                       choiceValues = list("active_channel_width",
-                                           "natural_corridor_width",
-                                           "connected_corridor_width",
-                                           "valley_bottom_width")
-          ) # radioButtons
+          titlePanel("Metriques"),
+          selectInput(ns("choice"), "Sélectionez une métrique :",
+                      choices = c("Largeurs", "Pentes"),
+                      selected  = "Largeurs"), # selectInput for dynamic radio buttons
+          uiOutput(ns("radioButtonsUI")
+                   ) # uiOutput radios buttons metrics
         ), # column
         column(
           width = 6,
-          titlePanel("Simple Leaflet Map Example"),
+          titlePanel(""),
           leafletOutput(ns("ui_exploremap"))
         ), # column
         column(
           width = 2,
-          titlePanel("Filter"),
+          titlePanel("Filtre"),
           textOutput(ns("greeting"))
         ) # column
       ), # fluidRow
@@ -67,16 +60,52 @@ mod_explore_server <- function(input, output, session){
 
     ns <- session$ns
 
+    output$radioButtonsUI <- renderUI({
+      selected_choice <- input$choice
+
+      if (selected_choice == "Largeurs") {
+        radioButtons(ns("dynamicRadio"), "Largeurs :",
+                     choiceNames = c(
+                       "Chenal actif",
+                       "Corridor naturel",
+                       "Corridor connecté",
+                       "Fond de vallée"
+                     ),
+                     choiceValues = list("active_channel_width",
+                                         "natural_corridor_width",
+                                         "connected_corridor_width",
+                                         "valley_bottom_width"),
+                     selected = "active_channel_width")
+      } else if (selected_choice == "Pentes") {
+        radioButtons(ns("dynamicRadio"), "Pentes :",
+                     choiceNames = c(
+                       "Pente du talweg",
+                       "Pente du fond de valée"
+                     ),
+                     choiceValues = list("talweg_slope",
+                                         "floodplain_slope"),
+                     selected = "talweg_slope"
+        )
+      } else {
+        # Default case
+        NULL
+      }
+    })
+
     datamap <- network_data %>%
       left_join(metrics_data, by = join_by("AXIS"=="AXIS", "M"=="measure"),
                 suffix = c("", ".metrics"), relationship="one-to-one")
 
     var <- reactive({
-      switch(input$rb,
+      switch(input$dynamicRadio,
+             # Width
              "active_channel_width" = datamap$active_channel_width,
              "natural_corridor_width" = datamap$natural_corridor_width,
              "connected_corridor_width" = datamap$connected_corridor_width,
-             "valley_bottom_width" = datamap$valley_bottom_width
+             "valley_bottom_width" = datamap$valley_bottom_width,
+             # Slope
+             "talweg_slope" = datamap$talweg_slope,
+             "floodplain_slope" = datamap$floodplain_slope
       )
     })
 
