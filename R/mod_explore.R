@@ -3,6 +3,7 @@ library(sf)
 library(mapdotoro)
 library(DBI)
 library(htmltools)
+library(dplyr)
 
 #' explore UI Function
 #'
@@ -80,6 +81,7 @@ mod_explore_server <- function(input, output, session){
       setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
       addTiles() %>%
       addPolygons(data = bassin_hydro,
+                  layerId = bassin_hydro$cdbh,
                   smoothFactor = 2,
                   fillColor = "black",
                   fillOpacity = 0.01,
@@ -88,7 +90,8 @@ mod_explore_server <- function(input, output, session){
                   highlightOptions = highlightOptions(
                     fillColor = "#a8d1ff",
                     fillOpacity = 0.5),
-                  label = ~htmlEscape(lbbh)
+                  label = ~htmlEscape(lbbh),
+                  group = 'A'
                   )
   })
 
@@ -98,11 +101,27 @@ mod_explore_server <- function(input, output, session){
     if(is.null(click))
       return()
     else
+      print(click$id)
+      region_hydro <- st_read(db_con(), layer = "region_hydrographique") %>%
+        filter(cdbh==click$id)
       leafletProxy("exploremap") %>%
       setView(lng = click$lng , lat = click$lat, zoom = 6.5) %>%
-      clearShapes()
+      clearGroup('A') %>%
+        addPolygons(data = region_hydro,
+                    layerId = region_hydro$cdregionhy,
+                    smoothFactor = 2,
+                    fillColor = "black",
+                    fillOpacity = 0.01,
+                    weight = 2,
+                    color="black",
+                    highlightOptions = highlightOptions(
+                      fillColor = "#a8d1ff",
+                      fillOpacity = 0.5),
+                    label = ~htmlEscape(lbregionhy),
+                    group = 'B'
+        )
     }
-  ) # observe
+  ) # observe zoom on click
 
   # metrics radio buttons UI
   output$radioButtonsUI <- renderUI({
