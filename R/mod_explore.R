@@ -1,3 +1,9 @@
+library(leaflet)
+library(sf)
+library(mapdotoro)
+library(DBI)
+library(htmltools)
+
 #' explore UI Function
 #'
 #' @description A shiny Module.
@@ -13,6 +19,7 @@
 #' @importFrom dplyr left_join right_join
 #' @import sf
 #' @import mapdotoro
+#' @import DBI
 mod_explore_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -26,14 +33,15 @@ mod_explore_ui <- function(id){
           titlePanel("Metriques"),
           selectInput(ns("metric"), "Sélectionez une métrique :",
                       choices = c("Largeurs", "Pentes", "Occupation du sol"),
-                      selected  = "Largeurs"), # selectInput for dynamic radio buttons
+                      selected  = character(0)), # selectInput for dynamic radio buttons
           uiOutput(ns("radioButtonsUI")
           ) # uiOutput radios buttons metrics
         ), # column
         column(
           width = 6,
           titlePanel(""),
-          leafletOutput(ns("ui_exploremap"))
+          leafletOutput(ns("exploremap")),
+          textOutput("coords")
         ), # column
         column(
           width = 2,
@@ -62,12 +70,39 @@ mod_explore_server <- function(input, output, session){
 
   ns <- session$ns
 
+  # con <- db_con
+
+  bassin_hydro <- st_read(db_con(), layer = "bassin_hydrographique")
+
   # mapping initialization
-  output$ui_exploremap <- renderLeaflet({
+  output$exploremap <- renderLeaflet({
     leaflet() %>%
       setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
-      addTiles()
+      addTiles() %>%
+      addPolygons(data = bassin_hydro,
+                  smoothFactor = 2,
+                  fillColor = "black",
+                  fillOpacity = 0.01,
+                  weight = 2,
+                  color="black",
+                  highlightOptions = highlightOptions(
+                    fillColor = "#a8d1ff",
+                    fillOpacity = 0.5),
+                  label = ~htmlEscape(lbbh)
+                  )
   })
+
+  # zoom on click
+  observe(
+    {  click = input$exploremap_shape_click
+    if(is.null(click))
+      return()
+    else
+      leafletProxy("exploremap") %>%
+      setView(lng = click$lng , lat = click$lat, zoom = 6.5) %>%
+      clearShapes()
+    }
+  ) # observe
 
   # metrics radio buttons UI
   output$radioButtonsUI <- renderUI({
@@ -85,7 +120,7 @@ mod_explore_server <- function(input, output, session){
                                        "natural_corridor_width",
                                        "connected_corridor_width",
                                        "valley_bottom_width"),
-                   selected = "active_channel_width")
+                   selected = character(0))
     } else if (selected_metric == "Pentes") {
       radioButtons(ns("dynamicRadio"), "Pentes :",
                    choiceNames = c(
@@ -94,7 +129,7 @@ mod_explore_server <- function(input, output, session){
                    ),
                    choiceValues = list("talweg_slope",
                                        "floodplain_slope"),
-                   selected = "talweg_slope"
+                   selected = character(0)
       )
     } else if (selected_metric == "Occupation du sol") {
       radioButtons(ns("dynamicRadio"), "Occupation du sol :",
@@ -118,7 +153,7 @@ mod_explore_server <- function(input, output, session){
                                        "Diffuse Urban",
                                        "Dense Urban",
                                        "Infrastructures"),
-                   selected = "Water Channel"
+                   selected = character(0)
       )
     }
   })
@@ -158,7 +193,7 @@ mod_explore_server <- function(input, output, session){
       # Define color palette for Reds
       color_palette <- colorRampPalette(c("green", "red"))(length(breaks))
 
-      leafletProxy("ui_exploremap") %>%
+      leafletProxy("exploremap") %>%
         clearShapes() %>%
         addPolylines(data = datamap(), color = ~ {
           ifelse(is.na(varsel()), "grey", color_palette[findInterval(varsel(), breaks, all.inside = TRUE)])
@@ -172,7 +207,7 @@ mod_explore_server <- function(input, output, session){
       # Define color palette for Reds
       color_palette <- colorRampPalette(c("green", "red"))(length(breaks))
 
-      leafletProxy("ui_exploremap") %>%
+      leafletProxy("exploremap") %>%
         clearShapes() %>%
         addPolylines(data = datamap(), color = ~ {
           ifelse(is.na(varsel()), "grey", color_palette[findInterval(varsel(), breaks, all.inside = TRUE)])
