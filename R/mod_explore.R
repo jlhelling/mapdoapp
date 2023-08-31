@@ -65,7 +65,7 @@ mod_explore_server <- function(input, output, session){
   # mapping initialization
   output$ui_exploremap <- renderLeaflet({
     leaflet() %>%
-      setView(lng = 2.468697, lat = 46.603354, zoom = 6) %>%
+      setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
       addTiles()
   })
 
