@@ -71,8 +71,6 @@ mod_explore_server <- function(input, output, session){
 
   ns <- session$ns
 
-  # con <- db_con
-
   bassin_hydro <- st_read(db_con(), layer = "bassin_hydrographique")
 
   # mapping initialization
@@ -81,7 +79,7 @@ mod_explore_server <- function(input, output, session){
       setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
       addTiles() %>%
       addPolygons(data = bassin_hydro,
-                  layerId = bassin_hydro$cdbh,
+                  layerId = ~cdbh,
                   smoothFactor = 2,
                   fillColor = "black",
                   fillOpacity = 0.01,
@@ -98,17 +96,15 @@ mod_explore_server <- function(input, output, session){
   # zoom on click
   observe(
     {  click = input$exploremap_shape_click
-    if(is.null(click))
+    if(is.null(click) || is.null(click$id))
       return()
     else
-      print(click$id)
       region_hydro <- st_read(db_con(), layer = "region_hydrographique") %>%
         filter(cdbh==click$id)
       leafletProxy("exploremap") %>%
       setView(lng = click$lng , lat = click$lat, zoom = 6.5) %>%
       clearGroup('A') %>%
         addPolygons(data = region_hydro,
-                    layerId = region_hydro$cdregionhy,
                     smoothFactor = 2,
                     fillColor = "black",
                     fillOpacity = 0.01,
