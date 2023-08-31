@@ -4,6 +4,7 @@ library(mapdotoro)
 library(DBI)
 library(htmltools)
 library(dplyr)
+library(readr)
 
 #' explore UI Function
 #'
@@ -18,6 +19,7 @@ library(dplyr)
 #' @importFrom shiny NS tagList
 #' @importFrom plotly plotlyOutput
 #' @importFrom dplyr left_join right_join
+#' @importFrom readr read_csv2
 #' @import sf
 #' @import mapdotoro
 #' @import DBI
@@ -72,6 +74,9 @@ mod_explore_server <- function(input, output, session){
   ns <- session$ns
 
   bassin_hydro <- st_read(db_con(), layer = "bassin_hydrographique")
+  network <- st_read(system.file("network.gpkg", package = "mapdoapp"))
+  metrics <- read_csv2(system.file("metrics.csv", package = "mapdoapp"))
+  landcover <- read_csv2(system.file("landcover.csv", package = "mapdoapp"))
 
   # mapping initialization
   output$exploremap <- renderLeaflet({
@@ -176,13 +181,13 @@ mod_explore_server <- function(input, output, session){
   # dataset
   datamap <- reactive({
     if (input$metric == "Largeurs" | input$metric == "Pentes") {
-      network_data %>%
-        left_join(metrics_data, by = join_by("AXIS"=="AXIS", "M"=="measure"),
+      network %>%
+        left_join(metrics, by = join_by("AXIS"=="AXIS", "M"=="measure"),
                   suffix = c("", ".metrics"), relationship="one-to-one")
     } else if (input$metric == "Occupation du sol") {
-      landcover_data %>%
+      landcover %>%
         filter(landcover == input$dynamicRadio) %>%
-        right_join(network_data, by = join_by("AXIS"=="AXIS", "measure"=="M"),
+        right_join(network, by = join_by("AXIS"=="AXIS", "measure"=="M"),
                    suffix = c("", ".landcover"), relationship="one-to-one") %>%
         st_as_sf()
     }
