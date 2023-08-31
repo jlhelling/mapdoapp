@@ -191,10 +191,8 @@ mod_explore_server <- function(input, output, session){
   # metrics data to display
   varsel <- reactive({
     if (input$metric == "Largeurs" | input$metric == "Pentes") {
-      print(input$dynamicRadio)
       datamap()[[input$dynamicRadio]]
     } else if (input$metric == "Occupation du sol") {
-      print(input$dynamicRadio)
       datamap()[["landcover_area"]]
     }
   })
@@ -203,31 +201,11 @@ mod_explore_server <- function(input, output, session){
   observeEvent(input$dynamicRadio, {
     if (input$metric == "Largeurs" | input$metric == "Pentes") {
 
-      breaks <-  unique(quantile(varsel(), probs = seq(0, 1, 0.25), na.rm = TRUE))
-
-      # Define color palette for Reds
-      color_palette <- colorRampPalette(c("green", "red"))(length(breaks))
-
-      leafletProxy("exploremap") %>%
-        clearShapes() %>%
-        addPolylines(data = datamap(), color = ~ {
-          ifelse(is.na(varsel()), "grey", color_palette[findInterval(varsel(), breaks, all.inside = TRUE)])
-        }
-        )
+      map_metric("exploremap", datamap(), varsel())
 
     } else if (input$metric == "Occupation du sol") {
 
-      breaks <-  unique(quantile(varsel(), probs = seq(0, 1, 0.25), na.rm = TRUE))
-
-      # Define color palette for Reds
-      color_palette <- colorRampPalette(c("green", "red"))(length(breaks))
-
-      leafletProxy("exploremap") %>%
-        clearShapes() %>%
-        addPolylines(data = datamap(), color = ~ {
-          ifelse(is.na(varsel()), "grey", color_palette[findInterval(varsel(), breaks, all.inside = TRUE)])
-        }
-        )
+      map_metric("exploremap", datamap(), varsel())
     }
   }) # ObserveEvent
 
