@@ -7,4 +7,4 @@
 inst/continuity.csv
 inst/landcover.csv
 inst/metrics.csv
-inst/network.gpkg
+inst/network_strahler.gpkg

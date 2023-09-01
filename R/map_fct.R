@@ -16,8 +16,10 @@ map_metric <- function(mapId, data_map, varsel) {
   color_palette <- colorRampPalette(c("green", "red"))(length(breaks))
 
   leafletProxy(mapId) %>%
-    clearShapes() %>%
+    clearGroup("D") %>%
     addPolylines(data = data_map, color = ~ {
-      ifelse(is.na(varsel), "grey", color_palette[findInterval(varsel, breaks, all.inside = TRUE)])
-    })
+      ifelse(is.na(varsel), "grey",
+             color_palette[findInterval(varsel, breaks, all.inside = TRUE)])
+    },
+    group = "D")
 }
