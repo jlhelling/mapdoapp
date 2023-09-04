@@ -34,9 +34,7 @@ mod_explore_ui <- function(id){
         column(
           width = 3,
           titlePanel("Metriques"),
-          selectInput(ns("metric"), "Sélectionez une métrique :",
-                      choices = c("Largeurs", "Pentes", "Occupation du sol"),
-                      selected  = character(0)), # selectInput for dynamic radio buttons
+          uiOutput(ns("metricUI")),
           uiOutput(ns("radioButtonsUI")
           ) # uiOutput radios buttons metrics
         ), # column
@@ -49,7 +47,7 @@ mod_explore_ui <- function(id){
         column(
           width = 2,
           titlePanel("Filtre"),
-          textOutput(ns("greeting"))
+          uiOutput(ns("filterUI"))
         ) # column
       ), # fluidRow
       fluidRow(
@@ -104,9 +102,9 @@ mod_explore_server <- function(input, output, session){
     if(is.null(click) || is.null(click$id)){
       return()
     }else if (click$group == "A"){
-      print(click)
       region_hydro <- st_read(db_con(), layer = "region_hydrographique") %>%
         filter(cdbh==click$id)
+
       leafletProxy("exploremap") %>%
       setView(lng = click$lng , lat = click$lat, zoom = 6.5) %>%
       clearGroup("A") %>%
@@ -124,10 +122,19 @@ mod_explore_server <- function(input, output, session){
                     group = "B"
         )
       }else if (click$group == "B"){
-        clickedPolygon <- region_hydro <- st_read(db_con(), layer = "region_hydrographique") %>%
+
+        ### IMMEDIATE UPDATE WHEN REGION CLICK
+
+        clickedPolygon <- st_read(db_con(), layer = "region_hydrographique") %>%
           filter(cdregionhy == click$id)
 
+        # filter by region
+        network_region <- reactive({
+          network %>%
+            st_filter(clickedPolygon)
+        })
 
+        # display network without metric (add strahler dependent weight function)
         leafletProxy("exploremap") %>%
         setView(lng = click$lng , lat = click$lat, zoom = 7.5) %>%
           addPolygons(data = clickedPolygon,
@@ -140,8 +147,32 @@ mod_explore_server <- function(input, output, session){
           ) %>%
           clearGroup("B")
 
+        ### DYNAMIC UI
+
+        # filter UI
+        output$filterUI <- renderUI(
+          {
+            req(network_region())
+            sliderInput(ns("strahler"),
+                        label="Ordre de strahler",
+                        min=min(network_region()$strahler), max=max(network_region()$strahler),
+                        value=c(min(network_region()$strahler),max(network_region()$strahler)),
+                        step=1)
+          }
+        )
+
+        # choose metric type
+        output$metricUI <- renderUI({
+          selectInput(ns("metric"), "Sélectionez une métrique :",
+                      choices = c("Largeurs", "Pentes", "Occupation du sol"),
+                      selected  = "Largeurs") # selectInput for dynamic radio buttons
+        })
+
         # metrics radio buttons UI
         output$radioButtonsUI <- renderUI({
+
+          req(input$metric)
+
           selected_metric <- input$metric
 
           if (selected_metric == "Largeurs") {
@@ -194,86 +225,92 @@ mod_explore_server <- function(input, output, session){
           }
         })
 
-        # dataset
-        datamap <- reactive({
-          if (input$metric == "Largeurs" | input$metric == "Pentes" && is.null(input$dynamicRadio)==FALSE) {
-            network %>%
-              st_filter(clickedPolygon) %>%
+        ### DATA UPDATE
+
+        # data with strahler filter
+        network_filter <- reactive({
+          req(network_region())
+          if(is.null(input$strahler)){
+            network_region()
+          } else {
+            network_region() %>%
+              filter(between(strahler, input$strahler[1], input$strahler[2])) %>%
+              st_as_sf()}
+        }) # strahler filter
+
+        # data with metric
+        network_metrics <- reactive({
+          if (is.null(input$metric)){
+            return(NULL)
+          } else if (input$metric == "Largeurs" || input$metric == "Pentes"
+              && is.null(input$dynamicRadio)==FALSE) {
+            network_filter() %>%
               left_join(metrics, by = join_by("AXIS"=="AXIS", "M"=="measure"),
                         suffix = c("", ".metrics"), relationship="one-to-one")
-          } else if (input$metric == "Occupation du sol" && is.null(input$dynamicRadio)==FALSE) {
+          } else if (input$metric == "Occupation du sol"
+                     && is.null(input$dynamicRadio)==FALSE ) {
             landcover %>%
               filter(landcover == input$dynamicRadio) %>%
-              right_join(network, by = join_by("AXIS"=="AXIS", "measure"=="M"),
+              right_join(network_filter(), by = join_by("AXIS"=="AXIS", "measure"=="M"),
                          suffix = c("", ".landcover"), relationship="one-to-one") %>%
-              st_as_sf() %>%
-              st_filter(clickedPolygon)
+              st_as_sf()
           }
         })
 
         # metrics data to display
         varsel <- reactive({
-          if (input$metric == "Largeurs" | input$metric == "Pentes") {
-            datamap()[[input$dynamicRadio]]
+          req(network_metrics())
+          if (is.null(network_metrics())){
+            return(NULL)
+          } else if (input$metric == "Largeurs" | input$metric == "Pentes") {
+            network_metrics()[[input$dynamicRadio]]
           } else if (input$metric == "Occupation du sol") {
-            datamap()[["landcover_area"]]
+            network_metrics()[["landcover_area"]]
           }
         })
 
-        # mapping interactive change
+        ### UPDATE MAP
+
+        # update map with strahler filter
+        observeEvent(input$strahler, {
+          if (is.null(input$strahler)) {
+            return (NULL)
+          } else if (is.null(input$dynamicRadio)) {
+            leafletProxy("exploremap") %>%
+              clearGroup("D") %>%
+              addPolylines(data = network_filter(),
+                           weight = 2,
+                           color = "blue",
+                           group = "D")
+
+          } else {
+            if (input$metric == "Largeurs" | input$metric == "Pentes") {
+
+              map_metric("exploremap", network_metrics(), varsel())
+
+            } else if (input$metric == "Occupation du sol") {
+
+              map_metric("exploremap", network_metrics(), varsel())
+            }
+
+          }
+        }) # ObserveEvent
+
+        # Update map with dynamicRadio
         observeEvent(input$dynamicRadio, {
           if (input$metric == "Largeurs" | input$metric == "Pentes") {
 
-            map_metric("exploremap", datamap(), varsel())
+            map_metric("exploremap", network_metrics(), varsel())
 
           } else if (input$metric == "Occupation du sol") {
 
-            map_metric("exploremap", datamap(), varsel())
+            map_metric("exploremap", network_metrics(), varsel())
           }
         }) # ObserveEvent
 
       }
     }
   ) # observe zoom on click
-
-  # # dataset
-  # datamap <- reactive({
-  #   if (input$metric == "Largeurs" | input$metric == "Pentes" && is.null(input$dynamicRadio)==FALSE) {
-  #     network %>%
-  #       st_filter(clickedPolygon) %>%
-  #       left_join(metrics, by = join_by("AXIS"=="AXIS", "M"=="measure"),
-  #                 suffix = c("", ".metrics"), relationship="one-to-one")
-  #   } else if (input$metric == "Occupation du sol" && is.null(input$dynamicRadio)==FALSE) {
-  #     landcover %>%
-  #       st_filter(clickedPolygon) %>%
-  #       filter(landcover == input$dynamicRadio) %>%
-  #       right_join(network, by = join_by("AXIS"=="AXIS", "measure"=="M"),
-  #                  suffix = c("", ".landcover"), relationship="one-to-one") %>%
-  #       st_as_sf()
-  #   }
-  # })
-  #
-  # # metrics data to display
-  # varsel <- reactive({
-  #   if (input$metric == "Largeurs" | input$metric == "Pentes") {
-  #     datamap()[[input$dynamicRadio]]
-  #   } else if (input$metric == "Occupation du sol") {
-  #     datamap()[["landcover_area"]]
-  #   }
-  # })
-  #
-  # # mapping interactive change
-  # observeEvent(input$dynamicRadio, {
-  #   if (input$metric == "Largeurs" | input$metric == "Pentes") {
-  #
-  #     map_metric("exploremap", datamap(), varsel())
-  #
-  #   } else if (input$metric == "Occupation du sol") {
-  #
-  #     map_metric("exploremap", datamap(), varsel())
-  #   }
-  # }) # ObserveEvent
-
 }
 
 
