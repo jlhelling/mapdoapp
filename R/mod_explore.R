@@ -47,7 +47,8 @@ mod_explore_ui <- function(id){
         column(
           width = 2,
           titlePanel("Filtre"),
-          uiOutput(ns("filterUI"))
+          uiOutput(ns("strahlerfilterUI")),
+          uiOutput(ns("metricsfilterUI"))
         ) # column
       ), # fluidRow
       fluidRow(
@@ -134,7 +135,7 @@ mod_explore_server <- function(input, output, session){
             st_filter(clickedPolygon)
         })
 
-        # display network without metric (add strahler dependent weight function)
+        # display network without metric
         leafletProxy("exploremap") %>%
         setView(lng = click$lng , lat = click$lat, zoom = 7.5) %>%
           addPolygons(data = clickedPolygon,
@@ -150,7 +151,7 @@ mod_explore_server <- function(input, output, session){
         ### DYNAMIC UI
 
         # filter UI
-        output$filterUI <- renderUI(
+        output$strahlerfilterUI <- renderUI(
           {
             req(network_region())
             sliderInput(ns("strahler"),
@@ -158,8 +159,28 @@ mod_explore_server <- function(input, output, session){
                         min=min(network_region()$strahler), max=max(network_region()$strahler),
                         value=c(min(network_region()$strahler),max(network_region()$strahler)),
                         step=1)
+          })
+
+        ###############
+
+        # Dynamically create sliderInput elements based on selected_columns
+        observe({input$dynamicRadio
+          if (is.null(input$dynamicRadio)==FALSE && input$metric == "Largeurs"){
+            output$metricsfilterUI <- renderUI({
+              sliderInput(ns("metricfilter"),
+                          input$dynamicRadio,
+                          min = min(isolate(network_metrics()[[input$dynamicRadio]])),
+                          max = max(isolate(network_metrics()[[input$dynamicRadio]])),
+                          value = c(min(isolate(network_metrics()[[input$dynamicRadio]])),
+                                    max(isolate(network_metrics()[[input$dynamicRadio]])))
+                          )
+            })
+          } else {
+            return(NULL)
           }
-        )
+        })
+
+        ###############
 
         # choose metric type
         output$metricUI <- renderUI({
@@ -240,7 +261,8 @@ mod_explore_server <- function(input, output, session){
 
         # data with metric
         network_metrics <- reactive({
-          if (is.null(input$metric)){
+          # req(input$metricfilter)
+          if (is.null(input$metric) || is.null(input$dynamicRadio)){
             return(NULL)
           } else if (input$metric == "Largeurs" || input$metric == "Pentes"
               && is.null(input$dynamicRadio)==FALSE) {
