@@ -72,17 +72,12 @@ mod_explore_server <- function(input, output, session){
 
   ns <- session$ns
 
-  bassin_hydro <- st_read(db_con(), layer = "bassin_hydrographique")
-  network <- st_read(system.file("network_strahler.gpkg", package = "mapdoapp"))
-  metrics <- read_csv2(system.file("metrics.csv", package = "mapdoapp"))
-  landcover <- read_csv2(system.file("landcover.csv", package = "mapdoapp"))
-
   # mapping initialization
   output$exploremap <- renderLeaflet({
     leaflet() %>%
       setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
       addTiles() %>%
-      addPolygons(data = bassin_hydro,
+      addPolygons(data = get_bassins(),
                   layerId = ~cdbh,
                   smoothFactor = 2,
                   fillColor = "black",
@@ -99,15 +94,16 @@ mod_explore_server <- function(input, output, session){
 
   # zoom on click
   observe(
-    {  click = input$exploremap_shape_click
-    if(is.null(click) || is.null(click$id)){
+    {  click <- input$exploremap_shape_click
+    bassin_click <- click
+    if(is.null(bassin_click) || is.null(bassin_click$id)){
       return()
-    }else if (click$group == "A"){
-      region_hydro <- st_read(db_con(), layer = "region_hydrographique") %>%
-        filter(cdbh==click$id)
+    }else if (bassin_click$group == "A"){
+
+      region_hydro <- get_regions_in_bassin(selected_bassin_id = bassin_click$id)
 
       leafletProxy("exploremap") %>%
-      setView(lng = click$lng , lat = click$lat, zoom = 6.5) %>%
+      setView(lng = bassin_click$lng , lat = bassin_click$lat, zoom = 6.5) %>%
       clearGroup("A") %>%
         addPolygons(data = region_hydro,
                     layerId = ~cdregionhy,
@@ -123,22 +119,23 @@ mod_explore_server <- function(input, output, session){
                     group = "B"
         )
       }else if (click$group == "B"){
+        region_click <- click
 
-        ### IMMEDIATE UPDATE WHEN REGION CLICK
+        # A MODIFIER
+        # get only the region selected feature
+        selected_region_feature <- st_read(db_con(), layer = "region_hydrographique") %>%
+          filter(cdregionhy == region_click$id)
 
-        clickedPolygon <- st_read(db_con(), layer = "region_hydrographique") %>%
-          filter(cdregionhy == click$id)
+        # get network with metrics in region
+        network_region_metrics <- get_network_region_with_metrics(selected_region_id = region_click$id)
 
-        # filter by region
-        network_region <- reactive({
-          network %>%
-            st_filter(clickedPolygon)
-        })
+        # get network with landcover in region
+        network_region_landuse <- get_network_with_landcover(selected_region_id = region_click$id)
 
         # display network without metric
         leafletProxy("exploremap") %>%
-        setView(lng = click$lng , lat = click$lat, zoom = 7.5) %>%
-          addPolygons(data = clickedPolygon,
+        setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
+          addPolygons(data = selected_region_feature,
                       smoothFactor = 2,
                       fillColor = "black",
                       fillOpacity = 0.01,
@@ -153,11 +150,11 @@ mod_explore_server <- function(input, output, session){
         # filter UI
         output$strahlerfilterUI <- renderUI(
           {
-            req(network_region())
+            req(network_region_metrics)
             sliderInput(ns("strahler"),
                         label="Ordre de strahler",
-                        min=min(network_region()$strahler), max=max(network_region()$strahler),
-                        value=c(min(network_region()$strahler),max(network_region()$strahler)),
+                        min=min(isolate(network_region_metrics$strahler)), max=max(isolate(network_region_metrics$strahler)),
+                        value=c(min(isolate(network_region_metrics$strahler)),max(isolate(network_region_metrics$strahler))),
                         step=1)
           })
 
@@ -169,10 +166,10 @@ mod_explore_server <- function(input, output, session){
             output$metricsfilterUI <- renderUI({
               sliderInput(ns("metricfilter"),
                           input$dynamicRadio,
-                          min = min(isolate(network_metrics()[[input$dynamicRadio]])),
-                          max = max(isolate(network_metrics()[[input$dynamicRadio]])),
-                          value = c(min(isolate(network_metrics()[[input$dynamicRadio]])),
-                                    max(isolate(network_metrics()[[input$dynamicRadio]])))
+                          min = min(isolate(network_region_metrics[[input$dynamicRadio]])),
+                          max = max(isolate(network_region_metrics[[input$dynamicRadio]])),
+                          value = c(min(isolate(network_region_metrics[[input$dynamicRadio]])),
+                                    max(isolate(network_region_metrics[[input$dynamicRadio]])))
                           )
             })
           } else {
@@ -248,46 +245,40 @@ mod_explore_server <- function(input, output, session){
 
         ### DATA UPDATE
 
+        # AJOUTER LE FILTRE SUR OCCUPATION SOL
         # data with strahler filter
         network_filter <- reactive({
-          req(network_region())
+          req(network_region_metrics)
           if(is.null(input$strahler)){
-            network_region()
-          } else {
-            network_region() %>%
-              filter(between(strahler, input$strahler[1], input$strahler[2])) %>%
-              st_as_sf()}
+            network_region_metrics
+          }else{
+            network_region_metrics %>%
+              filter(between(strahler, input$strahler[1], input$strahler[2]))
+          }
         }) # strahler filter
 
+
         # data with metric
-        network_metrics <- reactive({
-          # req(input$metricfilter)
+        network_data <- reactive({
           if (is.null(input$metric) || is.null(input$dynamicRadio)){
             return(NULL)
-          } else if (input$metric == "Largeurs" || input$metric == "Pentes"
-              && is.null(input$dynamicRadio)==FALSE) {
-            network_filter() %>%
-              left_join(metrics, by = join_by("AXIS"=="AXIS", "M"=="measure"),
-                        suffix = c("", ".metrics"), relationship="one-to-one")
-          } else if (input$metric == "Occupation du sol"
-                     && is.null(input$dynamicRadio)==FALSE ) {
-            landcover %>%
-              filter(landcover == input$dynamicRadio) %>%
-              right_join(network_filter(), by = join_by("AXIS"=="AXIS", "measure"=="M"),
-                         suffix = c("", ".landcover"), relationship="one-to-one") %>%
-              st_as_sf()
+          } else if (input$metric == "Largeurs" || input$metric == "Pentes" && is.null(input$dynamicRadio)==FALSE) {
+            network_filter()
+          } else if (input$metric == "Occupation du sol" && is.null(input$dynamicRadio)==FALSE) {
+            network_region_landuse %>%
+              filter(landcover==input$dynamicRadio)
           }
         })
 
         # metrics data to display
         varsel <- reactive({
-          req(network_metrics())
-          if (is.null(network_metrics())){
+          req(network_data())
+          if (is.null(network_data())){
             return(NULL)
           } else if (input$metric == "Largeurs" | input$metric == "Pentes") {
-            network_metrics()[[input$dynamicRadio]]
+            network_data()[[input$dynamicRadio]]
           } else if (input$metric == "Occupation du sol") {
-            network_metrics()[["landcover_area"]]
+            network_data()[["landcover_area"]]
           }
         })
 
@@ -308,11 +299,11 @@ mod_explore_server <- function(input, output, session){
           } else {
             if (input$metric == "Largeurs" | input$metric == "Pentes") {
 
-              map_metric("exploremap", network_metrics(), varsel())
+              map_metric("exploremap", network_filter(), varsel())
 
             } else if (input$metric == "Occupation du sol") {
 
-              map_metric("exploremap", network_metrics(), varsel())
+              map_metric("exploremap", network_filter(), varsel())
             }
 
           }
@@ -322,11 +313,11 @@ mod_explore_server <- function(input, output, session){
         observeEvent(input$dynamicRadio, {
           if (input$metric == "Largeurs" | input$metric == "Pentes") {
 
-            map_metric("exploremap", network_metrics(), varsel())
+            map_metric("exploremap", network_filter(), varsel())
 
           } else if (input$metric == "Occupation du sol") {
 
-            map_metric("exploremap", network_metrics(), varsel())
+            map_metric("exploremap", network_filter(), varsel())
           }
         }) # ObserveEvent
 
