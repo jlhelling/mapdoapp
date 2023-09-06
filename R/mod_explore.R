@@ -213,40 +213,39 @@ mod_explore_server <- function(input, output, session){
 
         ### DATA UPDATE
 
-        # AJOUTER LE FILTRE SUR OCCUPATION SOL
-        # data with strahler filter
-        network_filter <- reactive({
-          req(network_region_metrics)
-          if(is.null(input$strahler)){
-            network_region_metrics
-          }else{
-            network_region_metrics %>%
-              filter(between(strahler, input$strahler[1], input$strahler[2]))
-          }
-        }) # strahler filter
-
-
         # data with metric
         network_data <- reactive({
           if (is.null(input$metric) || is.null(input$dynamicRadio)){
-            return(NULL)
+            network_region_metrics
           } else if (input$metric == "Largeurs" || input$metric == "Pentes" && is.null(input$dynamicRadio)==FALSE) {
-            network_filter()
+            network_region_metrics
           } else if (input$metric == "Occupation du sol" && is.null(input$dynamicRadio)==FALSE) {
             network_region_landuse %>%
               filter(landcover==input$dynamicRadio)
           }
         })
 
+        # AJOUTER LE FILTRE SUR OCCUPATION SOL
+        # data with strahler filter
+        network_filter <- reactive({
+          req(network_region_metrics)
+          if(is.null(input$strahler)){
+            network_data()
+          }else{
+            network_data() %>%
+              filter(between(strahler, input$strahler[1], input$strahler[2]))
+          }
+        }) # strahler filter
+
         # metrics data to display
         varsel <- reactive({
-          req(network_data())
-          if (is.null(network_data())){
+          req(network_filter())
+          if (is.null(network_filter())){
             return(NULL)
           } else if (input$metric == "Largeurs" | input$metric == "Pentes") {
-            network_data()[[input$dynamicRadio]]
+            network_filter()[[input$dynamicRadio]]
           } else if (input$metric == "Occupation du sol") {
-            network_data()[["landcover_area"]]
+            network_filter()[["landcover_area"]]
           }
         })
 
