@@ -35,7 +35,7 @@ map_init_bassins <- function(bassins_data = get_bassins(), group = "A") {
 #' @param bassins_group bassins layer group
 #' @param regions_group regions layer group
 #'
-#' @return map updated
+#' @return leaflet updated
 #' @export
 #'
 #' @examples
@@ -65,7 +65,39 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
     )
 }
 
-
+#' Map region click
+#'
+#' @param map map object for pipe
+#' @param region_click region clicked parameter app
+#' @param selected_region_feature region clicked feature
+#' @param regions_group regions group to clear
+#' @param selected_region_group selected regions group
+#'
+#' @return leaflet update
+#' @export
+#'
+#' @examples
+#' map_region_clicked(region_click = region_click,
+#' selected_region_feature = selected_region_feature,
+#' regions_group = "B",
+#' selected_region_group = "C")
+map_region_clicked <- function(map,
+                               region_click = region_click,
+                               selected_region_feature = selected_region_feature,
+                               regions_group = "B",
+                               selected_region_group = "C"){
+  map %>%
+  setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
+    addPolygons(data = selected_region_feature,
+                smoothFactor = 2,
+                fillColor = "black",
+                fillOpacity = 0.01,
+                weight = 2,
+                color="black",
+                group = selected_region_group
+    ) %>%
+    clearGroup(regions_group)
+}
 
 
 

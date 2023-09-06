@@ -101,28 +101,19 @@ mod_explore_server <- function(input, output, session){
       }else if (click$group == "B"){
         region_click <- click
 
-        # A MODIFIER
         # get only the region selected feature
         selected_region_feature <- get_region(region_click_id = region_click$id)
-
         # get network with metrics in region
         network_region_metrics <- get_network_region_with_metrics(selected_region_id = region_click$id)
-
         # get network with landcover in region
         network_region_landuse <- get_network_with_landcover(selected_region_id = region_click$id)
 
-        # display network without metric
+        # map region clicked
         leafletProxy("exploremap") %>%
-        setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
-          addPolygons(data = selected_region_feature,
-                      smoothFactor = 2,
-                      fillColor = "black",
-                      fillOpacity = 0.01,
-                      weight = 2,
-                      color="black",
-                      group = "C"
-          ) %>%
-          clearGroup("B")
+          map_region_clicked(region_click = region_click,
+                             selected_region_feature = selected_region_feature,
+                             regions_group = "B",
+                             selected_region_group = "C")
 
         ### DYNAMIC UI
 
