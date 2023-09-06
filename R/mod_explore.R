@@ -180,12 +180,12 @@ mod_explore_server <- function(input, output, session){
                            "Infrastructure de stransport"
                          ),
                          choiceValues = list("water_channel",
-                                             "Gravel_bars",
+                                             "gravel_bars",
                                              "natural_open",
                                              "forest",
                                              "grassland",
                                              "crops",
-                                             "diffuse Urban",
+                                             "diffuse_urban",
                                              "dense_urban",
                                              "infrastructures"),
                          selected = character(0)

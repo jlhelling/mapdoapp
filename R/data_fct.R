@@ -55,7 +55,11 @@ get_region <- function(region_click_id = region_click$id){
 #' data <- get_network_region_with_metrics(selected_region_id = region_click$id)
 get_network_region_with_metrics <- function(selected_region_id = region_click$id){
   query <- sprintf("
-      SELECT *
+      SELECT
+      network_metrics.fid, toponyme, strahler, active_channel_width, natural_corridor_width,
+      connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
+      water_channel, gravel_bars, natural_open, forest, grassland, crops,
+      diffuse_urban, dense_urban, infrastructures, network_metrics.geom
       FROM network_metrics, region_hydrographique
       WHERE ST_Intersects(network_metrics.geom, region_hydrographique.geom)
           AND region_hydrographique.cdregionhy = '%s'", selected_region_id)
