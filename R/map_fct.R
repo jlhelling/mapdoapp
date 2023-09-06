@@ -99,8 +99,6 @@ map_region_clicked <- function(map,
     clearGroup(regions_group)
 }
 
-
-
 #' Update metric mapping
 #'
 #' @param mapId

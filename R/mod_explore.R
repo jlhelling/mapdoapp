@@ -105,8 +105,6 @@ mod_explore_server <- function(input, output, session){
         selected_region_feature <- get_region(region_click_id = region_click$id)
         # get network with metrics in region
         network_region_metrics <- get_network_region_with_metrics(selected_region_id = region_click$id)
-        # get network with landcover in region
-        # network_region_landuse <- get_network_with_landcover(selected_region_id = region_click$id)
 
         # map region clicked
         leafletProxy("exploremap") %>%
@@ -123,8 +121,10 @@ mod_explore_server <- function(input, output, session){
             req(network_region_metrics)
             sliderInput(ns("strahler"),
                         label="Ordre de strahler",
-                        min=min(isolate(network_region_metrics$strahler)), max=max(isolate(network_region_metrics$strahler)),
-                        value=c(min(isolate(network_region_metrics$strahler)),max(isolate(network_region_metrics$strahler))),
+                        min=min(isolate(network_region_metrics$strahler)),
+                        max=max(isolate(network_region_metrics$strahler)),
+                        value=c(min(isolate(network_region_metrics$strahler)),
+                                max(isolate(network_region_metrics$strahler))),
                         step=1)
           })
 
@@ -199,11 +199,11 @@ mod_explore_server <- function(input, output, session){
           if (is.null(input$dynamicRadio)==FALSE){
           sliderInput(ns("metricfilter"),
                       input$dynamicRadio,
-                      min = round(min(varsel(), na.rm = TRUE), digits=1),
-                      max = round(max(varsel(), na.rm = TRUE), digits=1),
+                      min = round(min(network_region_metrics[[input$dynamicRadio]], na.rm = TRUE), digits=1),
+                      max = round(max(network_region_metrics[[input$dynamicRadio]], na.rm = TRUE), digits=1),
                       value = c(
-                        round(min(varsel(), na.rm = TRUE), digits=1),
-                        round(max(varsel(), na.rm = TRUE), digits=1)
+                        round(min(network_region_metrics[[input$dynamicRadio]], na.rm = TRUE), digits=1),
+                        round(max(network_region_metrics[[input$dynamicRadio]], na.rm = TRUE), digits=1)
                       )
           )
           } else {
@@ -216,12 +216,25 @@ mod_explore_server <- function(input, output, session){
         # AJOUTER LE FILTRE SUR OCCUPATION SOL
         # data with strahler filter
         network_filter <- reactive({
+
           req(network_region_metrics)
-          if(is.null(input$strahler)){
+          if(is.null(input$strahler) && is.null(input$metricfilter)){
             network_region_metrics
-          }else{
+
+          }else if (is.null(input$strahler)==FALSE && is.null(input$metricfilter)){
             network_region_metrics %>%
               filter(between(strahler, input$strahler[1], input$strahler[2]))
+
+          } else if (is.null(input$strahler) && is.null(input$metricfilter)==FALSE){
+            network_region_metrics %>%
+              filter(between(network_region_metrics[[input$dynamicRadio]],
+                             input$metricfilter[1], input$metricfilter[2]))
+
+          } else if (is.null(input$strahler)==FALSE && is.null(input$metricfilter)==FALSE){
+            network_region_metrics %>%
+              filter(between(strahler, input$strahler[1], input$strahler[2])) %>%
+              filter(between(network_region_metrics[[input$dynamicRadio]],
+                             input$metricfilter[1], input$metricfilter[2]))
           }
         }) # strahler filter
 
@@ -238,7 +251,7 @@ mod_explore_server <- function(input, output, session){
         ### UPDATE MAP
 
         # update map with strahler filter
-        observeEvent(input$strahler, {
+        observeEvent(network_filter(), {
           if (is.null(input$strahler)) {
             return (NULL)
           } else if (is.null(input$dynamicRadio)) {
