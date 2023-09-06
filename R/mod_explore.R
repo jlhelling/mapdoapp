@@ -73,9 +73,8 @@ mod_explore_server <- function(input, output, session){
   ns <- session$ns
 
   # mapping initialization
-  bassins <- get_bassins()
   output$exploremap <- renderLeaflet({
-    map_init_bassins(bassins_data = bassins, group = "A")
+    map_init_bassins(bassins_data = get_bassins(), group = "A")
   })
 
   # zoom on click

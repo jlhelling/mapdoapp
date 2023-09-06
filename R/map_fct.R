@@ -1,4 +1,14 @@
-map_init_bassins <- function(bassins_data = bassins, group = "A") {
+#' Map initialization with hydrographic bassins data
+#'
+#' @param bassins_data hydrographic bassins sf
+#' @param group layer group
+#'
+#' @return leaflet map
+#' @export
+#'
+#' @examples
+#' map <- map_init_bassins(bassins_data = get_bassins(), group = "A")
+map_init_bassins <- function(bassins_data = get_bassins(), group = "A") {
   leaflet() %>%
     setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
     addTiles() %>%
@@ -16,9 +26,6 @@ map_init_bassins <- function(bassins_data = bassins, group = "A") {
                 group = group
     )
 }
-
-
-
 
 #' Update metric mapping
 #'
