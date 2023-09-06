@@ -199,11 +199,11 @@ mod_explore_server <- function(input, output, session){
           if (is.null(input$dynamicRadio)==FALSE && (input$metric == "Largeurs" || input$metric == "Pentes")){
           sliderInput(ns("metricfilter"),
                       input$dynamicRadio,
-                      min = round(min(isolate(network_region_metrics[[input$dynamicRadio]]), na.rm = TRUE), digits=1),
-                      max = round(max(isolate(network_region_metrics[[input$dynamicRadio]]), na.rm = TRUE), digits=1),
+                      min = round(min(network_data()[[input$dynamicRadio]], na.rm = TRUE), digits=1),
+                      max = round(max(network_data()[[input$dynamicRadio]], na.rm = TRUE), digits=1),
                       value = c(
-                        round(min(isolate(network_region_metrics[[input$dynamicRadio]]), na.rm = TRUE), digits=1),
-                        round(max(isolate(network_region_metrics[[input$dynamicRadio]]), na.rm = TRUE), digits=1)
+                        round(min(network_data()[[input$dynamicRadio]], na.rm = TRUE), digits=1),
+                        round(max(network_data()[[input$dynamicRadio]], na.rm = TRUE), digits=1)
                       )
           )
           } else {
