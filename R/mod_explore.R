@@ -196,14 +196,14 @@ mod_explore_server <- function(input, output, session){
         # dynamic filter on metric selected
         output$metricsfilterUI <- renderUI({
           req(input$dynamicRadio)
-          if (is.null(input$dynamicRadio)==FALSE && (input$metric == "Largeurs" || input$metric == "Pentes")){
+          if (is.null(input$dynamicRadio)==FALSE){
           sliderInput(ns("metricfilter"),
                       input$dynamicRadio,
-                      min = round(min(network_data()[[input$dynamicRadio]], na.rm = TRUE), digits=1),
-                      max = round(max(network_data()[[input$dynamicRadio]], na.rm = TRUE), digits=1),
+                      min = round(min(varsel(), na.rm = TRUE), digits=1),
+                      max = round(max(varsel(), na.rm = TRUE), digits=1),
                       value = c(
-                        round(min(network_data()[[input$dynamicRadio]], na.rm = TRUE), digits=1),
-                        round(max(network_data()[[input$dynamicRadio]], na.rm = TRUE), digits=1)
+                        round(min(varsel(), na.rm = TRUE), digits=1),
+                        round(max(varsel(), na.rm = TRUE), digits=1)
                       )
           )
           } else {
