@@ -97,13 +97,13 @@ mod_explore_server <- function(input, output, session){
                                   bassins_group = "A",
                                   regions_group = "B")
 
+      # if click on region
       }else if (click$group == "B"){
         region_click <- click
 
         # A MODIFIER
         # get only the region selected feature
-        selected_region_feature <- st_read(db_con(), layer = "region_hydrographique") %>%
-          filter(cdregionhy == region_click$id)
+        selected_region_feature <- get_region(region_click_id = region_click$id)
 
         # get network with metrics in region
         network_region_metrics <- get_network_region_with_metrics(selected_region_id = region_click$id)

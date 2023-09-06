@@ -28,6 +28,22 @@ get_regions_in_bassin <- function(selected_bassin_id = bassin_click$id) {
   return(data)
 }
 
+#' get region clicked by user
+#'
+#' @param region_click_id
+#'
+#' @return sf data.frame
+#' @export
+#'
+#' @examples
+#' selected_region_feature <- get_region(region_click_id = region_click$id)
+get_region <- function(region_click_id = region_click$id){
+  query <- sprintf("SELECT * FROM region_hydrographique
+                   WHERE cdregionhy LIKE '%s'", region_click_id)
+  data <- st_read(dsn = db_con(), query = query)
+  return(data)
+}
+
 #' get network in region selected with metrics data
 #'
 #' @param selected_region_id
