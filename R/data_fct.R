@@ -54,24 +54,17 @@ get_region <- function(region_click_id = region_click$id){
 #' @examples
 #' data <- get_network_region_with_metrics(selected_region_id = region_click$id)
 get_network_region_with_metrics <- function(selected_region_id = region_click$id){
-  query <- sprintf("WITH region_select AS(
-      SELECT network.fid, network.toponyme, network.strahler, network.axis, network.measure, network.geom
-      FROM network, region_hydrographique
-      WHERE ST_Intersects(network.geom, region_hydrographique.geom)
-          AND region_hydrographique.cdregionhy = '%s'
-      )
-      SELECT region_select.fid, region_select.toponyme,
-      region_select.strahler, region_select.axis, region_select.measure,
-      metrics.floodplain_slope, metrics.floodplain_z0, metrics.talweg_height_min, metrics.talweg_length,
-      metrics.talweg_elevation_min, metrics.talweg_slope, metrics.valley_bottom_width, metrics.active_channel_width,
-      metrics.natural_corridor_width, metrics.connected_corridor_width, metrics.valley_bottom_area, region_select.geom
-      FROM region_select
-      LEFT JOIN metrics ON region_select.axis = metrics.axis
-      	AND region_select.measure = metrics.measure", selected_region_id)
+  query <- sprintf("
+      SELECT *
+      FROM network_metrics, region_hydrographique
+      WHERE ST_Intersects(network_metrics.geom, region_hydrographique.geom)
+          AND region_hydrographique.cdregionhy = '%s'", selected_region_id)
 
   data <- st_read(dsn = db_con(), query = query)
   return(data)
 }
+
+# TO REMOVE
 
 #' get network in region selected with landcover data
 #'

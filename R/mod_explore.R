@@ -106,7 +106,7 @@ mod_explore_server <- function(input, output, session){
         # get network with metrics in region
         network_region_metrics <- get_network_region_with_metrics(selected_region_id = region_click$id)
         # get network with landcover in region
-        network_region_landuse <- get_network_with_landcover(selected_region_id = region_click$id)
+        # network_region_landuse <- get_network_with_landcover(selected_region_id = region_click$id)
 
         # map region clicked
         leafletProxy("exploremap") %>%
@@ -179,15 +179,15 @@ mod_explore_server <- function(input, output, session){
                            "Urbain dense",
                            "Infrastructure de stransport"
                          ),
-                         choiceValues = list("Water Channel",
-                                             "Gravel Bars",
-                                             "Natural Open",
-                                             "Forest",
-                                             "Grassland",
-                                             "Crops",
-                                             "Diffuse Urban",
-                                             "Dense Urban",
-                                             "Infrastructures"),
+                         choiceValues = list("water_channel",
+                                             "Gravel_bars",
+                                             "natural_open",
+                                             "forest",
+                                             "grassland",
+                                             "crops",
+                                             "diffuse Urban",
+                                             "dense_urban",
+                                             "infrastructures"),
                          selected = character(0)
             )
           }
@@ -213,26 +213,14 @@ mod_explore_server <- function(input, output, session){
 
         ### DATA UPDATE
 
-        # data with metric
-        network_data <- reactive({
-          if (is.null(input$metric) || is.null(input$dynamicRadio)){
-            network_region_metrics
-          } else if (input$metric == "Largeurs" || input$metric == "Pentes" && is.null(input$dynamicRadio)==FALSE) {
-            network_region_metrics
-          } else if (input$metric == "Occupation du sol" && is.null(input$dynamicRadio)==FALSE) {
-            network_region_landuse %>%
-              filter(landcover==input$dynamicRadio)
-          }
-        })
-
         # AJOUTER LE FILTRE SUR OCCUPATION SOL
         # data with strahler filter
         network_filter <- reactive({
           req(network_region_metrics)
           if(is.null(input$strahler)){
-            network_data()
+            network_region_metrics
           }else{
-            network_data() %>%
+            network_region_metrics %>%
               filter(between(strahler, input$strahler[1], input$strahler[2]))
           }
         }) # strahler filter
@@ -242,10 +230,8 @@ mod_explore_server <- function(input, output, session){
           req(network_filter())
           if (is.null(network_filter())){
             return(NULL)
-          } else if (input$metric == "Largeurs" | input$metric == "Pentes") {
+          } else {
             network_filter()[[input$dynamicRadio]]
-          } else if (input$metric == "Occupation du sol") {
-            network_filter()[["landcover_area"]]
           }
         })
 
@@ -264,28 +250,13 @@ mod_explore_server <- function(input, output, session){
                            group = "D")
 
           } else {
-            if (input$metric == "Largeurs" | input$metric == "Pentes") {
-
               map_metric("exploremap", network_filter(), varsel())
-
-            } else if (input$metric == "Occupation du sol") {
-
-              map_metric("exploremap", network_filter(), varsel())
-            }
-
           }
         }) # ObserveEvent
 
         # Update map with dynamicRadio
         observeEvent(input$dynamicRadio, {
-          if (input$metric == "Largeurs" | input$metric == "Pentes") {
-
             map_metric("exploremap", network_filter(), varsel())
-
-          } else if (input$metric == "Occupation du sol") {
-
-            map_metric("exploremap", network_filter(), varsel())
-          }
         }) # ObserveEvent
 
       }
