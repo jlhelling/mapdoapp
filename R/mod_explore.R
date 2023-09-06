@@ -73,23 +73,9 @@ mod_explore_server <- function(input, output, session){
   ns <- session$ns
 
   # mapping initialization
+  bassins <- get_bassins()
   output$exploremap <- renderLeaflet({
-    leaflet() %>%
-      setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
-      addTiles() %>%
-      addPolygons(data = get_bassins(),
-                  layerId = ~cdbh,
-                  smoothFactor = 2,
-                  fillColor = "black",
-                  fillOpacity = 0.01,
-                  weight = 2,
-                  color="black",
-                  highlightOptions = highlightOptions(
-                    fillColor = "#a8d1ff",
-                    fillOpacity = 0.5),
-                  label = ~htmlEscape(lbbh),
-                  group = "A"
-                  )
+    map_init_bassins(bassins_data = bassins, group = "A")
   })
 
   # zoom on click

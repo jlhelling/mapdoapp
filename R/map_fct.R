@@ -1,3 +1,25 @@
+map_init_bassins <- function(bassins_data = bassins, group = "A") {
+  leaflet() %>%
+    setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
+    addTiles() %>%
+    addPolygons(data = bassins_data,
+                layerId = ~cdbh,
+                smoothFactor = 2,
+                fillColor = "black",
+                fillOpacity = 0.01,
+                weight = 2,
+                color="black",
+                highlightOptions = highlightOptions(
+                  fillColor = "#a8d1ff",
+                  fillOpacity = 0.5),
+                label = ~htmlEscape(lbbh),
+                group = group
+    )
+}
+
+
+
+
 #' Update metric mapping
 #'
 #' @param mapId
