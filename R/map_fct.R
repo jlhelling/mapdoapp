@@ -27,6 +27,48 @@ map_init_bassins <- function(bassins_data = get_bassins(), group = "A") {
     )
 }
 
+#' Update initial map to hydrographic regions
+#'
+#' @param map map object for pipe
+#' @param bassin_click bassin selected by user
+#' @param regions_data hydrographic regions data
+#' @param bassins_group bassins layer group
+#' @param regions_group regions layer group
+#'
+#' @return map updated
+#' @export
+#'
+#' @examples
+#' map_add_regions_in_bassin(bassin_click = bassin_click,
+#' regions_data = region_hydro,
+#' bassins_group = "A",
+#' regions_group = "B")
+map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
+                                      regions_data = region_hydro,
+                                      bassins_group= "A",
+                                      regions_group = "B"){
+  map %>%
+    setView(lng = bassin_click$lng , lat = bassin_click$lat, zoom = 6.5) %>%
+    clearGroup(bassins_group) %>%
+    addPolygons(data = regions_data,
+                layerId = ~cdregionhy,
+                smoothFactor = 2,
+                fillColor = "black",
+                fillOpacity = 0.01,
+                weight = 2,
+                color="black",
+                highlightOptions = highlightOptions(
+                  fillColor = "#a8d1ff",
+                  fillOpacity = 0.5),
+                label = ~htmlEscape(lbregionhy),
+                group = regions_group
+    )
+}
+
+
+
+
+
 #' Update metric mapping
 #'
 #' @param mapId

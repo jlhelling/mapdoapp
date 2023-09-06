@@ -72,7 +72,7 @@ mod_explore_server <- function(input, output, session){
 
   ns <- session$ns
 
-  # mapping initialization
+  # map initialization
   output$exploremap <- renderLeaflet({
     map_init_bassins(bassins_data = get_bassins(), group = "A")
   })
@@ -81,28 +81,22 @@ mod_explore_server <- function(input, output, session){
   observe(
     {  click <- input$exploremap_shape_click
     bassin_click <- click
-    if(is.null(bassin_click) || is.null(bassin_click$id)){
-      return()
+    # nothing happens if click outside bassins
+    if(is.null(bassin_click)){
+      return(NULL)
+    # if click on bassin
     }else if (bassin_click$group == "A"){
 
+      # get regions data in clicked bassin
       region_hydro <- get_regions_in_bassin(selected_bassin_id = bassin_click$id)
 
+      # update map : zoom in clicked bassin, clear bassin data, display region in bassin
       leafletProxy("exploremap") %>%
-      setView(lng = bassin_click$lng , lat = bassin_click$lat, zoom = 6.5) %>%
-      clearGroup("A") %>%
-        addPolygons(data = region_hydro,
-                    layerId = ~cdregionhy,
-                    smoothFactor = 2,
-                    fillColor = "black",
-                    fillOpacity = 0.01,
-                    weight = 2,
-                    color="black",
-                    highlightOptions = highlightOptions(
-                      fillColor = "#a8d1ff",
-                      fillOpacity = 0.5),
-                    label = ~htmlEscape(lbregionhy),
-                    group = "B"
-        )
+        map_add_regions_in_bassin(bassin_click = bassin_click,
+                                  regions_data = region_hydro,
+                                  bassins_group = "A",
+                                  regions_group = "B")
+
       }else if (click$group == "B"){
         region_click <- click
 
