@@ -128,26 +128,6 @@ mod_explore_server <- function(input, output, session){
                         step=1)
           })
 
-        ###############
-
-        # Dynamically create sliderInput elements based on selected_columns
-        observe({input$dynamicRadio
-          if (is.null(input$dynamicRadio)==FALSE && input$metric == "Largeurs"){
-            output$metricsfilterUI <- renderUI({
-              sliderInput(ns("metricfilter"),
-                          input$dynamicRadio,
-                          min = min(isolate(network_region_metrics[[input$dynamicRadio]])),
-                          max = max(isolate(network_region_metrics[[input$dynamicRadio]])),
-                          value = c(min(isolate(network_region_metrics[[input$dynamicRadio]])),
-                                    max(isolate(network_region_metrics[[input$dynamicRadio]])))
-                          )
-            })
-          } else {
-            return(NULL)
-          }
-        })
-
-        ###############
 
         # choose metric type
         output$metricUI <- renderUI({
@@ -210,6 +190,24 @@ mod_explore_server <- function(input, output, session){
                                              "Infrastructures"),
                          selected = character(0)
             )
+          }
+        })
+
+        # dynamic filter on metric selected
+        output$metricsfilterUI <- renderUI({
+          req(input$dynamicRadio)
+          if (is.null(input$dynamicRadio)==FALSE && (input$metric == "Largeurs" || input$metric == "Pentes")){
+          sliderInput(ns("metricfilter"),
+                      input$dynamicRadio,
+                      min = round(min(isolate(network_region_metrics[[input$dynamicRadio]]), na.rm = TRUE), digits=1),
+                      max = round(max(isolate(network_region_metrics[[input$dynamicRadio]]), na.rm = TRUE), digits=1),
+                      value = c(
+                        round(min(isolate(network_region_metrics[[input$dynamicRadio]]), na.rm = TRUE), digits=1),
+                        round(max(isolate(network_region_metrics[[input$dynamicRadio]]), na.rm = TRUE), digits=1)
+                      )
+          )
+          } else {
+            return(NULL)
           }
         })
 
