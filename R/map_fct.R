@@ -104,12 +104,13 @@ map_region_clicked <- function(map,
 #' @param mapId
 #' @param data_map
 #' @param varsel
+#' @param network_group
 #'
-#' @return
+#' @return leaflet update
 #' @export
 #'
 #' @examples map_metric("exploremap", datamap(), varsel())
-map_metric <- function(mapId, data_map, varsel) {
+map_metric <- function(mapId, data_map, varsel, network_group = "D") {
 
   breaks <-  unique(quantile(varsel, probs = seq(0, 1, 0.25), na.rm = TRUE))
 
@@ -117,10 +118,30 @@ map_metric <- function(mapId, data_map, varsel) {
   color_palette <- colorRampPalette(c("green", "red"))(length(breaks))
 
   leafletProxy(mapId) %>%
-    clearGroup("D") %>%
+    clearGroup(network_group) %>%
     addPolylines(data = data_map, color = ~ {
       ifelse(is.na(varsel), "grey",
              color_palette[findInterval(varsel, breaks, all.inside = TRUE)])
     },
-    group = "D")
+    group = network_group)
+}
+
+#' Update map with network without metric selected
+#'
+#' @param map
+#' @param datamap
+#' @param network_group
+#'
+#' @return leaflet update
+#' @export
+#'
+#' @examples
+#' map_metric("exploremap", network_filter(), varsel(), network_group = "D")
+map_network_no_metric <- function(map, datamap = network_filter(), network_group = "D"){
+  map %>%
+    clearGroup(network_group) %>%
+    addPolylines(data = datamap,
+                 weight = 2,
+                 color = "blue",
+                 group = network_group)
 }

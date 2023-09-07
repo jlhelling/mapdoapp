@@ -221,10 +221,6 @@ mod_explore_server <- function(input, output, session){
   # data with filter
   network_filter <- eventReactive(c(input$strahler, input$metricfilter), {
 
-    print(input$dynamicRadio)
-    print(input$strahler)
-    print(input$metricfilter)
-
     # no strahler no metric
     if(is.null(input$strahler) && is.null(input$metricfilter)){
       data <- network_region_metrics()
@@ -251,7 +247,6 @@ mod_explore_server <- function(input, output, session){
   # metrics data to display
   varsel <- reactive({
     req(network_filter())
-    print("pouet")
     if (is.null(network_filter())){
       return(NULL)
     } else {
@@ -261,19 +256,14 @@ mod_explore_server <- function(input, output, session){
 
   ### UPDATE MAP
   observeEvent(network_filter(), {
-    print("pouet map")
     if (is.null(input$strahler)) {
       return (NULL)
     } else if (is.null(input$dynamicRadio)) {
       leafletProxy("exploremap") %>%
-        clearGroup("D") %>%
-        addPolylines(data = network_filter(),
-                     weight = 2,
-                     color = "blue",
-                     group = "D")
+        map_network_no_metric(datamap = network_filter(), network_group = "D")
 
     } else {
-        map_metric("exploremap", network_filter(), varsel())
+        map_metric("exploremap", network_filter(), varsel(), network_group = "D")
     }
   }) # ObserveEvent
 
