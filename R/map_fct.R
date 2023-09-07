@@ -101,10 +101,10 @@ map_region_clicked <- function(map,
 
 #' Update metric mapping
 #'
-#' @param mapId
-#' @param data_map
-#' @param varsel
-#' @param network_group
+#' @param mapId map shiny id
+#' @param data_map network data
+#' @param varsel metric selected data
+#' @param network_group network group
 #'
 #' @return leaflet update
 #' @export
@@ -128,9 +128,9 @@ map_metric <- function(mapId, data_map, varsel, network_group = "D") {
 
 #' Update map with network without metric selected
 #'
-#' @param map
-#' @param datamap
-#' @param network_group
+#' @param map map shiny id
+#' @param datamap network data
+#' @param network_group network group
 #'
 #' @return leaflet update
 #' @export

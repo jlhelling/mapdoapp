@@ -72,56 +72,7 @@ mod_explore_server <- function(input, output, session){
 
   ns <- session$ns
 
-  # map initialization
-  output$exploremap <- renderLeaflet({
-    map_init_bassins(bassins_data = get_bassins(), group = "A")
-  })
-
-  # clicked polygon data
-  click_value <- reactive({
-    input$exploremap_shape_click
-  })
-
-  # get regions data in clicked bassin
-  region_hydro <- reactive({
-      req(click_value()$group == "A")
-      get_regions_in_bassin(selected_bassin_id = click_value()$id)
-    })
-
-  # map regions or selected region
-  observeEvent(click_value(), {
-    if (click_value()$group == "A"){
-    # update map : zoom in clicked bassin, clear bassin data, display region in bassin
-    leafletProxy("exploremap") %>%
-    map_add_regions_in_bassin(bassin_click = click_value(),
-                              regions_data = region_hydro(),
-                              bassins_group = "A",
-                              regions_group = "B")
-    # update map : clear regions in selected bassin, display the region selected
-    }else if (click_value()$group == "B"){
-      # map region clicked
-      leafletProxy("exploremap") %>%
-        map_region_clicked(region_click = click_value(),
-                           selected_region_feature = selected_region_feature(),
-                           regions_group = "B",
-                           selected_region_group = "C")
-      }
-
-  })
-
-  # get only the region selected feature
-  selected_region_feature <- reactive({
-    req(click_value()$group == "B")
-    get_region(region_click_id = click_value()$id)
-  })
-
-  # get network with metrics in region
-  network_region_metrics <- reactive({
-    req(click_value()$group == "B")
-    get_network_region_with_metrics(selected_region_id = click_value()$id)
-  })
-
-  ### DYNAMIC UI
+  ### DYNAMIC UI ####
 
   # choose metric type
   output$metricUI <- renderUI({
@@ -194,10 +145,10 @@ mod_explore_server <- function(input, output, session){
       req(network_region_metrics())
       sliderInput(ns("strahler"),
                   label="Ordre de strahler",
-                  min=min(isolate(network_region_metrics()$strahler)),
-                  max=max(isolate(network_region_metrics()$strahler)),
-                  value=c(min(isolate(network_region_metrics()$strahler)),
-                          max(isolate(network_region_metrics()$strahler))),
+                  min=min(isolate(network_region_metrics()$strahler), na.rm = TRUE),
+                  max=max(isolate(network_region_metrics()$strahler), na.rm = TRUE),
+                  value=c(min(isolate(network_region_metrics()$strahler), na.rm = TRUE),
+                          max(isolate(network_region_metrics()$strahler), na.rm = TRUE)),
                   step=1)
     })
 
@@ -206,17 +157,41 @@ mod_explore_server <- function(input, output, session){
     req(input$dynamicRadio)
     sliderInput(ns("metricfilter"),
                 input$dynamicRadio,
-                min = isolate(round(min(network_region_metrics()[[input$dynamicRadio]], na.rm = TRUE), digits=1)),
-                max = isolate(round(max(network_region_metrics()[[input$dynamicRadio]], na.rm = TRUE), digits=1)),
+                min = isolate(round(min(network_region_metrics()[[input$dynamicRadio]][is.finite(network_region_metrics()[[input$dynamicRadio]])], na.rm = TRUE), digits=1)),
+                max = isolate(round(max(network_region_metrics()[[input$dynamicRadio]][is.finite(network_region_metrics()[[input$dynamicRadio]])], na.rm = TRUE), digits=1)),
                 value = c(
-                  isolate(round(min(network_region_metrics()[[input$dynamicRadio]], na.rm = TRUE), digits=1)),
-                  isolate(round(max(network_region_metrics()[[input$dynamicRadio]], na.rm = TRUE), digits=1))
+                  isolate(round(min(network_region_metrics()[[input$dynamicRadio]][is.finite(network_region_metrics()[[input$dynamicRadio]])], na.rm = TRUE), digits=1)),
+                  isolate(round(max(network_region_metrics()[[input$dynamicRadio]][is.finite(network_region_metrics()[[input$dynamicRadio]])], na.rm = TRUE), digits=1))
                 )
     )
   })
 
-  ### DATA UPDATE
+  #####
 
+  ### DATA ####
+
+  # clicked polygon data
+  click_value <- reactive({
+    input$exploremap_shape_click
+  })
+
+  # get regions data in clicked bassin
+  region_hydro <- reactive({
+    req(click_value()$group == "A")
+    get_regions_in_bassin(selected_bassin_id = click_value()$id)
+  })
+
+  # get only the region selected feature
+  selected_region_feature <- reactive({
+    req(click_value()$group == "B")
+    get_region(region_click_id = click_value()$id)
+  })
+
+  # get network with metrics in region
+  network_region_metrics <- reactive({
+    req(click_value()$group == "B")
+    get_network_region_with_metrics(selected_region_id = click_value()$id)
+  })
 
   # data with filter
   network_filter <- eventReactive(c(input$strahler, input$metricfilter), {
@@ -227,21 +202,22 @@ mod_explore_server <- function(input, output, session){
       # yes strahler no metric
     }else if (is.null(input$strahler)==FALSE && is.null(input$metricfilter)){
       data <- network_region_metrics() %>%
-        filter(between(strahler, input$strahler[1], input$strahler[2]))
+        filter(!is.na(strahler), between(strahler, input$strahler[1], input$strahler[2]))
       # no strahler yes metric
     } else if (is.null(input$strahler) && is.null(input$metricfilter)==FALSE
                && is.null(input$dynamicRadio)==FALSE){
       data <- network_region_metrics() %>%
-        filter(between(!!sym(input$dynamicRadio),
+        filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio),
                        input$metricfilter[1], input$metricfilter[2]))
       # yes strahler yes metric
     } else if (is.null(input$strahler)==FALSE && is.null(input$metricfilter)==FALSE
                && is.null(input$dynamicRadio)==FALSE){
       data <- network_region_metrics() %>%
-        filter(between(strahler, input$strahler[1], input$strahler[2])) %>%
-        filter(between(!!sym(input$dynamicRadio),
+        filter(!is.na(strahler), between(strahler, input$strahler[1], input$strahler[2])) %>%
+        filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio),
                        input$metricfilter[1], input$metricfilter[2]))
     }
+    return(data)
   })
 
   # metrics data to display
@@ -254,7 +230,38 @@ mod_explore_server <- function(input, output, session){
     }
   })
 
-  ### UPDATE MAP
+  #####
+
+  ### MAPPING ####
+
+  # map initialization
+  output$exploremap <- renderLeaflet({
+    map_init_bassins(bassins_data = get_bassins(), group = "A")
+  })
+
+  # map regions or selected region
+  observeEvent(click_value(), {
+    if (click_value()$group == "A"){
+      # update map : zoom in clicked bassin, clear bassin data, display region in bassin
+      leafletProxy("exploremap") %>%
+        map_add_regions_in_bassin(bassin_click = click_value(),
+                                  regions_data = region_hydro(),
+                                  bassins_group = "A",
+                                  regions_group = "B")
+
+      # update map : clear regions in selected bassin, display the region selected
+    }else if (click_value()$group == "B"){
+      # map region clicked
+      leafletProxy("exploremap") %>%
+        map_region_clicked(region_click = click_value(),
+                           selected_region_feature = selected_region_feature(),
+                           regions_group = "B",
+                           selected_region_group = "C")
+    }
+
+  })
+
+  # map network
   observeEvent(network_filter(), {
     if (is.null(input$strahler)) {
       return (NULL)
@@ -266,6 +273,8 @@ mod_explore_server <- function(input, output, session){
         map_metric("exploremap", network_filter(), varsel(), network_group = "D")
     }
   }) # ObserveEvent
+
+  #####
 
 }
 
