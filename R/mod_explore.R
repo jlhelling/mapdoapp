@@ -115,19 +115,6 @@ mod_explore_server <- function(input, output, session){
 
         ### DYNAMIC UI
 
-        # filter UI
-        output$strahlerfilterUI <- renderUI(
-          {
-            req(network_region_metrics)
-            sliderInput(ns("strahler"),
-                        label="Ordre de strahler",
-                        min=min(isolate(network_region_metrics$strahler)),
-                        max=max(isolate(network_region_metrics$strahler)),
-                        value=c(min(isolate(network_region_metrics$strahler)),
-                                max(isolate(network_region_metrics$strahler))),
-                        step=1)
-          })
-
 
         # choose metric type
         output$metricUI <- renderUI({
@@ -193,17 +180,30 @@ mod_explore_server <- function(input, output, session){
           }
         })
 
+        # filter UI
+        output$strahlerfilterUI <- renderUI(
+          {
+            req(network_region_metrics)
+            sliderInput(ns("strahler"),
+                        label="Ordre de strahler",
+                        min=min(isolate(network_region_metrics$strahler)),
+                        max=max(isolate(network_region_metrics$strahler)),
+                        value=c(min(isolate(network_region_metrics$strahler)),
+                                max(isolate(network_region_metrics$strahler))),
+                        step=1)
+          })
+
         # dynamic filter on metric selected
         output$metricsfilterUI <- renderUI({
           req(input$dynamicRadio)
           if (is.null(input$dynamicRadio)==FALSE){
           sliderInput(ns("metricfilter"),
                       input$dynamicRadio,
-                      min = round(min(network_region_metrics[[input$dynamicRadio]], na.rm = TRUE), digits=1),
-                      max = round(max(network_region_metrics[[input$dynamicRadio]], na.rm = TRUE), digits=1),
+                      min = isolate(round(min(network_region_metrics[[input$dynamicRadio]], na.rm = TRUE), digits=1)),
+                      max = isolate(round(max(network_region_metrics[[input$dynamicRadio]], na.rm = TRUE), digits=1)),
                       value = c(
-                        round(min(network_region_metrics[[input$dynamicRadio]], na.rm = TRUE), digits=1),
-                        round(max(network_region_metrics[[input$dynamicRadio]], na.rm = TRUE), digits=1)
+                        isolate(round(min(network_region_metrics[[input$dynamicRadio]], na.rm = TRUE), digits=1)),
+                        isolate(round(max(network_region_metrics[[input$dynamicRadio]], na.rm = TRUE), digits=1))
                       )
           )
           } else {
@@ -213,30 +213,37 @@ mod_explore_server <- function(input, output, session){
 
         ### DATA UPDATE
 
-        # AJOUTER LE FILTRE SUR OCCUPATION SOL
-        # data with strahler filter
+        # data with filter
         network_filter <- reactive({
 
           req(network_region_metrics)
+
+          print(input$dynamicRadio)
+          print(input$strahler)
+          print(input$metricfilter)
+
+          # no strahler no metric
           if(is.null(input$strahler) && is.null(input$metricfilter)){
             network_region_metrics
-
+          # yes strahler no metric
           }else if (is.null(input$strahler)==FALSE && is.null(input$metricfilter)){
             network_region_metrics %>%
               filter(between(strahler, input$strahler[1], input$strahler[2]))
-
-          } else if (is.null(input$strahler) && is.null(input$metricfilter)==FALSE){
+          # no strahler yes metric
+          } else if (is.null(input$strahler) && is.null(input$metricfilter)==FALSE
+                     && is.null(input$dynamicRadio)==FALSE){
             network_region_metrics %>%
-              filter(between(network_region_metrics[[input$dynamicRadio]],
+              filter(between(!!sym(input$dynamicRadio),
                              input$metricfilter[1], input$metricfilter[2]))
-
-          } else if (is.null(input$strahler)==FALSE && is.null(input$metricfilter)==FALSE){
+          # yes strahler yes metric
+          } else if (is.null(input$strahler)==FALSE && is.null(input$metricfilter)==FALSE
+                     && is.null(input$dynamicRadio)==FALSE){
             network_region_metrics %>%
               filter(between(strahler, input$strahler[1], input$strahler[2])) %>%
-              filter(between(network_region_metrics[[input$dynamicRadio]],
+              filter(between(!!sym(input$dynamicRadio),
                              input$metricfilter[1], input$metricfilter[2]))
           }
-        }) # strahler filter
+        })
 
         # metrics data to display
         varsel <- reactive({
@@ -267,10 +274,10 @@ mod_explore_server <- function(input, output, session){
           }
         }) # ObserveEvent
 
-        # Update map with dynamicRadio
-        observeEvent(input$dynamicRadio, {
-            map_metric("exploremap", network_filter(), varsel())
-        }) # ObserveEvent
+        # # Update map with dynamicRadio
+        # observeEvent(input$dynamicRadio, {
+        #     map_metric("exploremap", network_filter(), varsel())
+        # }) # ObserveEvent
 
       }
     }
