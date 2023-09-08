@@ -11,7 +11,7 @@
 map_init_bassins <- function(bassins_data = get_bassins(), group = "A") {
   leaflet() %>%
     setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
-    add_basemaps(basemaps_list()) %>%
+    add_basemaps(basemaps_df()) %>%
     addPolygons(data = bassins_data,
                 layerId = ~cdbh,
                 smoothFactor = 2,
@@ -28,7 +28,7 @@ map_init_bassins <- function(bassins_data = get_bassins(), group = "A") {
     addScaleBar(pos = "bottomleft",
                 scaleBarOptions(metric = TRUE, imperial = FALSE)) %>%
     addLayersControl(
-      baseGroups = c(basemap_list()$name),
+      baseGroups = c(basemaps_df()$name),
       options = layersControlOptions(collapsed = TRUE)
     )
 }
@@ -104,12 +104,21 @@ map_region_clicked <- function(map,
                 options = pathOptions(interactive = FALSE)
     ) %>%
     clearGroup(regions_group) %>%
-    add_overlayers(overlayers_list()) %>%
+    addCircleMarkers (data = get_roe_in_region(region_click$id),
+                      radius = 3,
+                      weight = 0.5,
+                      opacity = 0.9,
+                      color = "orange",
+                      fillColor = "orange",
+                      fillOpacity = 0.9,
+                      popup = ~nomprincip,
+                      group = "ROE") %>%
+    add_overlayers(overlayers_df()) %>%
     addLayersControl(
-      baseGroups = c(basemap_list()$name),
+      baseGroups = c(basemaps_df()$name),
       options = layersControlOptions(collapsed = TRUE),
-      overlayGroups = c(overlayers_list()$name)) %>%
-    hideGroup(c(overlayers_list()$name))
+      overlayGroups = c("ROE", overlayers_df()$name)) %>%
+    hideGroup(c("ROE", overlayers_df()$name))
 }
 
 #' Update metric mapping

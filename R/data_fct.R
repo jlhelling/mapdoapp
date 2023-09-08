@@ -103,7 +103,14 @@ metrics_choice <- function() {
   return(choices_map)
 }
 
-basemaps_list <- function(){
+#' Create basemaps dataframe
+#'
+#' @return data.frame
+#' @export
+#'
+#' @examples
+#' basemaps_df()
+basemaps_df <- function(){
   basemaps <- data.frame(
     name = c("Plan IGN", "Satellite IGN"),
     url = c("https://wxs.ign.fr/cartes/geoportail/r/wms", "https://wxs.ign.fr/ortho/geoportail/r/wms"),
@@ -113,7 +120,14 @@ basemaps_list <- function(){
   return(basemaps)
 }
 
-overlayers_list <- function(){
+#' Create overlayers dataframe
+#'
+#' @return data.frame
+#' @export
+#'
+#' @examples
+#' overlayers_df()
+overlayers_df <- function(){
   overlayers <- data.frame(
     name = c("Zone inondable débordement centenale", "Ouvrage protection inondation"),
     url = c("https://georisques.gouv.fr/services", "https://georisques.gouv.fr/services"),
@@ -122,3 +136,26 @@ overlayers_list <- function(){
   )
   return(overlayers)
 }
+
+#' get ROE data from PostgreSQL
+#'
+#' @param selected_region_id selected region id by user
+#'
+#' @return sf data.frame
+#' @export
+#'
+#' @examples
+#' get_roe_in_region(region_click$id)
+get_roe_in_region <- function(selected_region_id = region_click$id){
+  query <- sprintf("
+      SELECT
+      roe.id, nomprincip, lbtypeouvr, lbhautchut, roe.geom
+      FROM roe, region_hydrographique
+      WHERE (ST_Intersects(roe.geom, region_hydrographique.geom)
+          AND region_hydrographique.cdregionhy = '%s')
+          AND (roe.cdetouvrag LIKE '2')", selected_region_id)
+
+  data <- st_read(dsn = db_con(), query = query)
+  return(data)
+}
+
