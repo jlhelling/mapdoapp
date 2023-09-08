@@ -78,7 +78,7 @@ mod_explore_server <- function(input, output, session){
   output$metricUI <- renderUI({
     req(click_value()$group == "B")
     selectInput(ns("metric"), "Sélectionez une métrique :",
-                choices = c("Largeurs", "Pentes", "Occupation du sol"),
+                choices = names(metrics_choice()),
                 selected  = "Largeurs") # selectInput for dynamic radio buttons
   })
 
@@ -89,54 +89,10 @@ mod_explore_server <- function(input, output, session){
 
     selected_metric <- input$metric
 
-    if (selected_metric == "Largeurs") {
-      radioButtons(ns("dynamicRadio"), "Largeurs :",
-                   choiceNames = c(
-                     "Chenal actif",
-                     "Corridor naturel",
-                     "Corridor connecté",
-                     "Fond de vallée"
-                   ),
-                   choiceValues = list("active_channel_width",
-                                       "natural_corridor_width",
-                                       "connected_corridor_width",
-                                       "valley_bottom_width"),
-                   selected = character(0))
-    } else if (selected_metric == "Pentes") {
-      radioButtons(ns("dynamicRadio"), "Pentes :",
-                   choiceNames = c(
-                     "Pente du talweg",
-                     "Pente du fond de valée"
-                   ),
-                   choiceValues = list("talweg_slope",
-                                       "floodplain_slope"),
-                   selected = character(0)
-      )
-    } else if (selected_metric == "Occupation du sol") {
-      radioButtons(ns("dynamicRadio"), "Occupation du sol :",
-                   choiceNames = c(
-                     "Surface en eau",
-                     "Bancs sédimentaires",
-                     "Espace naturel ouvert",
-                     "Forêt",
-                     "Prairie permanente",
-                     "Culture",
-                     "Périurbain",
-                     "Urbain dense",
-                     "Infrastructure de stransport"
-                   ),
-                   choiceValues = list("water_channel",
-                                       "gravel_bars",
-                                       "natural_open",
-                                       "forest",
-                                       "grassland",
-                                       "crops",
-                                       "diffuse_urban",
-                                       "dense_urban",
-                                       "infrastructures"),
-                   selected = character(0)
-      )
-    }
+    radioButtons(ns("dynamicRadio"), sprintf("%s :", selected_metric),
+                 choiceNames = names(metrics_choice()[[selected_metric]]),
+                 choiceValues = as.list(unname(metrics_choice()[[selected_metric]])),
+                 selected = character(0))
   })
 
   # filter UI
@@ -156,7 +112,7 @@ mod_explore_server <- function(input, output, session){
   output$metricsfilterUI <- renderUI({
     req(input$dynamicRadio)
     sliderInput(ns("metricfilter"),
-                input$dynamicRadio,
+                label = names(unlist(metrics_choice()[[input$metric]]))[unlist(metrics_choice()[[input$metric]]) == input$dynamicRadio], # extract key from value
                 min = isolate(round(min(network_region_metrics()[[input$dynamicRadio]][is.finite(network_region_metrics()[[input$dynamicRadio]])], na.rm = TRUE), digits=1)),
                 max = isolate(round(max(network_region_metrics()[[input$dynamicRadio]][is.finite(network_region_metrics()[[input$dynamicRadio]])], na.rm = TRUE), digits=1)),
                 value = c(

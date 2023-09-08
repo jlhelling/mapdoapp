@@ -67,3 +67,38 @@ get_network_region_with_metrics <- function(selected_region_id = region_click$id
   data <- st_read(dsn = db_con(), query = query)
   return(data)
 }
+
+#' map available metrics
+#'
+#' @return list
+#' @export
+#'
+#' @examples
+#' metrics_choice()
+metrics_choice <- function() {
+  choices_map <- list(
+    "Largeurs" = c(
+      "Chenal actif" = "active_channel_width",
+      "Corridor naturel" = "natural_corridor_width",
+      "Corridor connecté" = "connected_corridor_width",
+      "Fond de vallée" = "valley_bottom_width"
+    ),
+    "Pentes" = c(
+      "Pente du talweg" = "talweg_slope",
+      "Pente du fond de vallée" = "floodplain_slope"
+    ),
+    "Occupation du sol" = c(
+      "Surface en eau" = "water_channel",
+      "Bancs sédimentaires" = "gravel_bars",
+      "Espace naturel ouvert" = "natural_open",
+      "Forêt" = "forest",
+      "Prairie permanente" = "grassland",
+      "Culture" = "crops",
+      "Périurbain" = "diffuse_urban",
+      "Urbain dense" = "dense_urban",
+      "Infrastructure de stransport" = "infrastructures"
+    )
+  )
+
+  return(choices_map)
+}

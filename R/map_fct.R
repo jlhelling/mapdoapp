@@ -114,16 +114,21 @@ map_metric <- function(mapId, data_map, varsel, network_group = "D") {
 
   breaks <-  unique(quantile(varsel, probs = seq(0, 1, 0.25), na.rm = TRUE))
 
+  rounded_breaks <- round(breaks, 1)
+
   # Define color palette for Reds
   color_palette <- colorRampPalette(c("green", "red"))(length(breaks))
 
   leafletProxy(mapId) %>%
     clearGroup(network_group) %>%
+    removeControl(1) %>%
     addPolylines(data = data_map, color = ~ {
       ifelse(is.na(varsel), "grey",
              color_palette[findInterval(varsel, breaks, all.inside = TRUE)])
     },
-    group = network_group)
+    group = network_group) %>%
+    addLegend("bottomright", colors = color_palette, labels = rounded_breaks,
+              title = "Legende", opacity = 1, layerId = 1)
 }
 
 #' Update map with network without metric selected
