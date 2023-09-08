@@ -11,10 +11,7 @@
 map_init_bassins <- function(bassins_data = get_bassins(), group = "A") {
   leaflet() %>%
     setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
-    addTiles(urlTemplate = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-             group = "OSM") %>%
     add_basemaps(basemaps_list()) %>%
-    add_overlayers(overlayers_list()) %>%
     addPolygons(data = bassins_data,
                 layerId = ~cdbh,
                 smoothFactor = 2,
@@ -31,11 +28,9 @@ map_init_bassins <- function(bassins_data = get_bassins(), group = "A") {
     addScaleBar(pos = "bottomleft",
                 scaleBarOptions(metric = TRUE, imperial = FALSE)) %>%
     addLayersControl(
-      baseGroups = c("OSM", basemap_list()$name),
-      overlayGroups = c(overlayers_list()$name),
+      baseGroups = c(basemap_list()$name),
       options = layersControlOptions(collapsed = TRUE)
-    ) %>%
-    hideGroup(c(overlayers_list()$name))
+    )
 }
 
 #' Update initial map to hydrographic regions
@@ -105,9 +100,16 @@ map_region_clicked <- function(map,
                 fillOpacity = 0.01,
                 weight = 2,
                 color="black",
-                group = selected_region_group
+                group = selected_region_group,
+                options = pathOptions(interactive = FALSE)
     ) %>%
-    clearGroup(regions_group)
+    clearGroup(regions_group) %>%
+    add_overlayers(overlayers_list()) %>%
+    addLayersControl(
+      baseGroups = c(basemap_list()$name),
+      options = layersControlOptions(collapsed = TRUE),
+      overlayGroups = c(overlayers_list()$name)) %>%
+    hideGroup(c(overlayers_list()$name))
 }
 
 #' Update metric mapping
