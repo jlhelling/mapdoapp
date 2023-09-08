@@ -24,7 +24,9 @@ map_init_bassins <- function(bassins_data = get_bassins(), group = "A") {
                   fillOpacity = 0.5),
                 label = ~htmlEscape(lbbh),
                 group = group
-    )
+    ) %>%
+    addScaleBar(pos = "bottomleft", scaleBarOptions(metric = TRUE,
+                                                    imperial = FALSE))
 }
 
 #' Update initial map to hydrographic regions
