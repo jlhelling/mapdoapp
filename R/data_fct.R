@@ -102,3 +102,23 @@ metrics_choice <- function() {
 
   return(choices_map)
 }
+
+basemaps_list <- function(){
+  basemaps <- data.frame(
+    name = c("Plan IGN", "Satellite IGN"),
+    url = c("https://wxs.ign.fr/cartes/geoportail/r/wms", "https://wxs.ign.fr/ortho/geoportail/r/wms"),
+    layer = c("GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2", "HR.ORTHOIMAGERY.ORTHOPHOTOS"),
+    attribution = c("IGN-F/Géoportail", "IGN-F/Géoportail")
+  )
+  return(basemaps)
+}
+
+overlayers_list <- function(){
+  overlayers <- data.frame(
+    name = c("Zone inondable débordement centenale", "Ouvrage protection inondation"),
+    url = c("https://georisques.gouv.fr/services", "https://georisques.gouv.fr/services"),
+    layer = c("ALEA_SYNT_01_02MOY_FXX", "OUV_PROTECTION_FXX"),
+    attribution = c("Georisques", "Georisques")
+  )
+  return(overlayers)
+}

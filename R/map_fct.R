@@ -11,7 +11,10 @@
 map_init_bassins <- function(bassins_data = get_bassins(), group = "A") {
   leaflet() %>%
     setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
-    addTiles() %>%
+    addTiles(urlTemplate = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+             group = "OSM") %>%
+    add_basemaps(basemaps_list()) %>%
+    add_overlayers(overlayers_list()) %>%
     addPolygons(data = bassins_data,
                 layerId = ~cdbh,
                 smoothFactor = 2,
@@ -25,8 +28,14 @@ map_init_bassins <- function(bassins_data = get_bassins(), group = "A") {
                 label = ~htmlEscape(lbbh),
                 group = group
     ) %>%
-    addScaleBar(pos = "bottomleft", scaleBarOptions(metric = TRUE,
-                                                    imperial = FALSE))
+    addScaleBar(pos = "bottomleft",
+                scaleBarOptions(metric = TRUE, imperial = FALSE)) %>%
+    addLayersControl(
+      baseGroups = c("OSM", basemap_list()$name),
+      overlayGroups = c(overlayers_list()$name),
+      options = layersControlOptions(collapsed = TRUE)
+    ) %>%
+    hideGroup(c(overlayers_list()$name))
 }
 
 #' Update initial map to hydrographic regions
@@ -152,3 +161,38 @@ map_network_no_metric <- function(map, datamap = network_filter(), network_group
                  color = "blue",
                  group = network_group)
 }
+
+add_basemaps <- function(map, basemaps) {
+  for (i in 1:nrow(basemaps)) {
+    map <- map %>%
+      addWMSTiles(
+        baseUrl = basemaps$url[i],
+        layers = basemaps$layer[i],
+        attribution = basemaps$attribution[i],
+        options = WMSTileOptions(
+          format = "image/png",
+          transparent = TRUE
+        ),
+        group = basemaps$name[i]
+      )
+  }
+  return(map)
+}
+
+add_overlayers <- function(map, overlayers) {
+  for (i in 1:nrow(overlayers)) {
+    map <- map %>%
+      addWMSTiles(
+        baseUrl = overlayers$url[i],
+        layers = overlayers$layer[i],
+        attribution = overlayers$attribution[i],
+        options = WMSTileOptions(
+          format = "image/png",
+          transparent = TRUE
+        ),
+        group = overlayers$name[i]
+      )
+  }
+  return(map)
+}
+
