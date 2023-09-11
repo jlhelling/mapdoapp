@@ -35,7 +35,7 @@ mod_explore_ui <- function(id){
           width = 3,
           titlePanel("Metriques"),
           uiOutput(ns("metricUI")),
-          uiOutput(ns("percentage")),
+          uiOutput(ns("area")),
           uiOutput(ns("radioButtonsUI")) # uiOutput radios buttons metrics
         ), # column
         column(
@@ -95,14 +95,16 @@ mod_explore_server <- function(input, output, session){
                  selected = character(0))
   })
 
-  output$percentage <- renderUI({
-    req(input$metric == "Occupation du sol", input$dynamicRadio)
+  # switch unit area
+  output$area <- renderUI({
+    req(input$metric == "Occupation du sol" || input$metric == "Continuité latérale")
 
-    selectInput(ns("percent"), "Surfaces :",
-                choices = c("Hectares", "% du fond de vallée"))
+    selectInput(ns("unit_area"), "Surfaces :",
+                choices = c("Hectares", "% du fond de vallée"),
+                selected = "Hectares")
   })
 
-  # filter UI
+  # strahler filter UI
   output$strahlerfilterUI <- renderUI(
     {
       req(network_region_metrics())
@@ -118,18 +120,28 @@ mod_explore_server <- function(input, output, session){
   # dynamic filter on metric selected
   output$metricsfilterUI <- renderUI({
     req(input$dynamicRadio)
+
+    if (is.null(input$unit_area) || input$unit_area == "Hectares"){
+      metric_selected <- network_region_metrics()[[input$dynamicRadio]]
+
+    }else if (input$unit_area == "% du fond de vallée"){
+      metric_selected <- ifelse(is.na(network_region_metrics()[[input$dynamicRadio]]) |
+                                  is.na(network_region_metrics()[["sum_area"]]) |
+                                  network_region_metrics()[["sum_area"]] == 0, NA,
+                                network_region_metrics()[[input$dynamicRadio]] /
+                                  network_region_metrics()[["sum_area"]]*100)
+    }
+
     sliderInput(ns("metricfilter"),
                 label = names(unlist(metrics_choice()[[input$metric]]))[unlist(metrics_choice()[[input$metric]]) == input$dynamicRadio], # extract key from value
-                min = isolate(round(min(network_region_metrics()[[input$dynamicRadio]][is.finite(network_region_metrics()[[input$dynamicRadio]])], na.rm = TRUE), digits=1)),
-                max = isolate(round(max(network_region_metrics()[[input$dynamicRadio]][is.finite(network_region_metrics()[[input$dynamicRadio]])], na.rm = TRUE), digits=1)),
+                min = isolate(round(min(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1)),
+                max = isolate(round(max(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1)),
                 value = c(
-                  isolate(round(min(network_region_metrics()[[input$dynamicRadio]][is.finite(network_region_metrics()[[input$dynamicRadio]])], na.rm = TRUE), digits=1)),
-                  isolate(round(max(network_region_metrics()[[input$dynamicRadio]][is.finite(network_region_metrics()[[input$dynamicRadio]])], na.rm = TRUE), digits=1))
+                  isolate(round(min(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1)),
+                  isolate(round(max(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1))
                 )
     )
   })
-
-  #####
 
   ### DATA ####
 
@@ -157,31 +169,35 @@ mod_explore_server <- function(input, output, session){
   })
 
   # data with filter
+  # data with filter
   network_filter <- eventReactive(c(input$strahler, input$metricfilter), {
 
-    # no strahler no metric
-    if(is.null(input$strahler) && is.null(input$metricfilter)){
-      data <- network_region_metrics()
-      # yes strahler no metric
-    }else if (is.null(input$strahler)==FALSE && is.null(input$metricfilter)){
-      data <- network_region_metrics() %>%
+    data <- network_region_metrics()
+
+    if (!is.null(input$strahler)) {
+      data <- data %>%
         filter(!is.na(strahler), between(strahler, input$strahler[1], input$strahler[2]))
-      # no strahler yes metric
-    } else if (is.null(input$strahler) && is.null(input$metricfilter)==FALSE
-               && is.null(input$dynamicRadio)==FALSE){
-      data <- network_region_metrics() %>%
-        filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio),
-                       input$metricfilter[1], input$metricfilter[2]))
-      # yes strahler yes metric
-    } else if (is.null(input$strahler)==FALSE && is.null(input$metricfilter)==FALSE
-               && is.null(input$dynamicRadio)==FALSE){
-      data <- network_region_metrics() %>%
-        filter(!is.na(strahler), between(strahler, input$strahler[1], input$strahler[2])) %>%
-        filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio),
-                       input$metricfilter[1], input$metricfilter[2]))
     }
+
+    if (!is.null(input$metricfilter) && !is.null(input$dynamicRadio)) {
+      if (input$unit_area == 'pc'){
+        data <- data %>%
+          mutate(!!sym(input$dynamicRadio) := ifelse(is.na(network_region_metrics()[[input$dynamicRadio]]) |
+                                                       is.na(network_region_metrics()[["sum_area"]]) |
+                                                       network_region_metrics()[["sum_area"]] == 0, NA,
+                                                     network_region_metrics()[[input$dynamicRadio]] /
+                                                       network_region_metrics()[["sum_area"]]*100)) %>%
+          filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio), input$metricfilter[1], input$metricfilter[2]))
+      } else if (input$unit_area == 'ha' || is.null(input$unit_area)) {
+        data <- data %>%
+          filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio), input$metricfilter[1], input$metricfilter[2]))
+      }
+    }
+
     return(data)
   })
+
+
 
   # metrics data to display
   varsel <- reactive({
@@ -192,8 +208,6 @@ mod_explore_server <- function(input, output, session){
       network_filter()[[input$dynamicRadio]]
     }
   })
-
-  #####
 
   ### MAPPING ####
 
@@ -237,7 +251,6 @@ mod_explore_server <- function(input, output, session){
     }
   }) # ObserveEvent
 
-  #####
 
 }
 
