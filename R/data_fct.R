@@ -59,7 +59,8 @@ get_network_region_with_metrics <- function(selected_region_id = region_click$id
       network_metrics.fid, toponyme, strahler, active_channel_width, natural_corridor_width,
       connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
       water_channel, gravel_bars, natural_open, forest, grassland, crops,
-      diffuse_urban, dense_urban, infrastructures, network_metrics.geom
+      diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
+      semi_natural, reversible, disconnected, built_environment, network_metrics.geom
       FROM network_metrics, region_hydrographique
       WHERE ST_Intersects(network_metrics.geom, region_hydrographique.geom)
           AND region_hydrographique.cdregionhy = '%s'", selected_region_id)
@@ -97,6 +98,14 @@ metrics_choice <- function() {
       "Périurbain" = "diffuse_urban",
       "Urbain dense" = "dense_urban",
       "Infrastructure de stransport" = "infrastructures"
+    ),
+    "Continuité latérale" = c(
+      "Bande active" = "active_channel",
+      "Corridor naturel" = "riparian_corridor",
+      "Corridor semi-naturel" = "semi_natural",
+      "Espace de réversibilité" = "reversible",
+      "Espace déconnecté" = "disconnected",
+      "Espace artificialisé" = "built_environment"
     )
   )
 

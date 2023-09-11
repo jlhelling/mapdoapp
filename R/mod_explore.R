@@ -35,8 +35,8 @@ mod_explore_ui <- function(id){
           width = 3,
           titlePanel("Metriques"),
           uiOutput(ns("metricUI")),
-          uiOutput(ns("radioButtonsUI")
-          ) # uiOutput radios buttons metrics
+          uiOutput(ns("percentage")),
+          uiOutput(ns("radioButtonsUI")) # uiOutput radios buttons metrics
         ), # column
         column(
           width = 6,
@@ -93,6 +93,13 @@ mod_explore_server <- function(input, output, session){
                  choiceNames = names(metrics_choice()[[selected_metric]]),
                  choiceValues = as.list(unname(metrics_choice()[[selected_metric]])),
                  selected = character(0))
+  })
+
+  output$percentage <- renderUI({
+    req(input$metric == "Occupation du sol", input$dynamicRadio)
+
+    selectInput(ns("percent"), "Surfaces :",
+                choices = c("Hectares", "% du fond de vallée"))
   })
 
   # filter UI
