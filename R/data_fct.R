@@ -112,10 +112,10 @@ metrics_choice <- function() {
 #' basemaps_df()
 basemaps_df <- function(){
   basemaps <- data.frame(
-    name = c("Plan IGN", "Satellite IGN"),
-    url = c("https://wxs.ign.fr/cartes/geoportail/r/wms", "https://wxs.ign.fr/ortho/geoportail/r/wms"),
-    layer = c("GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2", "HR.ORTHOIMAGERY.ORTHOPHOTOS"),
-    attribution = c("IGN-F/Géoportail", "IGN-F/Géoportail")
+    name = c("Plan IGN", "Satellite IGN", "Géologie"),
+    url = c("https://wxs.ign.fr/cartes/geoportail/r/wms", "https://wxs.ign.fr/ortho/geoportail/r/wms", "http://geoservices.brgm.fr/geologie"),
+    layer = c("GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2", "HR.ORTHOIMAGERY.ORTHOPHOTOS", "GEOLOGIE"),
+    attribution = c("IGN-F/Géoportail", "IGN-F/Géoportail", "BRGM")
   )
   return(basemaps)
 }

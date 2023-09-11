@@ -150,7 +150,7 @@ map_metric <- function(mapId, data_map, varsel, network_group = "D") {
     },
     group = network_group) %>%
     addLegend("bottomright", colors = color_palette, labels = rounded_breaks,
-              title = "Legende", opacity = 1, layerId = 1)
+              title = "Légende", opacity = 1, layerId = 1)
 }
 
 #' Update map with network without metric selected
@@ -173,6 +173,17 @@ map_network_no_metric <- function(map, datamap = network_filter(), network_group
                  group = network_group)
 }
 
+#' Add all the basemaps
+#'
+#' @param map leaflet map
+#' @param basemaps basemap data.frame
+#'
+#' @return basemaps for leaflet
+#' @export
+#'
+#' @examples
+#' map %>%
+#' add_basemaps(basemaps_df())
 add_basemaps <- function(map, basemaps) {
   for (i in 1:nrow(basemaps)) {
     map <- map %>%
@@ -190,6 +201,17 @@ add_basemaps <- function(map, basemaps) {
   return(map)
 }
 
+#' Add all the overlayers
+#'
+#' @param map leaflet map
+#' @param overlayers overlayers data.frame
+#'
+#' @return overlayers for leaflet
+#' @export
+#'
+#' @examples
+#' map %>%
+#' add_overlayers(overlayers_df())
 add_overlayers <- function(map, overlayers) {
   for (i in 1:nrow(overlayers)) {
     map <- map %>%
