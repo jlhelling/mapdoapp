@@ -169,29 +169,27 @@ mod_explore_server <- function(input, output, session){
   })
 
   # data with filter
-  # data with filter
   network_filter <- eventReactive(c(input$strahler, input$metricfilter), {
 
     data <- network_region_metrics()
+
+    if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"){
+      data <- data %>%
+        mutate(!!sym(input$dynamicRadio) := ifelse(is.na(network_region_metrics()[[input$dynamicRadio]]) |
+                                                     is.na(network_region_metrics()[["sum_area"]]) |
+                                                     network_region_metrics()[["sum_area"]] == 0, NA,
+                                                   network_region_metrics()[[input$dynamicRadio]] /
+                                                     network_region_metrics()[["sum_area"]]*100))
+    }
 
     if (!is.null(input$strahler)) {
       data <- data %>%
         filter(!is.na(strahler), between(strahler, input$strahler[1], input$strahler[2]))
     }
 
-    if (!is.null(input$metricfilter) && !is.null(input$dynamicRadio)) {
-      if (input$unit_area == 'pc'){
-        data <- data %>%
-          mutate(!!sym(input$dynamicRadio) := ifelse(is.na(network_region_metrics()[[input$dynamicRadio]]) |
-                                                       is.na(network_region_metrics()[["sum_area"]]) |
-                                                       network_region_metrics()[["sum_area"]] == 0, NA,
-                                                     network_region_metrics()[[input$dynamicRadio]] /
-                                                       network_region_metrics()[["sum_area"]]*100)) %>%
-          filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio), input$metricfilter[1], input$metricfilter[2]))
-      } else if (input$unit_area == 'ha' || is.null(input$unit_area)) {
-        data <- data %>%
-          filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio), input$metricfilter[1], input$metricfilter[2]))
-      }
+    if (!is.null(input$metricfilter)){
+      data <- data %>%
+        filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio), input$metricfilter[1], input$metricfilter[2]))
     }
 
     return(data)
