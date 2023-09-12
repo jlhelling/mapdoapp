@@ -63,7 +63,7 @@ get_network_region_with_metrics <- function(selected_region_id = region_click$id
       semi_natural, reversible, disconnected, built_environment, sum_area, idx_confinement,
       network_metrics.geom
       FROM network_metrics, region_hydrographique
-      WHERE ST_Intersects(network_metrics.geom, region_hydrographique.geom)
+      WHERE ST_Contains(region_hydrographique.geom, network_metrics.geom)
           AND region_hydrographique.cdregionhy = '%s'", selected_region_id)
 
   data <- st_read(dsn = db_con(), query = query)
@@ -172,3 +172,14 @@ get_roe_in_region <- function(selected_region_id = region_click$id){
   return(data)
 }
 
+get_network_axis <- function(selected_region_id = region_click$id){
+  query <- sprintf("
+      SELECT
+      network_axis.fid, axis, network_axis.geom
+      FROM network_axis, region_hydrographique
+      WHERE (ST_Contains(region_hydrographique.geom, network_axis.geom)
+          AND region_hydrographique.cdregionhy = '%s')", selected_region_id)
+
+  data <- st_read(dsn = db_con(), query = query)
+  return(data)
+}

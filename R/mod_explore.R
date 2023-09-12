@@ -168,6 +168,12 @@ mod_explore_server <- function(input, output, session){
     get_network_region_with_metrics(selected_region_id = click_value()$id)
   })
 
+  # get network axis in region
+  network_region_axis <- reactive({
+    req(click_value()$group == "B")
+    get_network_axis(selected_region_id = click_value()$id)
+  })
+
   # data with filter
   network_filter <- eventReactive(c(input$strahler, input$metricfilter), {
 
@@ -242,10 +248,10 @@ mod_explore_server <- function(input, output, session){
       return (NULL)
     } else if (is.null(input$dynamicRadio)) {
       leafletProxy("exploremap") %>%
-        map_network_no_metric(datamap = network_filter(), network_group = "D")
+        map_network_no_metric(data_axis = network_region_axis(), axis_group = "AXIS")
 
     } else {
-        map_metric("exploremap", network_filter(), varsel(), network_group = "D")
+        map_metric("exploremap", network_filter(), varsel(), network_group = "D", axis_group = "AXIS")
     }
   }) # ObserveEvent
 

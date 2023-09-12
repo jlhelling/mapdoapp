@@ -132,7 +132,7 @@ map_region_clicked <- function(map,
 #' @export
 #'
 #' @examples map_metric("exploremap", datamap(), varsel())
-map_metric <- function(mapId, data_map, varsel, network_group = "D") {
+map_metric <- function(mapId, data_map, varsel, network_group = "D", axis_group = "AXIS") {
 
   breaks <-  unique(quantile(varsel, probs = seq(0, 1, 0.25), na.rm = TRUE))
 
@@ -148,9 +148,12 @@ map_metric <- function(mapId, data_map, varsel, network_group = "D") {
       ifelse(is.na(varsel), "grey",
              color_palette[findInterval(varsel, breaks, all.inside = TRUE)])
     },
-    group = network_group) %>%
+    group = network_group,
+    options = pathOptions(interactive = FALSE)) %>%
     addLegend("bottomright", colors = color_palette, labels = rounded_breaks,
               title = "Légende", opacity = 1, layerId = 1)
+    # hideGroup(axis_group) %>%
+    # showGroup(axis_group)
 }
 
 #' Update map with network without metric selected
@@ -164,13 +167,17 @@ map_metric <- function(mapId, data_map, varsel, network_group = "D") {
 #'
 #' @examples
 #' map_metric("exploremap", network_filter(), varsel(), network_group = "D")
-map_network_no_metric <- function(map, datamap = network_filter(), network_group = "D"){
+map_network_no_metric <- function(map, data_axis = network_region_axis(), axis_group = "AXIS"){
   map %>%
-    clearGroup(network_group) %>%
-    addPolylines(data = datamap,
-                 weight = 2,
+    addPolylines(data = data_axis,
+                 weight = 3,
                  color = "blue",
-                 group = network_group)
+                 opacity = 1,
+                 highlight = highlightOptions(
+                   weight = 5,
+                   color = "red"
+                 ),
+                 group = axis_group)
 }
 
 #' Add all the basemaps
@@ -228,4 +235,3 @@ add_overlayers <- function(map, overlayers) {
   }
   return(map)
 }
-
