@@ -60,7 +60,8 @@ get_network_region_with_metrics <- function(selected_region_id = region_click$id
       connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
       water_channel, gravel_bars, natural_open, forest, grassland, crops,
       diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
-      semi_natural, reversible, disconnected, built_environment, sum_area, network_metrics.geom
+      semi_natural, reversible, disconnected, built_environment, sum_area, idx_confinement,
+      network_metrics.geom
       FROM network_metrics, region_hydrographique
       WHERE ST_Intersects(network_metrics.geom, region_hydrographique.geom)
           AND region_hydrographique.cdregionhy = '%s'", selected_region_id)
@@ -78,7 +79,7 @@ get_network_region_with_metrics <- function(selected_region_id = region_click$id
 #' metrics_choice()
 metrics_choice <- function() {
   choices_map <- list(
-    "Largeurs" = c(
+    "Largeurs (m)" = c(
       "Chenal actif" = "active_channel_width",
       "Corridor naturel" = "natural_corridor_width",
       "Corridor connecté" = "connected_corridor_width",
@@ -106,6 +107,9 @@ metrics_choice <- function() {
       "Espace de réversibilité" = "reversible",
       "Espace déconnecté" = "disconnected",
       "Espace artificialisé" = "built_environment"
+    ),
+    "Indices" = c(
+      "Indice de confinement" = "idx_confinement"
     )
   )
 
