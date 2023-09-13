@@ -4,3 +4,7 @@
 .httr-oauth
 .DS_Store
 .quarto
+inst/continuity.csv
+inst/landcover.csv
+inst/metrics.csv
+inst/network_strahler.gpkg

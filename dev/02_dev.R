@@ -33,6 +33,9 @@ golem::add_module(name = "name_of_module2", with_test = TRUE) # Name of the modu
 usethis::use_package("mapdotoro")
 usethis::use_pipe()
 
+## modify environnement
+usethis::edit_r_environ()
+
 ## Add helper functions ----
 ## Creates fct_* and utils_*
 golem::add_fct("helpers", with_test = TRUE)
