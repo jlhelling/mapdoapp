@@ -180,8 +180,8 @@ get_roe_in_region <- function(selected_region_id = region_click$id){
 #' @export
 #'
 #' @examples
-#' get_network_axis(selected_region_id = click_value()$id)
-get_network_axis <- function(selected_region_id = region_click$id){
+#' get_axis(selected_region_id = click_value()$id)
+get_axis <- function(selected_region_id = region_click$id){
   query <- sprintf("
       SELECT
       network_axis.fid, axis, network_axis.geom
@@ -192,3 +192,11 @@ get_network_axis <- function(selected_region_id = region_click$id){
   data <- st_read(dsn = db_con(), query = query)
   return(data)
 }
+
+get_network_axis <- function(network_data = network_region_metrics(),
+                             axis = selected_axis){
+  data <- network_data %>%
+    filter(axis = axis)
+  return(data)
+}
+

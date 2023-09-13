@@ -148,6 +148,7 @@ mod_explore_server <- function(input, output, session){
   # clicked polygon data
   click_value <- reactive({
     input$exploremap_shape_click
+    print(input$exploremap_shape_click)
   })
 
   # get regions data in clicked bassin
@@ -162,6 +163,12 @@ mod_explore_server <- function(input, output, session){
     get_region(region_click_id = click_value()$id)
   })
 
+  selected_axis <- reactive({
+    req(click_value()$group == "AXIS")
+    get_network_axis(network_data = network_region_metrics(),
+                     axis = selected_axis)
+  })
+
   # get network with metrics in region
   network_region_metrics <- reactive({
     req(click_value()$group == "B")
@@ -171,7 +178,7 @@ mod_explore_server <- function(input, output, session){
   # get network axis in region
   network_region_axis <- reactive({
     req(click_value()$group == "B")
-    get_network_axis(selected_region_id = click_value()$id)
+    get_axis(selected_region_id = click_value()$id)
   })
 
   # data with filter
@@ -246,11 +253,13 @@ mod_explore_server <- function(input, output, session){
   observeEvent(network_filter(), {
     if (is.null(input$strahler)) {
       return (NULL)
-    } else if (is.null(input$dynamicRadio)) {
+    }
+    if (is.null(input$dynamicRadio)) {
       leafletProxy("exploremap") %>%
         map_axis_no_metric(data_axis = network_region_axis(), axis_group = "AXIS")
 
-    } else {
+    }
+    if (!is.null(input$dynamicRadio)){
         map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
                    network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
     }

@@ -187,6 +187,7 @@ map_metric <- function(map_id = "exploremap", data_map = network_filter(), varse
 map_axis_no_metric <- function(map, data_axis = network_region_axis(), axis_group = "AXIS"){
   map %>%
     addPolylines(data = data_axis,
+                 layerId = ~fid,
                  weight = 3,
                  color = "blue",
                  opacity = 1,
