@@ -132,7 +132,8 @@ map_region_clicked <- function(map,
 #' @export
 #'
 #' @examples map_metric("exploremap", datamap(), varsel())
-map_metric <- function(mapId, data_map, varsel, network_group = "D", axis_group = "AXIS") {
+map_metric <- function(mapId = "exploremap", data_map = network_filter(), varsel = varsel(),
+                       network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS") {
 
   breaks <-  unique(quantile(varsel, probs = seq(0, 1, 0.25), na.rm = TRUE))
 
@@ -143,17 +144,26 @@ map_metric <- function(mapId, data_map, varsel, network_group = "D", axis_group 
 
   leafletProxy(mapId) %>%
     clearGroup(network_group) %>%
+    clearGroup(axis_group) %>%
     removeControl(1) %>%
-    addPolylines(data = data_map, color = ~ {
+    addPolylines(data = data_map, weight = 5, color = ~ {
       ifelse(is.na(varsel), "grey",
              color_palette[findInterval(varsel, breaks, all.inside = TRUE)])
     },
     group = network_group,
     options = pathOptions(interactive = FALSE)) %>%
     addLegend("bottomright", colors = color_palette, labels = rounded_breaks,
-              title = "Légende", opacity = 1, layerId = 1)
-    # hideGroup(axis_group) %>%
-    # showGroup(axis_group)
+              title = "Légende", opacity = 1, layerId = 1) %>%
+    addPolylines(data = data_axis,
+                 layerId = ~fid,
+                 weight = 5,
+                 color = "#ffffff00",
+                 opacity = 0,
+                 highlight = highlightOptions(
+                   opacity = 1,
+                   color = "red"
+                 ),
+                 group = axis_group)
 }
 
 #' Update map with network without metric selected

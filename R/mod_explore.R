@@ -251,7 +251,8 @@ mod_explore_server <- function(input, output, session){
         map_network_no_metric(data_axis = network_region_axis(), axis_group = "AXIS")
 
     } else {
-        map_metric("exploremap", network_filter(), varsel(), network_group = "D", axis_group = "AXIS")
+        map_metric(mapId = "exploremap", data_map = network_filter(), varsel = varsel(),
+                   network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
     }
   }) # ObserveEvent
 
