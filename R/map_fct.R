@@ -147,7 +147,7 @@ map_metric <- function(map_id = "exploremap", data_map = network_filter(), varse
   # Define color palette for Reds
   color_palette <- colorRampPalette(c("green", "red"))(length(breaks))
 
-  leafletProxy(mapId) %>%
+  leafletProxy(map_id) %>%
     clearGroup(network_group) %>%
     clearGroup(axis_group) %>%
     removeControl(1) %>%
