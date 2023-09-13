@@ -121,18 +121,23 @@ map_region_clicked <- function(map,
     hideGroup(c("ROE", overlayers_df()$name))
 }
 
+
 #' Update metric mapping
 #'
-#' @param mapId map shiny id
+#' @param map_id map shiny id
 #' @param data_map network data
 #' @param varsel metric selected data
 #' @param network_group network group
+#' @param data_axis axis data
+#' @param axis_group axis group
 #'
 #' @return leaflet update
 #' @export
 #'
-#' @examples map_metric("exploremap", datamap(), varsel())
-map_metric <- function(mapId = "exploremap", data_map = network_filter(), varsel = varsel(),
+#' @examples
+#' map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
+#' network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
+map_metric <- function(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
                        network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS") {
 
   breaks <-  unique(quantile(varsel, probs = seq(0, 1, 0.25), na.rm = TRUE))
@@ -166,18 +171,20 @@ map_metric <- function(mapId = "exploremap", data_map = network_filter(), varsel
                  group = axis_group)
 }
 
-#' Update map with network without metric selected
+
+#' Update map with axis without metric selected
 #'
-#' @param map map shiny id
-#' @param datamap network data
-#' @param network_group network group
+#' @param map map to update
+#' @param data_axis axis data
+#' @param axis_group axis layer group
 #'
-#' @return leaflet update
+#' @return update leaflet map
 #' @export
 #'
 #' @examples
-#' map_metric("exploremap", network_filter(), varsel(), network_group = "D")
-map_network_no_metric <- function(map, data_axis = network_region_axis(), axis_group = "AXIS"){
+#' leafletProxy("exploremap") %>%
+#'   map_axis_no_metric(data_axis = network_region_axis(), axis_group = "AXIS")
+map_axis_no_metric <- function(map, data_axis = network_region_axis(), axis_group = "AXIS"){
   map %>%
     addPolylines(data = data_axis,
                  weight = 3,

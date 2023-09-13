@@ -248,10 +248,10 @@ mod_explore_server <- function(input, output, session){
       return (NULL)
     } else if (is.null(input$dynamicRadio)) {
       leafletProxy("exploremap") %>%
-        map_network_no_metric(data_axis = network_region_axis(), axis_group = "AXIS")
+        map_axis_no_metric(data_axis = network_region_axis(), axis_group = "AXIS")
 
     } else {
-        map_metric(mapId = "exploremap", data_map = network_filter(), varsel = varsel(),
+        map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
                    network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
     }
   }) # ObserveEvent

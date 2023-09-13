@@ -172,6 +172,15 @@ get_roe_in_region <- function(selected_region_id = region_click$id){
   return(data)
 }
 
+#' get axis network data
+#'
+#' @param selected_region_id selected region id by user
+#'
+#' @return sf data.frame
+#' @export
+#'
+#' @examples
+#' get_network_axis(selected_region_id = click_value()$id)
 get_network_axis <- function(selected_region_id = region_click$id){
   query <- sprintf("
       SELECT

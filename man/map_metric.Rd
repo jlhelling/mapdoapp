@@ -4,16 +4,27 @@
 \alias{map_metric}
 \title{Update metric mapping}
 \usage{
-map_metric(mapId, data_map, varsel, network_group = "D")
+map_metric(
+  map_id = "exploremap",
+  data_map = network_filter(),
+  varsel = varsel(),
+  network_group = "D",
+  data_axis = network_region_axis(),
+  axis_group = "AXIS"
+)
 }
 \arguments{
-\item{mapId}{map shiny id}
+\item{map_id}{map shiny id}
 
 \item{data_map}{network data}
 
 \item{varsel}{metric selected data}
 
 \item{network_group}{network group}
+
+\item{data_axis}{axis data}
+
+\item{axis_group}{axis group}
 }
 \value{
 leaflet update
@@ -22,5 +33,6 @@ leaflet update
 Update metric mapping
 }
 \examples{
-map_metric("exploremap", datamap(), varsel())
+map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
+network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
 }
