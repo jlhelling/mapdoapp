@@ -1,6 +1,5 @@
 library(leaflet)
 library(sf)
-library(mapdotoro)
 library(DBI)
 library(htmltools)
 library(dplyr)
@@ -21,7 +20,6 @@ library(readr)
 #' @importFrom dplyr left_join right_join
 #' @importFrom readr read_csv2
 #' @import sf
-#' @import mapdotoro
 #' @import DBI
 mod_explore_ui <- function(id){
   ns <- NS(id)
