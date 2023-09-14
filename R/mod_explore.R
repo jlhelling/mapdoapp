@@ -191,7 +191,8 @@ mod_explore_server <- function(input, output, session){
       })
 
 
-  # data with filter
+    # data with filter
+
   network_filter <- eventReactive(c(input$strahler, input$metricfilter), {
 
     data <- network_region_metrics()
