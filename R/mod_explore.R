@@ -79,6 +79,28 @@ mod_explore_server <- function(input, output, session){
 
   ns <- session$ns
 
+  ### BASSIN ####
+
+  # map initialization
+  output$exploremap <- renderLeaflet({
+    map_init_bassins(bassins_data = get_bassins(), group = "A")
+  })
+
+  # clicked polygon data
+  click_value <- reactive({
+    input$exploremap_shape_click
+  })
+
+  ### REGION ####
+
+
+  # get regions data in clicked bassin
+  region_hydro <- reactive({
+    req(click_value()$group == "A")
+    get_regions_in_bassin(selected_bassin_id = click_value()$id)
+  })
+
+
   ### DYNAMIC UI ####
 
   # choose metric type
@@ -163,16 +185,7 @@ mod_explore_server <- function(input, output, session){
     )
   })
 
-  # clicked polygon data
-  click_value <- reactive({
-    input$exploremap_shape_click
-  })
 
-  # get regions data in clicked bassin
-  region_hydro <- reactive({
-    req(click_value()$group == "A")
-    get_regions_in_bassin(selected_bassin_id = click_value()$id)
-  })
 
   # get only the region selected feature
   selected_region_feature <- reactive({
@@ -262,11 +275,6 @@ mod_explore_server <- function(input, output, session){
 
 
   ### MAPPING ####
-
-  # map initialization
-  output$exploremap <- renderLeaflet({
-    map_init_bassins(bassins_data = get_bassins(), group = "A")
-  })
 
   # Event on click
   observeEvent(click_value(), {

@@ -15,6 +15,7 @@ Imports:
     leaflet,
     magrittr,
     mapdotoro,
+    pkgload,
     plotly,
     readr,
     RPostgres,
