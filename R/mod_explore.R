@@ -253,8 +253,6 @@ mod_explore_server <- function(input, output, session){
 
   observeEvent(selected_axis(), {
     # req(click_value()$group == "AXIS")
-    print(class(selected_axis()))
-    print(selected_axis())
 
     output$long_profile <- renderPlotly({
       plot_ly(data = selected_axis(), x = ~measure, y = ~talweg_height_min,
@@ -300,10 +298,12 @@ mod_explore_server <- function(input, output, session){
     }
     if (is.null(input$dynamicRadio)) {
       leafletProxy("exploremap") %>%
-        map_axis_no_metric(data_axis = network_region_axis(), axis_group = "AXIS")
+        map_no_metric(data_network = network_filter(),  network_group = "D",
+                      data_axis = network_region_axis(), axis_group = "AXIS")
 
     }
     if (!is.null(input$dynamicRadio)){
+      print("pouet")
         map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
                    network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
     }
