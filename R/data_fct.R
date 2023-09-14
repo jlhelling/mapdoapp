@@ -163,7 +163,7 @@ overlayers_df <- function(){
 get_roe_in_region <- function(selected_region_id = region_click$id){
   query <- sprintf("
       SELECT
-      roe.id, nomprincip, lbtypeouvr, lbhautchut, roe.geom
+      roe.gid, nomprincip, lbtypeouvr, lbhautchut, roe.geom
       FROM roe, region_hydrographique
       WHERE (ST_Intersects(roe.geom, region_hydrographique.geom)
           AND region_hydrographique.cdregionhy = '%s')
