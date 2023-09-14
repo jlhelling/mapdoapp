@@ -56,7 +56,8 @@ get_region <- function(region_click_id = region_click$id){
 get_network_region_with_metrics <- function(selected_region_id = region_click$id){
   query <- sprintf("
       SELECT
-      network_metrics.fid, toponyme, strahler, active_channel_width, natural_corridor_width,
+      network_metrics.fid, axis, measure, toponyme, strahler, talweg_height_min,
+      active_channel_width, natural_corridor_width,
       connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
       water_channel, gravel_bars, natural_open, forest, grassland, crops,
       diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
@@ -194,9 +195,10 @@ get_axis <- function(selected_region_id = region_click$id){
 }
 
 get_network_axis <- function(network_data = network_region_metrics(),
-                             axis = selected_axis){
+                             axis_id = click_value()$id){
   data <- network_data %>%
-    filter(axis = axis)
+    as.data.frame() %>%
+    filter(axis == axis_id)
   return(data)
 }
 

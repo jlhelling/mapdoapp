@@ -5,6 +5,10 @@ library(DBI)
 library(htmltools)
 library(dplyr)
 library(readr)
+library(plotly)
+library(reactlog)
+
+reactlog_enable()
 
 #' explore UI Function
 #'
@@ -23,6 +27,7 @@ library(readr)
 #' @import sf
 #' @import mapdotoro
 #' @import DBI
+#' @import plotly
 mod_explore_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -35,7 +40,7 @@ mod_explore_ui <- function(id){
           width = 3,
           titlePanel("Metriques"),
           uiOutput(ns("metricUI")),
-          uiOutput(ns("area")),
+          uiOutput(ns("areaUI")),
           uiOutput(ns("radioButtonsUI")) # uiOutput radios buttons metrics
         ), # column
         column(
@@ -48,14 +53,16 @@ mod_explore_ui <- function(id){
           width = 2,
           titlePanel("Filtre"),
           uiOutput(ns("strahlerfilterUI")),
-          uiOutput(ns("metricsfilterUI"))
+          uiOutput(ns("metricsfilterUI")),
+          verbatimTextOutput(ns("printcheck"))
         ) # column
       ), # fluidRow
       fluidRow(
         tabsetPanel(
-          tabPanel("Profil en long"
+          tabPanel(title = "Profil en long",
+                   plotlyOutput(ns("long_profile"))
           ), # tabPanel
-          tabPanel("Profil en travers"
+          tabPanel(title = "Profil en travers"
           ) # tabPanel
         )# tabsetPanel
       )# fluidRow
@@ -96,7 +103,7 @@ mod_explore_server <- function(input, output, session){
   })
 
   # switch unit area
-  output$area <- renderUI({
+  output$areaUI <- renderUI({
     req(input$metric == "Occupation du sol" || input$metric == "Continuité latérale")
 
     selectInput(ns("unit_area"), "Surfaces :",
@@ -145,10 +152,20 @@ mod_explore_server <- function(input, output, session){
 
   ### DATA ####
 
+  output$printcheck = renderPrint({
+    tryCatch({
+      network_region_metrics()
+      print("exists")
+    },
+    shiny.silent.error = function(e) {
+      print("doesn't exist")
+    }
+    )
+  })
+
   # clicked polygon data
   click_value <- reactive({
     input$exploremap_shape_click
-    print(input$exploremap_shape_click)
   })
 
   # get regions data in clicked bassin
@@ -165,15 +182,31 @@ mod_explore_server <- function(input, output, session){
 
   selected_axis <- reactive({
     req(click_value()$group == "AXIS")
+    # print(click_value()$id)
+    # print(input$strahler)
+    # print(network_region_metrics())
+    # print(network_region_metrics())
     get_network_axis(network_data = network_region_metrics(),
-                     axis = selected_axis)
+                     axis_id = click_value()$id)
   })
 
-  # get network with metrics in region
-  network_region_metrics <- reactive({
-    req(click_value()$group == "B")
-    get_network_region_with_metrics(selected_region_id = click_value()$id)
+  # Créez une variable de suivi pour contrôler la réactivité
+  values <- reactiveValues(network_metrics = NULL)
+
+  # Réactivez uniquement lorsque click_value()$group est égal à "B"
+  observeEvent(click_value()$group, {
+    if (!is.null(click_value()$group) && click_value()$group == "B") {
+      values$network_metrics <- get_network_region_with_metrics(selected_region_id = click_value()$id)
+    }
   })
+
+  # Utilisez la valeur de network_metrics
+  network_region_metrics <- reactive({
+    # print(values$network_metrics)
+    values$network_metrics
+  })
+
+
 
   # get network axis in region
   network_region_axis <- reactive({
@@ -220,6 +253,22 @@ mod_explore_server <- function(input, output, session){
     }
   })
 
+  ### PROFILE ####
+
+  # longitudinale profile if axis clicked
+
+  observeEvent(selected_axis(), {
+    # req(click_value()$group == "AXIS")
+    print(class(selected_axis()))
+    print(selected_axis())
+
+    output$long_profile <- renderPlotly({
+      plot_ly(data = selected_axis(), x = ~measure, y = ~talweg_height_min,
+              type = 'scatter', mode = 'lines', name = 'Ligne')
+    })
+  })
+
+
   ### MAPPING ####
 
   # map initialization
@@ -227,8 +276,9 @@ mod_explore_server <- function(input, output, session){
     map_init_bassins(bassins_data = get_bassins(), group = "A")
   })
 
-  # map regions or selected region
+  # Event on click
   observeEvent(click_value(), {
+    # map regions or selected region
     if (click_value()$group == "A"){
       # update map : zoom in clicked bassin, clear bassin data, display region in bassin
       leafletProxy("exploremap") %>%
@@ -245,8 +295,8 @@ mod_explore_server <- function(input, output, session){
                            selected_region_feature = selected_region_feature(),
                            regions_group = "B",
                            selected_region_group = "C")
-    }
 
+    }
   })
 
   # map network

@@ -23,6 +23,9 @@ pkgload::load_all()
 # run application
 run_app()
 
+# show react log (run after run_app())
+shiny::reactlogShow()
+
 ## Add modules ----
 ## Create a module infrastructure in R/
 golem::add_module(name = "explore_test", with_test = TRUE) # Name of the module
