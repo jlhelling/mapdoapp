@@ -182,25 +182,19 @@ mod_explore_server <- function(input, output, session){
 
   selected_axis <- reactive({
     req(click_value()$group == "AXIS")
-    # print(click_value()$id)
-    # print(input$strahler)
-    # print(network_region_metrics())
-    # print(network_region_metrics())
     get_network_axis(network_data = network_region_metrics(),
                      axis_id = click_value()$id)
   })
 
-  # Créez une variable de suivi pour contrôler la réactivité
+  # network_region_metrics
   values <- reactiveValues(network_metrics = NULL)
 
-  # Réactivez uniquement lorsque click_value()$group est égal à "B"
   observeEvent(click_value()$group, {
     if (!is.null(click_value()$group) && click_value()$group == "B") {
       values$network_metrics <- get_network_region_with_metrics(selected_region_id = click_value()$id)
     }
   })
 
-  # Utilisez la valeur de network_metrics
   network_region_metrics <- reactive({
     # print(values$network_metrics)
     values$network_metrics
@@ -233,7 +227,7 @@ mod_explore_server <- function(input, output, session){
         filter(!is.na(strahler), between(strahler, input$strahler[1], input$strahler[2]))
     }
 
-    if (!is.null(input$metricfilter)){
+    if (!is.null(input$metricfilter) && !is.null(input$dynamicRadio)){
       data <- data %>%
         filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio), input$metricfilter[1], input$metricfilter[2]))
     }
