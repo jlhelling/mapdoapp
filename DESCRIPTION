@@ -1,7 +1,8 @@
 Package: mapdoapp
 Title: Application MAPDO
 Version: 0.0.0.9000
-Authors@R: person("Louis", "Manière", , "louis.maniere@ens-lyon.fr", role = c("cre", "aut"))
+Authors@R: 
+    person("Louis", "Manière", , "louis.maniere@ens-lyon.fr", role = c("cre", "aut"))
 Description: Application de description des caractéristiques
     morphologiques des réseaux hydrographiques.
 License: MIT + file LICENSE
@@ -14,8 +15,8 @@ Imports:
     leaflet,
     magrittr,
     mapdotoro,
-    pkgload,
     plotly,
+    reactlog,
     readr,
     RPostgres,
     sf,

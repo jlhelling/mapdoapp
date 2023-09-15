@@ -177,6 +177,8 @@ map_metric <- function(map_id = "exploremap", data_map = network_filter(), varse
 #' @param map map to update
 #' @param data_axis axis data
 #' @param axis_group axis layer group
+#' @param data_network network data
+#' @param network_group network layer group
 #'
 #' @return update leaflet map
 #' @export

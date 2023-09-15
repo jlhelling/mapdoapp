@@ -105,8 +105,8 @@ mod_explore_server <- function(input, output, session){
     input$exploremap_shape_click
   })
 
-  ### REGION ####
 
+  ### REGION ####
 
   # get regions data in clicked bassin
   region_hydro <- reactive({
@@ -142,12 +142,14 @@ mod_explore_server <- function(input, output, session){
   output$strahlerfilterUI <- renderUI(
     {
       req(network_region_metrics())
+
+      strahler_col <- isolate(network_region_metrics()$strahler)
       sliderInput(ns("strahler"),
                   label="Ordre de strahler",
-                  min=min(isolate(network_region_metrics()$strahler), na.rm = TRUE),
-                  max=max(isolate(network_region_metrics()$strahler), na.rm = TRUE),
-                  value=c(min(isolate(network_region_metrics()$strahler), na.rm = TRUE),
-                          max(isolate(network_region_metrics()$strahler), na.rm = TRUE)),
+                  min=min(strahler_col, na.rm = TRUE),
+                  max=max(strahler_col, na.rm = TRUE),
+                  value=c(min(strahler_col, na.rm = TRUE),
+                          max(strahler_col, na.rm = TRUE)),
                   step=1)
     })
 
@@ -201,116 +203,110 @@ mod_explore_server <- function(input, output, session){
 
   ### DATA ####
 
-    # DATA get network axis in region
-    network_region_axis <- reactive({
-      req(click_value()$group == "B")
-      get_axis(selected_region_id = click_value()$id)
-    })
+  # DATA get network axis in region
+  network_region_axis <- reactive({
+    req(click_value()$group == "B")
+    get_axis(selected_region_id = click_value()$id)
+  })
 
-    # DATA get only the region selected feature
-    selected_region_feature <- reactive({
-      req(click_value()$group == "B")
-      get_region(region_click_id = click_value()$id)
-    })
+  # DATA get only the region selected feature
+  selected_region_feature <- reactive({
+    req(click_value()$group == "B")
+    get_region(region_click_id = click_value()$id)
+  })
 
-    # DATA get network_region_metrics
-    network_region_metrics <- reactiveVal()
+  # DATA get network_region_metrics (in reactiveVal keep data even the click_value change)
+  network_region_metrics <- reactiveVal()
 
-    observeEvent(click_value(),{
-      if (click_value()$group == "B"){
-        network_region_metrics(get_network_region_with_metrics(selected_region_id = click_value()$id))
-      }
-    })
+  observeEvent(click_value(),{
+    if (click_value()$group == "B"){
+      network_region_metrics(get_network_region_with_metrics(selected_region_id = click_value()$id))
+    }
+  })
 
-    # DATA data with filter
-    network_filter <- eventReactive(c(input$strahler, input$metricfilter), {
+  # DATA data with filter
+  network_filter <- eventReactive(c(input$strahler, input$metricfilter), {
 
-      data <- network_region_metrics()
+    data <- network_region_metrics()
 
-      if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"){
-        data <- data %>%
-          mutate(!!sym(input$dynamicRadio) := ifelse(is.na(network_region_metrics()[[input$dynamicRadio]]) |
-                                                       is.na(network_region_metrics()[["sum_area"]]) |
-                                                       network_region_metrics()[["sum_area"]] == 0, NA,
-                                                     network_region_metrics()[[input$dynamicRadio]] /
-                                                       network_region_metrics()[["sum_area"]]*100))
-      }
+    if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"){
+      data <- data %>%
+        mutate(!!sym(input$dynamicRadio) := ifelse(is.na(network_region_metrics()[[input$dynamicRadio]]) |
+                                                     is.na(network_region_metrics()[["sum_area"]]) |
+                                                     network_region_metrics()[["sum_area"]] == 0, NA,
+                                                   network_region_metrics()[[input$dynamicRadio]] /
+                                                     network_region_metrics()[["sum_area"]]*100))
+    }
 
-      if (!is.null(input$strahler)) {
-        data <- data %>%
-          filter(!is.na(strahler), between(strahler, input$strahler[1], input$strahler[2]))
-      }
+    if (!is.null(input$strahler)) {
+      data <- data %>%
+        filter(!is.na(strahler), between(strahler, input$strahler[1], input$strahler[2]))
+    }
 
-      if (!is.null(input$metricfilter) && !is.null(input$dynamicRadio)){
-        data <- data %>%
-          filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio), input$metricfilter[1], input$metricfilter[2]))
-      }
+    if (!is.null(input$metricfilter) && !is.null(input$dynamicRadio)){
+      data <- data %>%
+        filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio), input$metricfilter[1], input$metricfilter[2]))
+    }
 
-      return(data)
-    })
+    return(data)
+  })
 
-    # DATA metrics to display
-    varsel <- reactive({
-      req(network_filter())
-      if (is.null(network_filter())){
-        return(NULL)
-      } else {
-        network_filter()[[input$dynamicRadio]]
-      }
-    })
+  # DATA metrics to display
+  varsel <- reactive({
+    req(network_filter())
+    if (is.null(network_filter())){
+      return(NULL)
+    } else {
+      network_filter()[[input$dynamicRadio]]
+    }
+  })
 
-    # DATA network by selected axis
-    selected_axis <- reactive({
-      req(click_value()$group == "AXIS")
-      get_network_axis(network_data = network_region_metrics(),
-                       axis_id = click_value()$id)
-    })
+  # DATA network by selected axis
+  selected_axis <- reactive({
+    req(click_value()$group == "AXIS")
+    get_network_axis(network_data = network_region_metrics(),
+                     axis_id = click_value()$id)
+  })
 
+  ### MAP ####
 
+  # MAP region selected
+  observeEvent(click_value(), {
+    if (click_value()$group == "B"){
+      # map region clicked
+      leafletProxy("exploremap") %>%
+        map_region_clicked(region_click = click_value(),
+                           selected_region_feature = selected_region_feature(),
+                           regions_group = "B",
+                           selected_region_group = "C")
 
-    ### MAP ####
+    }
+  })
 
-    # MAP clear regions in selected bassin, display the region selected
-    observeEvent(click_value(), {
-      if (click_value()$group == "B"){
-        # map region clicked
-        leafletProxy("exploremap") %>%
-          map_region_clicked(region_click = click_value(),
-                             selected_region_feature = selected_region_feature(),
-                             regions_group = "B",
-                             selected_region_group = "C")
+  # MAP network metric
+  observeEvent(network_filter(), {
+    if (is.null(input$strahler)) {
+      return (NULL)
+    }
+    if (is.null(input$dynamicRadio)) {
+      leafletProxy("exploremap") %>%
+        map_no_metric(data_network = network_filter(),  network_group = "D",
+                      data_axis = network_region_axis(), axis_group = "AXIS")
 
-      }
-    })
-
-    # map network
-    observeEvent(network_filter(), {
-      if (is.null(input$strahler)) {
-        return (NULL)
-      }
-      if (is.null(input$dynamicRadio)) {
-        leafletProxy("exploremap") %>%
-          map_no_metric(data_network = network_filter(),  network_group = "D",
-                        data_axis = network_region_axis(), axis_group = "AXIS")
-
-      }
-      if (!is.null(input$dynamicRadio)){
-        map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
-                   network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
-      }
-    })
+    }
+    if (!is.null(input$dynamicRadio)){
+      map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
+                 network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
+    }
+  })
 
   ### PROFILE ####
 
-  # longitudinale profile if axis clicked
-
-  observeEvent(selected_axis(), {
-    # req(click_value()$group == "AXIS")
-
-    output$long_profile <- renderPlotly({
-      plot_ly(data = selected_axis(), x = ~measure, y = ~talweg_height_min,
-              type = 'scatter', mode = 'lines', name = 'Ligne')
-    })
+  # PROFILE longitudinale profile if axis clicked
+  output$long_profile <- renderPlotly({
+    req(click_value()$group == "AXIS")
+    plot_ly(data = selected_axis(), x = ~measure, y = ~talweg_height_min,
+            type = 'scatter', mode = 'lines', name = 'Ligne')
   })
 
 }
