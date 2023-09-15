@@ -150,7 +150,7 @@ map_metric <- function(map_id = "exploremap", data_map = network_filter(), varse
   leafletProxy(map_id) %>%
     clearGroup(network_group) %>%
     clearGroup(axis_group) %>%
-    removeControl(1) %>%
+    # removeControl(1) %>%
     addPolylines(data = data_map, weight = 5, color = ~ {
       ifelse(is.na(varsel), "grey",
              color_palette[findInterval(varsel, breaks, all.inside = TRUE)])

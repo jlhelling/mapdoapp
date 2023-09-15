@@ -79,19 +79,19 @@ mod_explore_server <- function(input, output, session){
 
   ns <- session$ns
 
-  # # dev print to debug value
-  # output$printcheck = renderPrint({
-  #   tryCatch({
-  #     network_region_metrics()
-  #     print(click_value()$group)
-  #     print(network_region_metrics())
-  #     print("exists")
-  #   },
-  #   shiny.silent.error = function(e) {
-  #     print("doesn't exist")
-  #   }
-  #   )
-  # })
+  # dev print to debug value
+  output$printcheck = renderPrint({
+    tryCatch({
+      network_filter()
+      print(click_value()$group)
+      print(network_filter())
+      print("exists")
+    },
+    shiny.silent.error = function(e) {
+      print("doesn't exist")
+    }
+    )
+  })
 
   ### BASSIN ####
 
@@ -204,15 +204,21 @@ mod_explore_server <- function(input, output, session){
   ### DATA ####
 
   # DATA get network axis in region
-  network_region_axis <- reactive({
-    req(click_value()$group == "B")
-    get_axis(selected_region_id = click_value()$id)
+  network_region_axis <- reactiveVal()
+
+  observeEvent(click_value(),{
+    if (click_value()$group == "B"){
+      network_region_axis(get_axis(selected_region_id = click_value()$id))
+    }
   })
 
   # DATA get only the region selected feature
-  selected_region_feature <- reactive({
-    req(click_value()$group == "B")
-    get_region(region_click_id = click_value()$id)
+  selected_region_feature <- reactiveVal()
+
+  observeEvent(click_value(),{
+    if (click_value()$group == "B"){
+      selected_region_feature(get_region(region_click_id = click_value()$id))
+    }
   })
 
   # DATA get network_region_metrics (in reactiveVal keep data even the click_value change)
@@ -285,6 +291,7 @@ mod_explore_server <- function(input, output, session){
 
   # MAP network metric
   observeEvent(network_filter(), {
+    print("pouet")
     if (is.null(input$strahler)) {
       return (NULL)
     }
@@ -295,6 +302,7 @@ mod_explore_server <- function(input, output, session){
 
     }
     if (!is.null(input$dynamicRadio)){
+      print("map_metric")
       map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
                  network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
     }
