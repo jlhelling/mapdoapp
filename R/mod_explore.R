@@ -79,16 +79,19 @@ mod_explore_server <- function(input, output, session){
 
   ns <- session$ns
 
-  output$printcheck = renderPrint({
-    tryCatch({
-      network_region_metrics()
-      print("exists")
-    },
-    shiny.silent.error = function(e) {
-      print("doesn't exist")
-    }
-    )
-  })
+  # # dev print to debug value
+  # output$printcheck = renderPrint({
+  #   tryCatch({
+  #     network_region_metrics()
+  #     print(click_value()$group)
+  #     print(network_region_metrics())
+  #     print("exists")
+  #   },
+  #   shiny.silent.error = function(e) {
+  #     print("doesn't exist")
+  #   }
+  #   )
+  # })
 
   ### BASSIN ####
 
@@ -124,125 +127,31 @@ mod_explore_server <- function(input, output, session){
     }
   })
 
-  ### NETWORK ####
+  ### DYNAMIC UI ####
 
-    #### INITIALISATION ####
-
-    # UI create choose metric
-    output$metricUI <- renderUI({
-      req(click_value()$group == "B")
-      selectInput(ns("metric"), "Sélectionez une métrique :",
-                  choices = names(metrics_choice()),
-                  selected  = "Largeurs") # selectInput for dynamic radio buttons
-    })
-
-    # DATA get network axis in region
-    network_region_axis <- reactive({
-      req(click_value()$group == "B")
-      get_axis(selected_region_id = click_value()$id)
-    })
-
-    # DATA get only the region selected feature
-    selected_region_feature <- reactive({
-      req(click_value()$group == "B")
-      get_region(region_click_id = click_value()$id)
-    })
-
-    # MAP clear regions in selected bassin, display the region selected
-    observeEvent(click_value(), {
-      if (click_value()$group == "B"){
-        # map region clicked
-        leafletProxy("exploremap") %>%
-          map_region_clicked(region_click = click_value(),
-                             selected_region_feature = selected_region_feature(),
-                             regions_group = "B",
-                             selected_region_group = "C")
-
-      }
-    })
-
-    # DATA get network_region_metrics
-    values <- reactiveValues(network_metrics = NULL)
-
-    observeEvent(click_value()$group, {
-      if (!is.null(click_value()$group) && click_value()$group == "B") {
-        values$network_metrics <- get_network_region_with_metrics(selected_region_id = click_value()$id)
-      }
-    })
-
-    network_region_metrics <- reactive({
-      # print(values$network_metrics)
-      values$network_metrics
-    })
-
-    #### NETWORK DATA CREATED ####
-
-    # UI strahler filter
-    output$strahlerfilterUI <- renderUI(
-      {
-        req(network_region_metrics())
-        sliderInput(ns("strahler"),
-                    label="Ordre de strahler",
-                    min=min(isolate(network_region_metrics()$strahler), na.rm = TRUE),
-                    max=max(isolate(network_region_metrics()$strahler), na.rm = TRUE),
-                    value=c(min(isolate(network_region_metrics()$strahler), na.rm = TRUE),
-                            max(isolate(network_region_metrics()$strahler), na.rm = TRUE)),
-                    step=1)
-      })
-
-
-    # data with filter
-
-  network_filter <- eventReactive(c(input$strahler, input$metricfilter), {
-
-    data <- network_region_metrics()
-
-    if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"){
-      data <- data %>%
-        mutate(!!sym(input$dynamicRadio) := ifelse(is.na(network_region_metrics()[[input$dynamicRadio]]) |
-                                                     is.na(network_region_metrics()[["sum_area"]]) |
-                                                     network_region_metrics()[["sum_area"]] == 0, NA,
-                                                   network_region_metrics()[[input$dynamicRadio]] /
-                                                     network_region_metrics()[["sum_area"]]*100))
-    }
-
-    if (!is.null(input$strahler)) {
-      data <- data %>%
-        filter(!is.na(strahler), between(strahler, input$strahler[1], input$strahler[2]))
-    }
-
-    if (!is.null(input$metricfilter) && !is.null(input$dynamicRadio)){
-      data <- data %>%
-        filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio), input$metricfilter[1], input$metricfilter[2]))
-    }
-
-    return(data)
+  # UI create choose metric
+  output$metricUI <- renderUI({
+    # req(click_value()$group == "B")
+    req(network_region_metrics())
+    selectInput(ns("metric"), "Sélectionez une métrique :",
+                choices = names(metrics_choice()),
+                selected  = "Largeurs") # selectInput for dynamic radio buttons
   })
 
-
-
-  # metrics data to display
-  varsel <- reactive({
-    req(network_filter())
-    if (is.null(network_filter())){
-      return(NULL)
-    } else {
-      network_filter()[[input$dynamicRadio]]
-    }
-  })
-
-    #### SELECT AXIS ####
-
-    selected_axis <- reactive({
-      req(click_value()$group == "AXIS")
-      get_network_axis(network_data = network_region_metrics(),
-                       axis_id = click_value()$id)
+  # UI strahler filter
+  output$strahlerfilterUI <- renderUI(
+    {
+      req(network_region_metrics())
+      sliderInput(ns("strahler"),
+                  label="Ordre de strahler",
+                  min=min(isolate(network_region_metrics()$strahler), na.rm = TRUE),
+                  max=max(isolate(network_region_metrics()$strahler), na.rm = TRUE),
+                  value=c(min(isolate(network_region_metrics()$strahler), na.rm = TRUE),
+                          max(isolate(network_region_metrics()$strahler), na.rm = TRUE)),
+                  step=1)
     })
 
-
-  ### SELECT METRIC ####
-
-  # metrics radio buttons UI
+  # UI metrics radio buttons
   output$radioButtonsUI <- renderUI({
 
     req(input$metric)
@@ -255,7 +164,7 @@ mod_explore_server <- function(input, output, session){
                  selected = character(0))
   })
 
-  # dynamic filter on metric selected
+  # UI dynamic filter on metric selected
   output$metricsfilterUI <- renderUI({
     req(input$dynamicRadio)
 
@@ -281,12 +190,7 @@ mod_explore_server <- function(input, output, session){
     )
   })
 
-
-
-
-  ### UNIT AREA ####
-
-  # switch unit area
+  # UI switch unit area
   output$areaUI <- renderUI({
     req(input$metric == "Occupation du sol" || input$metric == "Continuité latérale")
 
@@ -295,7 +199,106 @@ mod_explore_server <- function(input, output, session){
                 selected = "Hectares")
   })
 
+  ### DATA ####
 
+    # DATA get network axis in region
+    network_region_axis <- reactive({
+      req(click_value()$group == "B")
+      get_axis(selected_region_id = click_value()$id)
+    })
+
+    # DATA get only the region selected feature
+    selected_region_feature <- reactive({
+      req(click_value()$group == "B")
+      get_region(region_click_id = click_value()$id)
+    })
+
+    # DATA get network_region_metrics
+    network_region_metrics <- reactiveVal()
+
+    observeEvent(click_value(),{
+      if (click_value()$group == "B"){
+        network_region_metrics(get_network_region_with_metrics(selected_region_id = click_value()$id))
+      }
+    })
+
+    # DATA data with filter
+    network_filter <- eventReactive(c(input$strahler, input$metricfilter), {
+
+      data <- network_region_metrics()
+
+      if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"){
+        data <- data %>%
+          mutate(!!sym(input$dynamicRadio) := ifelse(is.na(network_region_metrics()[[input$dynamicRadio]]) |
+                                                       is.na(network_region_metrics()[["sum_area"]]) |
+                                                       network_region_metrics()[["sum_area"]] == 0, NA,
+                                                     network_region_metrics()[[input$dynamicRadio]] /
+                                                       network_region_metrics()[["sum_area"]]*100))
+      }
+
+      if (!is.null(input$strahler)) {
+        data <- data %>%
+          filter(!is.na(strahler), between(strahler, input$strahler[1], input$strahler[2]))
+      }
+
+      if (!is.null(input$metricfilter) && !is.null(input$dynamicRadio)){
+        data <- data %>%
+          filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio), input$metricfilter[1], input$metricfilter[2]))
+      }
+
+      return(data)
+    })
+
+    # DATA metrics to display
+    varsel <- reactive({
+      req(network_filter())
+      if (is.null(network_filter())){
+        return(NULL)
+      } else {
+        network_filter()[[input$dynamicRadio]]
+      }
+    })
+
+    # DATA network by selected axis
+    selected_axis <- reactive({
+      req(click_value()$group == "AXIS")
+      get_network_axis(network_data = network_region_metrics(),
+                       axis_id = click_value()$id)
+    })
+
+
+
+    ### MAP ####
+
+    # MAP clear regions in selected bassin, display the region selected
+    observeEvent(click_value(), {
+      if (click_value()$group == "B"){
+        # map region clicked
+        leafletProxy("exploremap") %>%
+          map_region_clicked(region_click = click_value(),
+                             selected_region_feature = selected_region_feature(),
+                             regions_group = "B",
+                             selected_region_group = "C")
+
+      }
+    })
+
+    # map network
+    observeEvent(network_filter(), {
+      if (is.null(input$strahler)) {
+        return (NULL)
+      }
+      if (is.null(input$dynamicRadio)) {
+        leafletProxy("exploremap") %>%
+          map_no_metric(data_network = network_filter(),  network_group = "D",
+                        data_axis = network_region_axis(), axis_group = "AXIS")
+
+      }
+      if (!is.null(input$dynamicRadio)){
+        map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
+                   network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
+      }
+    })
 
   ### PROFILE ####
 
@@ -309,29 +312,6 @@ mod_explore_server <- function(input, output, session){
               type = 'scatter', mode = 'lines', name = 'Ligne')
     })
   })
-
-
-  ### MAPPING ####
-
-
-
-  # map network
-  observeEvent(network_filter(), {
-    if (is.null(input$strahler)) {
-      return (NULL)
-    }
-    if (is.null(input$dynamicRadio)) {
-      leafletProxy("exploremap") %>%
-        map_no_metric(data_network = network_filter(),  network_group = "D",
-                      data_axis = network_region_axis(), axis_group = "AXIS")
-
-    }
-    if (!is.null(input$dynamicRadio)){
-        map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
-                   network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
-    }
-  }) # ObserveEvent
-
 
 }
 
