@@ -268,7 +268,7 @@ mod_explore_server <- function(input, output, session){
   # DATA network by selected axis
   selected_axis <- reactive({
     req(click_value()$group == "AXIS")
-    get_network_axis(network_data = network_region_metrics(),
+    get_network_axis(network_data = network_region_metrics(), measure_col = "measure",
                      axis_id = click_value()$id)
   })
 

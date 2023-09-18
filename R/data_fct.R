@@ -154,18 +154,20 @@ get_axis <- function(selected_region_id = region_click$id){
 #'
 #' @param network_data network data
 #' @param axis_id axis id selected
+#' @param measure_col measure distance column
 #'
 #' @return data.frame
 #' @export
 #'
 #' @examples
-#' network_axis <- get_network_axis(network_data = network_region_metrics(),
+#' network_axis <- get_network_axis(network_data = network_region_metrics(), measure_col = "measure"
 #'   axis_id = click_value()$id)
-get_network_axis <- function(network_data = network_region_metrics(),
+get_network_axis <- function(network_data = network_region_metrics(), measure_col = "measure",
                              axis_id = click_value()$id){
   data <- network_data %>%
     as.data.frame() %>%
-    filter(axis == axis_id)
+    filter(axis == axis_id) %>%
+    arrange("measure")
   return(data)
 }
 
