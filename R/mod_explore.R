@@ -1,6 +1,5 @@
 library(leaflet)
 library(sf)
-library(mapdotoro)
 library(DBI)
 library(htmltools)
 library(dplyr)
@@ -25,7 +24,6 @@ reactlog_enable()
 #' @importFrom dplyr left_join right_join
 #' @importFrom readr read_csv2
 #' @import sf
-#' @import mapdotoro
 #' @import DBI
 #' @import plotly
 mod_explore_ui <- function(id){
