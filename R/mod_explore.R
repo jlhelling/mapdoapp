@@ -79,19 +79,19 @@ mod_explore_server <- function(input, output, session){
 
   ns <- session$ns
 
-  # dev print to debug value
-  output$printcheck = renderPrint({
-    tryCatch({
-      network_filter()
-      print(click_value()$group)
-      print(network_filter())
-      print("exists")
-    },
-    shiny.silent.error = function(e) {
-      print("doesn't exist")
-    }
-    )
-  })
+  # # dev print to debug value
+  # output$printcheck = renderPrint({
+  #   tryCatch({
+  #     network_filter()
+  #     print(click_value()$group)
+  #     print(network_filter())
+  #     print("exists")
+  #   },
+  #   shiny.silent.error = function(e) {
+  #     print("doesn't exist")
+  #   }
+  #   )
+  # })
 
   ### BASSIN ####
 
@@ -291,7 +291,6 @@ mod_explore_server <- function(input, output, session){
 
   # MAP network metric
   observeEvent(network_filter(), {
-    print("pouet")
     if (is.null(input$strahler)) {
       return (NULL)
     }
@@ -302,7 +301,6 @@ mod_explore_server <- function(input, output, session){
 
     }
     if (!is.null(input$dynamicRadio)){
-      print("map_metric")
       map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
                  network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
     }
@@ -313,10 +311,40 @@ mod_explore_server <- function(input, output, session){
   # PROFILE longitudinale profile if axis clicked
   output$long_profile <- renderPlotly({
     req(click_value()$group == "AXIS")
-    plot_ly(data = selected_axis(), x = ~measure, y = ~talweg_height_min,
-            type = 'scatter', mode = 'lines', name = 'Ligne')
+
+    # Create the Plotly plot
+    plot <- plot_ly(data = selected_axis(), x = ~measure, y = ~talweg_elevation_min,
+                    key = ~fid,  # Specify the "id" column for hover text
+                    type = 'scatter', mode = 'lines', name = 'Ligne')
+
+    # Add hover information
+    plot <- plot %>%
+      event_register("plotly_hover")  # Enable hover events
+
+    # Define an observeEvent to capture hover events
+    observeEvent(event_data("plotly_hover"), {
+      hover_data <- event_data("plotly_hover")
+
+      if (!is.null(hover_data)) {
+        hover_fid <- hover_data$key  # Assuming "id" is the name of your id column
+
+        highlighted_feature <- network_filter()[network_filter()$fid == hover_fid, ]
+
+        leafletProxy("exploremap") %>%
+          addPolylines(data = highlighted_feature, color = "red", weight = 10, group = "LIGHT")
+
+      }
+    })
+
+    return(plot)
   })
 
+  observe({
+    if (is.null(event_data("plotly_hover"))) {
+      leafletProxy("exploremap") %>%
+        clearGroup("LIGHT")
+    }
+  })
 }
 
 

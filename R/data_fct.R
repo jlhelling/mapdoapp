@@ -56,7 +56,7 @@ get_region <- function(region_click_id = region_click$id){
 get_network_region_with_metrics <- function(selected_region_id = region_click$id){
   query <- sprintf("
       SELECT
-      network_metrics.fid, axis, measure, toponyme, strahler, talweg_height_min,
+      network_metrics.fid, axis, measure, toponyme, strahler, talweg_elevation_min,
       active_channel_width, natural_corridor_width,
       connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
       water_channel, gravel_bars, natural_open, forest, grassland, crops,
