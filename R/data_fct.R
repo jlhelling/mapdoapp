@@ -56,7 +56,8 @@ get_region <- function(region_click_id = region_click$id){
 get_network_region_with_metrics <- function(selected_region_id = region_click$id){
   query <- sprintf("
       SELECT
-      network_metrics.fid, toponyme, strahler, active_channel_width, natural_corridor_width,
+      network_metrics.fid, axis, measure, toponyme, strahler, talweg_elevation_min,
+      active_channel_width, natural_corridor_width,
       connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
       water_channel, gravel_bars, natural_open, forest, grassland, crops,
       diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
@@ -70,51 +71,7 @@ get_network_region_with_metrics <- function(selected_region_id = region_click$id
   return(data)
 }
 
-#' map available metrics
-#'
-#' @return list
-#' @export
-#'
-#' @examples
-#' metrics_choice()
-metrics_choice <- function() {
-  choices_map <- list(
-    "Largeurs (m)" = c(
-      "Chenal actif" = "active_channel_width",
-      "Corridor naturel" = "natural_corridor_width",
-      "Corridor connecté" = "connected_corridor_width",
-      "Fond de vallée" = "valley_bottom_width"
-    ),
-    "Pentes" = c(
-      "Pente du talweg" = "talweg_slope",
-      "Pente du fond de vallée" = "floodplain_slope"
-    ),
-    "Occupation du sol" = c(
-      "Surface en eau" = "water_channel",
-      "Bancs sédimentaires" = "gravel_bars",
-      "Espace naturel ouvert" = "natural_open",
-      "Forêt" = "forest",
-      "Prairie permanente" = "grassland",
-      "Culture" = "crops",
-      "Périurbain" = "diffuse_urban",
-      "Urbain dense" = "dense_urban",
-      "Infrastructure de stransport" = "infrastructures"
-    ),
-    "Continuité latérale" = c(
-      "Bande active" = "active_channel",
-      "Corridor naturel" = "riparian_corridor",
-      "Corridor semi-naturel" = "semi_natural",
-      "Espace de réversibilité" = "reversible",
-      "Espace déconnecté" = "disconnected",
-      "Espace artificialisé" = "built_environment"
-    ),
-    "Indices" = c(
-      "Indice de confinement" = "idx_confinement"
-    )
-  )
 
-  return(choices_map)
-}
 
 #' Create basemaps dataframe
 #'
@@ -180,8 +137,8 @@ get_roe_in_region <- function(selected_region_id = region_click$id){
 #' @export
 #'
 #' @examples
-#' get_network_axis(selected_region_id = click_value()$id)
-get_network_axis <- function(selected_region_id = region_click$id){
+#' get_axis(selected_region_id = click_value()$id)
+get_axis <- function(selected_region_id = region_click$id){
   query <- sprintf("
       SELECT
       network_axis.fid, axis, network_axis.geom
@@ -191,4 +148,70 @@ get_network_axis <- function(selected_region_id = region_click$id){
 
   data <- st_read(dsn = db_con(), query = query)
   return(data)
+}
+
+#' get network data from selected axis
+#'
+#' @param network_data network data
+#' @param axis_id axis id selected
+#'
+#' @return data.frame
+#' @export
+#'
+#' @examples
+#' network_axis <- get_network_axis(network_data = network_region_metrics(),
+#'   axis_id = click_value()$id)
+get_network_axis <- function(network_data = network_region_metrics(),
+                             axis_id = click_value()$id){
+  data <- network_data %>%
+    as.data.frame() %>%
+    filter(axis == axis_id)
+  return(data)
+}
+
+
+#' map available metrics
+#'
+#' @return list
+#' @export
+#'
+#' @examples
+#' metrics_choice()
+metrics_choice <- function() {
+  choices_map <- list(
+    "Largeurs (m)" = c(
+      "Chenal actif" = "active_channel_width",
+      "Corridor naturel" = "natural_corridor_width",
+      "Corridor connecté" = "connected_corridor_width",
+      "Fond de vallée" = "valley_bottom_width"
+    ),
+    "Pentes" = c(
+      "Pente du talweg" = "talweg_slope",
+      "Pente du fond de vallée" = "floodplain_slope"
+    ),
+    "Occupation du sol" = c(
+      "Surface en eau" = "water_channel",
+      "Bancs sédimentaires" = "gravel_bars",
+      "Espace naturel ouvert" = "natural_open",
+      "Forêt" = "forest",
+      "Prairie permanente" = "grassland",
+      "Culture" = "crops",
+      "Périurbain" = "diffuse_urban",
+      "Urbain dense" = "dense_urban",
+      "Infrastructure de stransport" = "infrastructures"
+    ),
+    "Continuité latérale" = c(
+      "Bande active" = "active_channel",
+      "Corridor naturel" = "riparian_corridor",
+      "Corridor semi-naturel" = "semi_natural",
+      "Espace de réversibilité" = "reversible",
+      "Espace déconnecté" = "disconnected",
+      "Espace artificialisé" = "built_environment"
+    ),
+    "Indices" = c(
+      "Indice de confinement" = "idx_confinement"
+    )
+  )
+
+  return(choices_map)
 }

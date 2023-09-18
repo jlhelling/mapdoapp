@@ -150,7 +150,7 @@ map_metric <- function(map_id = "exploremap", data_map = network_filter(), varse
   leafletProxy(map_id) %>%
     clearGroup(network_group) %>%
     clearGroup(axis_group) %>%
-    removeControl(1) %>%
+    # removeControl(1) %>%
     addPolylines(data = data_map, weight = 5, color = ~ {
       ifelse(is.na(varsel), "grey",
              color_palette[findInterval(varsel, breaks, all.inside = TRUE)])
@@ -172,26 +172,35 @@ map_metric <- function(map_id = "exploremap", data_map = network_filter(), varse
 }
 
 
-#' Update map with axis without metric selected
+#' Update map without metric selected
 #'
 #' @param map map to update
 #' @param data_axis axis data
 #' @param axis_group axis layer group
+#' @param data_network network data
+#' @param network_group network layer group
 #'
 #' @return update leaflet map
 #' @export
 #'
 #' @examples
 #' leafletProxy("exploremap") %>%
-#'   map_axis_no_metric(data_axis = network_region_axis(), axis_group = "AXIS")
-map_axis_no_metric <- function(map, data_axis = network_region_axis(), axis_group = "AXIS"){
+#'   map_no_metric(data_network = network_filter(),  network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
+map_no_metric <- function(map, data_network = network_filter(),  network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS"){
   map %>%
-    addPolylines(data = data_axis,
+    clearGroup(network_group) %>%
+    addPolylines(data = data_network,
                  weight = 3,
                  color = "blue",
-                 opacity = 1,
+                 group = network_group,
+                 options = pathOptions(interactive = FALSE)) %>%
+    addPolylines(data = data_axis,
+                 layerId = ~fid,
+                 weight = 5,
+                 color = "#ffffff00",
+                 opacity = 0,
                  highlight = highlightOptions(
-                   weight = 5,
+                   opacity = 1,
                    color = "red"
                  ),
                  group = axis_group)
