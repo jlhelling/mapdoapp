@@ -328,7 +328,7 @@ mod_explore_server <- function(input, output, session){
       if (!is.null(hover_data)) {
         hover_fid <- hover_data$key  # Assuming "id" is the name of your id column
 
-        highlighted_feature <- network_filter()[network_filter()$fid == hover_fid, ]
+        highlighted_feature <- network_region_metrics()[network_region_metrics()$fid == hover_fid, ]
 
         leafletProxy("exploremap") %>%
           addPolylines(data = highlighted_feature, color = "red", weight = 10, group = "LIGHT")
