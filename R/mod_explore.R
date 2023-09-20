@@ -277,12 +277,29 @@ mod_explore_server <- function(input, output, session){
   # MAP region selected
   observeEvent(click_value(), {
     if (click_value()$group == "B"){
+      # legend_url <- paste0("https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=mapdo:network_metrics")
+
       # map region clicked
       leafletProxy("exploremap") %>%
         map_region_clicked(region_click = click_value(),
                            selected_region_feature = selected_region_feature(),
                            regions_group = "B",
                            selected_region_group = "C")
+
+        # leafletProxy("exploremap") %>%
+        #   addWMSTiles(
+        #     baseUrl = "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms",
+        #     layers = "mapdo:network_metrics",
+        #     attribution = "",
+        #     options = WMSTileOptions(
+        #       format = "image/png",
+        #       transparent = TRUE
+        #     ),
+        #     group = "METRIC"
+        #   ) %>%
+        #   addControl(html = paste0("<img src=",legend_url,">"),
+        #              position = "bottomright", layerId = "legend")
+
 
     }
   })
@@ -299,8 +316,53 @@ mod_explore_server <- function(input, output, session){
 
     }
     if (!is.null(input$dynamicRadio)){
-      map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
-                 network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
+
+      geoserver_url <- "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms"
+      network_metrics_wms <- "mapdo:network_metrics"
+      wms_format <- "image/png"
+      get_wms_legend <- "GetLegendGraphic"
+      wms_version <- "1.0.0"
+
+      legend_url <- paste0(geoserver_url,
+                           "?REQUEST=", get_wms_legend,
+                           "&VERSION=", wms_version,
+                           "&FORMAT=",wms_format,
+                           "&LAYER=", network_metrics_wms)
+
+      # map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
+      #            network_group = "D", data_axis = network_region_axis(),
+      #            axis_group = "AXIS")
+
+      leafletProxy("exploremap") %>%
+        clearGroup("D") %>%
+        clearGroup("AXIS") %>%
+        addWMSTiles(
+          baseUrl = geoserver_url,
+          layers = network_metrics_wms,
+          attribution = "",
+          options = WMSTileOptions(
+            style="mapdo:network_metrics_test",
+            # sld_body = sld_xml2,
+            format = wms_format,
+            request = "GetMap",
+            env="color:#08ff00",
+            transparent = TRUE
+
+          ),
+          group = "METRIC"
+        ) %>%
+        addControl(html = paste0("<img src=",legend_url,">"),
+                   position = "bottomright", layerId = "legend") %>%
+        addPolylines(data = network_region_axis(),
+                     layerId = ~fid,
+                     weight = 5,
+                     color = "#ffffff00",
+                     opacity = 0,
+                     highlight = highlightOptions(
+                       opacity = 1,
+                       color = "red"
+                     ),
+                     group = "AXIS")
     }
   })
 

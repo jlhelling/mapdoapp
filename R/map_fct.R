@@ -157,8 +157,8 @@ map_metric <- function(map_id = "exploremap", data_map = network_filter(), varse
     },
     group = network_group,
     options = pathOptions(interactive = FALSE)) %>%
-    addLegend("bottomright", colors = color_palette, labels = rounded_breaks,
-              title = "Légende", opacity = 1, layerId = 1) %>%
+    # addLegend("bottomright", colors = color_palette, labels = rounded_breaks,
+    #           title = "Légende", opacity = 1, layerId = 1) %>%
     addPolylines(data = data_axis,
                  layerId = ~fid,
                  weight = 5,
@@ -192,6 +192,7 @@ map_no_metric <- function(map, data_network = network_filter(),  network_group =
     addPolylines(data = data_network,
                  weight = 3,
                  color = "blue",
+                 opacity = 0,
                  group = network_group,
                  options = pathOptions(interactive = FALSE)) %>%
     addPolylines(data = data_axis,
@@ -226,7 +227,8 @@ add_basemaps <- function(map, basemaps) {
         attribution = basemaps$attribution[i],
         options = WMSTileOptions(
           format = "image/png",
-          transparent = TRUE
+          transparent = TRUE,
+          opacity = 0.7
         ),
         group = basemaps$name[i]
       )
