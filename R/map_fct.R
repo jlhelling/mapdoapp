@@ -140,7 +140,7 @@ map_region_clicked <- function(map,
 map_metric <- function(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
                        network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS") {
 
-  breaks <-  unique(quantile(varsel, probs = seq(0, 1, 0.25), na.rm = TRUE))
+  breaks <-  unique(quantile(varsel, probs = seq(0, 1, 0.2), na.rm = TRUE))
 
   rounded_breaks <- round(breaks, 1)
 
@@ -157,12 +157,12 @@ map_metric <- function(map_id = "exploremap", data_map = network_filter(), varse
     },
     group = network_group,
     options = pathOptions(interactive = FALSE)) %>%
-    # addLegend("bottomright", colors = color_palette, labels = rounded_breaks,
-    #           title = "Légende", opacity = 1, layerId = 1) %>%
+    addLegend("bottomright", colors = color_palette, labels = rounded_breaks,
+              title = "Légende", opacity = 1, layerId = 1) %>%
     addPolylines(data = data_axis,
                  layerId = ~fid,
                  weight = 5,
-                 color = "#ffffff00",
+                 color = color_palette,
                  opacity = 0,
                  highlight = highlightOptions(
                    opacity = 1,

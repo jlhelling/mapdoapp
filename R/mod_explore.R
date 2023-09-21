@@ -6,6 +6,7 @@ library(dplyr)
 library(readr)
 library(plotly)
 library(reactlog)
+library(glue)
 
 reactlog_enable()
 
@@ -322,16 +323,29 @@ mod_explore_server <- function(input, output, session){
       wms_format <- "image/png"
       get_wms_legend <- "GetLegendGraphic"
       wms_version <- "1.0.0"
+      geoserver_style <- "mapdo:network_metrics_style"
 
-      legend_url <- paste0(geoserver_url,
-                           "?REQUEST=", get_wms_legend,
-                           "&VERSION=", wms_version,
-                           "&FORMAT=",wms_format,
-                           "&LAYER=", network_metrics_wms)
+      sld_body <- get_sld_style(breaks = get_metric_quantile(selected_metric = varsel()),
+                                color = get_metric_color(quantile_breaks = get_metric_quantile()),
+                                metric = input$dynamicRadio)
 
+      # Construct the query parameters for legend
+      query_params <- list(
+        REQUEST = get_wms_legend,
+        VERSION = wms_version,
+        FORMAT = wms_format,
+        SLD_BODY = sld_body,
+        LAYER = network_metrics_wms
+      )
+
+      # Build the URL
+      legend_url <- modify_url(geoserver_url, query = query_params)
+
+      # old map with pg data
       # map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
       #            network_group = "D", data_axis = network_region_axis(),
       #            axis_group = "AXIS")
+
 
       leafletProxy("exploremap") %>%
         clearGroup("D") %>%
@@ -341,11 +355,11 @@ mod_explore_server <- function(input, output, session){
           layers = network_metrics_wms,
           attribution = "",
           options = WMSTileOptions(
-            style="mapdo:network_metrics_test",
-            # sld_body = sld_xml2,
+            # style=geoserver_style,
+            sld_body = sld_body,
             format = wms_format,
             request = "GetMap",
-            env="color:#08ff00",
+            # env="color:#08ff00",
             transparent = TRUE
 
           ),
