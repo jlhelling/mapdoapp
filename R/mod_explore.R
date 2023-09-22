@@ -168,21 +168,11 @@ mod_explore_server <- function(input, output, session){
 
   # UI dynamic filter on metric selected
   output$metricsfilterUI <- renderUI({
-    req(input$dynamicRadio)
-
-    if (is.null(input$unit_area) || input$unit_area == "Hectares"){
-      metric_selected <- network_region_metrics()[[input$dynamicRadio]]
-
-    }else if (input$unit_area == "% du fond de vallée"){
-      metric_selected <- ifelse(is.na(network_region_metrics()[[input$dynamicRadio]]) |
-                                  is.na(network_region_metrics()[["sum_area"]]) |
-                                  network_region_metrics()[["sum_area"]] == 0, NA,
-                                network_region_metrics()[[input$dynamicRadio]] /
-                                  network_region_metrics()[["sum_area"]]*100)
-    }
+    req(metric_field())
+    metric_selected <- network_region_metrics()[[metric_field()]]
 
     sliderInput(ns("metricfilter"),
-                label = names(unlist(metrics_choice()[[input$metric]]))[unlist(metrics_choice()[[input$metric]]) == input$dynamicRadio], # extract key from value
+                label = names(unlist(metrics_choice()[[input$metric]]))[unlist(metrics_choice()[[input$metric]]) == metric_field()], # extract key from value
                 min = isolate(round(min(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1)),
                 max = isolate(round(max(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1)),
                 value = c(
@@ -203,10 +193,24 @@ mod_explore_server <- function(input, output, session){
 
   ### DATA ####
 
+  # metric selected by user
+  metric_field <- reactiveVal()
+
+  # change field if unit_area in percentage
+  observeEvent(!is.null(input$dynamicRadio) | !is.null(input$unit_area), ignoreInit = TRUE, ignoreNULL = TRUE, {
+    # metric_field(input$dynamicRadio)
+    if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"){
+      metric_field(paste0(input$dynamicRadio,"_pc"))
+    } else {
+      metric_field(input$dynamicRadio)
+    }
+  })
+
   # DATA get network axis in region
   network_region_axis <- reactiveVal()
 
   observeEvent(click_value(),{
+    print(metric_field())
     if (click_value()$group == "B"){
       network_region_axis(get_axis(selected_region_id = click_value()$id))
     }
@@ -235,23 +239,14 @@ mod_explore_server <- function(input, output, session){
 
     data <- network_region_metrics()
 
-    if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"){
-      data <- data %>%
-        mutate(!!sym(input$dynamicRadio) := ifelse(is.na(network_region_metrics()[[input$dynamicRadio]]) |
-                                                     is.na(network_region_metrics()[["sum_area"]]) |
-                                                     network_region_metrics()[["sum_area"]] == 0, NA,
-                                                   network_region_metrics()[[input$dynamicRadio]] /
-                                                     network_region_metrics()[["sum_area"]]*100))
-    }
-
     if (!is.null(input$strahler)) {
       data <- data %>%
         filter(!is.na(strahler), between(strahler, input$strahler[1], input$strahler[2]))
     }
 
-    if (!is.null(input$metricfilter) && !is.null(input$dynamicRadio)){
+    if (!is.null(input$metricfilter) && !is.null(metric_field())){
       data <- data %>%
-        filter(!is.na(!!sym(input$dynamicRadio)), between(!!sym(input$dynamicRadio), input$metricfilter[1], input$metricfilter[2]))
+        filter(!is.na(!!sym(metric_field())), between(!!sym(metric_field()), input$metricfilter[1], input$metricfilter[2]))
     }
 
     return(data)
@@ -263,7 +258,7 @@ mod_explore_server <- function(input, output, session){
     if (is.null(network_filter())){
       return(NULL)
     } else {
-      network_filter()[[input$dynamicRadio]]
+      network_filter()[[metric_field()]]
     }
   })
 
@@ -281,27 +276,12 @@ mod_explore_server <- function(input, output, session){
     if (click_value()$group == "B"){
       # legend_url <- paste0("https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=mapdo:network_metrics")
 
-      # map region clicked
+      # map region clicked with axis and overlayers
       leafletProxy("exploremap") %>%
         map_region_clicked(region_click = click_value(),
                            selected_region_feature = selected_region_feature(),
                            regions_group = "B",
                            selected_region_group = "C")
-
-        # leafletProxy("exploremap") %>%
-        #   addWMSTiles(
-        #     baseUrl = "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms",
-        #     layers = "mapdo:network_metrics",
-        #     attribution = "",
-        #     options = WMSTileOptions(
-        #       format = "image/png",
-        #       transparent = TRUE
-        #     ),
-        #     group = "METRIC"
-        #   ) %>%
-        #   addControl(html = paste0("<img src=",legend_url,">"),
-        #              position = "bottomright", layerId = "legend")
-
 
     }
   })
@@ -311,14 +291,13 @@ mod_explore_server <- function(input, output, session){
     if (is.null(input$strahler)) {
       return (NULL)
     }
-    if (is.null(input$dynamicRadio)) {
+    if (is.null(metric_field())) {
 
       leafletProxy("exploremap") %>%
-        map_no_metric(data_network = network_filter(),  network_group = "D",
-                      data_axis = network_region_axis(), axis_group = "AXIS")
+        map_no_metric(data_axis = network_region_axis(), axis_group = "AXIS")
 
     }
-    if (!is.null(input$dynamicRadio)){
+    if (!is.null(metric_field())){
 
       geoserver_url <- "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms"
       network_metrics_wms <- "mapdo:network_metrics"
@@ -329,7 +308,7 @@ mod_explore_server <- function(input, output, session){
 
       sld_body <- get_sld_style(breaks = get_metric_quantile(selected_metric = varsel()),
                                 color = get_metric_colors(quantile_breaks = get_metric_quantile(selected_metric = varsel())),
-                                metric = input$dynamicRadio)
+                                metric = metric_field())
 
       # Construct the query parameters for legend
       query_params <- list(
@@ -351,6 +330,7 @@ mod_explore_server <- function(input, output, session){
       leafletProxy("exploremap") %>%
         clearGroup("D") %>%
         clearGroup("AXIS") %>%
+        clearGroup("METRIC") %>%
         addWMSTiles(
           baseUrl = geoserver_url,
           layers = network_metrics_wms,
@@ -359,7 +339,12 @@ mod_explore_server <- function(input, output, session){
             format = wms_format,
             request = "GetMap",
             transparent = TRUE,
-            cql_filter=paste0("gid_region=",selected_region_feature()[["gid"]]),
+            # filter WMS
+            cql_filter=paste0("gid_region=",selected_region_feature()[["gid"]],
+                              " AND strahler>=",input$strahler[1],
+                              " AND strahler <= ",input$strahler[2],
+                              " AND ",metric_field(),">=",input$metricfilter[1],
+                              " AND ",metric_field(),"<=",input$metricfilter[2]),
             sld_body = sld_body
             ),
           group = "METRIC"
@@ -385,7 +370,6 @@ mod_explore_server <- function(input, output, session){
   output$long_profile <- renderPlotly({
     req(click_value()$group == "AXIS")
 
-    # Create the Plotly plot
     plot <- plot_ly(data = selected_axis(), x = ~measure, y = ~talweg_elevation_min,
                     key = ~fid,  # Specify the "id" column for hover text
                     type = 'scatter', mode = 'lines', name = 'Ligne')
@@ -399,7 +383,7 @@ mod_explore_server <- function(input, output, session){
       hover_data <- event_data("plotly_hover")
 
       if (!is.null(hover_data)) {
-        hover_fid <- hover_data$key  # Assuming "id" is the name of your id column
+        hover_fid <- hover_data$key
 
         highlighted_feature <- network_region_metrics()[network_region_metrics()$fid == hover_fid, ]
 

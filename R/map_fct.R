@@ -125,6 +125,44 @@ map_region_clicked <- function(map,
     hideGroup(c("ROE", overlayers_df()$name))
 }
 
+# map_metric <- function(map, ){
+#     clearGroup("AXIS") %>%
+#     clearGroup("METRIC") %>%
+#     addWMSTiles(
+#       baseUrl = geoserver_url,
+#       layers = network_metrics_wms,
+#       attribution = "",
+#       options = WMSTileOptions(
+#         format = wms_format,
+#         request = "GetMap",
+#         transparent = TRUE,
+#         # filter WMS
+#         cql_filter=paste0("gid_region=",selected_region_feature()[["gid"]],
+#                           " AND strahler>=",input$strahler[1],
+#                           " AND strahler <= ",input$strahler[2],
+#                           " AND ",input$dynamicRadio,">=",input$metricfilter[1],
+#                           " AND ",input$dynamicRadio,"<=",input$metricfilter[2]),
+#         sld_body = sld_body
+#       ),
+#       group = "METRIC"
+#     ) %>%
+#     addControl(html = paste0("<img src=",legend_url,">"),
+#                position = "bottomright", layerId = "legend") %>%
+#     addPolylines(data = network_region_axis(),
+#                  layerId = ~fid,
+#                  weight = 5,
+#                  color = "#ffffff00",
+#                  opacity = 0,
+#                  highlight = highlightOptions(
+#                    opacity = 1,
+#                    color = "red"
+#                  ),
+#                  group = "AXIS")
+# }
+
+
+
+
 
 #' Update metric mapping
 #'
@@ -181,8 +219,6 @@ map_metric <- function(map_id = "exploremap", data_map = network_filter(), varse
 #' @param map map to update
 #' @param data_axis axis data
 #' @param axis_group axis layer group
-#' @param data_network network data
-#' @param network_group network layer group
 #'
 #' @return update leaflet map
 #' @export
@@ -190,9 +226,8 @@ map_metric <- function(map_id = "exploremap", data_map = network_filter(), varse
 #' @examples
 #' leafletProxy("exploremap") %>%
 #'   map_no_metric(data_network = network_filter(),  network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
-map_no_metric <- function(map, network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS"){
+map_no_metric <- function(map, data_axis = network_region_axis(), axis_group = "AXIS"){
   map %>%
-    clearGroup(network_group) %>%
     addPolylines(data = data_axis,
                  layerId = ~fid,
                  weight = 5,

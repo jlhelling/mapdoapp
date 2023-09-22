@@ -61,8 +61,11 @@ get_network_region_with_metrics <- function(selected_region_id = region_click$id
       connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
       water_channel, gravel_bars, natural_open, forest, grassland, crops,
       diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
-      semi_natural, reversible, disconnected, built_environment, sum_area,
-      idx_confinement, gid_region, network_metrics.geom
+      semi_natural, reversible, disconnected, built_environment,
+      water_channel_pc, gravel_bars_pc, natural_open_pc, forest_pc, grassland_pc, crops_pc,
+      diffuse_urban_pc, dense_urban_pc, infrastructures_pc, active_channel_pc,
+      riparian_corridor_pc, semi_natural_pc, reversible_pc, disconnected_pc,
+      built_environment_pc, sum_area, idx_confinement, gid_region, network_metrics.geom
       FROM network_metrics
       WHERE  gid_region = '%s'", selected_region_id)
 
