@@ -11,7 +11,7 @@ get_metric_colors <- function(quantile_breaks = get_metric_quantile()){
 }
 
 get_sld_style <- function(breaks = get_metric_quantile(),
-                          colors = get_metric_color(),
+                          colors = get_metric_colors(),
                           metric = selected_metrics) {
   sld_begin <- glue('<?xml version="1.0" encoding="UTF-8"?>
     <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:se="http://www.opengis.net/se" xmlns:ogc="http://www.opengis.net/ogc">

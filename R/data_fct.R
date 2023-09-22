@@ -39,7 +39,7 @@ get_regions_in_bassin <- function(selected_bassin_id = bassin_click$id) {
 #' selected_region_feature <- get_region(region_click_id = region_click$id)
 get_region <- function(region_click_id = region_click$id){
   query <- sprintf("SELECT * FROM region_hydrographique
-                   WHERE cdregionhy LIKE '%s'", region_click_id)
+                   WHERE gid = '%s'", region_click_id)
   data <- st_read(dsn = db_con(), query = query)
   return(data)
 }
@@ -61,17 +61,14 @@ get_network_region_with_metrics <- function(selected_region_id = region_click$id
       connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
       water_channel, gravel_bars, natural_open, forest, grassland, crops,
       diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
-      semi_natural, reversible, disconnected, built_environment, sum_area, idx_confinement,
-      network_metrics.geom
-      FROM network_metrics, region_hydrographique
-      WHERE ST_Contains(region_hydrographique.geom, network_metrics.geom)
-          AND region_hydrographique.cdregionhy = '%s'", selected_region_id)
+      semi_natural, reversible, disconnected, built_environment, sum_area,
+      idx_confinement, gid_region, network_metrics.geom
+      FROM network_metrics
+      WHERE  gid_region = '%s'", selected_region_id)
 
   data <- st_read(dsn = db_con(), query = query)
   return(data)
 }
-
-
 
 #' Create basemaps dataframe
 #'
@@ -119,10 +116,9 @@ overlayers_df <- function(){
 get_roe_in_region <- function(selected_region_id = region_click$id){
   query <- sprintf("
       SELECT
-      roe.gid, nomprincip, lbtypeouvr, lbhautchut, roe.geom
-      FROM roe, region_hydrographique
-      WHERE (ST_Intersects(roe.geom, region_hydrographique.geom)
-          AND region_hydrographique.cdregionhy = '%s')
+      roe.gid, nomprincip, lbtypeouvr, lbhautchut, gid_region, roe.geom
+      FROM roe
+      WHERE gid_region = '%s'
           AND (roe.cdetouvrag LIKE '2')", selected_region_id)
 
   data <- st_read(dsn = db_con(), query = query)
@@ -141,10 +137,9 @@ get_roe_in_region <- function(selected_region_id = region_click$id){
 get_axis <- function(selected_region_id = region_click$id){
   query <- sprintf("
       SELECT
-      network_axis.fid, axis, network_axis.geom
-      FROM network_axis, region_hydrographique
-      WHERE (ST_Contains(region_hydrographique.geom, network_axis.geom)
-          AND region_hydrographique.cdregionhy = '%s')", selected_region_id)
+      network_axis.fid, axis, gid_region, network_axis.geom
+      FROM network_axis
+      WHERE gid_region = '%s'", selected_region_id)
 
   data <- st_read(dsn = db_con(), query = query)
   return(data)

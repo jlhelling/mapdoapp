@@ -57,7 +57,7 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
     setView(lng = bassin_click$lng , lat = bassin_click$lat, zoom = 6.5) %>%
     clearGroup(bassins_group) %>%
     addPolygons(data = regions_data,
-                layerId = ~cdregionhy,
+                layerId = ~gid,
                 smoothFactor = 2,
                 fillColor = "black",
                 fillOpacity = 0.01,

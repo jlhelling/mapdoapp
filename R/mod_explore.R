@@ -7,6 +7,7 @@ library(readr)
 library(plotly)
 library(reactlog)
 library(glue)
+library(httr)
 
 reactlog_enable()
 
@@ -311,6 +312,7 @@ mod_explore_server <- function(input, output, session){
       return (NULL)
     }
     if (is.null(input$dynamicRadio)) {
+
       leafletProxy("exploremap") %>%
         map_no_metric(data_network = network_filter(),  network_group = "D",
                       data_axis = network_region_axis(), axis_group = "AXIS")
@@ -326,7 +328,7 @@ mod_explore_server <- function(input, output, session){
       geoserver_style <- "mapdo:network_metrics_style"
 
       sld_body <- get_sld_style(breaks = get_metric_quantile(selected_metric = varsel()),
-                                color = get_metric_color(quantile_breaks = get_metric_quantile()),
+                                color = get_metric_colors(quantile_breaks = get_metric_quantile(selected_metric = varsel())),
                                 metric = input$dynamicRadio)
 
       # Construct the query parameters for legend
@@ -346,7 +348,6 @@ mod_explore_server <- function(input, output, session){
       #            network_group = "D", data_axis = network_region_axis(),
       #            axis_group = "AXIS")
 
-
       leafletProxy("exploremap") %>%
         clearGroup("D") %>%
         clearGroup("AXIS") %>%
@@ -355,14 +356,12 @@ mod_explore_server <- function(input, output, session){
           layers = network_metrics_wms,
           attribution = "",
           options = WMSTileOptions(
-            # style=geoserver_style,
-            sld_body = sld_body,
             format = wms_format,
             request = "GetMap",
-            # env="color:#08ff00",
-            transparent = TRUE
-
-          ),
+            transparent = TRUE,
+            cql_filter=paste0("gid_region=",selected_region_feature()[["gid"]]),
+            sld_body = sld_body
+            ),
           group = "METRIC"
         ) %>%
         addControl(html = paste0("<img src=",legend_url,">"),
