@@ -190,7 +190,7 @@ map_metric <- function(map_id = "exploremap", data_map = network_filter(), varse
 #' @examples
 #' leafletProxy("exploremap") %>%
 #'   map_no_metric(data_network = network_filter(),  network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
-map_no_metric <- function(map, data_network = network_filter(),  network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS"){
+map_no_metric <- function(map, network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS"){
   map %>%
     clearGroup(network_group) %>%
     addPolylines(data = data_axis,
