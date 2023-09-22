@@ -94,6 +94,7 @@ map_region_clicked <- function(map,
                                selected_region_group = "C"){
   map %>%
   setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
+    # display the region clicked
     addPolygons(data = selected_region_feature,
                 smoothFactor = 2,
                 fillColor = "black",
@@ -104,6 +105,7 @@ map_region_clicked <- function(map,
                 options = pathOptions(interactive = FALSE)
     ) %>%
     clearGroup(regions_group) %>%
+    # add ROE overlayers from postgresql
     addCircleMarkers (data = get_roe_in_region(region_click$id),
                       radius = 3,
                       weight = 0.5,
@@ -113,11 +115,13 @@ map_region_clicked <- function(map,
                       fillOpacity = 0.9,
                       popup = ~nomprincip,
                       group = "ROE") %>%
+    # add WMS overlayers
     add_overlayers(overlayers_df()) %>%
     addLayersControl(
       baseGroups = c(basemaps_df()$name),
       options = layersControlOptions(collapsed = TRUE),
       overlayGroups = c("ROE", overlayers_df()$name)) %>%
+    # ROE layer hidden by defaut
     hideGroup(c("ROE", overlayers_df()$name))
 }
 
@@ -189,17 +193,11 @@ map_metric <- function(map_id = "exploremap", data_map = network_filter(), varse
 map_no_metric <- function(map, data_network = network_filter(),  network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS"){
   map %>%
     clearGroup(network_group) %>%
-    addPolylines(data = data_network,
-                 weight = 3,
-                 color = "blue",
-                 opacity = 0,
-                 group = network_group,
-                 options = pathOptions(interactive = FALSE)) %>%
     addPolylines(data = data_axis,
                  layerId = ~fid,
                  weight = 5,
-                 color = "#ffffff00",
-                 opacity = 0,
+                 color = "blue",
+                 opacity = 1,
                  highlight = highlightOptions(
                    opacity = 1,
                    color = "red"
