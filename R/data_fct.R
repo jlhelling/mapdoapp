@@ -187,7 +187,6 @@ get_network_axis <- function(selected_axis_id = click_value()$id){
       WHERE  axis = '%s'", selected_axis_id)
 
   data <- st_read(dsn = db_con(), query = query) %>%
-    as.data.frame() %>%
     arrange(measure)
 
   # data <- network_data %>%

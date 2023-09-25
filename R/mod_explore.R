@@ -377,38 +377,41 @@ mod_explore_server <- function(input, output, session){
   output$long_profile <- renderPlotly({
     req(click_value()$group == "AXIS")
 
-    plot <- plot_ly(data = selected_axis(), x = ~measure, y = ~talweg_elevation_min,
+    selected_axis_df <- selected_axis() %>%
+      as.data.frame()
+
+    plot <- plot_ly(data = selected_axis_df, x = ~measure, y = ~talweg_elevation_min,
                     key = ~fid,  # Specify the "id" column for hover text
                     type = 'scatter', mode = 'lines', name = 'Ligne')
 
-    # # Add hover information
-    # plot <- plot %>%
-    #   event_register("plotly_hover")  # Enable hover events
-    #
-    # # Define an observeEvent to capture hover events
-    # observeEvent(event_data("plotly_hover"), {
-    #   hover_data <- event_data("plotly_hover")
-    #
-    #   if (!is.null(hover_data)) {
-    #     hover_fid <- hover_data$key
-    #
-    #     highlighted_feature <- network_region_metrics()[network_region_metrics()$fid == hover_fid, ]
-    #
-    #     leafletProxy("exploremap") %>%
-    #       addPolylines(data = highlighted_feature, color = "red", weight = 10, group = "LIGHT")
-    #
-    #   }
-    # })
+    # Add hover information
+    plot <- plot %>%
+      event_register("plotly_hover")  # Enable hover events
+
+    # Define an observeEvent to capture hover events
+    observeEvent(event_data("plotly_hover"), {
+      hover_data <- event_data("plotly_hover")
+
+      if (!is.null(hover_data)) {
+        hover_fid <- hover_data$key
+
+        highlighted_feature <- selected_axis()[selected_axis()$fid == hover_fid, ]
+
+        leafletProxy("exploremap") %>%
+          addPolylines(data = highlighted_feature, color = "red", weight = 10, group = "LIGHT")
+
+      }
+    })
 
     return(plot)
   })
 
-  # observe({
-  #   if (is.null(event_data("plotly_hover"))) {
-  #     leafletProxy("exploremap") %>%
-  #       clearGroup("LIGHT")
-  #   }
-  # })
+  observe({
+    if (is.null(event_data("plotly_hover"))) {
+      leafletProxy("exploremap") %>%
+        clearGroup("LIGHT")
+    }
+  })
 }
 
 
