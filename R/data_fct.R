@@ -73,6 +73,25 @@ get_network_region_with_metrics <- function(selected_region_id = region_click$id
   return(data)
 }
 
+data_get_min_strahler <- function(selected_region_id = region_click$id){
+  query <- sprintf("
+      SELECT MIN(strahler) AS min_strahler FROM network_metrics
+        WHERE gid_region = '%s'", selected_region_id)
+
+  data <- st_read(dsn = db_con(), query = query)
+  return(data)
+}
+
+data_get_max_strahler <- function(selected_region_id = region_click$id){
+  query <- sprintf("
+      SELECT MAX(strahler) AS max_strahler FROM network_metrics
+        WHERE gid_region = '%s'", selected_region_id)
+
+  data <- st_read(dsn = db_con(), query = query)
+  return(data)
+}
+
+
 #' Create basemaps dataframe
 #'
 #' @return data.frame
@@ -147,27 +166,6 @@ get_axis <- function(selected_region_id = region_click$id){
   data <- st_read(dsn = db_con(), query = query)
   return(data)
 }
-
-#' #' get network data from selected axis
-#' #'
-#' #' @param network_data network data
-#' #' @param axis_id axis id selected
-#' #' @param measure_col measure distance column
-#' #'
-#' #' @return data.frame
-#' #' @export
-#' #'
-#' #' @examples
-#' #' network_axis <- get_network_axis(network_data = network_region_metrics(), measure_col = "measure"
-#' #'   axis_id = click_value()$id)
-#' get_network_axis <- function(network_data = network_region_metrics(), measure_col = "measure",
-#'                              axis_id = click_value()$id){
-#'   data <- network_data %>%
-#'     as.data.frame() %>%
-#'     filter(axis == axis_id) %>%
-#'     arrange("measure")
-#'   return(data)
-#' }
 
 get_network_axis <- function(selected_axis_id = click_value()$id){
 

@@ -174,11 +174,11 @@ mod_explore_server <- function(input, output, session){
 
     sliderInput(ns("metricfilter"),
                 label = names(unlist(metrics_choice()[[input$metric]]))[unlist(metrics_choice()[[input$metric]]) == metric_field()], # extract key from value
-                min = isolate(round(min(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1)),
-                max = isolate(round(max(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1)),
+                min = isolate(data_get_min_strahler()),
+                max = isolate(data_get_max_strahler()),
                 value = c(
-                  isolate(round(min(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1)),
-                  isolate(round(max(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1))
+                  isolate(data_get_min_strahler()),
+                  isolate(data_get_max_strahler())
                 )
     )
   })
