@@ -226,12 +226,31 @@ map_metric <- function(map_id = "exploremap", data_map = network_filter(), varse
 #' @examples
 #' leafletProxy("exploremap") %>%
 #'   map_no_metric(data_network = network_filter(),  network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
-map_no_metric <- function(map, data_axis = network_region_axis(), axis_group = "AXIS"){
+map_no_metric <- function(map, geoserver_url, network_metrics_wms, wms_format, metric_group = "METRIC",
+                          selected_region_id = selected_region_feature()[["gid"]],
+                          strahler_filter_min = input$strahler[1],
+                          strahler_filter_max = input$strahler[2],
+                          data_axis, axis_group = "AXIS"){
   map %>%
+    addWMSTiles(
+      baseUrl = geoserver_url,
+      layers = network_metrics_wms,
+      attribution = "",
+      options = WMSTileOptions(
+        format = wms_format,
+        request = "GetMap",
+        transparent = TRUE,
+        style = "mapdo:network_basic_style",
+        # filter WMS
+        cql_filter=paste0("gid_region=",selected_region_id,
+                          " AND strahler>=",strahler_filter_min,
+                          " AND strahler <= ",strahler_filter_max)
+      ),
+      group = metric_group) %>%
     addPolylines(data = data_axis,
                  layerId = ~fid,
                  weight = 5,
-                 color = "blue",
+                 color = "#ffffff00",
                  opacity = 1,
                  highlight = highlightOptions(
                    opacity = 1,

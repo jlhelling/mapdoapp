@@ -210,7 +210,6 @@ mod_explore_server <- function(input, output, session){
   network_region_axis <- reactiveVal()
 
   observeEvent(click_value(),{
-    print(metric_field())
     if (click_value()$group == "B"){
       network_region_axis(get_axis(selected_region_id = click_value()$id))
     }
@@ -282,29 +281,39 @@ mod_explore_server <- function(input, output, session){
                            selected_region_feature = selected_region_feature(),
                            regions_group = "B",
                            selected_region_group = "C")
-
     }
   })
 
   # MAP network metric
   observeEvent(network_filter(), {
+
+    print(selected_region_feature())
+
+    geoserver_url <- "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms"
+    network_metrics_wms <- "mapdo:network_metrics"
+    wms_format <- "image/png"
+    get_wms_legend <- "GetLegendGraphic"
+    wms_version <- "1.0.0"
+    geoserver_style <- "mapdo:network_metrics_style"
+
     if (is.null(input$strahler)) {
       return (NULL)
     }
     if (is.null(metric_field())) {
 
       leafletProxy("exploremap") %>%
-        map_no_metric(data_axis = network_region_axis(), axis_group = "AXIS")
+        map_no_metric(geoserver_url = geoserver_url,
+                      network_metrics_wms = network_metrics_wms,
+                      wms_format = wms_format,
+                      metric_group = "METRIC",
+                      selected_region_id = selected_region_feature()[["gid"]],
+                      strahler_filter_min = input$strahler[1],
+                      strahler_filter_max = input$strahler[2],
+                      data_axis = network_region_axis(),
+                      axis_group = "AXIS")
 
     }
     if (!is.null(metric_field())){
-
-      geoserver_url <- "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms"
-      network_metrics_wms <- "mapdo:network_metrics"
-      wms_format <- "image/png"
-      get_wms_legend <- "GetLegendGraphic"
-      wms_version <- "1.0.0"
-      geoserver_style <- "mapdo:network_metrics_style"
 
       sld_body <- get_sld_style(breaks = get_metric_quantile(selected_metric = varsel()),
                                 color = get_metric_colors(quantile_breaks = get_metric_quantile(selected_metric = varsel())),
