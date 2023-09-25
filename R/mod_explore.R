@@ -252,7 +252,11 @@ mod_explore_server <- function(input, output, session){
 
   # reactve list to activate map update
   map_update <- reactive({
-    list(region_click_id(), selected_metric(), input$strahler, input$metricfilter)
+    list(region_click_id(), input$strahler, input$metricfilter)
+  })
+
+  map_update_data <- reactive({
+    map_update()
   })
 
   # MAP network metric
