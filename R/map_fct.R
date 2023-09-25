@@ -7,11 +7,11 @@
 #' @export
 #'
 #' @examples
-#' map <- map_init_bassins(bassins_data = get_bassins(), group = "A")
-map_init_bassins <- function(bassins_data = get_bassins(), group = "A") {
+#' map <- map_init_bassins(bassins_data = get_bassins(), group = "BASSIN")
+map_init_bassins <- function(bassins_data = get_bassins(), group = "BASSIN") {
   leaflet() %>%
     setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
-    add_basemaps(data_basemaps_df()) %>%
+    map_add_basemaps(data_basemaps_df()) %>%
     addPolygons(data = bassins_data,
                 layerId = ~cdbh,
                 smoothFactor = 2,
@@ -47,12 +47,12 @@ map_init_bassins <- function(bassins_data = get_bassins(), group = "A") {
 #' @examples
 #' map_add_regions_in_bassin(bassin_click = bassin_click,
 #' regions_data = region_hydro,
-#' bassins_group = "A",
-#' regions_group = "B")
+#' bassins_group = "BASSIN",
+#' regions_group = "REGION")
 map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
                                       regions_data = region_hydro,
-                                      bassins_group= "A",
-                                      regions_group = "B"){
+                                      bassins_group= "BASSIN",
+                                      regions_group = "REGION"){
   map %>%
     setView(lng = bassin_click$lng , lat = bassin_click$lat, zoom = 6.5) %>%
     clearGroup(bassins_group) %>%
@@ -85,13 +85,13 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
 #' @examples
 #' map_region_clicked(region_click = region_click,
 #' selected_region_feature = selected_region_feature,
-#' regions_group = "B",
-#' selected_region_group = "C")
+#' regions_group = "REGION",
+#' selected_region_group = "SELECT_REGION")
 map_region_clicked <- function(map,
                                region_click = region_click,
                                selected_region_feature = selected_region_feature,
-                               regions_group = "B",
-                               selected_region_group = "C"){
+                               regions_group = "REGION",
+                               selected_region_group = "SELECT_REGION"){
   map %>%
   setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
     # display the region clicked
@@ -116,7 +116,7 @@ map_region_clicked <- function(map,
                       popup = ~nomprincip,
                       group = "ROE") %>%
     # add WMS overlayers
-    add_overlayers(data_overlayers_df()) %>%
+    map_add_overlayers(data_overlayers_df()) %>%
     addLayersControl(
       baseGroups = c(data_basemaps_df()$name),
       options = layersControlOptions(collapsed = TRUE),
@@ -124,45 +124,6 @@ map_region_clicked <- function(map,
     # ROE layer hidden by defaut
     hideGroup(c("ROE", data_overlayers_df()$name))
 }
-
-# map_metric <- function(map, ){
-#     clearGroup("AXIS") %>%
-#     clearGroup("METRIC") %>%
-#     addWMSTiles(
-#       baseUrl = geoserver_url,
-#       layers = network_metrics_wms,
-#       attribution = "",
-#       options = WMSTileOptions(
-#         format = wms_format,
-#         request = "GetMap",
-#         transparent = TRUE,
-#         # filter WMS
-#         cql_filter=paste0("gid_region=",selected_region_feature()[["gid"]],
-#                           " AND strahler>=",input$strahler[1],
-#                           " AND strahler <= ",input$strahler[2],
-#                           " AND ",input$dynamicRadio,">=",input$metricfilter[1],
-#                           " AND ",input$dynamicRadio,"<=",input$metricfilter[2]),
-#         sld_body = sld_body
-#       ),
-#       group = "METRIC"
-#     ) %>%
-#     addControl(html = paste0("<img src=",legend_url,">"),
-#                position = "bottomright", layerId = "legend") %>%
-#     addPolylines(data = network_region_axis(),
-#                  layerId = ~fid,
-#                  weight = 5,
-#                  color = "#ffffff00",
-#                  opacity = 0,
-#                  highlight = highlightOptions(
-#                    opacity = 1,
-#                    color = "red"
-#                  ),
-#                  group = "AXIS")
-# }
-
-
-
-
 
 #' Update metric mapping
 #'
@@ -233,7 +194,7 @@ map_no_metric <- function(map, geoserver_url, network_metrics_wms, wms_format, m
                           data_axis, axis_group = "AXIS"){
   map %>%
     clearGroup(metric_group) %>%
-    removeControl("legend") %>%
+    removeControl("LEGEND") %>%
     addWMSTiles(
       baseUrl = geoserver_url,
       layers = network_metrics_wms,
@@ -271,8 +232,8 @@ map_no_metric <- function(map, geoserver_url, network_metrics_wms, wms_format, m
 #'
 #' @examples
 #' map %>%
-#' add_basemaps(data_basemaps_df())
-add_basemaps <- function(map, basemaps) {
+#' map_add_basemaps(data_basemaps_df())
+map_add_basemaps <- function(map, basemaps) {
   for (i in 1:nrow(basemaps)) {
     map <- map %>%
       addWMSTiles(
@@ -300,8 +261,8 @@ add_basemaps <- function(map, basemaps) {
 #'
 #' @examples
 #' map %>%
-#' add_overlayers(data_overlayers_df())
-add_overlayers <- function(map, overlayers) {
+#' map_add_overlayers(data_overlayers_df())
+map_add_overlayers <- function(map, overlayers) {
   for (i in 1:nrow(overlayers)) {
     map <- map %>%
       addWMSTiles(

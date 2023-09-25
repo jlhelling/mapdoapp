@@ -97,7 +97,7 @@ mod_explore_server <- function(input, output, session){
 
   # map initialization
   output$exploremap <- renderLeaflet({
-    map_init_bassins(bassins_data = data_get_bassins(), group = "A")
+    map_init_bassins(bassins_data = data_get_bassins(), group = "BASSIN")
   })
 
   # clicked polygon data
@@ -110,20 +110,20 @@ mod_explore_server <- function(input, output, session){
 
   # get regions data in clicked bassin
   region_hydro <- reactive({
-    req(click_value()$group == "A")
+    req(click_value()$group == "BASSIN")
     data_get_regions_in_bassin(selected_bassin_id = click_value()$id)
   })
 
   # Event on click
   observeEvent(click_value(), {
     # map regions or selected region
-    if (click_value()$group == "A"){
+    if (click_value()$group == "BASSIN"){
       # update map : zoom in clicked bassin, clear bassin data, display region in bassin
       leafletProxy("exploremap") %>%
         map_add_regions_in_bassin(bassin_click = click_value(),
                                   regions_data = region_hydro(),
-                                  bassins_group = "A",
-                                  regions_group = "B")
+                                  bassins_group = "BASSIN",
+                                  regions_group = "REGION")
     }
   })
 
@@ -131,10 +131,10 @@ mod_explore_server <- function(input, output, session){
 
   # UI create choose metric
   output$metricUI <- renderUI({
-    # req(click_value()$group == "B")
+    # req(click_value()$group == "REGION")
     req(region_click_id())
     selectInput(ns("metric"), "Sélectionez une métrique :",
-                choices = names(data_metrics_choice()),
+                choices = names(params_metrics_choice()),
                 selected  = "Largeurs") # selectInput for dynamic radio buttons
   })
 
@@ -162,8 +162,8 @@ mod_explore_server <- function(input, output, session){
     selected_metric <- input$metric
 
     radioButtons(ns("dynamicRadio"), sprintf("%s :", selected_metric),
-                 choiceNames = names(data_metrics_choice()[[selected_metric]]),
-                 choiceValues = as.list(unname(data_metrics_choice()[[selected_metric]])),
+                 choiceNames = names(params_metrics_choice()[[selected_metric]]),
+                 choiceValues = as.list(unname(params_metrics_choice()[[selected_metric]])),
                  selected = character(0))
   })
 
@@ -174,7 +174,7 @@ mod_explore_server <- function(input, output, session){
     metric <- data_get_min_max_metric(selected_region_id = region_click_id(), selected_metric = selected_metric())
 
     sliderInput(ns("metricfilter"),
-                label = names(unlist(data_metrics_choice()[[input$metric]]))[unlist(data_metrics_choice()[[input$metric]]) == selected_metric()], # extract key from value
+                label = names(unlist(params_metrics_choice()[[input$metric]]))[unlist(params_metrics_choice()[[input$metric]]) == selected_metric()], # extract key from value
                 min = isolate(metric[["min"]]),
                 max = isolate(metric[["max"]]),
                 value = c(
@@ -212,7 +212,7 @@ mod_explore_server <- function(input, output, session){
   network_region_axis <- reactiveVal()
 
   observeEvent(click_value(),{
-    if (click_value()$group == "B"){
+    if (click_value()$group == "REGION"){
       network_region_axis(data_get_axis(selected_region_id = click_value()$id))
     }
   })
@@ -222,7 +222,7 @@ mod_explore_server <- function(input, output, session){
   region_click_id <- reactiveVal()
 
   observeEvent(click_value(),{
-    if (click_value()$group == "B"){
+    if (click_value()$group == "REGION"){
       region_click_id(click_value()$id)
       selected_region_feature(data_get_region(region_click_id = region_click_id()))
     }
@@ -238,35 +238,24 @@ mod_explore_server <- function(input, output, session){
 
   # MAP region selected
   observeEvent(click_value(), {
-    if (click_value()$group == "B"){
-      # legend_url <- paste0("https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=mapdo:network_metrics")
+    if (click_value()$group == "REGION"){
 
-      # map region clicked with axis and overlayers
+      # map region clicked with region clicked and overlayers
       leafletProxy("exploremap") %>%
         map_region_clicked(region_click = click_value(),
                            selected_region_feature = selected_region_feature(),
-                           regions_group = "B",
-                           selected_region_group = "C")
+                           regions_group = "REGION",
+                           selected_region_group = "SELECT_REGION")
     }
   })
 
-  # reactve list to activate map update
+  # reactive list to activate map update
   map_update <- reactive({
     list(region_click_id(), input$strahler, input$metricfilter)
   })
 
-  map_update_data <- reactive({
-    map_update()
-  })
-
   # MAP network metric
   observeEvent(map_update(), {
-    geoserver_url <- "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms"
-    network_metrics_wms <- "mapdo:network_metrics"
-    wms_format <- "image/png"
-    get_wms_legend <- "GetLegendGraphic"
-    wms_version <- "1.0.0"
-    geoserver_style <- "mapdo:network_metrics_style"
 
     if (is.null(input$strahler)) {
       return (NULL)
@@ -274,9 +263,9 @@ mod_explore_server <- function(input, output, session){
     if (is.null(selected_metric())) {
 
       leafletProxy("exploremap") %>%
-        map_no_metric(geoserver_url = geoserver_url,
-                      network_metrics_wms = network_metrics_wms,
-                      wms_format = wms_format,
+        map_no_metric(geoserver_url = params_geoserver()[["url"]],
+                      network_metrics_wms = params_geoserver()[["layer"]],
+                      wms_format = params_geoserver()[["format"]],
                       metric_group = "METRIC",
                       selected_region_id = selected_region_feature()[["gid"]],
                       strahler_filter_min = input$strahler[1],
@@ -287,33 +276,33 @@ mod_explore_server <- function(input, output, session){
     }
     if (!is.null(selected_metric())){
 
-      sld_body <- get_sld_style(breaks = sld_get_quantile_metric(selected_region_id = region_click_id(), selected_metric = selected_metric()),
+      sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = region_click_id(), selected_metric = selected_metric()),
                                 colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
                                                                                                            selected_metric = selected_metric())),
                                 metric = selected_metric())
 
       # Construct the query parameters for legend
       query_params <- list(
-        REQUEST = get_wms_legend,
-        VERSION = wms_version,
-        FORMAT = wms_format,
+        REQUEST = params_geoserver()[["query_legend"]],
+        VERSION = params_geoserver()[["version"]],
+        FORMAT = params_geoserver()[["format"]],
         SLD_BODY = sld_body,
-        LAYER = network_metrics_wms
+        LAYER = params_geoserver()[["layer"]]
       )
 
       # Build the URL
-      legend_url <- modify_url(geoserver_url, query = query_params)
+      legend_url <- modify_url(params_geoserver()[["url"]], query = query_params)
 
       leafletProxy("exploremap") %>%
         clearGroup("D") %>%
         clearGroup("AXIS") %>%
         clearGroup("METRIC") %>%
         addWMSTiles(
-          baseUrl = geoserver_url,
-          layers = network_metrics_wms,
+          baseUrl = params_geoserver()[["url"]],
+          layers = params_geoserver()[["layer"]],
           attribution = "",
           options = WMSTileOptions(
-            format = wms_format,
+            format = params_geoserver()[["format"]],
             request = "GetMap",
             transparent = TRUE,
             # filter WMS

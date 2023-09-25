@@ -8,8 +8,8 @@ map_region_clicked(
   map,
   region_click = region_click,
   selected_region_feature = selected_region_feature,
-  regions_group = "B",
-  selected_region_group = "C"
+  regions_group = "REGION",
+  selected_region_group = "SELECT_REGION"
 )
 }
 \arguments{
@@ -32,6 +32,6 @@ Map region click
 \examples{
 map_region_clicked(region_click = region_click,
 selected_region_feature = selected_region_feature,
-regions_group = "B",
-selected_region_group = "C")
+regions_group = "REGION",
+selected_region_group = "SELECT_REGION")
 }

@@ -8,8 +8,8 @@ map_add_regions_in_bassin(
   map,
   bassin_click = bassin_click,
   regions_data = region_hydro,
-  bassins_group = "A",
-  regions_group = "B"
+  bassins_group = "BASSIN",
+  regions_group = "REGION"
 )
 }
 \arguments{
@@ -32,6 +32,6 @@ Update initial map to hydrographic regions
 \examples{
 map_add_regions_in_bassin(bassin_click = bassin_click,
 regions_data = region_hydro,
-bassins_group = "A",
-regions_group = "B")
+bassins_group = "BASSIN",
+regions_group = "REGION")
 }

@@ -71,7 +71,7 @@ sld_get_quantile_colors <- function(quantile_breaks = sld_get_quantile_metric(se
 #' @examples
 #' \dontrun{
 #'   # Example usage:
-#'   sld_style <- get_sld_style(breaks = c(0.1, 0.3, 0.5, 0.7, 0.9),
+#'   sld_style <- sld_get_style(breaks = c(0.1, 0.3, 0.5, 0.7, 0.9),
 #'                              colors = c("green", "yellow", "orange", "red", "blue"),
 #'                              metric = "some_metric")
 #' }
@@ -79,7 +79,7 @@ sld_get_quantile_colors <- function(quantile_breaks = sld_get_quantile_metric(se
 #' @importFrom glue glue
 #'
 #' @export
-get_sld_style <- function(breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
+sld_get_style <- function(breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
                                                            selected_metric = selected_metric()),
                           colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
                                                                                                      selected_metric = selected_metric())),

@@ -4,7 +4,7 @@
 \alias{map_init_bassins}
 \title{Map initialization with hydrographic bassins data}
 \usage{
-map_init_bassins(bassins_data = get_bassins(), group = "A")
+map_init_bassins(bassins_data = get_bassins(), group = "BASSIN")
 }
 \arguments{
 \item{bassins_data}{hydrographic bassins sf}
@@ -18,5 +18,5 @@ leaflet map
 Map initialization with hydrographic bassins data
 }
 \examples{
-map <- map_init_bassins(bassins_data = get_bassins(), group = "A")
+map <- map_init_bassins(bassins_data = get_bassins(), group = "BASSIN")
 }
