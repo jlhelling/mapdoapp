@@ -228,43 +228,6 @@ mod_explore_server <- function(input, output, session){
     }
   })
 
-  # DATA get network_region_metrics (in reactiveVal keep data even the click_value change)
-  network_region_metrics <- reactiveVal()
-
-  observeEvent(click_value(),{
-    if (click_value()$group == "B"){
-      network_region_metrics(get_network_region_with_metrics(selected_region_id = click_value()$id))
-    }
-  })
-
-  # DATA data with filter
-  network_filter <- eventReactive(c(input$strahler, input$metricfilter), {
-
-    data <- network_region_metrics()
-
-    if (!is.null(input$strahler)) {
-      data <- data %>%
-        filter(!is.na(strahler), between(strahler, input$strahler[1], input$strahler[2]))
-    }
-
-    if (!is.null(input$metricfilter) && !is.null(selected_metric())){
-      data <- data %>%
-        filter(!is.na(!!sym(selected_metric())), between(!!sym(selected_metric()), input$metricfilter[1], input$metricfilter[2]))
-    }
-
-    return(data)
-  })
-
-  # DATA metrics to display
-  varsel <- reactive({
-    req(network_filter())
-    if (is.null(network_filter())){
-      return(NULL)
-    } else {
-      network_filter()[[selected_metric()]]
-    }
-  })
-
   # DATA network by selected axis
   selected_axis <- reactive({
     req(click_value()$group == "AXIS")
