@@ -320,8 +320,9 @@ mod_explore_server <- function(input, output, session){
     }
     if (!is.null(selected_metric())){
 
-      sld_body <- get_sld_style(breaks = get_metric_quantile(selected_metric = varsel()),
-                                color = get_metric_colors(quantile_breaks = get_metric_quantile(selected_metric = varsel())),
+      sld_body <- get_sld_style(breaks = sld_get_quantile_metric(selected_region_id = region_click_id(), selected_metric = selected_metric()),
+                                colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
+                                                                                                           selected_metric = selected_metric())),
                                 metric = selected_metric())
 
       # Construct the query parameters for legend

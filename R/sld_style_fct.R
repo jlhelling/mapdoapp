@@ -1,18 +1,31 @@
-get_metric_quantile <- function(selected_metric = varsel()){
-  breaks <-  unique(quantile(selected_metric, probs = seq(0, 1, 0.2), na.rm = TRUE))
+sld_get_quantile_metric <- function(selected_region_id = region_click_id(), selected_metric = selected_metric()){
+  query <- glue("
+      SELECT
+        ROUND(percentile_cont(0.20) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q1,
+        ROUND(percentile_cont(0.40) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q2,
+        ROUND(percentile_cont(0.60) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q3,
+        ROUND(percentile_cont(0.80) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q4,
+        ROUND(percentile_cont(1) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q5
+    FROM public.network_metrics
+    WHERE gid_region = {selected_region_id}")
 
-  rounded_breaks <- round(breaks, 1)
-  return (rounded_breaks)
+  data <- dbGetQuery(conn = db_con(), statement = query)
+
+  vector <- c(data$q1, data$q2, data$q3, data$q3, data$q4, data$q5)
+
+  return(vector)
 }
 
-get_metric_colors <- function(quantile_breaks = get_metric_quantile()){
+sld_get_quantile_colors <- function(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
+                                                                            selected_metric = selected_metric())){
   colors_palette <- colorRampPalette(c("green", "red"))(length(quantile_breaks))
   return(colors_palette)
 }
 
-get_sld_style <- function(breaks = get_metric_quantile(),
-                          colors = get_metric_colors(),
-                          metric = selected_metrics) {
+get_sld_style <- function(breaks = sld_get_quantile_metric(selected_region_id = region_click_id(), selected_metric = selected_metric()),
+                          colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
+                                                                                                     selected_metric = selected_metric())),
+                          metric = selected_metrics()) {
   sld_begin <- glue('<?xml version="1.0" encoding="UTF-8"?>
     <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:se="http://www.opengis.net/se" xmlns:ogc="http://www.opengis.net/ogc">
       <NamedLayer>

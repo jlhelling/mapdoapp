@@ -56,16 +56,16 @@ get_region <- function(region_click_id = click_value()$id){
 get_network_region_with_metrics <- function(selected_region_id = region_click$id){
   query <- sprintf("
       SELECT
-      network_metrics.fid, axis, measure, toponyme, strahler, talweg_elevation_min,
-      active_channel_width, natural_corridor_width,
-      connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
-      water_channel, gravel_bars, natural_open, forest, grassland, crops,
-      diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
-      semi_natural, reversible, disconnected, built_environment,
-      water_channel_pc, gravel_bars_pc, natural_open_pc, forest_pc, grassland_pc, crops_pc,
-      diffuse_urban_pc, dense_urban_pc, infrastructures_pc, active_channel_pc,
-      riparian_corridor_pc, semi_natural_pc, reversible_pc, disconnected_pc,
-      built_environment_pc, sum_area, idx_confinement, gid_region, network_metrics.geom
+        network_metrics.fid, axis, measure, toponyme, strahler, talweg_elevation_min,
+        active_channel_width, natural_corridor_width,
+        connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
+        water_channel, gravel_bars, natural_open, forest, grassland, crops,
+        diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
+        semi_natural, reversible, disconnected, built_environment,
+        water_channel_pc, gravel_bars_pc, natural_open_pc, forest_pc, grassland_pc, crops_pc,
+        diffuse_urban_pc, dense_urban_pc, infrastructures_pc, active_channel_pc,
+        riparian_corridor_pc, semi_natural_pc, reversible_pc, disconnected_pc,
+        built_environment_pc, sum_area, idx_confinement, gid_region, network_metrics.geom
       FROM network_metrics
       WHERE  gid_region = '%s'", selected_region_id)
 
@@ -75,18 +75,24 @@ get_network_region_with_metrics <- function(selected_region_id = region_click$id
 
 data_get_min_max_strahler <- function(selected_region_id = region_click_id()){
   query <- sprintf("
-      SELECT MIN(strahler) AS min, MAX(strahler) AS max FROM network_metrics
-        WHERE gid_region = %s", selected_region_id)
+      SELECT
+        MIN(strahler) AS min,
+        MAX(strahler) AS max
+      FROM network_metrics
+      WHERE gid_region = %s", selected_region_id)
 
   data <- dbGetQuery(conn = db_con(), statement = query)
 
   return(data)
 }
 
-data_get_min_max_metric <- function(selected_region_id = region_click_id(), selected_metric){
+data_get_min_max_metric <- function(selected_region_id = region_click_id(), selected_metric = selected_metric()){
   query <- sprintf("
-      SELECT ROUND(MIN(%s)::numeric, 1) AS min, ROUND(MAX(%s)::numeric, 1) AS max FROM network_metrics
-        WHERE gid_region = %s", selected_metric, selected_metric, selected_region_id)
+      SELECT
+        ROUND(MIN(%s)::numeric, 1) AS min,
+        ROUND(MAX(%s)::numeric, 1) AS max
+      FROM network_metrics
+      WHERE gid_region = %s", selected_metric, selected_metric, selected_region_id)
 
   data <- dbGetQuery(conn = db_con(), statement = query)
 
