@@ -232,6 +232,7 @@ map_no_metric <- function(map, geoserver_url, network_metrics_wms, wms_format, m
                           strahler_filter_max = input$strahler[2],
                           data_axis, axis_group = "AXIS"){
   map %>%
+    clearGroup(metric_group) %>%
     addWMSTiles(
       baseUrl = geoserver_url,
       layers = network_metrics_wms,
