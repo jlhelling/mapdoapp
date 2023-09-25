@@ -226,7 +226,6 @@ mod_explore_server <- function(input, output, session){
       region_click_id(click_value()$id)
       selected_region_feature(get_region(region_click_id = region_click_id()))
     }
-    print(region_click_id())
   })
 
   # DATA get network_region_metrics (in reactiveVal keep data even the click_value change)
@@ -288,9 +287,13 @@ mod_explore_server <- function(input, output, session){
     }
   })
 
-  # MAP network metric
-  observeEvent(network_filter(), {
+  # reactve list to activate map update
+  map_update <- reactive({
+    list(region_click_id(), selected_metric(), input$strahler, input$metricfilter)
+  })
 
+  # MAP network metric
+  observeEvent(map_update(), {
     geoserver_url <- "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms"
     network_metrics_wms <- "mapdo:network_metrics"
     wms_format <- "image/png"
@@ -332,11 +335,6 @@ mod_explore_server <- function(input, output, session){
 
       # Build the URL
       legend_url <- modify_url(geoserver_url, query = query_params)
-
-      # old map with pg data
-      # map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
-      #            network_group = "D", data_axis = network_region_axis(),
-      #            axis_group = "AXIS")
 
       leafletProxy("exploremap") %>%
         clearGroup("D") %>%

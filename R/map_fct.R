@@ -233,6 +233,7 @@ map_no_metric <- function(map, geoserver_url, network_metrics_wms, wms_format, m
                           data_axis, axis_group = "AXIS"){
   map %>%
     clearGroup(metric_group) %>%
+    removeControl("legend") %>%
     addWMSTiles(
       baseUrl = geoserver_url,
       layers = network_metrics_wms,
