@@ -169,6 +169,7 @@ mod_explore_server <- function(input, output, session){
   # UI dynamic filter on metric selected
   output$metricsfilterUI <- renderUI({
     req(metric_field())
+    print(metric_field())
     metric_selected <- network_region_metrics()[[metric_field()]]
 
     sliderInput(ns("metricfilter"),
@@ -197,9 +198,9 @@ mod_explore_server <- function(input, output, session){
   metric_field <- reactiveVal()
 
   # change field if unit_area in percentage
-  observeEvent(!is.null(input$dynamicRadio) | !is.null(input$unit_area), ignoreInit = TRUE, ignoreNULL = TRUE, {
-    # metric_field(input$dynamicRadio)
-    if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"){
+  observeEvent(!is.null(input$dynamicRadio) && !is.null(input$unit_area), ignoreInit = TRUE, {
+    if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"
+        && (input$metric %in% c("Occupation du sol", "Continuité latérale"))){
       metric_field(paste0(input$dynamicRadio,"_pc"))
     } else {
       metric_field(input$dynamicRadio)
@@ -286,8 +287,6 @@ mod_explore_server <- function(input, output, session){
 
   # MAP network metric
   observeEvent(network_filter(), {
-
-    print(selected_region_feature())
 
     geoserver_url <- "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms"
     network_metrics_wms <- "mapdo:network_metrics"
