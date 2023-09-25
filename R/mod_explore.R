@@ -141,15 +141,16 @@ mod_explore_server <- function(input, output, session){
   # UI strahler filter
   output$strahlerfilterUI <- renderUI(
     {
-      req(network_region_metrics())
+      req(network_region_metrics(), region_click_id())
+      # query data from database
+      strahler <- isolate(data_get_min_max_strahler(selected_region_id = region_click_id()))
 
-      strahler_col <- isolate(network_region_metrics()$strahler)
       sliderInput(ns("strahler"),
                   label="Ordre de strahler",
-                  min=min(strahler_col, na.rm = TRUE),
-                  max=max(strahler_col, na.rm = TRUE),
-                  value=c(min(strahler_col, na.rm = TRUE),
-                          max(strahler_col, na.rm = TRUE)),
+                  min=strahler[["min_strahler"]],
+                  max=strahler[["max_strahler"]],
+                  value=c(strahler[["min_strahler"]],
+                          strahler[["max_strahler"]]),
                   step=1)
     })
 
@@ -169,16 +170,16 @@ mod_explore_server <- function(input, output, session){
   # UI dynamic filter on metric selected
   output$metricsfilterUI <- renderUI({
     req(metric_field())
-    print(metric_field())
+
     metric_selected <- network_region_metrics()[[metric_field()]]
 
     sliderInput(ns("metricfilter"),
                 label = names(unlist(metrics_choice()[[input$metric]]))[unlist(metrics_choice()[[input$metric]]) == metric_field()], # extract key from value
-                min = isolate(data_get_min_strahler()),
-                max = isolate(data_get_max_strahler()),
+                min = isolate(round(min(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1)),
+                max = isolate(round(max(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1)),
                 value = c(
-                  isolate(data_get_min_strahler()),
-                  isolate(data_get_max_strahler())
+                  isolate(round(min(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1)),
+                  isolate(round(max(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1))
                 )
     )
   })
@@ -218,11 +219,14 @@ mod_explore_server <- function(input, output, session){
 
   # DATA get only the region selected feature
   selected_region_feature <- reactiveVal()
+  region_click_id <- reactiveVal()
 
   observeEvent(click_value(),{
     if (click_value()$group == "B"){
-      selected_region_feature(get_region(region_click_id = click_value()$id))
+      region_click_id(click_value()$id)
+      selected_region_feature(get_region(region_click_id = region_click_id()))
     }
+    print(region_click_id())
   })
 
   # DATA get network_region_metrics (in reactiveVal keep data even the click_value change)

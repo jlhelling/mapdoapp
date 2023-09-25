@@ -36,8 +36,8 @@ get_regions_in_bassin <- function(selected_bassin_id = bassin_click$id) {
 #' @export
 #'
 #' @examples
-#' selected_region_feature <- get_region(region_click_id = region_click$id)
-get_region <- function(region_click_id = region_click$id){
+#' selected_region_feature <- get_region(region_click_id = click_value()$id)
+get_region <- function(region_click_id = click_value()$id){
   query <- sprintf("SELECT * FROM region_hydrographique
                    WHERE gid = '%s'", region_click_id)
   data <- st_read(dsn = db_con(), query = query)
@@ -73,24 +73,15 @@ get_network_region_with_metrics <- function(selected_region_id = region_click$id
   return(data)
 }
 
-data_get_min_strahler <- function(selected_region_id = region_click$id){
+data_get_min_max_strahler <- function(selected_region_id = region_click_id()){
   query <- sprintf("
-      SELECT MIN(strahler) AS min_strahler FROM network_metrics
+      SELECT MIN(strahler) AS min_strahler, MAX(strahler) AS max_strahler FROM network_metrics
         WHERE gid_region = '%s'", selected_region_id)
 
-  data <- st_read(dsn = db_con(), query = query)
+  data <- dbGetQuery(conn = db_con(), statement = query)
+
   return(data)
 }
-
-data_get_max_strahler <- function(selected_region_id = region_click$id){
-  query <- sprintf("
-      SELECT MAX(strahler) AS max_strahler FROM network_metrics
-        WHERE gid_region = '%s'", selected_region_id)
-
-  data <- st_read(dsn = db_con(), query = query)
-  return(data)
-}
-
 
 #' Create basemaps dataframe
 #'
