@@ -97,7 +97,7 @@ mod_explore_server <- function(input, output, session){
 
   # map initialization
   output$exploremap <- renderLeaflet({
-    map_init_bassins(bassins_data = data_get_bassins(), group = "BASSIN")
+    map_init_bassins(bassins_data = data_get_bassins())
   })
 
   # clicked polygon data
@@ -110,20 +110,18 @@ mod_explore_server <- function(input, output, session){
 
   # get regions data in clicked bassin
   region_hydro <- reactive({
-    req(click_value()$group == "BASSIN")
+    req(click_value()$group == params_map_group()[["bassin"]])
     data_get_regions_in_bassin(selected_bassin_id = click_value()$id)
   })
 
   # Event on click
   observeEvent(click_value(), {
-    # map regions or selected region
-    if (click_value()$group == "BASSIN"){
+    # map regions or selected bassin
+    if (click_value()$group == params_map_group()[["bassin"]]){
       # update map : zoom in clicked bassin, clear bassin data, display region in bassin
       leafletProxy("exploremap") %>%
         map_add_regions_in_bassin(bassin_click = click_value(),
-                                  regions_data = region_hydro(),
-                                  bassins_group = "BASSIN",
-                                  regions_group = "REGION")
+                                  regions_data = region_hydro())
     }
   })
 
@@ -131,7 +129,7 @@ mod_explore_server <- function(input, output, session){
 
   # UI create choose metric
   output$metricUI <- renderUI({
-    # req(click_value()$group == "REGION")
+    # req(click_value()$group == params_map_group()[["region"]])
     req(region_click_id())
     selectInput(ns("metric"), "Sélectionez une métrique :",
                 choices = names(params_metrics_choice()),
@@ -212,7 +210,7 @@ mod_explore_server <- function(input, output, session){
   network_region_axis <- reactiveVal()
 
   observeEvent(click_value(),{
-    if (click_value()$group == "REGION"){
+    if (click_value()$group == params_map_group()[["region"]]){
       network_region_axis(data_get_axis(selected_region_id = click_value()$id))
     }
   })
@@ -222,7 +220,7 @@ mod_explore_server <- function(input, output, session){
   region_click_id <- reactiveVal()
 
   observeEvent(click_value(),{
-    if (click_value()$group == "REGION"){
+    if (click_value()$group == params_map_group()[["region"]]){
       region_click_id(click_value()$id)
       selected_region_feature(data_get_region(region_click_id = region_click_id()))
     }
@@ -230,7 +228,7 @@ mod_explore_server <- function(input, output, session){
 
   # DATA network by selected axis
   selected_axis <- reactive({
-    req(click_value()$group == "AXIS")
+    req(click_value()$group == params_map_group()[["axis"]])
     data_get_network_axis(selected_axis_id = click_value()$id)
   })
 
@@ -238,14 +236,12 @@ mod_explore_server <- function(input, output, session){
 
   # MAP region selected
   observeEvent(click_value(), {
-    if (click_value()$group == "REGION"){
+    if (click_value()$group == params_map_group()[["region"]]){
 
       # map region clicked with region clicked and overlayers
       leafletProxy("exploremap") %>%
         map_region_clicked(region_click = click_value(),
-                           selected_region_feature = selected_region_feature(),
-                           regions_group = "REGION",
-                           selected_region_group = "SELECT_REGION")
+                           selected_region_feature = selected_region_feature())
     }
   })
 
@@ -266,12 +262,10 @@ mod_explore_server <- function(input, output, session){
         map_no_metric(geoserver_url = params_geoserver()[["url"]],
                       network_metrics_wms = params_geoserver()[["layer"]],
                       wms_format = params_geoserver()[["format"]],
-                      metric_group = "METRIC",
                       selected_region_id = selected_region_feature()[["gid"]],
                       strahler_filter_min = input$strahler[1],
                       strahler_filter_max = input$strahler[2],
-                      data_axis = network_region_axis(),
-                      axis_group = "AXIS")
+                      data_axis = network_region_axis())
 
     }
     if (!is.null(selected_metric())){
@@ -294,7 +288,6 @@ mod_explore_server <- function(input, output, session){
       legend_url <- modify_url(params_geoserver()[["url"]], query = query_params)
 
       leafletProxy("exploremap") %>%
-        clearGroup("D") %>%
         clearGroup("AXIS") %>%
         clearGroup("METRIC") %>%
         addWMSTiles(
@@ -334,7 +327,7 @@ mod_explore_server <- function(input, output, session){
 
   # PROFILE longitudinale profile if axis clicked
   output$long_profile <- renderPlotly({
-    req(click_value()$group == "AXIS")
+    req(click_value()$group == params_map_group()[["axis"]])
 
     selected_axis_df <- selected_axis() %>%
       as.data.frame()

@@ -7,8 +7,8 @@
 #' @export
 #'
 #' @examples
-#' map <- map_init_bassins(bassins_data = get_bassins(), group = "BASSIN")
-map_init_bassins <- function(bassins_data = get_bassins(), group = "BASSIN") {
+#' map <- map_init_bassins(bassins_data = get_bassins())
+map_init_bassins <- function(bassins_data = get_bassins()) {
   leaflet() %>%
     setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
     map_add_basemaps(data_basemaps_df()) %>%
@@ -23,7 +23,7 @@ map_init_bassins <- function(bassins_data = get_bassins(), group = "BASSIN") {
                   fillColor = "#a8d1ff",
                   fillOpacity = 0.5),
                 label = ~htmlEscape(lbbh),
-                group = group
+                group = params_map_group()[["bassin"]]
     ) %>%
     addScaleBar(pos = "bottomleft",
                 scaleBarOptions(metric = TRUE, imperial = FALSE)) %>%
@@ -46,16 +46,12 @@ map_init_bassins <- function(bassins_data = get_bassins(), group = "BASSIN") {
 #'
 #' @examples
 #' map_add_regions_in_bassin(bassin_click = bassin_click,
-#' regions_data = region_hydro,
-#' bassins_group = "BASSIN",
-#' regions_group = "REGION")
+#' regions_data = region_hydro)
 map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
-                                      regions_data = region_hydro,
-                                      bassins_group= "BASSIN",
-                                      regions_group = "REGION"){
+                                      regions_data = region_hydro){
   map %>%
     setView(lng = bassin_click$lng , lat = bassin_click$lat, zoom = 6.5) %>%
-    clearGroup(bassins_group) %>%
+    clearGroup(params_map_group()[["bassin"]]) %>%
     addPolygons(data = regions_data,
                 layerId = ~gid,
                 smoothFactor = 2,
@@ -67,7 +63,7 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
                   fillColor = "#a8d1ff",
                   fillOpacity = 0.5),
                 label = ~htmlEscape(lbregionhy),
-                group = regions_group
+                group = params_map_group()[["region"]]
     )
 }
 
@@ -84,14 +80,10 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
 #'
 #' @examples
 #' map_region_clicked(region_click = region_click,
-#' selected_region_feature = selected_region_feature,
-#' regions_group = "REGION",
-#' selected_region_group = "SELECT_REGION")
+#' selected_region_feature = selected_region_feature)
 map_region_clicked <- function(map,
                                region_click = region_click,
-                               selected_region_feature = selected_region_feature,
-                               regions_group = "REGION",
-                               selected_region_group = "SELECT_REGION"){
+                               selected_region_feature = selected_region_feature){
   map %>%
   setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
     # display the region clicked
@@ -101,10 +93,10 @@ map_region_clicked <- function(map,
                 fillOpacity = 0.01,
                 weight = 2,
                 color="black",
-                group = selected_region_group,
+                group = params_map_group()[["select_region"]],
                 options = pathOptions(interactive = FALSE)
     ) %>%
-    clearGroup(regions_group) %>%
+    clearGroup(params_map_group()[["region"]]) %>%
     # add ROE overlayers from postgresql
     addCircleMarkers (data = data_get_roe_in_region(region_click$id),
                       radius = 3,
@@ -114,15 +106,15 @@ map_region_clicked <- function(map,
                       fillColor = "orange",
                       fillOpacity = 0.9,
                       popup = ~nomprincip,
-                      group = "ROE") %>%
+                      group = params_map_group()[["roe"]]) %>%
     # add WMS overlayers
     map_add_overlayers(data_overlayers_df()) %>%
     addLayersControl(
       baseGroups = c(data_basemaps_df()$name),
       options = layersControlOptions(collapsed = TRUE),
-      overlayGroups = c("ROE", data_overlayers_df()$name)) %>%
+      overlayGroups = c(params_map_group()[["roe"]], data_overlayers_df()$name)) %>%
     # ROE layer hidden by defaut
-    hideGroup(c("ROE", data_overlayers_df()$name))
+    hideGroup(c(params_map_group()[["roe"]], data_overlayers_df()$name))
 }
 
 #' Update metric mapping
@@ -140,39 +132,58 @@ map_region_clicked <- function(map,
 #' @examples
 #' map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
 #' network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
-map_metric <- function(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
-                       network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS") {
+# map_metric <- function(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
+#                        network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS") {
+#
+#   breaks <-  unique(quantile(varsel, probs = seq(0, 1, 0.2), na.rm = TRUE))
+#
+#   rounded_breaks <- round(breaks, 1)
+#
+#   # Define color palette for Reds
+#   color_palette <- colorRampPalette(c("green", "red"))(length(breaks))
+#
+#   leafletProxy(map_id) %>%
+#     clearGroup(network_group) %>%
+#     clearGroup(axis_group) %>%
+#     # removeControl(1) %>%
+#     addPolylines(data = data_map, weight = 5, color = ~ {
+#       ifelse(is.na(varsel), "grey",
+#              color_palette[findInterval(varsel, breaks, all.inside = TRUE)])
+#     },
+#     group = network_group,
+#     options = pathOptions(interactive = FALSE)) %>%
+#     addLegend("bottomright", colors = color_palette, labels = rounded_breaks,
+#               title = "Légende", opacity = 1, layerId = 1) %>%
+#     addPolylines(data = data_axis,
+#                  layerId = ~fid,
+#                  weight = 5,
+#                  color = color_palette,
+#                  opacity = 0,
+#                  highlight = highlightOptions(
+#                    opacity = 1,
+#                    color = "red"
+#                  ),
+#                  group = axis_group)
+# }
 
-  breaks <-  unique(quantile(varsel, probs = seq(0, 1, 0.2), na.rm = TRUE))
-
-  rounded_breaks <- round(breaks, 1)
-
-  # Define color palette for Reds
-  color_palette <- colorRampPalette(c("green", "red"))(length(breaks))
-
-  leafletProxy(map_id) %>%
-    clearGroup(network_group) %>%
-    clearGroup(axis_group) %>%
-    # removeControl(1) %>%
-    addPolylines(data = data_map, weight = 5, color = ~ {
-      ifelse(is.na(varsel), "grey",
-             color_palette[findInterval(varsel, breaks, all.inside = TRUE)])
-    },
-    group = network_group,
-    options = pathOptions(interactive = FALSE)) %>%
-    addLegend("bottomright", colors = color_palette, labels = rounded_breaks,
-              title = "Légende", opacity = 1, layerId = 1) %>%
-    addPolylines(data = data_axis,
-                 layerId = ~fid,
-                 weight = 5,
-                 color = color_palette,
-                 opacity = 0,
-                 highlight = highlightOptions(
-                   opacity = 1,
-                   color = "red"
-                 ),
-                 group = axis_group)
-}
+# map_wms_metric <-function(map, selected_region_id, strahler_filter_min, strahler_filter_min){
+#   map %>%
+#     addWMSTiles(
+#       baseUrl = params_geoserver[["url"]],
+#       layers = params_geoserver[["layer"]],
+#       attribution = params_geoserver[["attribution"]],
+#       options = WMSTileOptions(
+#         format = params_geoserver[["format"]],
+#         request = params_geoserver[["query_map"]],
+#         transparent = TRUE,
+#         style = params_geoserver[["metric_basic_style"]],
+#         # filter WMS
+#         cql_filter=paste0("gid_region=",selected_region_id,
+#                           " AND strahler>=",strahler_filter_min,
+#                           " AND strahler <= ",strahler_filter_max)
+#       ),
+#       group = params_map_group()[["metric"]])
+# }
 
 
 #' Update map without metric selected
@@ -187,14 +198,14 @@ map_metric <- function(map_id = "exploremap", data_map = network_filter(), varse
 #' @examples
 #' leafletProxy("exploremap") %>%
 #'   map_no_metric(data_network = network_filter(),  network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
-map_no_metric <- function(map, geoserver_url, network_metrics_wms, wms_format, metric_group = "METRIC",
+map_no_metric <- function(map, geoserver_url, network_metrics_wms, wms_format,
                           selected_region_id = selected_region_feature()[["gid"]],
                           strahler_filter_min = input$strahler[1],
                           strahler_filter_max = input$strahler[2],
-                          data_axis, axis_group = "AXIS"){
+                          data_axis){
   map %>%
-    clearGroup(metric_group) %>%
-    removeControl("LEGEND") %>%
+    clearGroup(params_map_group()[["metric"]]) %>%
+    removeControl(params_map_group()[["legend"]]) %>%
     addWMSTiles(
       baseUrl = geoserver_url,
       layers = network_metrics_wms,
@@ -209,7 +220,7 @@ map_no_metric <- function(map, geoserver_url, network_metrics_wms, wms_format, m
                           " AND strahler>=",strahler_filter_min,
                           " AND strahler <= ",strahler_filter_max)
       ),
-      group = metric_group) %>%
+      group = params_map_group()[["metric"]]) %>%
     addPolylines(data = data_axis,
                  layerId = ~fid,
                  weight = 5,
@@ -219,7 +230,7 @@ map_no_metric <- function(map, geoserver_url, network_metrics_wms, wms_format, m
                    opacity = 1,
                    color = "red"
                  ),
-                 group = axis_group)
+                 group = params_map_group()[["axis"]])
 }
 
 #' Add all the basemaps

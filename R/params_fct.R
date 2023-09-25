@@ -4,12 +4,28 @@ params_geoserver <- function(){
     layer = "mapdo:network_metrics",
     format = "image/png",
     query_legend = "GetLegendGraphic",
+    query_map = "GetMap",
     version = "1.0.0",
-    layer_style = "mapdo:network_metrics_style")
+    metric_basic_style = "mapdo:network_basic_style",
+    attribution = "CNRS - EVS")
 
   return(params)
 }
 
+
+params_map_group <- function(){
+  params <- list(
+    bassin = "BASSIN",
+    region = "REGION",
+    select_region = "SELECT_REGION",
+    metric = "METRIC",
+    axis = "AXIS",
+    legend = "LEGEND",
+    roe = "ROE"
+  )
+
+  return(params)
+}
 
 #' Get Choices for Network Metrics
 #'
