@@ -97,7 +97,7 @@ mod_explore_server <- function(input, output, session){
 
   # map initialization
   output$exploremap <- renderLeaflet({
-    map_init_bassins(bassins_data = get_bassins(), group = "A")
+    map_init_bassins(bassins_data = data_get_bassins(), group = "A")
   })
 
   # clicked polygon data
@@ -111,7 +111,7 @@ mod_explore_server <- function(input, output, session){
   # get regions data in clicked bassin
   region_hydro <- reactive({
     req(click_value()$group == "A")
-    get_regions_in_bassin(selected_bassin_id = click_value()$id)
+    data_get_regions_in_bassin(selected_bassin_id = click_value()$id)
   })
 
   # Event on click
@@ -134,7 +134,7 @@ mod_explore_server <- function(input, output, session){
     # req(click_value()$group == "B")
     req(region_click_id())
     selectInput(ns("metric"), "Sélectionez une métrique :",
-                choices = names(metrics_choice()),
+                choices = names(data_metrics_choice()),
                 selected  = "Largeurs") # selectInput for dynamic radio buttons
   })
 
@@ -162,8 +162,8 @@ mod_explore_server <- function(input, output, session){
     selected_metric <- input$metric
 
     radioButtons(ns("dynamicRadio"), sprintf("%s :", selected_metric),
-                 choiceNames = names(metrics_choice()[[selected_metric]]),
-                 choiceValues = as.list(unname(metrics_choice()[[selected_metric]])),
+                 choiceNames = names(data_metrics_choice()[[selected_metric]]),
+                 choiceValues = as.list(unname(data_metrics_choice()[[selected_metric]])),
                  selected = character(0))
   })
 
@@ -174,7 +174,7 @@ mod_explore_server <- function(input, output, session){
     metric <- data_get_min_max_metric(selected_region_id = region_click_id(), selected_metric = selected_metric())
 
     sliderInput(ns("metricfilter"),
-                label = names(unlist(metrics_choice()[[input$metric]]))[unlist(metrics_choice()[[input$metric]]) == selected_metric()], # extract key from value
+                label = names(unlist(data_metrics_choice()[[input$metric]]))[unlist(data_metrics_choice()[[input$metric]]) == selected_metric()], # extract key from value
                 min = isolate(metric[["min"]]),
                 max = isolate(metric[["max"]]),
                 value = c(
@@ -213,7 +213,7 @@ mod_explore_server <- function(input, output, session){
 
   observeEvent(click_value(),{
     if (click_value()$group == "B"){
-      network_region_axis(get_axis(selected_region_id = click_value()$id))
+      network_region_axis(data_get_axis(selected_region_id = click_value()$id))
     }
   })
 
@@ -224,14 +224,14 @@ mod_explore_server <- function(input, output, session){
   observeEvent(click_value(),{
     if (click_value()$group == "B"){
       region_click_id(click_value()$id)
-      selected_region_feature(get_region(region_click_id = region_click_id()))
+      selected_region_feature(data_get_region(region_click_id = region_click_id()))
     }
   })
 
   # DATA network by selected axis
   selected_axis <- reactive({
     req(click_value()$group == "AXIS")
-    get_network_axis(selected_axis_id = click_value()$id)
+    data_get_network_axis(selected_axis_id = click_value()$id)
   })
 
   ### MAP ####

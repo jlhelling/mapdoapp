@@ -19,5 +19,5 @@ Add all the basemaps
 }
 \examples{
 map \%>\%
-add_basemaps(basemaps_df())
+add_basemaps(data_basemaps_df())
 }

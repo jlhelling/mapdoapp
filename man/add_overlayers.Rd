@@ -19,5 +19,5 @@ Add all the overlayers
 }
 \examples{
 map \%>\%
-add_overlayers(overlayers_df())
+add_overlayers(data_overlayers_df())
 }

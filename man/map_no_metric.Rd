@@ -6,9 +6,14 @@
 \usage{
 map_no_metric(
   map,
-  data_network = network_filter(),
-  network_group = "D",
-  data_axis = network_region_axis(),
+  geoserver_url,
+  network_metrics_wms,
+  wms_format,
+  metric_group = "METRIC",
+  selected_region_id = selected_region_feature()[["gid"]],
+  strahler_filter_min = input$strahler[1],
+  strahler_filter_max = input$strahler[2],
+  data_axis,
   axis_group = "AXIS"
 )
 }

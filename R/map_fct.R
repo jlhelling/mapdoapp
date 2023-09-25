@@ -11,7 +11,7 @@
 map_init_bassins <- function(bassins_data = get_bassins(), group = "A") {
   leaflet() %>%
     setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
-    add_basemaps(basemaps_df()) %>%
+    add_basemaps(data_basemaps_df()) %>%
     addPolygons(data = bassins_data,
                 layerId = ~cdbh,
                 smoothFactor = 2,
@@ -28,7 +28,7 @@ map_init_bassins <- function(bassins_data = get_bassins(), group = "A") {
     addScaleBar(pos = "bottomleft",
                 scaleBarOptions(metric = TRUE, imperial = FALSE)) %>%
     addLayersControl(
-      baseGroups = c(basemaps_df()$name),
+      baseGroups = c(data_basemaps_df()$name),
       options = layersControlOptions(collapsed = TRUE)
     )
 }
@@ -106,7 +106,7 @@ map_region_clicked <- function(map,
     ) %>%
     clearGroup(regions_group) %>%
     # add ROE overlayers from postgresql
-    addCircleMarkers (data = get_roe_in_region(region_click$id),
+    addCircleMarkers (data = data_get_roe_in_region(region_click$id),
                       radius = 3,
                       weight = 0.5,
                       opacity = 0.9,
@@ -116,13 +116,13 @@ map_region_clicked <- function(map,
                       popup = ~nomprincip,
                       group = "ROE") %>%
     # add WMS overlayers
-    add_overlayers(overlayers_df()) %>%
+    add_overlayers(data_overlayers_df()) %>%
     addLayersControl(
-      baseGroups = c(basemaps_df()$name),
+      baseGroups = c(data_basemaps_df()$name),
       options = layersControlOptions(collapsed = TRUE),
-      overlayGroups = c("ROE", overlayers_df()$name)) %>%
+      overlayGroups = c("ROE", data_overlayers_df()$name)) %>%
     # ROE layer hidden by defaut
-    hideGroup(c("ROE", overlayers_df()$name))
+    hideGroup(c("ROE", data_overlayers_df()$name))
 }
 
 # map_metric <- function(map, ){
@@ -271,7 +271,7 @@ map_no_metric <- function(map, geoserver_url, network_metrics_wms, wms_format, m
 #'
 #' @examples
 #' map %>%
-#' add_basemaps(basemaps_df())
+#' add_basemaps(data_basemaps_df())
 add_basemaps <- function(map, basemaps) {
   for (i in 1:nrow(basemaps)) {
     map <- map %>%
@@ -300,7 +300,7 @@ add_basemaps <- function(map, basemaps) {
 #'
 #' @examples
 #' map %>%
-#' add_overlayers(overlayers_df())
+#' add_overlayers(data_overlayers_df())
 add_overlayers <- function(map, overlayers) {
   for (i in 1:nrow(overlayers)) {
     map <- map %>%
