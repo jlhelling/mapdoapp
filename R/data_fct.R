@@ -148,26 +148,56 @@ get_axis <- function(selected_region_id = region_click$id){
   return(data)
 }
 
-#' get network data from selected axis
-#'
-#' @param network_data network data
-#' @param axis_id axis id selected
-#' @param measure_col measure distance column
-#'
-#' @return data.frame
-#' @export
-#'
-#' @examples
-#' network_axis <- get_network_axis(network_data = network_region_metrics(), measure_col = "measure"
-#'   axis_id = click_value()$id)
-get_network_axis <- function(network_data = network_region_metrics(), measure_col = "measure",
-                             axis_id = click_value()$id){
-  data <- network_data %>%
+#' #' get network data from selected axis
+#' #'
+#' #' @param network_data network data
+#' #' @param axis_id axis id selected
+#' #' @param measure_col measure distance column
+#' #'
+#' #' @return data.frame
+#' #' @export
+#' #'
+#' #' @examples
+#' #' network_axis <- get_network_axis(network_data = network_region_metrics(), measure_col = "measure"
+#' #'   axis_id = click_value()$id)
+#' get_network_axis <- function(network_data = network_region_metrics(), measure_col = "measure",
+#'                              axis_id = click_value()$id){
+#'   data <- network_data %>%
+#'     as.data.frame() %>%
+#'     filter(axis == axis_id) %>%
+#'     arrange("measure")
+#'   return(data)
+#' }
+
+get_network_axis <- function(selected_axis_id = click_value()$id){
+
+  query <- sprintf("
+      SELECT
+      network_metrics.fid, axis, measure, toponyme, strahler, talweg_elevation_min,
+      active_channel_width, natural_corridor_width,
+      connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
+      water_channel, gravel_bars, natural_open, forest, grassland, crops,
+      diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
+      semi_natural, reversible, disconnected, built_environment,
+      water_channel_pc, gravel_bars_pc, natural_open_pc, forest_pc, grassland_pc, crops_pc,
+      diffuse_urban_pc, dense_urban_pc, infrastructures_pc, active_channel_pc,
+      riparian_corridor_pc, semi_natural_pc, reversible_pc, disconnected_pc,
+      built_environment_pc, sum_area, idx_confinement, gid_region, network_metrics.geom
+      FROM network_metrics
+      WHERE  axis = '%s'", selected_axis_id)
+
+  data <- st_read(dsn = db_con(), query = query) %>%
     as.data.frame() %>%
-    filter(axis == axis_id) %>%
-    arrange("measure")
+    arrange(measure)
+
+  # data <- network_data %>%
+  #   as.data.frame() %>%
+  #   filter(axis == axis_id) %>%
+  #   arrange("measure")
   return(data)
 }
+
+
 
 
 #' map available metrics
