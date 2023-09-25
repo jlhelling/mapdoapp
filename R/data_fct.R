@@ -75,8 +75,18 @@ get_network_region_with_metrics <- function(selected_region_id = region_click$id
 
 data_get_min_max_strahler <- function(selected_region_id = region_click_id()){
   query <- sprintf("
-      SELECT MIN(strahler) AS min_strahler, MAX(strahler) AS max_strahler FROM network_metrics
-        WHERE gid_region = '%s'", selected_region_id)
+      SELECT MIN(strahler) AS min, MAX(strahler) AS max FROM network_metrics
+        WHERE gid_region = %s", selected_region_id)
+
+  data <- dbGetQuery(conn = db_con(), statement = query)
+
+  return(data)
+}
+
+data_get_min_max_metric <- function(selected_region_id = region_click_id(), selected_metric){
+  query <- sprintf("
+      SELECT ROUND(MIN(%s)::numeric, 1) AS min, ROUND(MAX(%s)::numeric, 1) AS max FROM network_metrics
+        WHERE gid_region = %s", selected_metric, selected_metric, selected_region_id)
 
   data <- dbGetQuery(conn = db_con(), statement = query)
 

@@ -132,7 +132,7 @@ mod_explore_server <- function(input, output, session){
   # UI create choose metric
   output$metricUI <- renderUI({
     # req(click_value()$group == "B")
-    req(network_region_metrics())
+    req(region_click_id())
     selectInput(ns("metric"), "Sélectionez une métrique :",
                 choices = names(metrics_choice()),
                 selected  = "Largeurs") # selectInput for dynamic radio buttons
@@ -141,16 +141,16 @@ mod_explore_server <- function(input, output, session){
   # UI strahler filter
   output$strahlerfilterUI <- renderUI(
     {
-      req(network_region_metrics(), region_click_id())
+      req(region_click_id())
       # query data from database
       strahler <- isolate(data_get_min_max_strahler(selected_region_id = region_click_id()))
 
       sliderInput(ns("strahler"),
                   label="Ordre de strahler",
-                  min=strahler[["min_strahler"]],
-                  max=strahler[["max_strahler"]],
-                  value=c(strahler[["min_strahler"]],
-                          strahler[["max_strahler"]]),
+                  min=strahler[["min"]],
+                  max=strahler[["max"]],
+                  value=c(strahler[["min"]],
+                          strahler[["max"]]),
                   step=1)
     })
 
@@ -169,17 +169,17 @@ mod_explore_server <- function(input, output, session){
 
   # UI dynamic filter on metric selected
   output$metricsfilterUI <- renderUI({
-    req(metric_field())
+    req(selected_metric())
 
-    metric_selected <- network_region_metrics()[[metric_field()]]
+    metric <- data_get_min_max_metric(selected_region_id = region_click_id(), selected_metric = selected_metric())
 
     sliderInput(ns("metricfilter"),
-                label = names(unlist(metrics_choice()[[input$metric]]))[unlist(metrics_choice()[[input$metric]]) == metric_field()], # extract key from value
-                min = isolate(round(min(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1)),
-                max = isolate(round(max(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1)),
+                label = names(unlist(metrics_choice()[[input$metric]]))[unlist(metrics_choice()[[input$metric]]) == selected_metric()], # extract key from value
+                min = isolate(metric[["min"]]),
+                max = isolate(metric[["max"]]),
                 value = c(
-                  isolate(round(min(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1)),
-                  isolate(round(max(metric_selected[is.finite(metric_selected)], na.rm = TRUE), digits=1))
+                  isolate(metric[["min"]]),
+                  isolate(metric[["max"]])
                 )
     )
   })
@@ -196,15 +196,15 @@ mod_explore_server <- function(input, output, session){
   ### DATA ####
 
   # metric selected by user
-  metric_field <- reactiveVal()
+  selected_metric <- reactiveVal()
 
   # change field if unit_area in percentage
   observeEvent(!is.null(input$dynamicRadio) && !is.null(input$unit_area), ignoreInit = TRUE, {
     if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"
         && (input$metric %in% c("Occupation du sol", "Continuité latérale"))){
-      metric_field(paste0(input$dynamicRadio,"_pc"))
+      selected_metric(paste0(input$dynamicRadio,"_pc"))
     } else {
-      metric_field(input$dynamicRadio)
+      selected_metric(input$dynamicRadio)
     }
   })
 
@@ -248,9 +248,9 @@ mod_explore_server <- function(input, output, session){
         filter(!is.na(strahler), between(strahler, input$strahler[1], input$strahler[2]))
     }
 
-    if (!is.null(input$metricfilter) && !is.null(metric_field())){
+    if (!is.null(input$metricfilter) && !is.null(selected_metric())){
       data <- data %>%
-        filter(!is.na(!!sym(metric_field())), between(!!sym(metric_field()), input$metricfilter[1], input$metricfilter[2]))
+        filter(!is.na(!!sym(selected_metric())), between(!!sym(selected_metric()), input$metricfilter[1], input$metricfilter[2]))
     }
 
     return(data)
@@ -262,7 +262,7 @@ mod_explore_server <- function(input, output, session){
     if (is.null(network_filter())){
       return(NULL)
     } else {
-      network_filter()[[metric_field()]]
+      network_filter()[[selected_metric()]]
     }
   })
 
@@ -301,7 +301,7 @@ mod_explore_server <- function(input, output, session){
     if (is.null(input$strahler)) {
       return (NULL)
     }
-    if (is.null(metric_field())) {
+    if (is.null(selected_metric())) {
 
       leafletProxy("exploremap") %>%
         map_no_metric(geoserver_url = geoserver_url,
@@ -315,11 +315,11 @@ mod_explore_server <- function(input, output, session){
                       axis_group = "AXIS")
 
     }
-    if (!is.null(metric_field())){
+    if (!is.null(selected_metric())){
 
       sld_body <- get_sld_style(breaks = get_metric_quantile(selected_metric = varsel()),
                                 color = get_metric_colors(quantile_breaks = get_metric_quantile(selected_metric = varsel())),
-                                metric = metric_field())
+                                metric = selected_metric())
 
       # Construct the query parameters for legend
       query_params <- list(
@@ -354,8 +354,8 @@ mod_explore_server <- function(input, output, session){
             cql_filter=paste0("gid_region=",selected_region_feature()[["gid"]],
                               " AND strahler>=",input$strahler[1],
                               " AND strahler <= ",input$strahler[2],
-                              " AND ",metric_field(),">=",input$metricfilter[1],
-                              " AND ",metric_field(),"<=",input$metricfilter[2]),
+                              " AND ",selected_metric(),">=",input$metricfilter[1],
+                              " AND ",selected_metric(),"<=",input$metricfilter[2]),
             sld_body = sld_body
             ),
           group = "METRIC"
