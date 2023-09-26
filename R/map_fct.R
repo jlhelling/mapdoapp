@@ -160,6 +160,35 @@ map_region_clicked <- function(map,
     hideGroup(c(params_map_group()[["roe"]], data_overlayers_df()$name))
 }
 
+#' Add Legend for ROE to a Leaflet Map
+#'
+#' This function adds a legend for ROE to a Leaflet map.
+#'
+#' @param map An existing Leaflet map to which the legend for ROE will be added.
+#'
+#' @return An updated Leaflet map with the legend for ROE added.
+#'
+#' @examples
+#' \dontrun{
+#'   # Example usage:
+#'   updated_map <- map_legend_roe(map = existing_map)
+#' }
+#'
+#' @importFrom leaflet addLegend
+#'
+#' @export
+map_legend_roe <- function(map){
+  map %>%
+    addLegend(
+      position = "bottomright",
+      labels = params_map_group()[["roe"]],
+      colors = paste0("orange", "; border-radius: 50%; width: 10px; height: 10px; margin-top:4px;"),
+      opacity = 0.9,
+      layerId = params_map_group()[["roe"]]
+    )
+  return(map)
+}
+
 #' Add WMS Tiles with Metric Data to an Existing Leaflet Map
 #'
 #' This function adds WMS tiles with metric data to an existing Leaflet map, allowing for customization of style and filtering.

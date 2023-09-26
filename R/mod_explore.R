@@ -243,6 +243,20 @@ mod_explore_server <- function(input, output, session){
         map_region_clicked(region_click = click_value(),
                            selected_region_feature = selected_region_feature())
     }
+
+
+  })
+
+  # display ROE legend
+  observeEvent(input$exploremap_groups, {
+    if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
+      leafletProxy("exploremap") %>%
+        map_legend_roe()
+    } else {
+      leafletProxy("exploremap") %>%
+        removeControl(layerId = params_map_group()[["roe"]])
+    }
+
   })
 
   # reactive list to activate map update
@@ -267,6 +281,8 @@ mod_explore_server <- function(input, output, session){
         map_no_metric(style = params_geoserver()[["metric_basic_style"]],
                       cql_filter = cql_filter, sld_body = NULL,
                       data_axis = network_region_axis())
+
+      print(input$exploremap_groups)
 
     }
     # metric selected
@@ -302,6 +318,7 @@ mod_explore_server <- function(input, output, session){
         map_metric(style = "",
                    cql_filter = cql_filter, sld_body = sld_body, legend_url = legend_url,
                    data_axis = network_region_axis())
+      print(input$exploremap_groups)
     }
   })
 
