@@ -152,10 +152,11 @@ data_get_min_max_metric <- function(selected_region_id = region_click_id(), sele
 #' @export
 data_basemaps_df <- function(){
   basemaps <- data.frame(
-    name = c("Plan IGN", "Satellite IGN", "Géologie"),
-    url = c("https://wxs.ign.fr/cartes/geoportail/r/wms", "https://wxs.ign.fr/ortho/geoportail/r/wms", "http://geoservices.brgm.fr/geologie"),
-    layer = c("GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2", "HR.ORTHOIMAGERY.ORTHOPHOTOS", "GEOLOGIE"),
-    attribution = c("IGN-F/Géoportail", "IGN-F/Géoportail", "BRGM")
+    name = c("Elévation", "Plan IGN", "Satellite IGN", "Géologie"),
+    url = c("https://wxs.ign.fr/altimetrie/geoportail/r/wms", "https://wxs.ign.fr/cartes/geoportail/r/wms", "https://wxs.ign.fr/ortho/geoportail/r/wms", "http://geoservices.brgm.fr/geologie"),
+    layer = c("ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES", "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2", "HR.ORTHOIMAGERY.ORTHOPHOTOS", "GEOLOGIE"),
+    attribution = c("IGN-F/Géoportail", "IGN-F/Géoportail", "IGN-F/Géoportail", "BRGM"),
+    style = c("hypso","", "", "")
   )
   return(basemaps)
 }
@@ -176,10 +177,10 @@ data_basemaps_df <- function(){
 #' @export
 data_overlayers_df <- function(){
   overlayers <- data.frame(
-    name = c("Zone inondable débordement centenale", "Ouvrage protection inondation"),
-    url = c("https://georisques.gouv.fr/services", "https://georisques.gouv.fr/services"),
-    layer = c("ALEA_SYNT_01_02MOY_FXX", "OUV_PROTECTION_FXX"),
-    attribution = c("Georisques", "Georisques")
+    name = c("Courbe de niveau", "Zone inondable débordement centenale", "Ouvrage protection inondation"),
+    url = c("https://wxs.ign.fr/altimetrie/geoportail/r/wms", "https://georisques.gouv.fr/services", "https://georisques.gouv.fr/services"),
+    layer = c("ELEVATION.CONTOUR.LINE", "ALEA_SYNT_01_02MOY_FXX", "OUV_PROTECTION_FXX"),
+    attribution = c("IGN-F/Géoportail", "Georisques", "Georisques")
   )
   return(overlayers)
 }

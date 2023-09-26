@@ -311,7 +311,8 @@ map_add_basemaps <- function(map, basemaps) {
         options = WMSTileOptions(
           format = "image/png",
           transparent = TRUE,
-          opacity = 0.7
+          opacity = 0.7,
+          style = basemaps$style[i],
         ),
         group = basemaps$name[i]
       )
