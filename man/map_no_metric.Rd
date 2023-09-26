@@ -2,30 +2,37 @@
 % Please edit documentation in R/map_fct.R
 \name{map_no_metric}
 \alias{map_no_metric}
-\title{Update map without metric selected}
+\title{Add hydrological network when no metric is selected to existing map}
 \usage{
 map_no_metric(
   map,
-  data_network = network_filter(),
-  network_group = "D",
-  data_axis = network_region_axis(),
-  axis_group = "AXIS"
+  style = params_geoserver()[["metric_basic_style"]],
+  cql_filter = "",
+  sld_body = "",
+  data_axis = network_region_axis()
 )
 }
 \arguments{
-\item{map}{map to update}
+\item{map}{An existing Leaflet map to be updated.}
 
-\item{data_axis}{axis data}
+\item{style}{The style to apply to the WMS tiles.}
 
-\item{axis_group}{axis layer group}
+\item{cql_filter}{A CQL filter to apply to the WMS request.}
+
+\item{sld_body}{A custom SLD (Styled Layer Descriptor) body for symbology customization.}
+
+\item{data_axis}{A data frame containing axis data.}
 }
 \value{
-update leaflet map
+An updated Leaflet map with metric layers cleared, the legend removed, and a transparent axis added.
 }
 \description{
-Update map without metric selected
+This function clears metric layers, removes the legend, add wms metric and adds a transparent axis to an existing Leaflet map.
 }
 \examples{
-leafletProxy("exploremap") \%>\%
-  map_no_metric(data_network = network_filter(),  network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
+\dontrun{
+  # Example usage:
+  updated_map <- map_no_metric(map = existing_map, style = "custom_style", cql_filter = "metric > 100", sld_body = "<sld>...</sld>", data_axis = some_axis_data)
+}
+
 }

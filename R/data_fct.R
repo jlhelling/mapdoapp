@@ -1,86 +1,156 @@
-#' get hydrographic bassin from database
+#' Get Hydrographic Basins
 #'
-#' @return sf data.frame
-#' @export
+#' This function retrieves hydrographic basins.
+#'
+#' @return A sf data frame containing information about hydrographic basins.
 #'
 #' @examples
-#' bassin_hydro <- get_bassins()
-get_bassins <- function() {
+#' \dontrun{
+#'   # Example usage:
+#'   data <- data_get_bassins()
+#' }
+#'
+#' @importFrom sf st_read
+#'
+#' @export
+data_get_bassins <- function() {
   query <- "SELECT * FROM bassin_hydrographique"
-  data <- st_read(dsn = db_con(), query = query)
+  data <- sf::st_read(dsn = db_con(), query = query)
   return(data)
 }
 
-#' get the hydrographic regions from the selected bassin
+
+#' Get all the hydrological regions in a Hydrographic Basin
 #'
-#' @param selected_region
+#' This function retrieves regions within a specified hydrographic basin based on its ID.
 #'
-#' @return sf data.frame
-#' @export
+#' @param selected_bassin_id The ID of the selected hydrographic basin.
+#'
+#' @return A df data frame containing regions within the specified hydrographic basin.
 #'
 #' @examples
-#' region_hydro <- get_regions_in_bassin(selected_bassin_id = bassin_click$id)
-get_regions_in_bassin <- function(selected_bassin_id = bassin_click$id) {
+#' \dontrun{
+#'   # Example usage:
+#'   data <- data_get_regions_in_bassin(selected_bassin_id = 'cdbh_id')
+#' }
+#'
+#' @importFrom sf st_read
+#'
+#' @export
+data_get_regions_in_bassin <- function(selected_bassin_id = bassin_click$id) {
   query <-
     sprintf("SELECT * FROM region_hydrographique WHERE cdbh LIKE '%s'",
             selected_bassin_id)
-  data <- st_read(dsn = db_con(), query = query)
+  data <- sf::st_read(dsn = db_con(), query = query)
   return(data)
 }
 
-#' get region clicked by user
+
+#' Get hydrological region selected by user
 #'
-#' @param region_click_id
+#' This function retrieves hydrographical data for a specified region based on its ID.
 #'
-#' @return sf data.frame
-#' @export
+#' @param region_click_id The ID of the selected region.
+#'
+#' @return A sf data frame containing hydrographical data for the specified region.
 #'
 #' @examples
-#' selected_region_feature <- get_region(region_click_id = region_click$id)
-get_region <- function(region_click_id = region_click$id){
+#' \dontrun{
+#'   # Example usage:
+#'   data <- data_get_region(region_click_id = 'some_region_id')
+#' }
+#'
+#' @importFrom sf st_read
+#'
+#' @export
+data_get_region <- function(region_click_id = click_value()$id) {
   query <- sprintf("SELECT * FROM region_hydrographique
-                   WHERE cdregionhy LIKE '%s'", region_click_id)
-  data <- st_read(dsn = db_con(), query = query)
+                   WHERE gid = '%s'", region_click_id)
+  data <- sf::st_read(dsn = db_con(), query = query)
   return(data)
 }
 
-#' get network in region selected with metrics data
+
+#' Get Minimum and Maximum Strahler Values for a Selected Region
 #'
-#' @param selected_region_id
+#' This function retrieves the minimum and maximum values of the Strahler metric for a specified region.
 #'
-#' @return sf data.frame
-#' @export
+#' @param selected_region_id The ID of the selected region.
+#'
+#' @return A data frame containing two columns: 'min' and 'max', representing the minimum and maximum Strahler values for the specified region.
 #'
 #' @examples
-#' data <- get_network_region_with_metrics(selected_region_id = region_click$id)
-get_network_region_with_metrics <- function(selected_region_id = region_click$id){
-  query <- sprintf("
+#' \dontrun{
+#'   # Example usage:
+#'   data <- data_get_min_max_strahler(selected_region_id = 1)
+#' }
+#'
+#' @importFrom glue glue
+#' @importFrom DBI dbGetQuery
+#'
+#' @export
+data_get_min_max_strahler <- function(selected_region_id = region_click_id()) {
+  query <- glue::glue("
       SELECT
-      network_metrics.fid, axis, measure, toponyme, strahler, talweg_elevation_min,
-      active_channel_width, natural_corridor_width,
-      connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
-      water_channel, gravel_bars, natural_open, forest, grassland, crops,
-      diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
-      semi_natural, reversible, disconnected, built_environment, sum_area, idx_confinement,
-      network_metrics.geom
-      FROM network_metrics, region_hydrographique
-      WHERE ST_Contains(region_hydrographique.geom, network_metrics.geom)
-          AND region_hydrographique.cdregionhy = '%s'", selected_region_id)
+        MIN(strahler) AS min,
+        MAX(strahler) AS max
+      FROM network_metrics
+      WHERE gid_region = {selected_region_id}")
 
-  data <- st_read(dsn = db_con(), query = query)
+  data <- DBI::dbGetQuery(conn = db_con(), statement = query)
+
+  return(data)
+}
+
+
+#' Get Minimum and Maximum Metric Values for a Selected Region
+#'
+#' This function retrieves the minimum and maximum values of a selected metric for a specified region
+#'
+#' @param selected_region_id The ID of the selected region.
+#' @param selected_metric The name of the selected metric.
+#'
+#' @return A data frame containing two columns: 'min' and 'max', representing the minimum and maximum values of the selected metric for the specified region.
+#'
+#' @examples
+#' \dontrun{
+#'   # Example usage:
+#'   data <- data_get_min_max_metric(selected_region_id = 1, selected_metric = "some_metric")
+#' }
+#'
+#' @importFrom glue glue
+#' @importFrom DBI dbGetQuery
+#'
+#' @export
+data_get_min_max_metric <- function(selected_region_id = region_click_id(), selected_metric = selected_metric()) {
+  query <- glue::glue("
+      SELECT
+        ROUND(MIN({selected_metric})::numeric, 1) AS min,
+        ROUND(MAX({selected_metric})::numeric, 1) AS max
+      FROM network_metrics
+      WHERE gid_region = {selected_region_id}")
+
+  data <- DBI::dbGetQuery(conn = db_con(), statement = query)
+
   return(data)
 }
 
 
 
-#' Create basemaps dataframe
+#' Get Basemaps Data Frame
 #'
-#' @return data.frame
-#' @export
+#' This function retrieves information about available basemaps, including their names, URLs, layers, and attribution.
+#'
+#' @return A data frame containing information about available basemaps, with columns 'name', 'url', 'layer', and 'attribution'.
 #'
 #' @examples
-#' basemaps_df()
-basemaps_df <- function(){
+#' \dontrun{
+#'   # Example usage:
+#'   basemaps <- data_basemaps_df()
+#' }
+#'
+#' @export
+data_basemaps_df <- function(){
   basemaps <- data.frame(
     name = c("Plan IGN", "Satellite IGN", "Géologie"),
     url = c("https://wxs.ign.fr/cartes/geoportail/r/wms", "https://wxs.ign.fr/ortho/geoportail/r/wms", "http://geoservices.brgm.fr/geologie"),
@@ -90,14 +160,21 @@ basemaps_df <- function(){
   return(basemaps)
 }
 
-#' Create overlayers dataframe
+
+#' Get Overlayers Data Frame
 #'
-#' @return data.frame
-#' @export
+#' This function retrieves information about available overlayers, including their names, URLs, layers, and attribution.
+#'
+#' @return A data frame containing information about available overlayers, with columns 'name', 'url', 'layer', and 'attribution'.
 #'
 #' @examples
-#' overlayers_df()
-overlayers_df <- function(){
+#' \dontrun{
+#'   # Example usage:
+#'   overlayers <- data_overlayers_df()
+#' }
+#'
+#' @export
+data_overlayers_df <- function(){
   overlayers <- data.frame(
     name = c("Zone inondable débordement centenale", "Ouvrage protection inondation"),
     url = c("https://georisques.gouv.fr/services", "https://georisques.gouv.fr/services"),
@@ -107,113 +184,106 @@ overlayers_df <- function(){
   return(overlayers)
 }
 
-#' get ROE data from PostgreSQL
+
+#' Get Referentiel des Obstacles aux Ecoulement Data for a Region
 #'
-#' @param selected_region_id selected region id by user
+#' This function retrieves data about Referentiel des Obstacles aux Ecoulement (ROE) within a specified region based on its ID.
 #'
-#' @return sf data.frame
-#' @export
+#' @param selected_region_id The ID of the selected region.
+#'
+#' @return A sf data frame containing information about ROE within the specified region.
 #'
 #' @examples
-#' get_roe_in_region(region_click$id)
-get_roe_in_region <- function(selected_region_id = region_click$id){
-  query <- sprintf("
+#' \dontrun{
+#'   # Example usage:
+#'   roe_data <- data_get_roe_in_region(selected_region_id = 1)
+#' }
+#'
+#' @importFrom glue glue
+#' @importFrom sf st_read
+#'
+#' @export
+data_get_roe_in_region <- function(selected_region_id = region_click$id) {
+  query <- glue::glue("
       SELECT
-      roe.gid, nomprincip, lbtypeouvr, lbhautchut, roe.geom
-      FROM roe, region_hydrographique
-      WHERE (ST_Intersects(roe.geom, region_hydrographique.geom)
-          AND region_hydrographique.cdregionhy = '%s')
-          AND (roe.cdetouvrag LIKE '2')", selected_region_id)
+      roe.gid, nomprincip, lbtypeouvr, lbhautchut, gid_region, roe.geom
+      FROM roe
+      WHERE gid_region = {selected_region_id}
+          AND (roe.cdetouvrag LIKE '2')")
 
-  data <- st_read(dsn = db_con(), query = query)
+  data <- sf::st_read(dsn = db_con(), query = query)
   return(data)
 }
 
-#' get axis network data
+
+#' Get Network Axis Data for a Region
 #'
-#' @param selected_region_id selected region id by user
+#' This function retrieves data about the network axis within a specified region based on its ID.
 #'
-#' @return sf data.frame
-#' @export
+#' @param selected_region_id The ID of the selected region.
+#'
+#' @return A sf data frame containing information about the network axis within the specified region.
 #'
 #' @examples
-#' get_axis(selected_region_id = click_value()$id)
-get_axis <- function(selected_region_id = region_click$id){
-  query <- sprintf("
+#' \dontrun{
+#'   # Example usage:
+#'   axis_data <- data_get_axis(selected_region_id = 1)
+#' }
+#'
+#' @importFrom glue glue
+#' @importFrom sf st_read
+#'
+#' @export
+data_get_axis <- function(selected_region_id = region_click$id) {
+  query <- glue::glue("
       SELECT
-      network_axis.fid, axis, network_axis.geom
-      FROM network_axis, region_hydrographique
-      WHERE (ST_Contains(region_hydrographique.geom, network_axis.geom)
-          AND region_hydrographique.cdregionhy = '%s')", selected_region_id)
+      network_axis.fid, axis, gid_region, network_axis.geom
+      FROM network_axis
+      WHERE gid_region = {selected_region_id}")
 
-  data <- st_read(dsn = db_con(), query = query)
-  return(data)
-}
-
-#' get network data from selected axis
-#'
-#' @param network_data network data
-#' @param axis_id axis id selected
-#' @param measure_col measure distance column
-#'
-#' @return data.frame
-#' @export
-#'
-#' @examples
-#' network_axis <- get_network_axis(network_data = network_region_metrics(), measure_col = "measure"
-#'   axis_id = click_value()$id)
-get_network_axis <- function(network_data = network_region_metrics(), measure_col = "measure",
-                             axis_id = click_value()$id){
-  data <- network_data %>%
-    as.data.frame() %>%
-    filter(axis == axis_id) %>%
-    arrange("measure")
+  data <- sf::st_read(dsn = db_con(), query = query)
   return(data)
 }
 
 
-#' map available metrics
+#' Get Network Metrics Data for a Specific Network Axis
 #'
-#' @return list
-#' @export
+#' This function retrieves data about network metrics for a specific network axis based on its ID.
+#'
+#' @param selected_axis_id The ID of the selected network axis.
+#'
+#' @return A sf data frame containing information about network metrics for the specified network axis.
 #'
 #' @examples
-#' metrics_choice()
-metrics_choice <- function() {
-  choices_map <- list(
-    "Largeurs (m)" = c(
-      "Chenal actif" = "active_channel_width",
-      "Corridor naturel" = "natural_corridor_width",
-      "Corridor connecté" = "connected_corridor_width",
-      "Fond de vallée" = "valley_bottom_width"
-    ),
-    "Pentes" = c(
-      "Pente du talweg" = "talweg_slope",
-      "Pente du fond de vallée" = "floodplain_slope"
-    ),
-    "Occupation du sol" = c(
-      "Surface en eau" = "water_channel",
-      "Bancs sédimentaires" = "gravel_bars",
-      "Espace naturel ouvert" = "natural_open",
-      "Forêt" = "forest",
-      "Prairie permanente" = "grassland",
-      "Culture" = "crops",
-      "Périurbain" = "diffuse_urban",
-      "Urbain dense" = "dense_urban",
-      "Infrastructure de stransport" = "infrastructures"
-    ),
-    "Continuité latérale" = c(
-      "Bande active" = "active_channel",
-      "Corridor naturel" = "riparian_corridor",
-      "Corridor semi-naturel" = "semi_natural",
-      "Espace de réversibilité" = "reversible",
-      "Espace déconnecté" = "disconnected",
-      "Espace artificialisé" = "built_environment"
-    ),
-    "Indices" = c(
-      "Indice de confinement" = "idx_confinement"
-    )
-  )
+#' \dontrun{
+#'   # Example usage:
+#'   network_metrics_data <- data_get_network_axis(selected_axis_id = 11)
+#' }
+#'
+#' @importFrom glue glue
+#' @importFrom sf st_read
+#' @importFrom dplyr arrange
+#'
+#' @export
+data_get_network_axis <- function(selected_axis_id = click_value()$id) {
 
-  return(choices_map)
+  query <- glue::glue("
+      SELECT
+        network_metrics.fid, axis, measure, toponyme, strahler, talweg_elevation_min,
+        active_channel_width, natural_corridor_width,
+        connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
+        water_channel, gravel_bars, natural_open, forest, grassland, crops,
+        diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
+        semi_natural, reversible, disconnected, built_environment,
+        water_channel_pc, gravel_bars_pc, natural_open_pc, forest_pc, grassland_pc, crops_pc,
+        diffuse_urban_pc, dense_urban_pc, infrastructures_pc, active_channel_pc,
+        riparian_corridor_pc, semi_natural_pc, reversible_pc, disconnected_pc,
+        built_environment_pc, sum_area, idx_confinement, gid_region, network_metrics.geom
+      FROM network_metrics
+      WHERE  axis = {selected_axis_id}")
+
+  data <- sf::st_read(dsn = db_con(), query = query) %>%
+    dplyr::arrange(measure)
+
+  return(data)
 }

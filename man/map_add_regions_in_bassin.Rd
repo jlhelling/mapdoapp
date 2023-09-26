@@ -2,36 +2,31 @@
 % Please edit documentation in R/map_fct.R
 \name{map_add_regions_in_bassin}
 \alias{map_add_regions_in_bassin}
-\title{Update initial map to hydrographic regions}
+\title{Add hydrological Regions in a Bassin to an existing Leaflet Map}
 \usage{
 map_add_regions_in_bassin(
   map,
   bassin_click = bassin_click,
-  regions_data = region_hydro,
-  bassins_group = "A",
-  regions_group = "B"
+  regions_data = region_hydro
 )
 }
 \arguments{
-\item{map}{map object for pipe}
+\item{map}{An existing Leaflet map to which regions will be added.}
 
-\item{bassin_click}{bassin selected by user}
+\item{bassin_click}{A vector containing information about the clicked bassin.}
 
-\item{regions_data}{hydrographic regions data}
-
-\item{bassins_group}{bassins layer group}
-
-\item{regions_group}{regions layer group}
+\item{regions_data}{A sf data frame containing information about regions within the bassin.}
 }
 \value{
-leaflet updated
+An updated Leaflet map with regions added.
 }
 \description{
-Update initial map to hydrographic regions
+This function adds regions within a bassin to an existing Leaflet map.
 }
 \examples{
-map_add_regions_in_bassin(bassin_click = bassin_click,
-regions_data = region_hydro,
-bassins_group = "A",
-regions_group = "B")
+\dontrun{
+  # Example usage:
+  updated_map <- map_add_regions_in_bassin(map = existing_map, bassin_click = some_bassin_data, regions_data = some_regions_data)
+}
+
 }
