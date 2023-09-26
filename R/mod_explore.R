@@ -256,20 +256,23 @@ mod_explore_server <- function(input, output, session){
     if (is.null(input$strahler)) {
       return (NULL)
     }
+    # no metric selected
     if (is.null(selected_metric())) {
-
+      # build WMS filter
+      cql_filter=paste0("gid_region=", selected_region_feature()[["gid"]],
+                        " AND strahler>=", input$strahler[1],
+                        " AND strahler <= ", input$strahler[2])
+      # update map with basic style
       leafletProxy("exploremap") %>%
-        map_no_metric(geoserver_url = params_geoserver()[["url"]],
-                      network_metrics_wms = params_geoserver()[["layer"]],
-                      wms_format = params_geoserver()[["format"]],
-                      selected_region_id = selected_region_feature()[["gid"]],
-                      strahler_filter_min = input$strahler[1],
-                      strahler_filter_max = input$strahler[2],
+        map_no_metric(style = params_geoserver()[["metric_basic_style"]],
+                      cql_filter = cql_filter, sld_body = NULL,
                       data_axis = network_region_axis())
 
     }
+    # metric selected
     if (!is.null(selected_metric())){
 
+      # build SLD symbology
       sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = region_click_id(), selected_metric = selected_metric()),
                                 colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
                                                                                                            selected_metric = selected_metric())),
@@ -284,42 +287,21 @@ mod_explore_server <- function(input, output, session){
         LAYER = params_geoserver()[["layer"]]
       )
 
-      # Build the URL
+      # Build the legend URL
       legend_url <- modify_url(params_geoserver()[["url"]], query = query_params)
 
+      # build WMS filter
+      cql_filter=paste0("gid_region=",selected_region_feature()[["gid"]],
+                        " AND strahler>=",input$strahler[1],
+                        " AND strahler <= ",input$strahler[2],
+                        " AND ",selected_metric(),">=",input$metricfilter[1],
+                        " AND ",selected_metric(),"<=",input$metricfilter[2])
+
+      # update map
       leafletProxy("exploremap") %>%
-        clearGroup("AXIS") %>%
-        clearGroup("METRIC") %>%
-        addWMSTiles(
-          baseUrl = params_geoserver()[["url"]],
-          layers = params_geoserver()[["layer"]],
-          attribution = "",
-          options = WMSTileOptions(
-            format = params_geoserver()[["format"]],
-            request = "GetMap",
-            transparent = TRUE,
-            # filter WMS
-            cql_filter=paste0("gid_region=",selected_region_feature()[["gid"]],
-                              " AND strahler>=",input$strahler[1],
-                              " AND strahler <= ",input$strahler[2],
-                              " AND ",selected_metric(),">=",input$metricfilter[1],
-                              " AND ",selected_metric(),"<=",input$metricfilter[2]),
-            sld_body = sld_body
-            ),
-          group = "METRIC"
-        ) %>%
-        addControl(html = paste0("<img src=",legend_url,">"),
-                   position = "bottomright", layerId = "legend") %>%
-        addPolylines(data = network_region_axis(),
-                     layerId = ~fid,
-                     weight = 5,
-                     color = "#ffffff00",
-                     opacity = 0,
-                     highlight = highlightOptions(
-                       opacity = 1,
-                       color = "red"
-                     ),
-                     group = "AXIS")
+        map_metric(style = params_geoserver()[["metric_basic_style"]],
+                   cql_filter = cql_filter, sld_body = sld_body, legend_url = legend_url,
+                   data_axis = network_region_axis())
     }
   })
 

@@ -117,110 +117,28 @@ map_region_clicked <- function(map,
     hideGroup(c(params_map_group()[["roe"]], data_overlayers_df()$name))
 }
 
-#' Update metric mapping
-#'
-#' @param map_id map shiny id
-#' @param data_map network data
-#' @param varsel metric selected data
-#' @param network_group network group
-#' @param data_axis axis data
-#' @param axis_group axis group
-#'
-#' @return leaflet update
-#' @export
-#'
-#' @examples
-#' map_metric(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
-#' network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
-# map_metric <- function(map_id = "exploremap", data_map = network_filter(), varsel = varsel(),
-#                        network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS") {
-#
-#   breaks <-  unique(quantile(varsel, probs = seq(0, 1, 0.2), na.rm = TRUE))
-#
-#   rounded_breaks <- round(breaks, 1)
-#
-#   # Define color palette for Reds
-#   color_palette <- colorRampPalette(c("green", "red"))(length(breaks))
-#
-#   leafletProxy(map_id) %>%
-#     clearGroup(network_group) %>%
-#     clearGroup(axis_group) %>%
-#     # removeControl(1) %>%
-#     addPolylines(data = data_map, weight = 5, color = ~ {
-#       ifelse(is.na(varsel), "grey",
-#              color_palette[findInterval(varsel, breaks, all.inside = TRUE)])
-#     },
-#     group = network_group,
-#     options = pathOptions(interactive = FALSE)) %>%
-#     addLegend("bottomright", colors = color_palette, labels = rounded_breaks,
-#               title = "Légende", opacity = 1, layerId = 1) %>%
-#     addPolylines(data = data_axis,
-#                  layerId = ~fid,
-#                  weight = 5,
-#                  color = color_palette,
-#                  opacity = 0,
-#                  highlight = highlightOptions(
-#                    opacity = 1,
-#                    color = "red"
-#                  ),
-#                  group = axis_group)
-# }
-
-# map_wms_metric <-function(map, selected_region_id, strahler_filter_min, strahler_filter_min){
-#   map %>%
-#     addWMSTiles(
-#       baseUrl = params_geoserver[["url"]],
-#       layers = params_geoserver[["layer"]],
-#       attribution = params_geoserver[["attribution"]],
-#       options = WMSTileOptions(
-#         format = params_geoserver[["format"]],
-#         request = params_geoserver[["query_map"]],
-#         transparent = TRUE,
-#         style = params_geoserver[["metric_basic_style"]],
-#         # filter WMS
-#         cql_filter=paste0("gid_region=",selected_region_id,
-#                           " AND strahler>=",strahler_filter_min,
-#                           " AND strahler <= ",strahler_filter_max)
-#       ),
-#       group = params_map_group()[["metric"]])
-# }
-
-
-#' Update map without metric selected
-#'
-#' @param map map to update
-#' @param data_axis axis data
-#' @param axis_group axis layer group
-#'
-#' @return update leaflet map
-#' @export
-#'
-#' @examples
-#' leafletProxy("exploremap") %>%
-#'   map_no_metric(data_network = network_filter(),  network_group = "D", data_axis = network_region_axis(), axis_group = "AXIS")
-map_no_metric <- function(map, geoserver_url, network_metrics_wms, wms_format,
-                          selected_region_id = selected_region_feature()[["gid"]],
-                          strahler_filter_min = input$strahler[1],
-                          strahler_filter_max = input$strahler[2],
-                          data_axis){
+map_wms_metric <-function(map, style = params_geoserver()[["metric_basic_style"]],
+                          cql_filter = "", sld_body = ""){
   map %>%
-    clearGroup(params_map_group()[["metric"]]) %>%
-    removeControl(params_map_group()[["legend"]]) %>%
     addWMSTiles(
-      baseUrl = geoserver_url,
-      layers = network_metrics_wms,
-      attribution = "",
+      baseUrl = params_geoserver()[["url"]],
+      layers = params_geoserver()[["layer"]],
+      attribution = params_geoserver()[["attribution"]],
       options = WMSTileOptions(
-        format = wms_format,
-        request = "GetMap",
+        format = params_geoserver()[["format"]],
+        request = params_geoserver()[["query_map"]],
         transparent = TRUE,
-        style = "mapdo:network_basic_style",
+        style = style,
         # filter WMS
-        cql_filter=paste0("gid_region=",selected_region_id,
-                          " AND strahler>=",strahler_filter_min,
-                          " AND strahler <= ",strahler_filter_max)
+        cql_filter=cql_filter,
+        # custom symbology based on data if need
+        sld_body = sld_body
       ),
-      group = params_map_group()[["metric"]]) %>%
+      group = params_map_group()[["metric"]])
+}
+
+map_axis <- function(map, data_axis, layerId){
+  map %>%
     addPolylines(data = data_axis,
                  layerId = ~fid,
                  weight = 5,
@@ -231,6 +149,36 @@ map_no_metric <- function(map, geoserver_url, network_metrics_wms, wms_format,
                    color = "red"
                  ),
                  group = params_map_group()[["axis"]])
+}
+
+
+map_no_metric <- function(map, style = params_geoserver()[["metric_basic_style"]],
+                          cql_filter = "", sld_body = "",
+                          data_axis = network_region_axis()){
+  map %>%
+    clearGroup(params_map_group()[["metric"]]) %>%
+    removeControl(params_map_group()[["legend"]]) %>%
+    # add metric with basic style
+    map_wms_metric(style = style,
+                   cql_filter = cql_filter, sld_body = sld_body) %>%
+    # add transparent axis
+    map_axis(data_axis = data_axis)
+}
+
+map_metric <- function(map, style = params_geoserver()[["metric_basic_style"]],
+                       cql_filter = "", sld_body = "", legend_url = "",
+                       data_axis = network_region_axis()) {
+  map %>%
+    clearGroup(params_map_group()[["axis"]]) %>%
+    clearGroup(params_map_group()[["metric"]]) %>%
+    # add metric with custom symbology
+    map_wms_metric(style = style,
+                   cql_filter = cql_filter, sld_body = sld_body) %>%
+    # add legend with custom symbology
+    addControl(html = paste0("<img src=",legend_url,">"),
+               position = "bottomright", layerId = params_map_group()[["legend"]]) %>%
+    # add transparent axis
+    map_axis(data_axis = data_axis)
 }
 
 #' Add all the basemaps
