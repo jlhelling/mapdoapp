@@ -282,8 +282,6 @@ mod_explore_server <- function(input, output, session){
                       cql_filter = cql_filter, sld_body = NULL,
                       data_axis = network_region_axis())
 
-      print(input$exploremap_groups)
-
     }
     # metric selected
     if (!is.null(selected_metric())){
@@ -318,7 +316,6 @@ mod_explore_server <- function(input, output, session){
         map_metric(style = "",
                    cql_filter = cql_filter, sld_body = sld_body, legend_url = legend_url,
                    data_axis = network_region_axis())
-      print(input$exploremap_groups)
     }
   })
 
