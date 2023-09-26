@@ -1,3 +1,16 @@
+#' Get Parameters for GeoServer Configuration
+#'
+#' This function returns a list of parameters for configuring GeoServer connections and styles.
+#'
+#' @return A list of parameters including the GeoServer URL, layer name, format, queries, version, style, and attribution.
+#'
+#' @examples
+#' \dontrun{
+#'   # Example usage:
+#'   geoserver_params <- params_geoserver()
+#' }
+#'
+#' @export
 params_geoserver <- function(){
   params <- list(
     url = "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms",
@@ -7,12 +20,25 @@ params_geoserver <- function(){
     query_map = "GetMap",
     version = "1.0.0",
     metric_basic_style = "mapdo:network_basic_style",
-    attribution = "CNRS - EVS")
+    attribution = "CNRS - EVS"
+  )
 
   return(params)
 }
 
-
+#' Get Parameters for Map Layer Groups
+#'
+#' This function returns a list of parameters representing different map layer groups.
+#'
+#' @return A list of parameters including names for groups such as "BASSIN," "REGION," "SELECT_REGION," "METRIC," "AXIS," "LEGEND," and "ROE."
+#'
+#' @examples
+#' \dontrun{
+#'   # Example usage:
+#'   map_group_params <- params_map_group()
+#' }
+#'
+#' @export
 params_map_group <- function(){
   params <- list(
     bassin = "BASSIN",
@@ -27,16 +53,16 @@ params_map_group <- function(){
   return(params)
 }
 
-#' Get Choices for Network Metrics
+#' Get Choices for Metric Selection
 #'
-#' This function retrieves a list of choices for selecting network metrics.
+#' This function returns a list of choices for selecting metrics organized into categories.
 #'
-#' @return A list containing choices for various network metrics categories and their corresponding metrics.
+#' @return A list of choices for selecting metrics, categorized into "Largeurs (m)," "Pentes," "Occupation du sol," "Continuité latérale," and "Indices."
 #'
 #' @examples
 #' \dontrun{
 #'   # Example usage:
-#'   metrics_choices <- params_metrics_choice()
+#'   metric_choices <- params_metrics_choice()
 #' }
 #'
 #' @export
@@ -78,3 +104,4 @@ params_metrics_choice <- function() {
 
   return(choices_map)
 }
+

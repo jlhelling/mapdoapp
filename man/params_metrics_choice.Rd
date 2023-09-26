@@ -2,20 +2,20 @@
 % Please edit documentation in R/params_fct.R
 \name{params_metrics_choice}
 \alias{params_metrics_choice}
-\title{Get Choices for Network Metrics}
+\title{Get Choices for Metric Selection}
 \usage{
 params_metrics_choice()
 }
 \value{
-A list containing choices for various network metrics categories and their corresponding metrics.
+A list of choices for selecting metrics, categorized into "Largeurs (m)," "Pentes," "Occupation du sol," "Continuité latérale," and "Indices."
 }
 \description{
-This function retrieves a list of choices for selecting network metrics.
+This function returns a list of choices for selecting metrics organized into categories.
 }
 \examples{
 \dontrun{
   # Example usage:
-  metrics_choices <- params_metrics_choice()
+  metric_choices <- params_metrics_choice()
 }
 
 }
