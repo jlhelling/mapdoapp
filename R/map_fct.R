@@ -143,7 +143,7 @@ map_region_clicked <- function(map,
     # add WMS overlayers
     map_add_overlayers(data_overlayers_df()) %>%
     addLayersControl(
-      baseGroups = c(data_basemaps_df()$name),
+      baseGroups = c("CartoDB Positron", data_basemaps_df()$name),
       options = layersControlOptions(collapsed = TRUE),
       overlayGroups = c(params_map_group()[["roe"]], data_overlayers_df()$name)
     ) %>%
