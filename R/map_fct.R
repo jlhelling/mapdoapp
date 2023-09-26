@@ -39,8 +39,9 @@ map_init_bassins <- function(bassins_data = get_bassins()) {
     ) %>%
     addScaleBar(pos = "bottomleft",
                 scaleBarOptions(metric = TRUE, imperial = FALSE)) %>%
+    addProviderTiles(providers$CartoDB.Positron) %>%
     addLayersControl(
-      baseGroups = c(data_basemaps_df()$name),
+      baseGroups = c("CartoDB Positron", data_basemaps_df()$name),
       options = layersControlOptions(collapsed = TRUE)
     )
 }
