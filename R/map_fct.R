@@ -184,7 +184,8 @@ map_wms_metric <-function(map, style = params_geoserver()[["metric_basic_style"]
         transparent = TRUE,
         style = style,
         cql_filter = cql_filter,
-        sld_body = sld_body
+        sld_body = sld_body,
+        zIndex = 100
       ),
       group = params_map_group()[["metric"]]
     )
