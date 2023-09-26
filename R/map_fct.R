@@ -21,6 +21,11 @@
 #'
 #' @export
 map_init_bassins <- function(bassins_data = get_bassins()) {
+
+
+  # Build the legend URL
+  # legend_url <- modify_url("http://mapsref.brgm.fr/legendes/geoservices/Geologie1000_legende.jpg")
+
   leaflet() %>%
     setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
     map_add_basemaps(data_basemaps_df()) %>%
@@ -44,6 +49,10 @@ map_init_bassins <- function(bassins_data = get_bassins()) {
       baseGroups = c("CartoDB Positron", data_basemaps_df()$name),
       options = layersControlOptions(collapsed = TRUE)
     )
+    # addControl(html = legend_image,
+    #            position = "bottomright", layerId = params_map_group()[["legend"]]) %>%
+    # addControl(html = icon(name = "circle-info", class="fa-solid fa-circle-info fa-xl", lib = "font-awesome"),
+    #            position = "topright", layerId = "GEOL_LEGEND")
 }
 
 #' Add hydrological Regions in a Bassin to an existing Leaflet Map
