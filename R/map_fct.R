@@ -1,13 +1,25 @@
-#' Map initialization with hydrographic bassins data
+#' Initialize a Leaflet Map with hydrological Bassins
 #'
-#' @param bassins_data hydrographic bassins sf
-#' @param group layer group
+#' This function initializes a Leaflet map with bassins data and various map layers.
 #'
-#' @return leaflet map
-#' @export
+#' @param bassins_data A hydrological bassins sf data frame.
+#'
+#' @return A Leaflet map object with basemaps, scale and layer control.
 #'
 #' @examples
-#' map <- map_init_bassins(bassins_data = get_bassins())
+#' \dontrun{
+#'   # Example usage:
+#'   map <- map_init_bassins(bassins_data = some_bassins_data)
+#' }
+#'
+#' @importFrom leaflet leaflet
+#' @importFrom leaflet setView
+#' @importFrom leaflet addPolygons
+#' @importFrom leaflet addScaleBar
+#' @importFrom leaflet addLayersControl
+#' @importFrom htmltools htmlEscape
+#'
+#' @export
 map_init_bassins <- function(bassins_data = get_bassins()) {
   leaflet() %>%
     setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
@@ -18,7 +30,7 @@ map_init_bassins <- function(bassins_data = get_bassins()) {
                 fillColor = "black",
                 fillOpacity = 0.01,
                 weight = 2,
-                color="black",
+                color = "black",
                 highlightOptions = highlightOptions(
                   fillColor = "#a8d1ff",
                   fillOpacity = 0.5),
@@ -33,22 +45,30 @@ map_init_bassins <- function(bassins_data = get_bassins()) {
     )
 }
 
-#' Update initial map to hydrographic regions
+#' Add hydrological Regions in a Bassin to an existing Leaflet Map
 #'
-#' @param map map object for pipe
-#' @param bassin_click bassin selected by user
-#' @param regions_data hydrographic regions data
-#' @param bassins_group bassins layer group
-#' @param regions_group regions layer group
+#' This function adds regions within a bassin to an existing Leaflet map.
 #'
-#' @return leaflet updated
-#' @export
+#' @param map An existing Leaflet map to which regions will be added.
+#' @param bassin_click A vector containing information about the clicked bassin.
+#' @param regions_data A sf data frame containing information about regions within the bassin.
+#'
+#' @return An updated Leaflet map with regions added.
 #'
 #' @examples
-#' map_add_regions_in_bassin(bassin_click = bassin_click,
-#' regions_data = region_hydro)
+#' \dontrun{
+#'   # Example usage:
+#'   updated_map <- map_add_regions_in_bassin(map = existing_map, bassin_click = some_bassin_data, regions_data = some_regions_data)
+#' }
+#'
+#' @importFrom leaflet setView
+#' @importFrom leaflet clearGroup
+#' @importFrom leaflet addPolygons
+#' @importFrom htmltools htmlEscape
+#'
+#' @export
 map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
-                                      regions_data = region_hydro){
+                                      regions_data = region_hydro) {
   map %>%
     setView(lng = bassin_click$lng , lat = bassin_click$lat, zoom = 6.5) %>%
     clearGroup(params_map_group()[["bassin"]]) %>%
@@ -58,7 +78,7 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
                 fillColor = "black",
                 fillOpacity = 0.01,
                 weight = 2,
-                color="black",
+                color = "black",
                 highlightOptions = highlightOptions(
                   fillColor = "#a8d1ff",
                   fillOpacity = 0.5),
@@ -67,58 +87,91 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
     )
 }
 
-#' Map region click
+
+#' Update Leaflet Map for a Clicked Region
 #'
-#' @param map map object for pipe
-#' @param region_click region clicked parameter app
-#' @param selected_region_feature region clicked feature
-#' @param regions_group regions group to clear
-#' @param selected_region_group selected regions group
+#' This function updates an existing Leaflet map when a region is clicked, displaying the region and overlayers.
 #'
-#' @return leaflet update
-#' @export
+#' @param map An existing Leaflet map to be updated.
+#' @param region_click A vector containing information about the clicked region.
+#' @param selected_region_feature A sf data frame containing information about the selected region feature.
+#'
+#' @return An updated Leaflet map with relevant layers and information displayed.
 #'
 #' @examples
-#' map_region_clicked(region_click = region_click,
-#' selected_region_feature = selected_region_feature)
+#' \dontrun{
+#'   # Example usage:
+#'   updated_map <- map_region_clicked(map = existing_map,
+#'     region_click = clicked_region_data, selected_region_feature = selected_feature_data)
+#' }
+#'
+#' @importFrom leaflet setView
+#' @importFrom leaflet addPolygons
+#' @importFrom leaflet clearGroup
+#' @importFrom leaflet addCircleMarkers
+#' @importFrom leaflet addLayersControl
+#'
+#' @export
 map_region_clicked <- function(map,
                                region_click = region_click,
-                               selected_region_feature = selected_region_feature){
+                               selected_region_feature = selected_region_feature) {
   map %>%
-  setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
+    setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
     # display the region clicked
     addPolygons(data = selected_region_feature,
                 smoothFactor = 2,
                 fillColor = "black",
                 fillOpacity = 0.01,
                 weight = 2,
-                color="black",
+                color = "black",
                 group = params_map_group()[["select_region"]],
                 options = pathOptions(interactive = FALSE)
     ) %>%
     clearGroup(params_map_group()[["region"]]) %>%
-    # add ROE overlayers from postgresql
-    addCircleMarkers (data = data_get_roe_in_region(region_click$id),
-                      radius = 3,
-                      weight = 0.5,
-                      opacity = 0.9,
-                      color = "orange",
-                      fillColor = "orange",
-                      fillOpacity = 0.9,
-                      popup = ~nomprincip,
-                      group = params_map_group()[["roe"]]) %>%
+    # add ROE overlayers from PostgreSQL
+    addCircleMarkers(data = data_get_roe_in_region(region_click$id),
+                     radius = 3,
+                     weight = 0.5,
+                     opacity = 0.9,
+                     color = "orange",
+                     fillColor = "orange",
+                     fillOpacity = 0.9,
+                     popup = ~nomprincip,
+                     group = params_map_group()[["roe"]]
+    ) %>%
     # add WMS overlayers
     map_add_overlayers(data_overlayers_df()) %>%
     addLayersControl(
       baseGroups = c(data_basemaps_df()$name),
       options = layersControlOptions(collapsed = TRUE),
-      overlayGroups = c(params_map_group()[["roe"]], data_overlayers_df()$name)) %>%
-    # ROE layer hidden by defaut
+      overlayGroups = c(params_map_group()[["roe"]], data_overlayers_df()$name)
+    ) %>%
+    # ROE layer hidden by default
     hideGroup(c(params_map_group()[["roe"]], data_overlayers_df()$name))
 }
 
+#' Add WMS Tiles with Metric Data to an Existing Leaflet Map
+#'
+#' This function adds WMS tiles with metric data to an existing Leaflet map, allowing for customization of style and filtering.
+#'
+#' @param map An existing Leaflet map to which WMS tiles will be added.
+#' @param style The style to apply to the WMS tiles.
+#' @param cql_filter A CQL filter to apply to the WMS request.
+#' @param sld_body A custom SLD (Styled Layer Descriptor) body for symbology customization.
+#'
+#' @return An updated Leaflet map with WMS tiles containing metric data added.
+#'
+#' @examples
+#' \dontrun{
+#'   # Example usage:
+#'   updated_map <- map_wms_metric(map = existing_map, style = "custom_style", cql_filter = "metric > 100", sld_body = "<sld>...</sld>")
+#' }
+#'
+#' @importFrom leaflet addWMSTiles
+#'
+#' @export
 map_wms_metric <-function(map, style = params_geoserver()[["metric_basic_style"]],
-                          cql_filter = "", sld_body = ""){
+                          cql_filter = "", sld_body = "") {
   map %>%
     addWMSTiles(
       baseUrl = params_geoserver()[["url"]],
@@ -129,15 +182,32 @@ map_wms_metric <-function(map, style = params_geoserver()[["metric_basic_style"]
         request = params_geoserver()[["query_map"]],
         transparent = TRUE,
         style = style,
-        # filter WMS
-        cql_filter=cql_filter,
-        # custom symbology based on data if need
+        cql_filter = cql_filter,
         sld_body = sld_body
       ),
-      group = params_map_group()[["metric"]])
+      group = params_map_group()[["metric"]]
+    )
 }
 
-map_axis <- function(map, data_axis, layerId){
+#' Add Axis Data to an Existing Leaflet Map
+#'
+#' This function adds axis data as polylines to an existing Leaflet map.
+#'
+#' @param map An existing Leaflet map to which axis data will be added.
+#' @param data_axis A sf data frame containing axis data.
+#'
+#' @return An updated Leaflet map with axis data added.
+#'
+#' @examples
+#' \dontrun{
+#'   # Example usage:
+#'   updated_map <- map_axis(map = existing_map, data_axis = some_axis_data)
+#' }
+#'
+#' @importFrom leaflet addPolylines
+#'
+#' @export
+map_axis <- function(map, data_axis) {
   map %>%
     addPolylines(data = data_axis,
                  layerId = ~fid,
@@ -148,22 +218,43 @@ map_axis <- function(map, data_axis, layerId){
                    opacity = 1,
                    color = "red"
                  ),
-                 group = params_map_group()[["axis"]])
+                 group = params_map_group()[["axis"]]
+    )
 }
 
-
+#' Add hydrological network when no metric is selected to existing map
+#'
+#' This function clears metric layers, removes the legend, add wms metric and adds a transparent axis to an existing Leaflet map.
+#'
+#' @param map An existing Leaflet map to be updated.
+#' @param style The style to apply to the WMS tiles.
+#' @param cql_filter A CQL filter to apply to the WMS request.
+#' @param sld_body A custom SLD (Styled Layer Descriptor) body for symbology customization.
+#' @param data_axis A data frame containing axis data.
+#'
+#' @return An updated Leaflet map with metric layers cleared, the legend removed, and a transparent axis added.
+#'
+#' @examples
+#' \dontrun{
+#'   # Example usage:
+#'   updated_map <- map_no_metric(map = existing_map, style = "custom_style", cql_filter = "metric > 100", sld_body = "<sld>...</sld>", data_axis = some_axis_data)
+#' }
+#'
+#' @importFrom leaflet clearGroup
+#' @importFrom leaflet removeControl
+#'
+#' @export
 map_no_metric <- function(map, style = params_geoserver()[["metric_basic_style"]],
                           cql_filter = "", sld_body = "",
-                          data_axis = network_region_axis()){
+                          data_axis = network_region_axis()) {
   map %>%
     clearGroup(params_map_group()[["metric"]]) %>%
     removeControl(params_map_group()[["legend"]]) %>%
-    # add metric with basic style
     map_wms_metric(style = style,
                    cql_filter = cql_filter, sld_body = sld_body) %>%
-    # add transparent axis
     map_axis(data_axis = data_axis)
 }
+
 
 map_metric <- function(map, style = params_geoserver()[["metric_basic_style"]],
                        cql_filter = "", sld_body = "", legend_url = "",
@@ -181,17 +272,24 @@ map_metric <- function(map, style = params_geoserver()[["metric_basic_style"]],
     map_axis(data_axis = data_axis)
 }
 
-#' Add all the basemaps
+#' Add Basemap Layers to an Existing Leaflet Map
 #'
-#' @param map leaflet map
-#' @param basemaps basemap data.frame
+#' This function adds basemap layers to an existing Leaflet map.
 #'
-#' @return basemaps for leaflet
-#' @export
+#' @param map An existing Leaflet map to which basemap layers will be added.
+#' @param basemaps A data frame containing information about the basemap layers to be added.
+#'
+#' @return An updated Leaflet map with basemap layers added.
 #'
 #' @examples
-#' map %>%
-#' map_add_basemaps(data_basemaps_df())
+#' \dontrun{
+#'   # Example usage:
+#'   updated_map <- map_add_basemaps(map = existing_map, basemaps = basemaps_data)
+#' }
+#'
+#' @importFrom leaflet addWMSTiles
+#'
+#' @export
 map_add_basemaps <- function(map, basemaps) {
   for (i in 1:nrow(basemaps)) {
     map <- map %>%
@@ -210,17 +308,25 @@ map_add_basemaps <- function(map, basemaps) {
   return(map)
 }
 
-#' Add all the overlayers
+
+#' Add Overlayer Layers to an Existing Leaflet Map
 #'
-#' @param map leaflet map
-#' @param overlayers overlayers data.frame
+#' This function adds overlayer layers to an existing Leaflet map.
 #'
-#' @return overlayers for leaflet
-#' @export
+#' @param map An existing Leaflet map to which overlayer layers will be added.
+#' @param overlayers A data frame containing information about the overlayer layers to be added.
+#'
+#' @return An updated Leaflet map with overlayer layers added.
 #'
 #' @examples
-#' map %>%
-#' map_add_overlayers(data_overlayers_df())
+#' \dontrun{
+#'   # Example usage:
+#'   updated_map <- map_add_overlayers(map = existing_map, overlayers = overlayers_data)
+#' }
+#'
+#' @importFrom leaflet addWMSTiles
+#'
+#' @export
 map_add_overlayers <- function(map, overlayers) {
   for (i in 1:nrow(overlayers)) {
     map <- map %>%
@@ -237,3 +343,4 @@ map_add_overlayers <- function(map, overlayers) {
   }
   return(map)
 }
+

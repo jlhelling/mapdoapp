@@ -2,22 +2,25 @@
 % Please edit documentation in R/map_fct.R
 \name{map_add_basemaps}
 \alias{map_add_basemaps}
-\title{Add all the basemaps}
+\title{Add Basemap Layers to an Existing Leaflet Map}
 \usage{
 map_add_basemaps(map, basemaps)
 }
 \arguments{
-\item{map}{leaflet map}
+\item{map}{An existing Leaflet map to which basemap layers will be added.}
 
-\item{basemaps}{basemap data.frame}
+\item{basemaps}{A data frame containing information about the basemap layers to be added.}
 }
 \value{
-basemaps for leaflet
+An updated Leaflet map with basemap layers added.
 }
 \description{
-Add all the basemaps
+This function adds basemap layers to an existing Leaflet map.
 }
 \examples{
-map \%>\%
-map_add_basemaps(data_basemaps_df())
+\dontrun{
+  # Example usage:
+  updated_map <- map_add_basemaps(map = existing_map, basemaps = basemaps_data)
+}
+
 }

@@ -299,7 +299,7 @@ mod_explore_server <- function(input, output, session){
 
       # update map
       leafletProxy("exploremap") %>%
-        map_metric(style = params_geoserver()[["metric_basic_style"]],
+        map_metric(style = "",
                    cql_filter = cql_filter, sld_body = sld_body, legend_url = legend_url,
                    data_axis = network_region_axis())
     }

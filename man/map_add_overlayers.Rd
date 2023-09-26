@@ -2,22 +2,25 @@
 % Please edit documentation in R/map_fct.R
 \name{map_add_overlayers}
 \alias{map_add_overlayers}
-\title{Add all the overlayers}
+\title{Add Overlayer Layers to an Existing Leaflet Map}
 \usage{
 map_add_overlayers(map, overlayers)
 }
 \arguments{
-\item{map}{leaflet map}
+\item{map}{An existing Leaflet map to which overlayer layers will be added.}
 
-\item{overlayers}{overlayers data.frame}
+\item{overlayers}{A data frame containing information about the overlayer layers to be added.}
 }
 \value{
-overlayers for leaflet
+An updated Leaflet map with overlayer layers added.
 }
 \description{
-Add all the overlayers
+This function adds overlayer layers to an existing Leaflet map.
 }
 \examples{
-map \%>\%
-map_add_overlayers(data_overlayers_df())
+\dontrun{
+  # Example usage:
+  updated_map <- map_add_overlayers(map = existing_map, overlayers = overlayers_data)
+}
+
 }

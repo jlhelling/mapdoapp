@@ -2,36 +2,32 @@
 % Please edit documentation in R/map_fct.R
 \name{map_region_clicked}
 \alias{map_region_clicked}
-\title{Map region click}
+\title{Update Leaflet Map for a Clicked Region}
 \usage{
 map_region_clicked(
   map,
   region_click = region_click,
-  selected_region_feature = selected_region_feature,
-  regions_group = "REGION",
-  selected_region_group = "SELECT_REGION"
+  selected_region_feature = selected_region_feature
 )
 }
 \arguments{
-\item{map}{map object for pipe}
+\item{map}{An existing Leaflet map to be updated.}
 
-\item{region_click}{region clicked parameter app}
+\item{region_click}{A vector containing information about the clicked region.}
 
-\item{selected_region_feature}{region clicked feature}
-
-\item{regions_group}{regions group to clear}
-
-\item{selected_region_group}{selected regions group}
+\item{selected_region_feature}{A sf data frame containing information about the selected region feature.}
 }
 \value{
-leaflet update
+An updated Leaflet map with relevant layers and information displayed.
 }
 \description{
-Map region click
+This function updates an existing Leaflet map when a region is clicked, displaying the region and overlayers.
 }
 \examples{
-map_region_clicked(region_click = region_click,
-selected_region_feature = selected_region_feature,
-regions_group = "REGION",
-selected_region_group = "SELECT_REGION")
+\dontrun{
+  # Example usage:
+  updated_map <- map_region_clicked(map = existing_map,
+    region_click = clicked_region_data, selected_region_feature = selected_feature_data)
+}
+
 }

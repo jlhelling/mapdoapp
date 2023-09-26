@@ -2,21 +2,23 @@
 % Please edit documentation in R/map_fct.R
 \name{map_init_bassins}
 \alias{map_init_bassins}
-\title{Map initialization with hydrographic bassins data}
+\title{Initialize a Leaflet Map with hydrological Bassins}
 \usage{
-map_init_bassins(bassins_data = get_bassins(), group = "BASSIN")
+map_init_bassins(bassins_data = get_bassins())
 }
 \arguments{
-\item{bassins_data}{hydrographic bassins sf}
-
-\item{group}{layer group}
+\item{bassins_data}{A hydrological bassins sf data frame.}
 }
 \value{
-leaflet map
+A Leaflet map object with basemaps, scale and layer control.
 }
 \description{
-Map initialization with hydrographic bassins data
+This function initializes a Leaflet map with bassins data and various map layers.
 }
 \examples{
-map <- map_init_bassins(bassins_data = get_bassins(), group = "BASSIN")
+\dontrun{
+  # Example usage:
+  map <- map_init_bassins(bassins_data = some_bassins_data)
+}
+
 }
