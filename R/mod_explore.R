@@ -243,6 +243,20 @@ mod_explore_server <- function(input, output, session){
         map_region_clicked(region_click = click_value(),
                            selected_region_feature = selected_region_feature())
     }
+
+
+  })
+
+  # display ROE legend
+  observeEvent(input$exploremap_groups, {
+    if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
+      leafletProxy("exploremap") %>%
+        map_legend_roe()
+    } else {
+      leafletProxy("exploremap") %>%
+        removeControl(layerId = params_map_group()[["roe"]])
+    }
+
   })
 
   # reactive list to activate map update

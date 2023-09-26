@@ -21,6 +21,11 @@
 #'
 #' @export
 map_init_bassins <- function(bassins_data = get_bassins()) {
+
+
+  # Build the legend URL
+  # legend_url <- modify_url("http://mapsref.brgm.fr/legendes/geoservices/Geologie1000_legende.jpg")
+
   leaflet() %>%
     setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
     map_add_basemaps(data_basemaps_df()) %>%
@@ -39,10 +44,15 @@ map_init_bassins <- function(bassins_data = get_bassins()) {
     ) %>%
     addScaleBar(pos = "bottomleft",
                 scaleBarOptions(metric = TRUE, imperial = FALSE)) %>%
+    addProviderTiles(providers$CartoDB.Positron) %>%
     addLayersControl(
-      baseGroups = c(data_basemaps_df()$name),
+      baseGroups = c("CartoDB Positron", data_basemaps_df()$name),
       options = layersControlOptions(collapsed = TRUE)
     )
+    # addControl(html = legend_image,
+    #            position = "bottomright", layerId = params_map_group()[["legend"]]) %>%
+    # addControl(html = icon(name = "circle-info", class="fa-solid fa-circle-info fa-xl", lib = "font-awesome"),
+    #            position = "topright", layerId = "GEOL_LEGEND")
 }
 
 #' Add hydrological Regions in a Bassin to an existing Leaflet Map
@@ -142,12 +152,41 @@ map_region_clicked <- function(map,
     # add WMS overlayers
     map_add_overlayers(data_overlayers_df()) %>%
     addLayersControl(
-      baseGroups = c(data_basemaps_df()$name),
+      baseGroups = c("CartoDB Positron", data_basemaps_df()$name),
       options = layersControlOptions(collapsed = TRUE),
       overlayGroups = c(params_map_group()[["roe"]], data_overlayers_df()$name)
     ) %>%
     # ROE layer hidden by default
     hideGroup(c(params_map_group()[["roe"]], data_overlayers_df()$name))
+}
+
+#' Add Legend for ROE to a Leaflet Map
+#'
+#' This function adds a legend for ROE to a Leaflet map.
+#'
+#' @param map An existing Leaflet map to which the legend for ROE will be added.
+#'
+#' @return An updated Leaflet map with the legend for ROE added.
+#'
+#' @examples
+#' \dontrun{
+#'   # Example usage:
+#'   updated_map <- map_legend_roe(map = existing_map)
+#' }
+#'
+#' @importFrom leaflet addLegend
+#'
+#' @export
+map_legend_roe <- function(map){
+  map %>%
+    addLegend(
+      position = "bottomright",
+      labels = params_map_group()[["roe"]],
+      colors = paste0("orange", "; border-radius: 50%; width: 10px; height: 10px; margin-top:4px;"),
+      opacity = 0.9,
+      layerId = params_map_group()[["roe"]]
+    )
+  return(map)
 }
 
 #' Add WMS Tiles with Metric Data to an Existing Leaflet Map
@@ -183,7 +222,8 @@ map_wms_metric <-function(map, style = params_geoserver()[["metric_basic_style"]
         transparent = TRUE,
         style = style,
         cql_filter = cql_filter,
-        sld_body = sld_body
+        sld_body = sld_body,
+        zIndex = 100
       ),
       group = params_map_group()[["metric"]]
     )
@@ -300,7 +340,8 @@ map_add_basemaps <- function(map, basemaps) {
         options = WMSTileOptions(
           format = "image/png",
           transparent = TRUE,
-          opacity = 0.7
+          opacity = 0.7,
+          style = basemaps$style[i],
         ),
         group = basemaps$name[i]
       )
