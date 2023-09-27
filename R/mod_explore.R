@@ -54,6 +54,7 @@ mod_explore_ui <- function(id){
           titlePanel("Filtre"),
           uiOutput(ns("strahlerfilterUI")),
           uiOutput(ns("metricsfilterUI")),
+          uiOutput(ns("legendUI")),
           verbatimTextOutput(ns("printcheck"))
         ) # column
       ), # fluidRow
@@ -247,17 +248,127 @@ mod_explore_server <- function(input, output, session){
 
   })
 
-  # display ROE legend
-  observeEvent(input$exploremap_groups, {
-    if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
-      leafletProxy("exploremap") %>%
-        map_legend_roe()
-    } else {
-      leafletProxy("exploremap") %>%
-        removeControl(layerId = params_map_group()[["roe"]])
-    }
 
+  output$legendUI <- renderUI({
+    div(
+        HTML('<label class="control-label" id="legend-label">Légende</label>'),
+      # Metric
+      if (!is.null(selected_metric())){
+        # build SLD symbology
+        sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = region_click_id(), selected_metric = selected_metric()),
+                                  colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
+                                                                                                             selected_metric = selected_metric())),
+                                  metric = selected_metric())
+
+        # Construct the query parameters for legend
+        query_params <- list(
+          REQUEST = params_geoserver()[["query_legend"]],
+          VERSION = params_geoserver()[["version"]],
+          FORMAT = params_geoserver()[["format"]],
+          SLD_BODY = sld_body,
+          LAYER = params_geoserver()[["layer"]]
+        )
+
+        # Build the legend URL
+        legend_url <- modify_url(params_geoserver()[["url"]], query = query_params)
+
+        div(
+          style = "display: flex; align-items: center;",
+          img(
+            src = legend_url,
+            responsive = "width: 100%; height: auto;",
+            class="responsive",
+            ""
+          )
+        )
+      },
+
+      # zone inondable
+      if (any(input$exploremap_groups %in% params_map_group()[["zone_inondable"]])) {
+
+        # Construct the query parameters for legend
+        query_params <- list(
+          LANGUAGE = "fre",
+          VERSION = "1.3.0",
+          SERVICE = "WMS",
+          REQUEST = params_geoserver()[["query_legend"]],
+          SLD_VERSION = "1.1.0",
+          LAYER = overlayers$layer[overlayers$name == "Zone inondable débordement centenale"],
+          FORMAT = params_geoserver()[["format"]],
+          STYLE = "inspire_common:DEFAULT"
+        )
+
+        legend_url <- modify_url(overlayers$url[overlayers$name == "Zone inondable débordement centenale"],
+                                 query = query_params)
+
+        div(
+          style = "display: flex; align-items: center;",
+          img(
+            src = legend_url,
+            responsive = "width: 100%; height: auto;",
+            class="responsive",
+            ""
+          )
+        ) # div zone inondable
+      },
+
+      # ouvrage de protection
+      if (any(input$exploremap_groups %in% params_map_group()[["ouvrage_protection"]])) {
+
+        # Construct the query parameters for legend
+        query_params <- list(
+          LANGUAGE = "fre",
+          VERSION = "1.3.0",
+          SERVICE = "WMS",
+          REQUEST = params_geoserver()[["query_legend"]],
+          SLD_VERSION = "1.1.0",
+          LAYER = overlayers$layer[overlayers$name == "Ouvrage protection inondation"],
+          FORMAT = params_geoserver()[["format"]],
+          STYLE = "inspire_common:DEFAULT"
+        )
+
+        legend_url <- modify_url(overlayers$url[overlayers$name == "Ouvrage protection inondation"],
+                                 query = query_params)
+
+        div(
+          style = "display: flex; align-items: center;",
+          img(
+            src = legend_url,
+            responsive = "width: 100%; height: auto;",
+            class="responsive",
+            ""
+          )
+        ) # ouvrage de protection
+      },
+
+      # ROE
+      if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
+        div(
+          style = "display: flex; align-items: center;",
+          div(
+            style = "background-color: orange; border-radius: 50%; width: 10px; height: 10px; margin-top: 3px;",
+            ""
+          ),
+          span(
+            style = "margin-left: 5px;",
+            "ROE"
+          ) # span
+        ) # div ROE
+      }
+    ) # div title legend
   })
+
+  # # display ROE legend
+  # observeEvent(input$exploremap_groups, {
+  #   if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
+  #     leafletProxy("exploremap") %>%
+  #       map_legend_roe()
+  #   } else {
+  #     leafletProxy("exploremap") %>%
+  #       removeControl(layerId = params_map_group()[["roe"]])
+  #   }
+  #
+  # })
 
   # reactive list to activate map update
   map_update <- reactive({

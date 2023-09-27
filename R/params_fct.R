@@ -47,7 +47,9 @@ params_map_group <- function(){
     metric = "METRIC",
     axis = "AXIS",
     legend = "LEGEND",
-    roe = "ROE"
+    roe = "ROE",
+    zone_inondable = "Zone inondable débordement centenale",
+    ouvrage_protection = "Ouvrage protection inondation"
   )
 
   return(params)
