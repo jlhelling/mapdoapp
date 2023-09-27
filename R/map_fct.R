@@ -28,7 +28,6 @@ map_init_bassins <- function(bassins_data = get_bassins()) {
 
   leaflet() %>%
     setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
-    map_add_basemaps(data_basemaps_df()) %>%
     addPolygons(data = bassins_data,
                 layerId = ~cdbh,
                 smoothFactor = 2,
@@ -45,10 +44,12 @@ map_init_bassins <- function(bassins_data = get_bassins()) {
     addScaleBar(pos = "bottomleft",
                 scaleBarOptions(metric = TRUE, imperial = FALSE)) %>%
     addProviderTiles(providers$CartoDB.Positron) %>%
+    map_add_basemaps() %>%
     addLayersControl(
-      baseGroups = c("CartoDB Positron", data_basemaps_df()$name),
+      baseGroups = c("CartoDB Positron", unlist(sapply(params_wms(), function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),
       options = layersControlOptions(collapsed = TRUE)
     )
+
     # addControl(html = legend_image,
     #            position = "bottomright", layerId = params_map_group()[["legend"]]) %>%
     # addControl(html = icon(name = "circle-info", class="fa-solid fa-circle-info fa-xl", lib = "font-awesome"),
@@ -149,15 +150,15 @@ map_region_clicked <- function(map,
                      popup = ~nomprincip,
                      group = params_map_group()[["roe"]]
     ) %>%
-    # add WMS overlayers
-    map_add_overlayers(data_overlayers_df()) %>%
-    addLayersControl(
-      baseGroups = c("CartoDB Positron", data_basemaps_df()$name),
-      options = layersControlOptions(collapsed = TRUE),
-      overlayGroups = c(params_map_group()[["roe"]], data_overlayers_df()$name)
-    ) %>%
     # ROE layer hidden by default
-    hideGroup(c(params_map_group()[["roe"]], data_overlayers_df()$name))
+    hideGroup(params_map_group()[["roe"]]) %>%
+    # add WMS overlayers
+    map_add_wms_overlayers() %>%
+    addLayersControl(
+      baseGroups = c("CartoDB Positron", unlist(sapply(params_wms(), function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),
+      options = layersControlOptions(collapsed = TRUE),
+      overlayGroups = c(params_map_group()[["roe"]], unlist(sapply(params_wms(), function(x) if (x$overlayer) x$name else NULL), use.names = FALSE))
+    )
 }
 
 #' Add Legend for ROE to a Leaflet Map
@@ -177,17 +178,17 @@ map_region_clicked <- function(map,
 #' @importFrom leaflet addLegend
 #'
 #' @export
-map_legend_roe <- function(map){
-  map %>%
-    addLegend(
-      position = "bottomright",
-      labels = params_map_group()[["roe"]],
-      colors = paste0("orange", "; border-radius: 50%; width: 10px; height: 10px; margin-top:4px;"),
-      opacity = 0.9,
-      layerId = params_map_group()[["roe"]]
-    )
-  return(map)
-}
+# map_legend_roe <- function(map){
+#   map %>%
+#     addLegend(
+#       position = "bottomright",
+#       labels = params_map_group()[["roe"]],
+#       colors = paste0("orange", "; border-radius: 50%; width: 10px; height: 10px; margin-top:4px;"),
+#       opacity = 0.9,
+#       layerId = params_map_group()[["roe"]]
+#     )
+#   return(map)
+# }
 
 #' Add WMS Tiles with Metric Data to an Existing Leaflet Map
 #'
@@ -317,34 +318,35 @@ map_metric <- function(map, style = params_geoserver()[["metric_basic_style"]],
 #' This function adds basemap layers to an existing Leaflet map.
 #'
 #' @param map An existing Leaflet map to which basemap layers will be added.
-#' @param basemaps A data frame containing information about the basemap layers to be added.
 #'
 #' @return An updated Leaflet map with basemap layers added.
 #'
 #' @examples
 #' \dontrun{
 #'   # Example usage:
-#'   updated_map <- map_add_basemaps(map = existing_map, basemaps = basemaps_data)
+#'   updated_map <- map_add_basemaps(map = existing_map)
 #' }
 #'
 #' @importFrom leaflet addWMSTiles
 #'
 #' @export
-map_add_basemaps <- function(map, basemaps) {
-  for (i in 1:nrow(basemaps)) {
-    map <- map %>%
-      addWMSTiles(
-        baseUrl = basemaps$url[i],
-        layers = basemaps$layer[i],
-        attribution = basemaps$attribution[i],
-        options = WMSTileOptions(
-          format = "image/png",
-          transparent = TRUE,
-          opacity = 0.7,
-          style = basemaps$style[i],
-        ),
-        group = basemaps$name[i]
-      )
+map_add_basemaps <- function(map) {
+  for (i in params_wms()) {
+    if (i$basemap == TRUE){
+      map <- map %>%
+        addWMSTiles(
+          baseUrl = i$url,
+          layers = i$layer,
+          attribution = i$attribution,
+          options = WMSTileOptions(
+            format = i$format,
+            transparent = TRUE,
+            opacity = 0.7,
+            style = i$style,
+          ),
+          group = i$name
+        )
+      }
   }
   return(map)
 }
@@ -355,33 +357,106 @@ map_add_basemaps <- function(map, basemaps) {
 #' This function adds overlayer layers to an existing Leaflet map.
 #'
 #' @param map An existing Leaflet map to which overlayer layers will be added.
-#' @param overlayers A data frame containing information about the overlayer layers to be added.
 #'
 #' @return An updated Leaflet map with overlayer layers added.
 #'
 #' @examples
 #' \dontrun{
 #'   # Example usage:
-#'   updated_map <- map_add_overlayers(map = existing_map, overlayers = overlayers_data)
+#'   updated_map <- map_add_wms_overlayers(map = existing_map)
 #' }
 #'
 #' @importFrom leaflet addWMSTiles
 #'
 #' @export
-map_add_overlayers <- function(map, overlayers) {
-  for (i in 1:nrow(overlayers)) {
+map_add_wms_overlayers <- function(map) {
+  for (i in params_wms()) {
+    if (i$overlayer == TRUE){
     map <- map %>%
       addWMSTiles(
-        baseUrl = overlayers$url[i],
-        layers = overlayers$layer[i],
-        attribution = overlayers$attribution[i],
+        baseUrl = i$url,
+        layers = i$layer,
+        attribution = i$attribution,
         options = WMSTileOptions(
-          format = "image/png",
+          format = i$format,
           transparent = TRUE
         ),
-        group = overlayers$name[i]
-      )
+        group = i$name
+      )%>%
+      hideGroup(i$name)
+    }
   }
   return(map)
 }
+
+map_legend_metric <- function(sld_body){
+
+  # Construct the query parameters for legend
+  query_params <- list(
+    REQUEST = "GetLegendGraphic",
+    VERSION = params_wms()$metric$version,
+    FORMAT = params_wms()$metric$format,
+    SLD_BODY = sld_body,
+    LAYER = params_wms()$metric$layer
+  )
+
+  # Build the legend URL
+  legend_url <- modify_url(params_wms()$metric$url, query = query_params)
+
+  legend <- div(
+              style = "display: flex; align-items: center;",
+              img(
+                src = legend_url,
+                responsive = "width: 100%; height: auto;",
+                class="responsive",
+                ""
+              )
+            )
+  return(legend)
+}
+
+map_legend_wms_overlayer <- function(wms_params){
+
+  # Construct the query parameters for legend
+  query_params <- list(
+    LANGUAGE = wms_params$language,
+    VERSION = wms_params$version,
+    SERVICE = wms_params$service,
+    REQUEST = "GetLegendGraphic",
+    SLD_VERSION = wms_params$sld_version,
+    LAYER = wms_params$layer,
+    FORMAT = wms_params$format,
+    STYLE = wms_params$style
+  )
+
+  legend_url <- modify_url(wms_params$url,
+                           query = query_params)
+
+  div(
+    style = "display: flex; align-items: center;",
+    img(
+      src = legend_url,
+      responsive = "width: 100%; height: auto;",
+      class="responsive",
+      ""
+    )
+  )
+}
+
+map_legend_vector_overlayer <- function(layer_label){
+
+  div(
+    style = "display: flex; align-items: center;",
+    div(
+      style = "background-color: orange; border-radius: 50%; width: 10px; height: 10px; margin-top: 3px;",
+      ""
+    ),
+    span(
+      style = "margin-left: 5px;",
+      layer_label
+    ) # span
+  ) # div
+}
+
+
 

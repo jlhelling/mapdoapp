@@ -150,16 +150,16 @@ data_get_min_max_metric <- function(selected_region_id = region_click_id(), sele
 #' }
 #'
 #' @export
-data_basemaps_df <- function(){
-  basemaps <- data.frame(
-    name = c("Elévation", "Plan IGN", "Satellite IGN", "Occupation du sol", "Géologie"),
-    url = c("https://wxs.ign.fr/altimetrie/geoportail/r/wms", "https://wxs.ign.fr/cartes/geoportail/r/wms", "https://wxs.ign.fr/ortho/geoportail/r/wms", "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms", "http://geoservices.brgm.fr/geologie"),
-    layer = c("ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES", "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2", "HR.ORTHOIMAGERY.ORTHOPHOTOS", "mapdo:mapdo_landuse_1m", "GEOLOGIE"),
-    attribution = c("IGN-F/Géoportail", "IGN-F/Géoportail", "IGN-F/Géoportail", "CNRS-EVS", "BRGM"),
-    style = c("hypso","", "", "mapdo:MAPDO landuse", "")
-  )
-  return(basemaps)
-}
+# data_basemaps_df <- function(){
+#   basemaps <- data.frame(
+#     name = c("Elévation", "Plan IGN", "Satellite IGN", "Occupation du sol", "Géologie"),
+#     url = c("https://wxs.ign.fr/altimetrie/geoportail/r/wms", "https://wxs.ign.fr/cartes/geoportail/r/wms", "https://wxs.ign.fr/ortho/geoportail/r/wms", "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms", "http://geoservices.brgm.fr/geologie"),
+#     layer = c("ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES", "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2", "HR.ORTHOIMAGERY.ORTHOPHOTOS", "mapdo:mapdo_landuse_1m", "GEOLOGIE"),
+#     attribution = c("IGN-F/Géoportail", "IGN-F/Géoportail", "IGN-F/Géoportail", "CNRS-EVS", "BRGM"),
+#     style = c("hypso","", "", "mapdo:MAPDO landuse", "")
+#   )
+#   return(basemaps)
+# }
 
 
 #' Get Overlayers Data Frame
@@ -175,15 +175,15 @@ data_basemaps_df <- function(){
 #' }
 #'
 #' @export
-data_overlayers_df <- function(){
-  overlayers <- data.frame(
-    name = c("Courbe de niveau", "Zone inondable débordement centenale", "Ouvrage protection inondation"),
-    url = c("https://wxs.ign.fr/altimetrie/geoportail/r/wms", "https://georisques.gouv.fr/services", "https://georisques.gouv.fr/services"),
-    layer = c("ELEVATION.CONTOUR.LINE", "ALEA_SYNT_01_02MOY_FXX", "OUV_PROTECTION_FXX"),
-    attribution = c("IGN-F/Géoportail", "Georisques", "Georisques")
-  )
-  return(overlayers)
-}
+# data_overlayers_df <- function(){
+#   overlayers <- data.frame(
+#     name = c("Courbe de niveau", "Zone inondable débordement centenale", "Ouvrage protection inondation"),
+#     url = c("https://wxs.ign.fr/altimetrie/geoportail/r/wms", "https://georisques.gouv.fr/services", "https://georisques.gouv.fr/services"),
+#     layer = c("ELEVATION.CONTOUR.LINE", "ALEA_SYNT_01_02MOY_FXX", "OUV_PROTECTION_FXX"),
+#     attribution = c("IGN-F/Géoportail", "Georisques", "Georisques")
+#   )
+#   return(overlayers)
+# }
 
 
 #' Get Referentiel des Obstacles aux Ecoulement Data for a Region
