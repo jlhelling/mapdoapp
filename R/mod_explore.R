@@ -244,56 +244,7 @@ mod_explore_server <- function(input, output, session){
         map_region_clicked(region_click = click_value(),
                            selected_region_feature = selected_region_feature())
     }
-
-
   })
-
-
-  output$legendUI <- renderUI({
-    div(
-        HTML('<label class="control-label" id="legend-label">Légende</label>'),
-      # Metric
-      if (!is.null(selected_metric())){
-        # build SLD symbology
-        sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = region_click_id(), selected_metric = selected_metric()),
-                                  colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
-                                                                                                             selected_metric = selected_metric())),
-                                  metric = selected_metric())
-
-        map_legend_metric(sld_body = sld_body)
-      },
-
-      # zone inondable
-      if (any(input$exploremap_groups %in% params_map_group()$inondation)) {
-
-        map_legend_wms_overlayer(wms_params = params_wms()$inondation)
-      },
-
-      # ouvrage de protection
-      if (any(input$exploremap_groups %in% params_map_group()[["ouvrage_protection"]])) {
-
-        map_legend_wms_overlayer(wms_params = params_wms()$ouvrage_protection)
-      },
-
-      # ROE
-      if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
-
-        map_legend_vector_overlayer(layer_label = "ROE")
-      }
-    ) # div title legend
-  })
-
-  # # display ROE legend
-  # observeEvent(input$exploremap_groups, {
-  #   if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
-  #     leafletProxy("exploremap") %>%
-  #       map_legend_roe()
-  #   } else {
-  #     leafletProxy("exploremap") %>%
-  #       removeControl(layerId = params_map_group()[["roe"]])
-  #   }
-  #
-  # })
 
   # reactive list to activate map update
   map_update <- reactive({
@@ -328,18 +279,6 @@ mod_explore_server <- function(input, output, session){
                                                                                                            selected_metric = selected_metric())),
                                 metric = selected_metric())
 
-      # Construct the query parameters for legend
-      query_params <- list(
-        REQUEST = params_geoserver()[["query_legend"]],
-        VERSION = params_geoserver()[["version"]],
-        FORMAT = params_geoserver()[["format"]],
-        SLD_BODY = sld_body,
-        LAYER = params_geoserver()[["layer"]]
-      )
-
-      # Build the legend URL
-      legend_url <- modify_url(params_geoserver()[["url"]], query = query_params)
-
       # build WMS filter
       cql_filter=paste0("gid_region=",selected_region_feature()[["gid"]],
                         " AND strahler>=",input$strahler[1],
@@ -350,9 +289,39 @@ mod_explore_server <- function(input, output, session){
       # update map
       leafletProxy("exploremap") %>%
         map_metric(style = "",
-                   cql_filter = cql_filter, sld_body = sld_body, legend_url = legend_url,
+                   cql_filter = cql_filter, sld_body = sld_body,
                    data_axis = network_region_axis())
+
+      # update legend
+      metric_legend(map_legend_metric(sld_body = sld_body))
     }
+  })
+
+  ### MAP LEGEND ####
+
+  metric_legend <- reactiveVal(NULL)
+
+  output$legendUI <- renderUI({
+    div(
+      HTML('<label class="control-label" id="legend-label">Légende</label>'),
+      # metric
+      div(
+        style = "display: flex; align-items: center;",
+        metric_legend(),
+      ),
+      # zone inondable
+      if (any(input$exploremap_groups %in% params_map_group()$inondation)) {
+        map_legend_wms_overlayer(wms_params = params_wms()$inondation)
+      },
+      # ouvrage de protection
+      if (any(input$exploremap_groups %in% params_map_group()[["ouvrage_protection"]])) {
+        map_legend_wms_overlayer(wms_params = params_wms()$ouvrage_protection)
+      },
+      # ROE
+      if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
+        map_legend_vector_overlayer(layer_label = "ROE")
+      }
+    ) # div
   })
 
   ### PROFILE ####

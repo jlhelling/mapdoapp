@@ -298,7 +298,7 @@ map_no_metric <- function(map, style = params_geoserver()[["metric_basic_style"]
 
 
 map_metric <- function(map, style = params_geoserver()[["metric_basic_style"]],
-                       cql_filter = "", sld_body = "", legend_url = "",
+                       cql_filter = "", sld_body = "",
                        data_axis = network_region_axis()) {
   map %>%
     clearGroup(params_map_group()[["axis"]]) %>%
@@ -306,9 +306,6 @@ map_metric <- function(map, style = params_geoserver()[["metric_basic_style"]],
     # add metric with custom symbology
     map_wms_metric(style = style,
                    cql_filter = cql_filter, sld_body = sld_body) %>%
-    # add legend with custom symbology
-    addControl(html = paste0("<img src=",legend_url,">"),
-               position = "bottomright", layerId = params_map_group()[["legend"]]) %>%
     # add transparent axis
     map_axis(data_axis = data_axis)
 }
@@ -403,15 +400,8 @@ map_legend_metric <- function(sld_body){
   # Build the legend URL
   legend_url <- modify_url(params_wms()$metric$url, query = query_params)
 
-  legend <- div(
-              style = "display: flex; align-items: center;",
-              img(
-                src = legend_url,
-                responsive = "width: 100%; height: auto;",
-                class="responsive",
-                ""
-              )
-            )
+  legend <- tags$img(src = legend_url, responsive = "width: 100%; height: auto;", class="responsive")
+
   return(legend)
 }
 
