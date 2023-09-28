@@ -196,8 +196,8 @@ params_metrics_choice <- function() {
       "Talweg" = "talweg_elevation_min"
     ),
     "Pentes" = c(
-      "Pente du talweg" = "talweg_slope",
-      "Pente du fond de vallée" = "floodplain_slope"
+      "Talweg" = "talweg_slope",
+      "Fond de vallée" = "floodplain_slope"
     ),
     "Occupation du sol" = c(
       "Surface en eau" = "water_channel",

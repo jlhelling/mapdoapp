@@ -371,7 +371,7 @@ mod_explore_server <- function(input, output, session){
     selected_axis_df <- selected_axis() %>%
       as.data.frame()
 
-    if (!is.null(selected_metric())){
+    if (!is.null(selected_metric()) && is.null(input$profiledynamicRadio)){
 
       plot <- lg_profile_main(data = selected_axis_df,
                               y = selected_metric(),
@@ -381,16 +381,16 @@ mod_explore_server <- function(input, output, session){
       )
     }
 
-    if (!is.null(input$profiledynamicRadio)){
+    if (!is.null(selected_metric()) && !is.null(input$profiledynamicRadio)){
       plot <- lg_profile_second(data = selected_axis_df,
                                 y = selected_metric(),
                                 y_axe_label = paste0(input$metric, " - ", names(
                                   unlist(params_metrics_choice()[[input$metric]]))
                                   [unlist(params_metrics_choice()[[input$metric]]) == selected_metric()]),
                                   y2 = input$profiledynamicRadio,
-                                  y2_axe_label = paste0(input$metric, " - ", names(
-                                    unlist(params_metrics_choice()[[input$metric]]))
-                                    [unlist(params_metrics_choice()[[input$metric]]) == input$profiledynamicRadio]))
+                                  y2_axe_label = paste0(input$profilemetric, " - ", names(
+                                    unlist(params_metrics_choice()[[input$profilemetric]]))
+                                    [unlist(params_metrics_choice()[[input$profilemetric]]) == input$profiledynamicRadio]))
     }
 
     # Add hover information

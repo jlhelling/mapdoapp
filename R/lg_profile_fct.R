@@ -2,13 +2,14 @@ lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
                             y_axe_label = "active channel width"){
   plot <- plot_ly(data = data, x = ~measure, y = as.formula(paste0("~", y)),
                   key = ~fid,  # Specify the "id" column for hover text
-                  type = 'scatter', mode = 'lines', name = 'Ligne1')%>%
+                  type = 'scatter', mode = 'lines', name = y_axe_label)%>%
     layout(
       xaxis = list(title = 'Distance depuis la source'),
       yaxis = list(
         title = y_axe_label,
         side = 'left'
-      )
+      ),
+      legend = list(orientation = 'h')
     )
   return(plot)
 }
@@ -22,13 +23,14 @@ lg_profile_second <- function(data = selected_axis_df, y = "active_channel_width
   ) %>%
     add_trace(data = data, x = ~measure, y = as.formula(paste0("~", y2),),
               key = ~fid,  # Specify the "id" column for hover text
-              type = 'scatter', mode = 'lines', name = 'Ligne2', yaxis = 'y2') %>%
+              type = 'scatter', mode = 'lines', name = y2_axe_label, yaxis = 'y2') %>%
     layout(
       yaxis2 = list(
         title = y2_axe_label,
         overlaying = 'y',
         side = 'right'
-      )
+      ),
+      legend = list(orientation = 'h')
     )
   return(plot)
 }
