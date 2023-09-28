@@ -326,16 +326,25 @@ mod_explore_server <- function(input, output, session){
 
   ### PROFILE ####
 
-  # PROFILE longitudinale profile if axis clicked
+  # longitudinale profile if axis clicked
   output$long_profile <- renderPlotly({
     req(click_value()$group == params_map_group()[["axis"]])
 
     selected_axis_df <- selected_axis() %>%
       as.data.frame()
 
-    plot <- plot_ly(data = selected_axis_df, x = ~measure, y = ~talweg_elevation_min,
-                    key = ~fid,  # Specify the "id" column for hover text
-                    type = 'scatter', mode = 'lines', name = 'Ligne')
+    if (is.null(selected_metric())){
+
+      plot <- plot_ly(data = selected_axis_df, x = ~measure, y = ~talweg_elevation_min,
+                      key = ~fid,  # Specify the "id" column for hover text
+                      type = 'scatter', mode = 'lines', name = 'Ligne')
+
+    } else {
+
+      plot <- plot_ly(data = selected_axis_df, x = ~measure, y = as.formula(paste0("~", selected_metric())),
+                      key = ~fid,  # Specify the "id" column for hover text
+                      type = 'scatter', mode = 'lines', name = 'Ligne')
+    }
 
     # Add hover information
     plot <- plot %>%
