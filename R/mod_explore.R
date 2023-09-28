@@ -60,8 +60,13 @@ mod_explore_ui <- function(id){
       ), # fluidRow
       fluidRow(
         tabsetPanel(
-          tabPanel(title = "Profil en long",
-                   plotlyOutput(ns("long_profile"))
+          tabPanel(
+            "Profil en long",
+            splitLayout (
+              plotlyOutput(ns("long_profile")),
+              uiOutput(ns("profilemetricUI")),
+              cellWidths = c("80%", "20%")
+            )
           ), # tabPanel
           tabPanel(title = "Profil en travers"
           ) # tabPanel
