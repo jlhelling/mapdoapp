@@ -161,41 +161,12 @@ map_region_clicked <- function(map,
     )
 }
 
-#' Add Legend for ROE to a Leaflet Map
-#'
-#' This function adds a legend for ROE to a Leaflet map.
-#'
-#' @param map An existing Leaflet map to which the legend for ROE will be added.
-#'
-#' @return An updated Leaflet map with the legend for ROE added.
-#'
-#' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   updated_map <- map_legend_roe(map = existing_map)
-#' }
-#'
-#' @importFrom leaflet addLegend
-#'
-#' @export
-# map_legend_roe <- function(map){
-#   map %>%
-#     addLegend(
-#       position = "bottomright",
-#       labels = params_map_group()[["roe"]],
-#       colors = paste0("orange", "; border-radius: 50%; width: 10px; height: 10px; margin-top:4px;"),
-#       opacity = 0.9,
-#       layerId = params_map_group()[["roe"]]
-#     )
-#   return(map)
-# }
-
 #' Add WMS Tiles with Metric Data to an Existing Leaflet Map
 #'
 #' This function adds WMS tiles with metric data to an existing Leaflet map, allowing for customization of style and filtering.
 #'
 #' @param map An existing Leaflet map to which WMS tiles will be added.
-#' @param style The style to apply to the WMS tiles.
+#' @param wms_params A list of WMS parameters.
 #' @param cql_filter A CQL filter to apply to the WMS request.
 #' @param sld_body A custom SLD (Styled Layer Descriptor) body for symbology customization.
 #'
@@ -204,24 +175,24 @@ map_region_clicked <- function(map,
 #' @examples
 #' \dontrun{
 #'   # Example usage:
-#'   updated_map <- map_wms_metric(map = existing_map, style = "custom_style", cql_filter = "metric > 100", sld_body = "<sld>...</sld>")
+#'   updated_map <- map_wms_metric(map = existing_map, wms_params = params_wms()$metric, cql_filter = "metric > 100", sld_body = "<sld>...</sld>")
 #' }
 #'
 #' @importFrom leaflet addWMSTiles
 #'
 #' @export
-map_wms_metric <-function(map, style = params_geoserver()[["metric_basic_style"]],
+map_wms_metric <-function(map, wms_params = params_wms()$metric,
                           cql_filter = "", sld_body = "") {
   map %>%
     addWMSTiles(
-      baseUrl = params_geoserver()[["url"]],
-      layers = params_geoserver()[["layer"]],
-      attribution = params_geoserver()[["attribution"]],
+      baseUrl = wms_params$url,
+      layers = wms_params$layer,
+      attribution = wms_params$attribution,
       options = WMSTileOptions(
-        format = params_geoserver()[["format"]],
-        request = params_geoserver()[["query_map"]],
+        format = wms_params$format,
+        request = "GetMap",
         transparent = TRUE,
-        style = style,
+        style = wms_params$style,
         cql_filter = cql_filter,
         sld_body = sld_body,
         zIndex = 100
@@ -263,48 +234,15 @@ map_axis <- function(map, data_axis) {
     )
 }
 
-#' Add hydrological network when no metric is selected to existing map
-#'
-#' This function clears metric layers, removes the legend, add wms metric and adds a transparent axis to an existing Leaflet map.
-#'
-#' @param map An existing Leaflet map to be updated.
-#' @param style The style to apply to the WMS tiles.
-#' @param cql_filter A CQL filter to apply to the WMS request.
-#' @param sld_body A custom SLD (Styled Layer Descriptor) body for symbology customization.
-#' @param data_axis A data frame containing axis data.
-#'
-#' @return An updated Leaflet map with metric layers cleared, the legend removed, and a transparent axis added.
-#'
-#' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   updated_map <- map_no_metric(map = existing_map, style = "custom_style", cql_filter = "metric > 100", sld_body = "<sld>...</sld>", data_axis = some_axis_data)
-#' }
-#'
-#' @importFrom leaflet clearGroup
-#' @importFrom leaflet removeControl
-#'
-#' @export
-map_no_metric <- function(map, style = params_geoserver()[["metric_basic_style"]],
-                          cql_filter = "", sld_body = "",
-                          data_axis = network_region_axis()) {
-  map %>%
-    clearGroup(params_map_group()[["metric"]]) %>%
-    removeControl(params_map_group()[["legend"]]) %>%
-    map_wms_metric(style = style,
-                   cql_filter = cql_filter, sld_body = sld_body) %>%
-    map_axis(data_axis = data_axis)
-}
 
-
-map_metric <- function(map, style = params_geoserver()[["metric_basic_style"]],
+map_metric <- function(map, wms_params = params_wms()$metric,
                        cql_filter = "", sld_body = "",
                        data_axis = network_region_axis()) {
   map %>%
     clearGroup(params_map_group()[["axis"]]) %>%
     clearGroup(params_map_group()[["metric"]]) %>%
     # add metric with custom symbology
-    map_wms_metric(style = style,
+    map_wms_metric(wms_params = wms_params,
                    cql_filter = cql_filter, sld_body = sld_body) %>%
     # add transparent axis
     map_axis(data_axis = data_axis)

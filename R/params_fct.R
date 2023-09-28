@@ -8,7 +8,7 @@ params_wms <- function(){
                             layer = "mapdo:network_metrics",
                             format = "image/png",
                             sld = "",
-                            style = "",
+                            style = "", # no style, sld_body define style and legend
                             attribution = "CNRS - EVS",
                             basemap = FALSE,
                             overlayer = FALSE),
@@ -21,7 +21,7 @@ params_wms <- function(){
                             layer = "mapdo:network_metrics",
                             format = "image/png",
                             sld = "",
-                            style = "mapdo:network_basic_style",
+                            style = "mapdo:network_basic_style", # basic blue style when no metric selected
                             attribution = "CNRS - EVS",
                             basemap = FALSE,
                             overlayer = FALSE),

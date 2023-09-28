@@ -265,7 +265,7 @@ mod_explore_server <- function(input, output, session){
                         " AND strahler <= ", input$strahler[2])
       # update map with basic style
       leafletProxy("exploremap") %>%
-        map_no_metric(style = params_geoserver()[["metric_basic_style"]],
+        map_metric(wms_params = params_wms()$metric_basic, # metric_basic to have blue network
                       cql_filter = cql_filter, sld_body = NULL,
                       data_axis = network_region_axis())
 
@@ -288,7 +288,7 @@ mod_explore_server <- function(input, output, session){
 
       # update map
       leafletProxy("exploremap") %>%
-        map_metric(style = "",
+        map_metric(wms_params = params_wms()$metric,
                    cql_filter = cql_filter, sld_body = sld_body,
                    data_axis = network_region_axis())
 
