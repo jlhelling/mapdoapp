@@ -366,22 +366,44 @@ mod_explore_server <- function(input, output, session){
 
   # longitudinale profile if axis clicked
   output$long_profile <- renderPlotly({
-    req(click_value()$group == params_map_group()[["axis"]])
+    req(click_value()$group == params_map_group()[["axis"]], !is.null(selected_metric()))
 
     selected_axis_df <- selected_axis() %>%
       as.data.frame()
 
-    if (is.null(selected_metric())){
-
-      plot <- plot_ly(data = selected_axis_df, x = ~measure, y = ~talweg_elevation_min,
-                      key = ~fid,  # Specify the "id" column for hover text
-                      type = 'scatter', mode = 'lines', name = 'Ligne')
-
-    } else {
+    if (!is.null(selected_metric())){
 
       plot <- plot_ly(data = selected_axis_df, x = ~measure, y = as.formula(paste0("~", selected_metric())),
                       key = ~fid,  # Specify the "id" column for hover text
-                      type = 'scatter', mode = 'lines', name = 'Ligne')
+                      type = 'scatter', mode = 'lines', name = 'Ligne1')%>%
+        layout(
+          xaxis = list(title = 'X-axis'),
+          yaxis = list(
+            title = 'Left Y-axis',
+            side = 'left'  # Align with the left y-axis
+          )
+        )
+    }
+
+    if (!is.null(input$profiledynamicRadio)){
+      plot <- plot_ly(data = selected_axis_df, x = ~measure, y = as.formula(paste0("~", selected_metric())),
+                      key = ~fid,  # Specify the "id" column for hover text
+                      type = 'scatter', mode = 'lines', name = 'Ligne') %>%
+        add_trace(data = selected_axis_df, x = ~measure, y = as.formula(paste0("~", input$profiledynamicRadio)),
+                  key = ~fid,  # Specify the "id" column for hover text
+                  type = 'scatter', mode = 'lines', name = 'Ligne2', yaxis = 'y2') %>%
+        layout(
+          xaxis = list(title = 'X-axis'),
+          yaxis = list(
+            title = 'Left Y-axis',
+            side = 'left'  # Align with the left y-axis
+          ),
+          yaxis2 = list(
+            title = 'Right Y-axis',
+            overlaying = 'y',
+            side = 'right'  # Align with the right y-axis
+          )
+        )
     }
 
     # Add hover information
