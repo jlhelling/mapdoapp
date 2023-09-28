@@ -192,6 +192,9 @@ params_metrics_choice <- function() {
       "Corridor connecté" = "connected_corridor_width",
       "Fond de vallée" = "valley_bottom_width"
     ),
+    "Elévation (m)" = c(
+      "Talweg" = "talweg_elevation_min"
+    ),
     "Pentes" = c(
       "Pente du talweg" = "talweg_slope",
       "Pente du fond de vallée" = "floodplain_slope"

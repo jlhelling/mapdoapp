@@ -20,10 +20,10 @@
 sld_get_quantile_metric <- function(selected_region_id = region_click_id(), selected_metric = selected_metric()) {
   query <- glue::glue("
       SELECT
-        ROUND(percentile_cont(0.20) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q1,
-        ROUND(percentile_cont(0.40) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q2,
-        ROUND(percentile_cont(0.60) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q3,
-        ROUND(percentile_cont(0.80) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q4,
+        ROUND(percentile_cont(0) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q1,
+        ROUND(percentile_cont(0.25) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q2,
+        ROUND(percentile_cont(0.50) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q3,
+        ROUND(percentile_cont(0.75) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q4,
         ROUND(percentile_cont(1) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q5
     FROM public.network_metrics
     WHERE gid_region = {selected_region_id}")
