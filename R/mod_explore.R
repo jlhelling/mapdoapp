@@ -373,37 +373,24 @@ mod_explore_server <- function(input, output, session){
 
     if (!is.null(selected_metric())){
 
-      plot <- plot_ly(data = selected_axis_df, x = ~measure, y = as.formula(paste0("~", selected_metric())),
-                      key = ~fid,  # Specify the "id" column for hover text
-                      type = 'scatter', mode = 'lines', name = 'Ligne1')%>%
-        layout(
-          xaxis = list(title = 'X-axis'),
-          yaxis = list(
-            title = 'Left Y-axis',
-            side = 'left'  # Align with the left y-axis
-          )
-        )
+      plot <- lg_profile_main(data = selected_axis_df,
+                              y = selected_metric(),
+                              y_axe_label = paste0(input$metric, " - ", names(
+                                unlist(params_metrics_choice()[[input$metric]]))
+                                [unlist(params_metrics_choice()[[input$metric]]) == selected_metric()])
+      )
     }
 
     if (!is.null(input$profiledynamicRadio)){
-      plot <- plot_ly(data = selected_axis_df, x = ~measure, y = as.formula(paste0("~", selected_metric())),
-                      key = ~fid,  # Specify the "id" column for hover text
-                      type = 'scatter', mode = 'lines', name = 'Ligne') %>%
-        add_trace(data = selected_axis_df, x = ~measure, y = as.formula(paste0("~", input$profiledynamicRadio)),
-                  key = ~fid,  # Specify the "id" column for hover text
-                  type = 'scatter', mode = 'lines', name = 'Ligne2', yaxis = 'y2') %>%
-        layout(
-          xaxis = list(title = 'X-axis'),
-          yaxis = list(
-            title = 'Left Y-axis',
-            side = 'left'  # Align with the left y-axis
-          ),
-          yaxis2 = list(
-            title = 'Right Y-axis',
-            overlaying = 'y',
-            side = 'right'  # Align with the right y-axis
-          )
-        )
+      plot <- lg_profile_second(data = selected_axis_df,
+                                y = selected_metric(),
+                                y_axe_label = paste0(input$metric, " - ", names(
+                                  unlist(params_metrics_choice()[[input$metric]]))
+                                  [unlist(params_metrics_choice()[[input$metric]]) == selected_metric()]),
+                                  y2 = input$profiledynamicRadio,
+                                  y2_axe_label = paste0(input$metric, " - ", names(
+                                    unlist(params_metrics_choice()[[input$metric]]))
+                                    [unlist(params_metrics_choice()[[input$metric]]) == input$profiledynamicRadio]))
     }
 
     # Add hover information
