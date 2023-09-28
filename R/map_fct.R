@@ -235,6 +235,34 @@ map_axis <- function(map, data_axis) {
 }
 
 
+#' Add a metric layer with custom symbology to a map.
+#'
+#' This function adds a metric layer with custom symbology to a leaflet map. It allows you to specify custom parameters for the Web Map Service (WMS) request, apply a CQL (Common Query Language) filter, and provide a custom SLD (Styled Layer Descriptor) body for styling the layer. Additionally, you can specify the data axis to display on the map.
+#'
+#' @param map A leaflet map object to which the metric layer will be added.
+#' @param wms_params A list containing WMS parameters for the metric layer. If not provided, default parameters are retrieved using the \code{\link{params_wms}} function.
+#' @param cql_filter A character string representing a CQL filter to apply to the metric layer.
+#' @param sld_body A character string representing the SLD (Styled Layer Descriptor) body for custom styling of the metric layer.
+#' @param data_axis A data axis to display on the map.
+#'
+#' @return A leaflet map object with the metric layer added.
+#'
+#' @examples
+#' # Create a leaflet map
+#' my_map <- leaflet() %>%
+#'   addTiles() %>%
+#'   setView(lng = 0, lat = 0, zoom = 3)
+#'
+#' # Add a custom metric layer to the map
+#' map_metric(my_map, wms_params = params_wms()$metric, cql_filter = "value > 100", sld_body = my_custom_sld, data_axis = my_axis_data)
+#'
+#' @importFrom leaflet leaflet
+#' @importFrom leaflet addTiles
+#' @importFrom leaflet setView
+#' @importFrom leaflet clearGroup
+#' @importFrom leaflet addWMSTiles
+#'
+#' @export
 map_metric <- function(map, wms_params = params_wms()$metric,
                        cql_filter = "", sld_body = "",
                        data_axis = network_region_axis()) {
@@ -247,6 +275,7 @@ map_metric <- function(map, wms_params = params_wms()$metric,
     # add transparent axis
     map_axis(data_axis = data_axis)
 }
+
 
 #' Add Basemap Layers to an Existing Leaflet Map
 #'
@@ -324,6 +353,27 @@ map_add_wms_overlayers <- function(map) {
   return(map)
 }
 
+
+#' Generate and display a legend for a map layer using a provided SLD (Styled Layer Descriptor) body.
+#'
+#' This function constructs a legend for a map layer by sending a GetLegendGraphic request to a WMS (Web Map Service) server.
+#'
+#' @param sld_body A character string containing the SLD (Styled Layer Descriptor) body that defines the map layer's styling.
+#'
+#' @return An HTML img tag representing the legend for the specified map layer.
+#'
+#' @examples
+#' # Define an SLD body for a map layer
+#' sld_body <- '<StyledLayerDescriptor>...</StyledLayerDescriptor>'
+#'
+#' # Generate and display the legend for the map layer
+#' legend <- map_legend_metric(sld_body)
+#' print(legend)
+#'
+#' @importFrom httr modify_url
+#' @importFrom htmltools tags
+#'
+#' @export
 map_legend_metric <- function(sld_body){
 
   # Construct the query parameters for legend
@@ -338,11 +388,54 @@ map_legend_metric <- function(sld_body){
   # Build the legend URL
   legend_url <- modify_url(params_wms()$metric$url, query = query_params)
 
+  # create an html img tag to display the legend
   legend <- tags$img(src = legend_url, responsive = "width: 100%; height: auto;", class="responsive")
 
   return(legend)
 }
 
+
+#' Generate and display a legend for a WMS (Web Map Service) layer overlay using specified WMS parameters.
+#'
+#' This function constructs a legend for a WMS layer overlay by sending a GetLegendGraphic request to a WMS server.
+#'
+#' @param wms_params A list containing the following parameters for the WMS layer overlay:
+#'   \itemize{
+#'     \item \code{language} (character): The language to use for the legend.
+#'     \item \code{version} (character): The version of the WMS service.
+#'     \item \code{service} (character): The WMS service type (e.g., "WMS").
+#'     \item \code{sld_version} (character): The SLD (Styled Layer Descriptor) version.
+#'     \item \code{layer} (character): The name of the WMS layer for which the legend is generated.
+#'     \item \code{format} (character): The desired format of the legend image (e.g., "image/png").
+#'     \item \code{style} (character): The style to use for rendering the legend.
+#'     \item \code{url} (character): The URL of the WMS server.
+#'   }
+#'
+#' @return An HTML div element containing an img tag representing the legend for the specified WMS layer overlay.
+#'
+#' @examples
+#' # Define WMS parameters for a layer overlay
+#' wms_params <- list(
+#'   language = "en",
+#'   version = "1.3.0",
+#'   service = "WMS",
+#'   request = "GetLegendGraphic",
+#'   sld_version = "1.1.0",
+#'   layer = "overlay_layer",
+#'   format = "image/png",
+#'   style = "default",
+#'   url = "http://wms.example.com/wms"
+#' )
+#'
+#' # Generate and display the legend for the WMS layer overlay
+#' legend <- map_legend_wms_overlayer(wms_params)
+#' print(legend)
+#'
+#' @importFrom httr modify_url
+#' @importFrom htmltools div
+#' @importFrom htmltools img
+#'
+#' @export
 map_legend_wms_overlayer <- function(wms_params){
 
   # Construct the query parameters for legend
@@ -357,9 +450,10 @@ map_legend_wms_overlayer <- function(wms_params){
     STYLE = wms_params$style
   )
 
-  legend_url <- modify_url(wms_params$url,
-                           query = query_params)
+  # Build the legend URL
+  legend_url <- modify_url(wms_params$url, query = query_params)
 
+  # Create a div with centered alignment
   div(
     style = "display: flex; align-items: center;",
     img(
@@ -367,10 +461,28 @@ map_legend_wms_overlayer <- function(wms_params){
       responsive = "width: 100%; height: auto;",
       class="responsive",
       ""
-    )
-  )
+    ) # img
+  ) # div
 }
 
+
+#' Generate a legend entry for a vector overlay layer.
+#'
+#' This function generates an HTML representation of a legend entry for a vector overlay layer. The legend entry consists of a colored circle with a label indicating the layer's name.
+#'
+#' @param layer_label A character string representing the label or name of the vector overlay layer.
+#'
+#' @return An HTML div element representing the legend entry for the vector overlay layer.
+#'
+#' @examples
+#' # Create a legend entry for a vector overlay layer
+#' legend_entry <- map_legend_vector_overlayer("Vector Layer A")
+#' print(legend_entry)
+#'
+#' @importFrom htmltools div
+#' @importFrom htmltools span
+#'
+#' @export
 map_legend_vector_overlayer <- function(layer_label){
 
   div(
@@ -385,6 +497,5 @@ map_legend_vector_overlayer <- function(layer_label){
     ) # span
   ) # div
 }
-
 
 

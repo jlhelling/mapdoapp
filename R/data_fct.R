@@ -135,57 +135,6 @@ data_get_min_max_metric <- function(selected_region_id = region_click_id(), sele
   return(data)
 }
 
-
-
-#' Get Basemaps Data Frame
-#'
-#' This function retrieves information about available basemaps, including their names, URLs, layers, and attribution.
-#'
-#' @return A data frame containing information about available basemaps, with columns 'name', 'url', 'layer', and 'attribution'.
-#'
-#' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   basemaps <- data_basemaps_df()
-#' }
-#'
-#' @export
-# data_basemaps_df <- function(){
-#   basemaps <- data.frame(
-#     name = c("Elévation", "Plan IGN", "Satellite IGN", "Occupation du sol", "Géologie"),
-#     url = c("https://wxs.ign.fr/altimetrie/geoportail/r/wms", "https://wxs.ign.fr/cartes/geoportail/r/wms", "https://wxs.ign.fr/ortho/geoportail/r/wms", "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms", "http://geoservices.brgm.fr/geologie"),
-#     layer = c("ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES", "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2", "HR.ORTHOIMAGERY.ORTHOPHOTOS", "mapdo:mapdo_landuse_1m", "GEOLOGIE"),
-#     attribution = c("IGN-F/Géoportail", "IGN-F/Géoportail", "IGN-F/Géoportail", "CNRS-EVS", "BRGM"),
-#     style = c("hypso","", "", "mapdo:MAPDO landuse", "")
-#   )
-#   return(basemaps)
-# }
-
-
-#' Get Overlayers Data Frame
-#'
-#' This function retrieves information about available overlayers, including their names, URLs, layers, and attribution.
-#'
-#' @return A data frame containing information about available overlayers, with columns 'name', 'url', 'layer', and 'attribution'.
-#'
-#' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   overlayers <- data_overlayers_df()
-#' }
-#'
-#' @export
-# data_overlayers_df <- function(){
-#   overlayers <- data.frame(
-#     name = c("Courbe de niveau", "Zone inondable débordement centenale", "Ouvrage protection inondation"),
-#     url = c("https://wxs.ign.fr/altimetrie/geoportail/r/wms", "https://georisques.gouv.fr/services", "https://georisques.gouv.fr/services"),
-#     layer = c("ELEVATION.CONTOUR.LINE", "ALEA_SYNT_01_02MOY_FXX", "OUV_PROTECTION_FXX"),
-#     attribution = c("IGN-F/Géoportail", "Georisques", "Georisques")
-#   )
-#   return(overlayers)
-# }
-
-
 #' Get Referentiel des Obstacles aux Ecoulement Data for a Region
 #'
 #' This function retrieves data about Referentiel des Obstacles aux Ecoulement (ROE) within a specified region based on its ID.
