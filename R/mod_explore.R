@@ -64,8 +64,19 @@ mod_explore_ui <- function(id){
             "Profil en long",
             splitLayout (
               plotlyOutput(ns("long_profile")),
-              uiOutput(ns("profilemetricUI")),
-              cellWidths = c("80%", "20%")
+              div(
+                fluidRow(
+                  column(
+                    width = 12,
+                    uiOutput(ns("profilemetricUI"))
+                  ),
+                  column(
+                    width = 12,
+                    uiOutput(ns("profileradiobuttonUI"))
+                  )
+                )
+              ),
+              cellWidths = c("75%", "25%")
             )
           ), # tabPanel
           tabPanel(title = "Profil en travers"
@@ -130,6 +141,28 @@ mod_explore_server <- function(input, output, session){
                                   regions_data = region_hydro())
     }
   })
+
+  ### PROFILE UI ####
+
+  output$profilemetricUI <- renderUI({
+    req(click_value()$group == params_map_group()[["axis"]])
+    selectInput(ns("profilemetric"), "Métrique complémentaire :",
+                choices = names(params_metrics_choice()),
+                selected  = "Largeurs") # selectInput for dynamic radio buttons
+  })
+
+  output$profileradiobuttonUI <- renderUI({
+
+    req(input$profilemetric)
+
+    selected_metric <- input$profilemetric
+
+    radioButtons(ns("profiledynamicRadio"), sprintf("%s :", selected_metric),
+                 choiceNames = names(params_metrics_choice()[[selected_metric]]),
+                 choiceValues = as.list(unname(params_metrics_choice()[[selected_metric]])),
+                 selected = character(0))
+  })
+
 
   ### DYNAMIC UI ####
 
