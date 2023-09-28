@@ -28,7 +28,6 @@ map_init_bassins <- function(bassins_data = get_bassins()) {
 
   leaflet() %>%
     setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
-    map_add_basemaps(data_basemaps_df()) %>%
     addPolygons(data = bassins_data,
                 layerId = ~cdbh,
                 smoothFactor = 2,
@@ -45,10 +44,12 @@ map_init_bassins <- function(bassins_data = get_bassins()) {
     addScaleBar(pos = "bottomleft",
                 scaleBarOptions(metric = TRUE, imperial = FALSE)) %>%
     addProviderTiles(providers$CartoDB.Positron) %>%
+    map_add_basemaps() %>%
     addLayersControl(
-      baseGroups = c("CartoDB Positron", data_basemaps_df()$name),
+      baseGroups = c("CartoDB Positron", unlist(sapply(params_wms(), function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),
       options = layersControlOptions(collapsed = TRUE)
     )
+
     # addControl(html = legend_image,
     #            position = "bottomright", layerId = params_map_group()[["legend"]]) %>%
     # addControl(html = icon(name = "circle-info", class="fa-solid fa-circle-info fa-xl", lib = "font-awesome"),
@@ -149,44 +150,15 @@ map_region_clicked <- function(map,
                      popup = ~nomprincip,
                      group = params_map_group()[["roe"]]
     ) %>%
-    # add WMS overlayers
-    map_add_overlayers(data_overlayers_df()) %>%
-    addLayersControl(
-      baseGroups = c("CartoDB Positron", data_basemaps_df()$name),
-      options = layersControlOptions(collapsed = TRUE),
-      overlayGroups = c(params_map_group()[["roe"]], data_overlayers_df()$name)
-    ) %>%
     # ROE layer hidden by default
-    hideGroup(c(params_map_group()[["roe"]], data_overlayers_df()$name))
-}
-
-#' Add Legend for ROE to a Leaflet Map
-#'
-#' This function adds a legend for ROE to a Leaflet map.
-#'
-#' @param map An existing Leaflet map to which the legend for ROE will be added.
-#'
-#' @return An updated Leaflet map with the legend for ROE added.
-#'
-#' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   updated_map <- map_legend_roe(map = existing_map)
-#' }
-#'
-#' @importFrom leaflet addLegend
-#'
-#' @export
-map_legend_roe <- function(map){
-  map %>%
-    addLegend(
-      position = "bottomright",
-      labels = params_map_group()[["roe"]],
-      colors = paste0("orange", "; border-radius: 50%; width: 10px; height: 10px; margin-top:4px;"),
-      opacity = 0.9,
-      layerId = params_map_group()[["roe"]]
+    hideGroup(params_map_group()[["roe"]]) %>%
+    # add WMS overlayers
+    map_add_wms_overlayers() %>%
+    addLayersControl(
+      baseGroups = c("CartoDB Positron", unlist(sapply(params_wms(), function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),
+      options = layersControlOptions(collapsed = TRUE),
+      overlayGroups = c(params_map_group()[["roe"]], unlist(sapply(params_wms(), function(x) if (x$overlayer) x$name else NULL), use.names = FALSE))
     )
-  return(map)
 }
 
 #' Add WMS Tiles with Metric Data to an Existing Leaflet Map
@@ -194,7 +166,7 @@ map_legend_roe <- function(map){
 #' This function adds WMS tiles with metric data to an existing Leaflet map, allowing for customization of style and filtering.
 #'
 #' @param map An existing Leaflet map to which WMS tiles will be added.
-#' @param style The style to apply to the WMS tiles.
+#' @param wms_params A list of WMS parameters.
 #' @param cql_filter A CQL filter to apply to the WMS request.
 #' @param sld_body A custom SLD (Styled Layer Descriptor) body for symbology customization.
 #'
@@ -203,24 +175,24 @@ map_legend_roe <- function(map){
 #' @examples
 #' \dontrun{
 #'   # Example usage:
-#'   updated_map <- map_wms_metric(map = existing_map, style = "custom_style", cql_filter = "metric > 100", sld_body = "<sld>...</sld>")
+#'   updated_map <- map_wms_metric(map = existing_map, wms_params = params_wms()$metric, cql_filter = "metric > 100", sld_body = "<sld>...</sld>")
 #' }
 #'
 #' @importFrom leaflet addWMSTiles
 #'
 #' @export
-map_wms_metric <-function(map, style = params_geoserver()[["metric_basic_style"]],
+map_wms_metric <-function(map, wms_params = params_wms()$metric,
                           cql_filter = "", sld_body = "") {
   map %>%
     addWMSTiles(
-      baseUrl = params_geoserver()[["url"]],
-      layers = params_geoserver()[["layer"]],
-      attribution = params_geoserver()[["attribution"]],
+      baseUrl = wms_params$url,
+      layers = wms_params$layer,
+      attribution = wms_params$attribution,
       options = WMSTileOptions(
-        format = params_geoserver()[["format"]],
-        request = params_geoserver()[["query_map"]],
+        format = wms_params$format,
+        request = "GetMap",
         transparent = TRUE,
-        style = style,
+        style = wms_params$style,
         cql_filter = cql_filter,
         sld_body = sld_body,
         zIndex = 100
@@ -262,89 +234,83 @@ map_axis <- function(map, data_axis) {
     )
 }
 
-#' Add hydrological network when no metric is selected to existing map
+
+#' Add a metric layer with custom symbology to a map.
 #'
-#' This function clears metric layers, removes the legend, add wms metric and adds a transparent axis to an existing Leaflet map.
+#' This function adds a metric layer with custom symbology to a leaflet map. It allows you to specify custom parameters for the Web Map Service (WMS) request, apply a CQL (Common Query Language) filter, and provide a custom SLD (Styled Layer Descriptor) body for styling the layer. Additionally, you can specify the data axis to display on the map.
 #'
-#' @param map An existing Leaflet map to be updated.
-#' @param style The style to apply to the WMS tiles.
-#' @param cql_filter A CQL filter to apply to the WMS request.
-#' @param sld_body A custom SLD (Styled Layer Descriptor) body for symbology customization.
-#' @param data_axis A data frame containing axis data.
+#' @param map A leaflet map object to which the metric layer will be added.
+#' @param wms_params A list containing WMS parameters for the metric layer. If not provided, default parameters are retrieved using the \code{\link{params_wms}} function.
+#' @param cql_filter A character string representing a CQL filter to apply to the metric layer.
+#' @param sld_body A character string representing the SLD (Styled Layer Descriptor) body for custom styling of the metric layer.
+#' @param data_axis A data axis to display on the map.
 #'
-#' @return An updated Leaflet map with metric layers cleared, the legend removed, and a transparent axis added.
+#' @return A leaflet map object with the metric layer added.
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   updated_map <- map_no_metric(map = existing_map, style = "custom_style", cql_filter = "metric > 100", sld_body = "<sld>...</sld>", data_axis = some_axis_data)
-#' }
+#' # Create a leaflet map
+#' my_map <- leaflet() %>%
+#'   addTiles() %>%
+#'   setView(lng = 0, lat = 0, zoom = 3)
 #'
+#' # Add a custom metric layer to the map
+#' map_metric(my_map, wms_params = params_wms()$metric, cql_filter = "value > 100", sld_body = my_custom_sld, data_axis = my_axis_data)
+#'
+#' @importFrom leaflet leaflet
+#' @importFrom leaflet addTiles
+#' @importFrom leaflet setView
 #' @importFrom leaflet clearGroup
-#' @importFrom leaflet removeControl
+#' @importFrom leaflet addWMSTiles
 #'
 #' @export
-map_no_metric <- function(map, style = params_geoserver()[["metric_basic_style"]],
-                          cql_filter = "", sld_body = "",
-                          data_axis = network_region_axis()) {
-  map %>%
-    clearGroup(params_map_group()[["metric"]]) %>%
-    removeControl(params_map_group()[["legend"]]) %>%
-    map_wms_metric(style = style,
-                   cql_filter = cql_filter, sld_body = sld_body) %>%
-    map_axis(data_axis = data_axis)
-}
-
-
-map_metric <- function(map, style = params_geoserver()[["metric_basic_style"]],
-                       cql_filter = "", sld_body = "", legend_url = "",
+map_metric <- function(map, wms_params = params_wms()$metric,
+                       cql_filter = "", sld_body = "",
                        data_axis = network_region_axis()) {
   map %>%
     clearGroup(params_map_group()[["axis"]]) %>%
     clearGroup(params_map_group()[["metric"]]) %>%
     # add metric with custom symbology
-    map_wms_metric(style = style,
+    map_wms_metric(wms_params = wms_params,
                    cql_filter = cql_filter, sld_body = sld_body) %>%
-    # add legend with custom symbology
-    addControl(html = paste0("<img src=",legend_url,">"),
-               position = "bottomright", layerId = params_map_group()[["legend"]]) %>%
     # add transparent axis
     map_axis(data_axis = data_axis)
 }
+
 
 #' Add Basemap Layers to an Existing Leaflet Map
 #'
 #' This function adds basemap layers to an existing Leaflet map.
 #'
 #' @param map An existing Leaflet map to which basemap layers will be added.
-#' @param basemaps A data frame containing information about the basemap layers to be added.
 #'
 #' @return An updated Leaflet map with basemap layers added.
 #'
 #' @examples
 #' \dontrun{
 #'   # Example usage:
-#'   updated_map <- map_add_basemaps(map = existing_map, basemaps = basemaps_data)
+#'   updated_map <- map_add_basemaps(map = existing_map)
 #' }
 #'
 #' @importFrom leaflet addWMSTiles
 #'
 #' @export
-map_add_basemaps <- function(map, basemaps) {
-  for (i in 1:nrow(basemaps)) {
-    map <- map %>%
-      addWMSTiles(
-        baseUrl = basemaps$url[i],
-        layers = basemaps$layer[i],
-        attribution = basemaps$attribution[i],
-        options = WMSTileOptions(
-          format = "image/png",
-          transparent = TRUE,
-          opacity = 0.7,
-          style = basemaps$style[i],
-        ),
-        group = basemaps$name[i]
-      )
+map_add_basemaps <- function(map) {
+  for (i in params_wms()) {
+    if (i$basemap == TRUE){
+      map <- map %>%
+        addWMSTiles(
+          baseUrl = i$url,
+          layers = i$layer,
+          attribution = i$attribution,
+          options = WMSTileOptions(
+            format = i$format,
+            transparent = TRUE,
+            opacity = 0.7,
+            style = i$style,
+          ),
+          group = i$name
+        )
+      }
   }
   return(map)
 }
@@ -355,33 +321,181 @@ map_add_basemaps <- function(map, basemaps) {
 #' This function adds overlayer layers to an existing Leaflet map.
 #'
 #' @param map An existing Leaflet map to which overlayer layers will be added.
-#' @param overlayers A data frame containing information about the overlayer layers to be added.
 #'
 #' @return An updated Leaflet map with overlayer layers added.
 #'
 #' @examples
 #' \dontrun{
 #'   # Example usage:
-#'   updated_map <- map_add_overlayers(map = existing_map, overlayers = overlayers_data)
+#'   updated_map <- map_add_wms_overlayers(map = existing_map)
 #' }
 #'
 #' @importFrom leaflet addWMSTiles
 #'
 #' @export
-map_add_overlayers <- function(map, overlayers) {
-  for (i in 1:nrow(overlayers)) {
+map_add_wms_overlayers <- function(map) {
+  for (i in params_wms()) {
+    if (i$overlayer == TRUE){
     map <- map %>%
       addWMSTiles(
-        baseUrl = overlayers$url[i],
-        layers = overlayers$layer[i],
-        attribution = overlayers$attribution[i],
+        baseUrl = i$url,
+        layers = i$layer,
+        attribution = i$attribution,
         options = WMSTileOptions(
-          format = "image/png",
+          format = i$format,
           transparent = TRUE
         ),
-        group = overlayers$name[i]
-      )
+        group = i$name
+      )%>%
+      hideGroup(i$name)
+    }
   }
   return(map)
 }
+
+
+#' Generate and display a legend for a map layer using a provided SLD (Styled Layer Descriptor) body.
+#'
+#' This function constructs a legend for a map layer by sending a GetLegendGraphic request to a WMS (Web Map Service) server.
+#'
+#' @param sld_body A character string containing the SLD (Styled Layer Descriptor) body that defines the map layer's styling.
+#'
+#' @return An HTML img tag representing the legend for the specified map layer.
+#'
+#' @examples
+#' # Define an SLD body for a map layer
+#' sld_body <- '<StyledLayerDescriptor>...</StyledLayerDescriptor>'
+#'
+#' # Generate and display the legend for the map layer
+#' legend <- map_legend_metric(sld_body)
+#' print(legend)
+#'
+#' @importFrom httr modify_url
+#' @importFrom htmltools tags
+#'
+#' @export
+map_legend_metric <- function(sld_body){
+
+  # Construct the query parameters for legend
+  query_params <- list(
+    REQUEST = "GetLegendGraphic",
+    VERSION = params_wms()$metric$version,
+    FORMAT = params_wms()$metric$format,
+    SLD_BODY = sld_body,
+    LAYER = params_wms()$metric$layer
+  )
+
+  # Build the legend URL
+  legend_url <- modify_url(params_wms()$metric$url, query = query_params)
+
+  # create an html img tag to display the legend
+  legend <- tags$img(src = legend_url, responsive = "width: 100%; height: auto;", class="responsive")
+
+  return(legend)
+}
+
+
+#' Generate and display a legend for a WMS (Web Map Service) layer overlay using specified WMS parameters.
+#'
+#' This function constructs a legend for a WMS layer overlay by sending a GetLegendGraphic request to a WMS server.
+#'
+#' @param wms_params A list containing the following parameters for the WMS layer overlay:
+#'   \itemize{
+#'     \item \code{language} (character): The language to use for the legend.
+#'     \item \code{version} (character): The version of the WMS service.
+#'     \item \code{service} (character): The WMS service type (e.g., "WMS").
+#'     \item \code{sld_version} (character): The SLD (Styled Layer Descriptor) version.
+#'     \item \code{layer} (character): The name of the WMS layer for which the legend is generated.
+#'     \item \code{format} (character): The desired format of the legend image (e.g., "image/png").
+#'     \item \code{style} (character): The style to use for rendering the legend.
+#'     \item \code{url} (character): The URL of the WMS server.
+#'   }
+#'
+#' @return An HTML div element containing an img tag representing the legend for the specified WMS layer overlay.
+#'
+#' @examples
+#' # Define WMS parameters for a layer overlay
+#' wms_params <- list(
+#'   language = "en",
+#'   version = "1.3.0",
+#'   service = "WMS",
+#'   request = "GetLegendGraphic",
+#'   sld_version = "1.1.0",
+#'   layer = "overlay_layer",
+#'   format = "image/png",
+#'   style = "default",
+#'   url = "http://wms.example.com/wms"
+#' )
+#'
+#' # Generate and display the legend for the WMS layer overlay
+#' legend <- map_legend_wms_overlayer(wms_params)
+#' print(legend)
+#'
+#' @importFrom httr modify_url
+#' @importFrom htmltools div
+#' @importFrom htmltools img
+#'
+#' @export
+map_legend_wms_overlayer <- function(wms_params){
+
+  # Construct the query parameters for legend
+  query_params <- list(
+    LANGUAGE = wms_params$language,
+    VERSION = wms_params$version,
+    SERVICE = wms_params$service,
+    REQUEST = "GetLegendGraphic",
+    SLD_VERSION = wms_params$sld_version,
+    LAYER = wms_params$layer,
+    FORMAT = wms_params$format,
+    STYLE = wms_params$style
+  )
+
+  # Build the legend URL
+  legend_url <- modify_url(wms_params$url, query = query_params)
+
+  # Create a div with centered alignment
+  div(
+    style = "display: flex; align-items: center;",
+    img(
+      src = legend_url,
+      responsive = "width: 100%; height: auto;",
+      class="responsive",
+      ""
+    ) # img
+  ) # div
+}
+
+
+#' Generate a legend entry for a vector overlay layer.
+#'
+#' This function generates an HTML representation of a legend entry for a vector overlay layer. The legend entry consists of a colored circle with a label indicating the layer's name.
+#'
+#' @param layer_label A character string representing the label or name of the vector overlay layer.
+#'
+#' @return An HTML div element representing the legend entry for the vector overlay layer.
+#'
+#' @examples
+#' # Create a legend entry for a vector overlay layer
+#' legend_entry <- map_legend_vector_overlayer("Vector Layer A")
+#' print(legend_entry)
+#'
+#' @importFrom htmltools div
+#' @importFrom htmltools span
+#'
+#' @export
+map_legend_vector_overlayer <- function(layer_label){
+
+  div(
+    style = "display: flex; align-items: center;",
+    div(
+      style = "background-color: orange; border-radius: 50%; width: 10px; height: 10px; margin-top: 3px;",
+      ""
+    ),
+    span(
+      style = "margin-left: 5px;",
+      layer_label
+    ) # span
+  ) # div
+}
+
 

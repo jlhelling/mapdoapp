@@ -1,30 +1,141 @@
-#' Get Parameters for GeoServer Configuration
+#' Define Web Map Service (WMS) parameters for different map layers and basemaps.
 #'
-#' This function returns a list of parameters for configuring GeoServer connections and styles.
+#' This function defines a set of WMS parameters for various map layers and basemaps. The parameters include information such as the layer name, URL of the WMS server, version, format, style, and more. These parameters are organized into a list, making it easy to configure and access them for map display and legend generation.
 #'
-#' @return A list of parameters including the GeoServer URL, layer name, format, queries, version, style, and attribution.
+#' @return A list containing WMS parameters for different map layers and basemaps.
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   geoserver_params <- params_geoserver()
-#' }
+#' # Retrieve WMS parameters for a specific map layer
+#' wms_params <- params_wms()
+#' metric_wms_params <- wms_params$metric
+#'
+#' # Access specific WMS parameters
+#' metric_name <- metric_wms_params$name
+#' metric_url <- metric_wms_params$url
 #'
 #' @export
-params_geoserver <- function(){
-  params <- list(
-    url = "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms",
-    layer = "mapdo:network_metrics",
-    format = "image/png",
-    query_legend = "GetLegendGraphic",
-    query_map = "GetMap",
-    version = "1.0.0",
-    metric_basic_style = "mapdo:network_basic_style",
-    attribution = "CNRS - EVS"
+params_wms <- function(){
+  wms <- list(metric = list(name = "Métrique",
+                            url = "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms",
+                            language = "",
+                            service = "WMS",
+                            version = "1.0.0",
+                            sld_version = "",
+                            layer = "mapdo:network_metrics",
+                            format = "image/png",
+                            sld = "",
+                            style = "", # no style, sld_body define style and legend
+                            attribution = "CNRS - EVS",
+                            basemap = FALSE,
+                            overlayer = FALSE),
+              metric_basic = list(name = "Métrique",
+                                  url = "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms",
+                                  language = "",
+                                  service = "WMS",
+                                  version = "1.0.0",
+                                  sld_version = "",
+                                  layer = "mapdo:network_metrics",
+                                  format = "image/png",
+                                  sld = "",
+                                  style = "mapdo:network_basic_style", # basic blue style when no metric selected
+                                  attribution = "CNRS - EVS",
+                                  basemap = FALSE,
+                                  overlayer = FALSE),
+              carteign = list(name = "Plan IGN",
+                              url = "https://wxs.ign.fr/cartes/geoportail/r/wms",
+                              language = "",
+                              service = "WMS",
+                              version = "",
+                              sld_version = "",
+                              layer = "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2",
+                              format = "image/png",
+                              sld = "",
+                              style = "",
+                              attribution = "IGN-F/Géoportail",
+                              basemap = TRUE,
+                              overlayer = FALSE),
+              ortho = list(name = "Satellite IGN",
+                           url = "https://wxs.ign.fr/ortho/geoportail/r/wms",
+                           language = "",
+                           service = "WMS",
+                           version = "",
+                           sld_version = "",
+                           layer = "HR.ORTHOIMAGERY.ORTHOPHOTOS",
+                           format = "image/png",
+                           sld = "",
+                           style = "",
+                           attribution = "IGN-F/Géoportail",
+                           basemap = TRUE,
+                           overlayer = FALSE),
+              elevation = list(name = "Elévation IGN",
+                               url = "https://wxs.ign.fr/altimetrie/geoportail/r/wms",
+                               language = "",
+                               service = "WMS",
+                               version = "",
+                               sld_version = "",
+                               layer = "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
+                               format = "image/png",
+                               sld = "",
+                               style = "hypso",
+                               attribution = "IGN-F/Géoportail",
+                               basemap = TRUE,
+                               overlayer = FALSE),
+              landuse = list(name = "Occupation du sol",
+                             url = "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms",
+                             language = "",
+                             service = "WMS",
+                             version = "1.0.0",
+                             sld_version = "",
+                             layer = "mapdo:mapdo_landuse_1m",
+                             format = "image/png",
+                             sld = "",
+                             style = "mapdo:MAPDO landuse",
+                             attribution = "CNRS - EVS",
+                             basemap = TRUE,
+                             overlayer = FALSE),
+              geologie = list(name = "Géologie",
+                              url = "http://geoservices.brgm.fr/geologie",
+                              language = "",
+                              service = "WMS",
+                              version = "",
+                              sld_version = "",
+                              layer = "GEOLOGIE",
+                              format = "image/png",
+                              sld = "",
+                              style = "",
+                              attribution = "BRGM",
+                              basemap = TRUE,
+                              overlayer = FALSE),
+              inondation = list(name = "Zone inondable débordement centenale",
+                                url = "https://georisques.gouv.fr/services",
+                                language = "fre",
+                                service = "WMS",
+                                version = "1.3.0",
+                                sld_version = "1.1.0",
+                                layer = "ALEA_SYNT_01_02MOY_FXX",
+                                format = "image/png",
+                                sld = "",
+                                style = "inspire_common:DEFAULT",
+                                attribution = "Georisques",
+                                basemap = FALSE,
+                                overlayer = TRUE),
+              ouvrage_protection = list(name = "Ouvrage protection inondation",
+                                        url = "https://georisques.gouv.fr/services",
+                                        language = "fre",
+                                        service = "WMS",
+                                        version = "1.3.0",
+                                        sld_version = "1.1.0",
+                                        layer = "OUV_PROTECTION_FXX",
+                                        format = "image/png",
+                                        sld = "",
+                                        style = "inspire_common:DEFAULT",
+                                        attribution = "Georisques",
+                                        basemap = FALSE,
+                                        overlayer = TRUE)
   )
-
-  return(params)
+  return(wms)
 }
+
 
 #' Get Parameters for Map Layer Groups
 #'
@@ -47,7 +158,14 @@ params_map_group <- function(){
     metric = "METRIC",
     axis = "AXIS",
     legend = "LEGEND",
-    roe = "ROE"
+    roe = "ROE",
+    inondation = params_wms()$inondation$name,
+    ouvrage_protection = params_wms()$ouvrage_protection$name,
+    landuse = params_wms()$landuse$name,
+    carteign = params_wms()$carteign$name,
+    ortho = params_wms()$ortho$name,
+    elevation = params_wms()$elevation$name,
+    geologie = params_wms()$geologie$name
   )
 
   return(params)

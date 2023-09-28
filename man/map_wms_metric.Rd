@@ -6,7 +6,7 @@
 \usage{
 map_wms_metric(
   map,
-  style = params_geoserver()[["metric_basic_style"]],
+  wms_params = params_wms()$metric,
   cql_filter = "",
   sld_body = ""
 )
@@ -14,7 +14,7 @@ map_wms_metric(
 \arguments{
 \item{map}{An existing Leaflet map to which WMS tiles will be added.}
 
-\item{style}{The style to apply to the WMS tiles.}
+\item{wms_params}{A list of WMS parameters.}
 
 \item{cql_filter}{A CQL filter to apply to the WMS request.}
 
@@ -29,7 +29,7 @@ This function adds WMS tiles with metric data to an existing Leaflet map, allowi
 \examples{
 \dontrun{
   # Example usage:
-  updated_map <- map_wms_metric(map = existing_map, style = "custom_style", cql_filter = "metric > 100", sld_body = "<sld>...</sld>")
+  updated_map <- map_wms_metric(map = existing_map, wms_params = params_wms()$metric, cql_filter = "metric > 100", sld_body = "<sld>...</sld>")
 }
 
 }

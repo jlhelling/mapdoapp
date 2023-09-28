@@ -4,12 +4,10 @@
 \alias{map_add_basemaps}
 \title{Add Basemap Layers to an Existing Leaflet Map}
 \usage{
-map_add_basemaps(map, basemaps)
+map_add_basemaps(map)
 }
 \arguments{
 \item{map}{An existing Leaflet map to which basemap layers will be added.}
-
-\item{basemaps}{A data frame containing information about the basemap layers to be added.}
 }
 \value{
 An updated Leaflet map with basemap layers added.
@@ -20,7 +18,7 @@ This function adds basemap layers to an existing Leaflet map.
 \examples{
 \dontrun{
   # Example usage:
-  updated_map <- map_add_basemaps(map = existing_map, basemaps = basemaps_data)
+  updated_map <- map_add_basemaps(map = existing_map)
 }
 
 }
