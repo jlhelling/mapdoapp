@@ -44,7 +44,7 @@ mod_explore_ui <- function(id){
           uiOutput(ns("radioButtonsUI")) # uiOutput radios buttons metrics
         ), # column
         column(
-          width = 6,
+          width = 7,
           titlePanel(""),
           leafletOutput(ns("exploremap")),
           textOutput("coords")
@@ -62,22 +62,19 @@ mod_explore_ui <- function(id){
         tabsetPanel(
           tabPanel(
             "Profil en long",
-            splitLayout (
-              plotlyOutput(ns("long_profile")),
               div(
                 fluidRow(
-                  column(
-                    width = 12,
-                    uiOutput(ns("profilemetricUI"))
+                  column(width = 9,
+                         plotlyOutput(ns("long_profile"))
                   ),
                   column(
-                    width = 12,
+                    width = 3,
+                    style = "margin-top: 20px;",
+                    uiOutput(ns("profilemetricUI")),
                     uiOutput(ns("profileradiobuttonUI"))
                   )
                 )
-              ),
-              cellWidths = c("75%", "25%")
-            )
+              )
           ), # tabPanel
           tabPanel(title = "Profil en travers"
           ) # tabPanel
