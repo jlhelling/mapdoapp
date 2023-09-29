@@ -373,20 +373,14 @@ mod_explore_server <- function(input, output, session){
     if (!is.null(selected_metric()) && is.null(input$profiledynamicRadio)){
 
       plot <- lg_profile_main(data = selected_axis_df,
-                              y = selected_metric(),
-                              y_axe_label = paste0(input$metric, " - ",
-                                                   utile_get_metric_name(selected_metric = selected_metric()))
+                              y = selected_metric()
       )
     }
 
     if (!is.null(selected_metric()) && !is.null(input$profiledynamicRadio)){
       plot <- lg_profile_second(data = selected_axis_df,
                                 y = selected_metric(),
-                                y_axe_label = paste0(input$metric, " - ",
-                                                     utile_get_metric_name(selected_metric = selected_metric())),
-                                y2 = input$profiledynamicRadio,
-                                y2_axe_label = paste0(input$profilemetric, " - ",
-                                                      utile_get_metric_name(selected_metric = input$profiledynamicRadio)))
+                                y2 = input$profiledynamicRadio)
     }
 
     # Add hover information
