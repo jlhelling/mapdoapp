@@ -16,7 +16,8 @@ lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
 
 
 lg_profile_second <- function(data = selected_axis_df, y = "active_channel_width",
-                            y_axe_label = "active channel width", y2 = "talweg_elevation_min", y2_axe_label = "talweg elevation min"){
+                            y_axe_label = "active channel width", y2 = "talweg_elevation_min",
+                            y2_axe_label = "talweg elevation min"){
   plot <- lg_profile_main(data = data,
                           y = y,
                           y_axe_label = y_axe_label
@@ -30,7 +31,8 @@ lg_profile_second <- function(data = selected_axis_df, y = "active_channel_width
         overlaying = 'y',
         side = 'right'
       ),
-      legend = list(orientation = 'h')
+      legend = list(orientation = 'h'),
+      hovermode = "x unified"
     )
   return(plot)
 }

@@ -148,7 +148,7 @@ mod_explore_server <- function(input, output, session){
     req(click_value()$group == params_map_group()[["axis"]])
     selectInput(ns("profilemetric"), "Métrique complémentaire :",
                 choices = names(params_metrics_choice()),
-                selected  = "Largeurs") # selectInput for dynamic radio buttons
+                selected  = "Largeurs (m)") # selectInput for dynamic radio buttons
   })
 
   output$profileradiobuttonUI <- renderUI({
@@ -157,12 +157,11 @@ mod_explore_server <- function(input, output, session){
 
     selected_metric <- input$profilemetric
 
-    radioButtons(ns("profiledynamicRadio"), sprintf("%s :", selected_metric),
-                 choiceNames = names(params_metrics_choice()[[selected_metric]]),
-                 choiceValues = as.list(unname(params_metrics_choice()[[selected_metric]])),
+    radioButtons(ns("profiledynamicRadio"), "",
+                 choiceNames = as.list(unname(params_metrics_choice()[[selected_metric]])),
+                 choiceValues = names(params_metrics_choice()[[selected_metric]]),
                  selected = character(0))
   })
-
 
   ### DYNAMIC UI ####
 
@@ -172,7 +171,7 @@ mod_explore_server <- function(input, output, session){
     req(region_click_id())
     selectInput(ns("metric"), "Sélectionez une métrique :",
                 choices = names(params_metrics_choice()),
-                selected  = "Largeurs") # selectInput for dynamic radio buttons
+                selected  = "Largeurs (m)") # selectInput for dynamic radio buttons
   })
 
   # UI strahler filter
@@ -196,11 +195,11 @@ mod_explore_server <- function(input, output, session){
 
     req(input$metric)
 
-    selected_metric <- input$metric
+    selected_metric_category <- input$metric
 
-    radioButtons(ns("dynamicRadio"), sprintf("%s :", selected_metric),
-                 choiceNames = names(params_metrics_choice()[[selected_metric]]),
-                 choiceValues = as.list(unname(params_metrics_choice()[[selected_metric]])),
+    radioButtons(ns("dynamicRadio"), sprintf("%s :", selected_metric_category),
+                 choiceNames = as.list(unname(params_metrics_choice()[[selected_metric_category]])),
+                 choiceValues = names(params_metrics_choice()[[selected_metric_category]]),
                  selected = character(0))
   })
 
@@ -211,7 +210,7 @@ mod_explore_server <- function(input, output, session){
     metric <- data_get_min_max_metric(selected_region_id = region_click_id(), selected_metric = selected_metric())
 
     sliderInput(ns("metricfilter"),
-                label = names(unlist(params_metrics_choice()[[input$metric]]))[unlist(params_metrics_choice()[[input$metric]]) == selected_metric()], # extract key from value
+                label = utile_get_metric_name(selected_metric = selected_metric()),
                 min = isolate(metric[["min"]]),
                 max = isolate(metric[["max"]]),
                 value = c(
@@ -375,22 +374,19 @@ mod_explore_server <- function(input, output, session){
 
       plot <- lg_profile_main(data = selected_axis_df,
                               y = selected_metric(),
-                              y_axe_label = paste0(input$metric, " - ", names(
-                                unlist(params_metrics_choice()[[input$metric]]))
-                                [unlist(params_metrics_choice()[[input$metric]]) == selected_metric()])
+                              y_axe_label = paste0(input$metric, " - ",
+                                                   utile_get_metric_name(selected_metric = selected_metric()))
       )
     }
 
     if (!is.null(selected_metric()) && !is.null(input$profiledynamicRadio)){
       plot <- lg_profile_second(data = selected_axis_df,
                                 y = selected_metric(),
-                                y_axe_label = paste0(input$metric, " - ", names(
-                                  unlist(params_metrics_choice()[[input$metric]]))
-                                  [unlist(params_metrics_choice()[[input$metric]]) == selected_metric()]),
-                                  y2 = input$profiledynamicRadio,
-                                  y2_axe_label = paste0(input$profilemetric, " - ", names(
-                                    unlist(params_metrics_choice()[[input$profilemetric]]))
-                                    [unlist(params_metrics_choice()[[input$profilemetric]]) == input$profiledynamicRadio]))
+                                y_axe_label = paste0(input$metric, " - ",
+                                                     utile_get_metric_name(selected_metric = selected_metric())),
+                                y2 = input$profiledynamicRadio,
+                                y2_axe_label = paste0(input$profilemetric, " - ",
+                                                      utile_get_metric_name(selected_metric = input$profiledynamicRadio)))
     }
 
     # Add hover information
