@@ -1,3 +1,13 @@
+lg_profile_empty <- function(){
+  temp <- data.frame()
+  plot <- plot_ly(data = temp) %>%
+    layout(title = list(text = "Cliquez sur un cours d'eau et sélectionner une métrique pour afficher le profil en long",
+                        y = 0.80,  # y title position
+                        x = 0.3,   # x title position
+                        font = list(size = 15)))
+  return(plot)
+}
+
 lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width"){
   plot <- plot_ly(data = data, x = ~measure, y = as.formula(paste0("~", y)), yaxis = 'y1',
                   key = ~fid,  # Specify the "id" column for hover text

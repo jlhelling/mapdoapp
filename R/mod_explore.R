@@ -141,12 +141,16 @@ mod_explore_server <- function(input, output, session){
 
   ### DYNAMIC PROFILE UI ####
 
+
+
   # add input UI for profile additionnal metrique
   output$profilemetricUI <- renderUI({
-    req(click_value()$group == params_map_group()[["axis"]])
+
+
+    req(axis_click(), selected_metric())
     selectInput(ns("profile_metric_type"), "Ajoutez une métrique :",
                 choices = names(params_metrics_choice()),
-                selected  = "Largeurs (m)")
+                selected  = names(params_metrics_choice())[1])
   })
 
   # add radiobutton for profile additionnal metrique
@@ -166,10 +170,16 @@ mod_explore_server <- function(input, output, session){
 
   # UI create choose metric
   output$metricUI <- renderUI({
-    req(region_click_id())
+
+    # wait region hydrographic to display metric selection
+    if (!is.null(region_click_id())){
     selectInput(ns("metric_type"), "Sélectionez une métrique :",
                 choices = names(params_metrics_choice()),
-                selected  = "Largeurs (m)")
+                selected  = names(params_metrics_choice())[1])
+    } else {
+      HTML('<label class="control-label" id="wait-metric-label">
+           Cliquez sur une région hydrographique pour afficher la sélection des métriques</label>')
+    }
   })
 
   # UI metrics radio buttons
@@ -256,17 +266,21 @@ mod_explore_server <- function(input, output, session){
   # DATA get only the region selected feature
   selected_region_feature <- reactiveVal()
   region_click_id <- reactiveVal()
+  axis_click <- reactiveVal()
 
   observeEvent(click_value(),{
     if (click_value()$group == params_map_group()[["region"]]){
       region_click_id(click_value()$id)
       selected_region_feature(data_get_region(region_click_id = region_click_id()))
     }
+    if (click_value()$group == params_map_group()[["axis"]]){
+      axis_click(click_value())
+    }
   })
 
   # DATA network by selected axis
   selected_axis <- reactive({
-    req(click_value()$group == params_map_group()[["axis"]])
+    req(axis_click())
     data_get_network_axis(selected_axis_id = click_value()$id) %>%
       mutate(measure = measure/1000)
   })
@@ -340,6 +354,7 @@ mod_explore_server <- function(input, output, session){
   metric_legend <- reactiveVal(NULL)
 
   output$legendUI <- renderUI({
+
     div(
       HTML('<label class="control-label" id="legend-label">Légende</label>'),
       # metric
@@ -364,48 +379,55 @@ mod_explore_server <- function(input, output, session){
 
   ### PROFILE ####
 
-  # longitudinale profile if axis clicked
+
   output$long_profile <- renderPlotly({
-    req(click_value()$group == params_map_group()[["axis"]], !is.null(selected_metric()))
 
-    selected_axis_df <- selected_axis() %>%
-      as.data.frame()
+    if (!is.null(axis_click()) && !is.null(selected_metric())){
 
-    if (!is.null(selected_metric()) && is.null(input$profile_metric)){
+      selected_axis_df <- selected_axis() %>%
+        as.data.frame()
 
-      plot <- lg_profile_main(data = selected_axis_df,
-                              y = selected_metric()
-      )
-    }
+      if (!is.null(selected_metric()) && is.null(input$profile_metric)){
 
-    if (!is.null(selected_metric()) && !is.null(input$profile_metric)){
-      plot <- lg_profile_second(data = selected_axis_df,
-                                y = selected_metric(),
-                                y2 = input$profile_metric)
-    }
-
-    # Add hover information
-    plot <- plot %>%
-      event_register("plotly_hover")  # Enable hover events
-
-    # Define an observeEvent to capture hover events
-    observeEvent(event_data("plotly_hover"), {
-      hover_data <- event_data("plotly_hover")
-
-      if (!is.null(hover_data)) {
-        hover_fid <- hover_data$key
-
-        highlighted_feature <- selected_axis()[selected_axis()$fid == hover_fid, ]
-
-        leafletProxy("exploremap") %>%
-          addPolylines(data = highlighted_feature, color = "red", weight = 10, group = "LIGHT")
-
+        plot <- lg_profile_main(data = selected_axis_df,
+                                y = selected_metric()
+        )
       }
-    })
 
-    return(plot)
+      if (!is.null(selected_metric()) && !is.null(input$profile_metric)){
+        plot <- lg_profile_second(data = selected_axis_df,
+                                  y = selected_metric(),
+                                  y2 = input$profile_metric)
+      }
+
+      # Add hover information
+      plot <- plot %>%
+        event_register("plotly_hover")  # Enable hover events
+
+      # Define an observeEvent to capture hover events
+      observeEvent(event_data("plotly_hover"), {
+        hover_data <- event_data("plotly_hover")
+
+        if (!is.null(hover_data)) {
+          hover_fid <- hover_data$key
+
+          highlighted_feature <- selected_axis()[selected_axis()$fid == hover_fid, ]
+
+          leafletProxy("exploremap") %>%
+            addPolylines(data = highlighted_feature, color = "red", weight = 10, group = "LIGHT")
+
+        }
+      })
+      return(plot)
+    }
+    else {
+      # create empty plotly graph with user message
+      plot <- lg_profile_empty()
+      return(plot)
+    }
   })
 
+  # clear previous point on map when moving along profile to not display all the point move over
   observe({
     if (is.null(event_data("plotly_hover"))) {
       leafletProxy("exploremap") %>%
