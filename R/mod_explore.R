@@ -38,7 +38,7 @@ mod_explore_ui <- function(id){
       fluidRow(
         column(
           width = 3,
-          titlePanel("Metriques"),
+          titlePanel(""),
           uiOutput(ns("metricUI")),
           uiOutput(ns("areaUI")),
           uiOutput(ns("radioButtonsUI")) # uiOutput radios buttons metrics
@@ -51,7 +51,7 @@ mod_explore_ui <- function(id){
         ), # column
         column(
           width = 2,
-          titlePanel("Filtre"),
+          titlePanel("Filtres"),
           uiOutput(ns("strahlerfilterUI")),
           uiOutput(ns("metricsfilterUI")),
           uiOutput(ns("legendUI")),
@@ -139,37 +139,62 @@ mod_explore_server <- function(input, output, session){
     }
   })
 
-  ### PROFILE UI ####
+  ### DYNAMIC PROFILE UI ####
 
+  # add input UI for profile additionnal metrique
   output$profilemetricUI <- renderUI({
     req(click_value()$group == params_map_group()[["axis"]])
-    selectInput(ns("profilemetric"), "Métrique complémentaire :",
+    selectInput(ns("profile_metric_type"), "Ajoutez une métrique :",
                 choices = names(params_metrics_choice()),
-                selected  = "Largeurs (m)") # selectInput for dynamic radio buttons
+                selected  = "Largeurs (m)")
   })
 
+  # add radiobutton for profile additionnal metrique
   output$profileradiobuttonUI <- renderUI({
 
-    req(input$profilemetric)
+    req(input$profile_metric_type)
 
-    selected_metric <- input$profilemetric
+    selected_metric <- input$profile_metric_type
 
-    radioButtons(ns("profiledynamicRadio"), "",
+    radioButtons(ns("profile_metric"), "",
                  choiceNames = as.list(unname(params_metrics_choice()[[selected_metric]])),
                  choiceValues = names(params_metrics_choice()[[selected_metric]]),
                  selected = character(0))
   })
 
-  ### DYNAMIC UI ####
+  ### DYNAMIC METRIC UI ####
 
   # UI create choose metric
   output$metricUI <- renderUI({
-    # req(click_value()$group == params_map_group()[["region"]])
     req(region_click_id())
-    selectInput(ns("metric"), "Sélectionez une métrique :",
+    selectInput(ns("metric_type"), "Sélectionez une métrique :",
                 choices = names(params_metrics_choice()),
-                selected  = "Largeurs (m)") # selectInput for dynamic radio buttons
+                selected  = "Largeurs (m)")
   })
+
+  # UI metrics radio buttons
+  output$radioButtonsUI <- renderUI({
+
+    req(input$metric_type)
+
+    selected_metric_category <- input$metric_type
+
+    radioButtons(ns("metric"), sprintf("%s :", selected_metric_category),
+                 choiceNames = as.list(unname(params_metrics_choice()[[selected_metric_category]])),
+                 choiceValues = names(params_metrics_choice()[[selected_metric_category]]),
+                 selected = character(0))
+  })
+
+  # UI switch unit area
+  output$areaUI <- renderUI({
+    req(input$metric_type == "Occupation du sol" || input$metric_type == "Continuité latérale")
+
+    selectInput(ns("unit_area"), "Surfaces :",
+                choices = c("Hectares", "% du fond de vallée"),
+                selected = "Hectares")
+  })
+
+  ### DYNAMIC FILTER UI ####
 
   # UI strahler filter
   output$strahlerfilterUI <- renderUI(
@@ -186,19 +211,6 @@ mod_explore_server <- function(input, output, session){
                           strahler[["max"]]),
                   step=1)
     })
-
-  # UI metrics radio buttons
-  output$radioButtonsUI <- renderUI({
-
-    req(input$metric)
-
-    selected_metric_category <- input$metric
-
-    radioButtons(ns("dynamicRadio"), sprintf("%s :", selected_metric_category),
-                 choiceNames = as.list(unname(params_metrics_choice()[[selected_metric_category]])),
-                 choiceValues = names(params_metrics_choice()[[selected_metric_category]]),
-                 selected = character(0))
-  })
 
   # UI dynamic filter on metric selected
   output$metricsfilterUI <- renderUI({
@@ -217,27 +229,18 @@ mod_explore_server <- function(input, output, session){
     )
   })
 
-  # UI switch unit area
-  output$areaUI <- renderUI({
-    req(input$metric == "Occupation du sol" || input$metric == "Continuité latérale")
-
-    selectInput(ns("unit_area"), "Surfaces :",
-                choices = c("Hectares", "% du fond de vallée"),
-                selected = "Hectares")
-  })
-
   ### DATA ####
 
   # metric selected by user
   selected_metric <- reactiveVal()
 
   # change field if unit_area in percentage
-  observeEvent(!is.null(input$dynamicRadio) && !is.null(input$unit_area), ignoreInit = TRUE, {
+  observeEvent(!is.null(input$metric) && !is.null(input$unit_area), ignoreInit = TRUE, {
     if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"
-        && (input$metric %in% c("Occupation du sol", "Continuité latérale"))){
-      selected_metric(paste0(input$dynamicRadio,"_pc"))
+        && (input$metric_type %in% c("Occupation du sol", "Continuité latérale"))){
+      selected_metric(paste0(input$metric,"_pc"))
     } else {
-      selected_metric(input$dynamicRadio)
+      selected_metric(input$metric)
     }
   })
 
@@ -368,17 +371,17 @@ mod_explore_server <- function(input, output, session){
     selected_axis_df <- selected_axis() %>%
       as.data.frame()
 
-    if (!is.null(selected_metric()) && is.null(input$profiledynamicRadio)){
+    if (!is.null(selected_metric()) && is.null(input$profile_metric)){
 
       plot <- lg_profile_main(data = selected_axis_df,
                               y = selected_metric()
       )
     }
 
-    if (!is.null(selected_metric()) && !is.null(input$profiledynamicRadio)){
+    if (!is.null(selected_metric()) && !is.null(input$profile_metric)){
       plot <- lg_profile_second(data = selected_axis_df,
                                 y = selected_metric(),
-                                y2 = input$profiledynamicRadio)
+                                y2 = input$profile_metric)
     }
 
     # Add hover information
