@@ -1,3 +1,4 @@
+library(shinythemes)
 library(leaflet)
 library(sf)
 library(DBI)
@@ -35,6 +36,7 @@ mod_explore_ui <- function(id){
     golem_add_external_resources(),
     # UI elements
     fluidPage(
+      theme = shinytheme("spacelab"),
       fluidRow(
         column(
           width = 3,
