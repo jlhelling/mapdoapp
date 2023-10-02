@@ -46,8 +46,7 @@ mod_explore_ui <- function(id){
         column(
           width = 7,
           titlePanel(""),
-          leafletOutput(ns("exploremap")),
-          textOutput("coords")
+          leafletOutput(ns("exploremap"))
         ), # column
         column(
           width = 2,
