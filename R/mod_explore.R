@@ -94,19 +94,20 @@ mod_explore_server <- function(input, output, session){
 
   ns <- session$ns
 
-  # # dev print to debug value
-  # output$printcheck = renderPrint({
-  #   tryCatch({
-  #     network_filter()
-  #     print(click_value()$group)
-  #     print(network_filter())
-  #     print("exists")
-  #   },
-  #   shiny.silent.error = function(e) {
-  #     print("doesn't exist")
-  #   }
-  #   )
-  # })
+
+  # dev print to debug value
+  output$printcheck = renderPrint({
+    tryCatch({
+      network_region_axis()
+      print(click_value()$id)
+      print(network_region_axis()$fid)
+      print("exists")
+    },
+    shiny.silent.error = function(e) {
+      print("doesn't exist")
+    }
+    )
+  })
 
   ### BASSIN ####
 
@@ -242,6 +243,7 @@ mod_explore_server <- function(input, output, session){
 
   ### DATA ####
 
+
   # metric selected by user
   selected_metric <- reactiveVal()
 
@@ -255,22 +257,38 @@ mod_explore_server <- function(input, output, session){
     }
   })
 
+
+
+  #### FIX DATA ####
+
   # DATA get network axis in region
   network_region_axis <- reactiveVal()
 
   observeEvent(click_value(),{
-    if (click_value()$group == params_map_group()[["region"]]){
-      network_region_axis(data_get_axis(selected_region_id = click_value()$id))
+    req(region_click_id())
+    # when region clicked get data axis in region
+    if (click_value()$group == params_map_group()$region){
+      print(region_click_id())
+      network_region_axis(data_get_axis(selected_region_id = region_click_id()))
+    }
+    # when axis clicked get axis region without the axis selected
+    if (click_value()$group == params_map_group()$axis){
+
+      data <- data_get_axis(selected_region_id = region_click_id()) %>%
+        filter(fid != click_value()$id)
+
+      network_region_axis(data)
     }
   })
 
-  # DATA get only the region selected feature
+
+  # get data on map click
   selected_region_feature <- reactiveVal()
   region_click_id <- reactiveVal()
   axis_click <- reactiveVal()
 
   observeEvent(click_value(),{
-    if (click_value()$group == params_map_group()[["region"]]){
+    if (click_value()$group == params_map_group()$region){
       region_click_id(click_value()$id)
       selected_region_feature(data_get_region(region_click_id = region_click_id()))
     }
@@ -286,11 +304,16 @@ mod_explore_server <- function(input, output, session){
       mutate(measure = measure/1000)
   })
 
+  # store mouseover map DGO axis feature
+  datamoveover <- reactive({
+    input$exploremap_shape_mouseover
+  })
+
   ### MAP ####
 
   # MAP region selected
   observeEvent(click_value(), {
-    if (click_value()$group == params_map_group()[["region"]]){
+    if (click_value()$group == params_map_group()$region){
 
       # map region clicked with region clicked and overlayers
       leafletProxy("exploremap") %>%
@@ -347,6 +370,38 @@ mod_explore_server <- function(input, output, session){
 
       # update legend
       metric_legend(map_legend_metric(sld_body = sld_body))
+    }
+  })
+
+  ### MAP DGO AXIS ####
+
+  observe({
+    req(network_region_axis())
+    if(!is.null(selected_axis()) && !is.null(selected_metric())){
+
+      # if (!is.null(axis_click())){
+      #   data_network_region_axis <- network_region_axis() %>%
+      #     filter(axis != axis_click()$id)
+      # }else{
+      #   data_network_region_axis <- network_region_axis()
+      # }
+
+      print(network_region_axis()$fid)
+
+      leafletProxy("exploremap") %>%
+        map_dgo_axis(selected_axis = selected_axis(), region_axis = network_region_axis())
+    }
+  })
+
+  observe({
+    if (datamoveover()$group == "DGOAXIS" && !is.null(datamoveover())){
+      select_measure <- selected_axis() %>%
+        filter(fid == datamoveover()$id)
+
+    # Access the plotlyProxy for the plot
+    plotlyProxy("long_profile", session) %>%
+      # Clear all selections
+      plotlyProxyInvoke("relayout", list(shapes = list(vline(select_measure$measure))))
     }
   })
 

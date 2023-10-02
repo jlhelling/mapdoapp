@@ -276,6 +276,24 @@ map_metric <- function(map, wms_params = params_wms()$metric,
     map_axis(data_axis = data_axis)
 }
 
+map_dgo_axis <- function(map, selected_axis = selected_axis(), region_axis = network_region_axis()){
+  map %>%
+    clearGroup(params_map_group()$dgo_axis) %>%
+    clearGroup(params_map_group()$axis) %>%
+    map_axis(data_axis = region_axis) %>%
+    addPolylines(data = selected_axis,
+                 layerId = ~fid,
+                 weight = 5,
+                 color = "#ffffff00",
+                 opacity = 1,
+                 highlight = highlightOptions(
+                   opacity = 1,
+                   color = "red"
+                 ),
+                 options = pathOptions(zIndex = 100),
+                 group = params_map_group()$dgo_axis
+    )
+}
 
 #' Add Basemap Layers to an Existing Leaflet Map
 #'

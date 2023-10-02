@@ -8,6 +8,29 @@ lg_profile_empty <- function(){
   return(plot)
 }
 
+
+vline <- function(x = 0, color = "green") {
+
+  list(
+
+    type = "line",
+
+    y0 = 0,
+
+    y1 = 1,
+
+    yref = "paper",
+
+    x0 = x,
+
+    x1 = x,
+
+    line = list(color = color, dash="dot")
+
+  )
+
+}
+
 lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width"){
   plot <- plot_ly(data = data, x = ~measure, y = as.formula(paste0("~", y)), yaxis = 'y1',
                   key = ~fid,  # the "id" column for hover text
@@ -20,7 +43,8 @@ lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width")
         side = 'left'
       ),
       legend = list(orientation = 'h'),
-      hovermode = "x unified"
+      hovermode = "x unified",
+      shapes = list(vline(2.5))
     )
   return(plot)
 }
