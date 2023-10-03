@@ -368,9 +368,14 @@ mod_explore_server <- function(input, output, session){
     if(!is.null(dgo_axis()) && !is.null(selected_metric())){
 
       leafletProxy("exploremap") %>%
-        map_dgo_axis(selected_axis = dgo_axis(), region_axis = network_region_axis(),
-                     axis_start_end = axis_start_end())
+        map_dgo_axis(selected_axis = dgo_axis(), region_axis = network_region_axis())
     }
+  })
+
+  observeEvent(axis_start_end(), {
+    req(axis_start_end())
+    leafletProxy("exploremap") %>%
+      map_axis_start_end(axis_start_end = axis_start_end())
   })
 
   observe({
