@@ -243,13 +243,13 @@ mod_explore_server <- function(input, output, session){
     input$exploremap_shape_click
   })
 
-
   # DATA get network axis
   network_region_axis <- reactiveVal()
   # get data on map click
   selected_region_feature <- reactiveVal()
   region_click <- reactiveVal()
   axis_click <- reactiveVal()
+  dgo_axis <- reactiveVal()
 
   observeEvent(click_value(),{
     # when region clicked get data axis in region
@@ -268,9 +268,11 @@ mod_explore_server <- function(input, output, session){
       # get the axis in the region without the selected axis
       network_region_axis(data_get_axis(selected_region_id = region_click()$id) %>%
                             filter(fid != axis_click()$id))
+      # get the DGO axis data
+      dgo_axis(data_get_network_axis(selected_axis_id = axis_click()$id) %>%
+        mutate(measure = measure/1000))
     }
   })
-
 
   # metric selected by user
   selected_metric <- reactiveVal()
@@ -283,13 +285,6 @@ mod_explore_server <- function(input, output, session){
     } else {
       selected_metric(input$metric)
     }
-  })
-
-  # DATA network by selected axis
-  selected_axis <- reactive({
-    req(axis_click())
-    data_get_network_axis(selected_axis_id = click_value()$id) %>%
-      mutate(measure = measure/1000)
   })
 
   # store mouseover map DGO axis feature
@@ -367,7 +362,7 @@ mod_explore_server <- function(input, output, session){
 
   observe({
     req(network_region_axis())
-    if(!is.null(selected_axis()) && !is.null(selected_metric())){
+    if(!is.null(dgo_axis()) && !is.null(selected_metric())){
 
       # if (!is.null(axis_click())){
       #   data_network_region_axis <- network_region_axis() %>%
@@ -379,13 +374,13 @@ mod_explore_server <- function(input, output, session){
       print(network_region_axis()$fid)
 
       leafletProxy("exploremap") %>%
-        map_dgo_axis(selected_axis = selected_axis(), region_axis = network_region_axis())
+        map_dgo_axis(selected_axis = dgo_axis(), region_axis = network_region_axis())
     }
   })
 
   observe({
     if (datamoveover()$group == "DGOAXIS" && !is.null(datamoveover())){
-      select_measure <- selected_axis() %>%
+      select_measure <- dgo_axis() %>%
         filter(fid == datamoveover()$id)
 
     # Access the plotlyProxy for the plot
@@ -430,7 +425,7 @@ mod_explore_server <- function(input, output, session){
 
     if (!is.null(axis_click()) && !is.null(selected_metric())){
 
-      selected_axis_df <- selected_axis() %>%
+      selected_axis_df <- dgo_axis() %>%
         as.data.frame()
 
       if (!is.null(selected_metric()) && is.null(input$profile_metric)){
@@ -457,7 +452,7 @@ mod_explore_server <- function(input, output, session){
         if (!is.null(hover_data)) {
           hover_fid <- hover_data$key
 
-          highlighted_feature <- selected_axis()[selected_axis()$fid == hover_fid, ]
+          highlighted_feature <- dgo_axis()[dgo_axis()$fid == hover_fid, ]
 
           leafletProxy("exploremap") %>%
             addPolylines(data = highlighted_feature, color = "red", weight = 10, group = "LIGHT")
