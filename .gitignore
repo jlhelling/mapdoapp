@@ -8,3 +8,4 @@ inst/continuity.csv
 inst/landcover.csv
 inst/metrics.csv
 inst/network_strahler.gpkg
+restart.txt
