@@ -98,8 +98,8 @@ mod_explore_server <- function(input, output, session){
   # dev print to debug value
   output$printcheck = renderPrint({
     tryCatch({
-      network_region_axis()
-      print(click_value()$id)
+      click_value()
+      print(click_value())
       print(network_region_axis()$fid)
       print("exists")
     },
@@ -114,11 +114,6 @@ mod_explore_server <- function(input, output, session){
   # map initialization
   output$exploremap <- renderLeaflet({
     map_init_bassins(bassins_data = data_get_bassins())
-  })
-
-  # clicked polygon data
-  click_value <- reactive({
-    input$exploremap_shape_click
   })
 
 
@@ -174,7 +169,7 @@ mod_explore_server <- function(input, output, session){
   output$metricUI <- renderUI({
 
     # wait region hydrographic to display metric selection
-    if (!is.null(region_click_id())){
+    if (!is.null(region_click())){
     selectInput(ns("metric_type"), "Sélectionez une métrique :",
                 choices = names(params_metrics_choice()),
                 selected  = names(params_metrics_choice())[1])
@@ -211,9 +206,9 @@ mod_explore_server <- function(input, output, session){
   # UI strahler filter
   output$strahlerfilterUI <- renderUI(
     {
-      req(region_click_id())
+      req(region_click())
       # query data from database
-      strahler <- isolate(data_get_min_max_strahler(selected_region_id = region_click_id()))
+      strahler <- isolate(data_get_min_max_strahler(selected_region_id = region_click()$id))
 
       sliderInput(ns("strahler"),
                   label="Ordre de strahler",
@@ -228,7 +223,7 @@ mod_explore_server <- function(input, output, session){
   output$metricsfilterUI <- renderUI({
     req(selected_metric())
 
-    metric <- data_get_min_max_metric(selected_region_id = region_click_id(), selected_metric = selected_metric())
+    metric <- data_get_min_max_metric(selected_region_id = region_click()$id, selected_metric = selected_metric())
 
     sliderInput(ns("metricfilter"),
                 label = utile_get_metric_name(selected_metric = selected_metric()),
@@ -243,6 +238,39 @@ mod_explore_server <- function(input, output, session){
 
   ### DATA ####
 
+  # store clicked data
+  click_value <- reactive({
+    input$exploremap_shape_click
+  })
+
+
+  # DATA get network axis
+  network_region_axis <- reactiveVal()
+  # get data on map click
+  selected_region_feature <- reactiveVal()
+  region_click <- reactiveVal()
+  axis_click <- reactiveVal()
+
+  observeEvent(click_value(),{
+    # when region clicked get data axis in region
+    if (click_value()$group == params_map_group()$region){
+      # store the region click values
+      region_click(click_value())
+      # save the selected region feature for mapping
+      selected_region_feature(data_get_region(region_click_id = region_click()$id))
+      # get the axis in the region
+      network_region_axis(data_get_axis(selected_region_id = click_value()$id))
+    }
+    # when axis clicked get axis region without the axis selected
+    if (click_value()$group == params_map_group()$axis) {
+      # save the clicked axis values
+      axis_click(click_value())
+      # get the axis in the region without the selected axis
+      network_region_axis(data_get_axis(selected_region_id = region_click()$id) %>%
+                            filter(fid != axis_click()$id))
+    }
+  })
+
 
   # metric selected by user
   selected_metric <- reactiveVal()
@@ -254,46 +282,6 @@ mod_explore_server <- function(input, output, session){
       selected_metric(paste0(input$metric,"_pc"))
     } else {
       selected_metric(input$metric)
-    }
-  })
-
-
-
-  #### FIX DATA ####
-
-  # DATA get network axis in region
-  network_region_axis <- reactiveVal()
-
-  observeEvent(click_value(),{
-    req(region_click_id())
-    # when region clicked get data axis in region
-    if (click_value()$group == params_map_group()$region){
-      print(region_click_id())
-      network_region_axis(data_get_axis(selected_region_id = region_click_id()))
-    }
-    # when axis clicked get axis region without the axis selected
-    if (click_value()$group == params_map_group()$axis){
-
-      data <- data_get_axis(selected_region_id = region_click_id()) %>%
-        filter(fid != click_value()$id)
-
-      network_region_axis(data)
-    }
-  })
-
-
-  # get data on map click
-  selected_region_feature <- reactiveVal()
-  region_click_id <- reactiveVal()
-  axis_click <- reactiveVal()
-
-  observeEvent(click_value(),{
-    if (click_value()$group == params_map_group()$region){
-      region_click_id(click_value()$id)
-      selected_region_feature(data_get_region(region_click_id = region_click_id()))
-    }
-    if (click_value()$group == params_map_group()[["axis"]]){
-      axis_click(click_value())
     }
   })
 
@@ -324,7 +312,7 @@ mod_explore_server <- function(input, output, session){
 
   # reactive list to activate map update
   map_update <- reactive({
-    list(region_click_id(), input$strahler, input$metricfilter)
+    list(region_click()$id, input$strahler, input$metricfilter)
   })
 
   # MAP network metric
@@ -339,6 +327,8 @@ mod_explore_server <- function(input, output, session){
       cql_filter=paste0("gid_region=", selected_region_feature()[["gid"]],
                         " AND strahler>=", input$strahler[1],
                         " AND strahler <= ", input$strahler[2])
+      print(cql_filter)
+      print(network_region_axis())
       # update map with basic style
       leafletProxy("exploremap") %>%
         map_metric(wms_params = params_wms()$metric_basic, # metric_basic to have blue network
@@ -350,8 +340,8 @@ mod_explore_server <- function(input, output, session){
     if (!is.null(selected_metric())){
 
       # build SLD symbology
-      sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = region_click_id(), selected_metric = selected_metric()),
-                                colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
+      sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = region_click()$id, selected_metric = selected_metric()),
+                                colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click()$id,
                                                                                                            selected_metric = selected_metric())),
                                 metric = selected_metric())
 
