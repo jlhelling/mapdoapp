@@ -10,25 +10,15 @@ lg_profile_empty <- function(){
 
 
 vline <- function(x = 0, color = "green") {
-
   list(
-
     type = "line",
-
     y0 = 0,
-
     y1 = 1,
-
     yref = "paper",
-
     x0 = x,
-
     x1 = x,
-
     line = list(color = color, dash="dot")
-
   )
-
 }
 
 lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width"){

@@ -296,8 +296,38 @@ map_dgo_axis <- function(map, selected_axis = selected_axis(), region_axis = net
     )
 }
 
-map_axis_start_end <- function(map, axis_start_end = axis_start_end()){
+#' Add start and end markers to a leaflet map
+#'
+#' This function adds start and end markers to a Leaflet map based on the provided
+#' start and end coordinates.
+#'
+#' @param map A Leaflet map object created using the 'leaflet' package.
+#' @param axis_start_end A data frame containing start and end coordinates with
+#'        columns 'X' for longitude and 'Y' for latitude.
+#' @return A Leaflet map object with start and end markers added.
+#'
+#' @importFrom leaflet addMarkers clearGroup makeIcon pathOptions
+#' @importFrom mapdoapp params_map_group axis_start_end
+#'
+#' @examples
+#' # Create a simple Leaflet map
+#' my_map <- leaflet() %>%
+#'   setView(lng = -73.985, lat = 40.748, zoom = 12)
+#'
+#' # Create a data frame with start and end coordinates
+#' coordinates_df <- data.frame(
+#'   X = c(-73.985, -73.995),
+#'   Y = c(40.748, 40.755)
+#' )
+#'
+#' # Add start and end markers to the map
+#' my_map <- map_axis_start_end(my_map, coordinates_df)
+#' my_map
+#'
+#' @export
+map_axis_start_end <- function(map, axis_start_end = axis_start_end()) {
 
+  # Define the start and end icon
   start_end_icon <- makeIcon(
     iconUrl = system.file("pin-sharp.png", package = "mapdoapp"),
     iconWidth = 24,
@@ -306,15 +336,18 @@ map_axis_start_end <- function(map, axis_start_end = axis_start_end()){
     iconAnchorY = 24
   )
 
+  # Clear the previous group of markers and add new markers to the map
   map %>%
     clearGroup(params_map_group()$axis_start_end) %>%
-    addMarkers(lng = axis_start_end$X,
-               lat = axis_start_end$Y,
-               options = pathOptions(interactive = FALSE),
-               icon = start_end_icon,
-               group = params_map_group()$axis_start_end
+    addMarkers(
+      lng = axis_start_end$X,
+      lat = axis_start_end$Y,
+      options = pathOptions(interactive = FALSE),
+      icon = start_end_icon,
+      group = params_map_group()$axis_start_end
     )
 }
+
 
 #' Add Basemap Layers to an Existing Leaflet Map
 #'
