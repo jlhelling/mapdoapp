@@ -276,25 +276,51 @@ map_metric <- function(map, wms_params = params_wms()$metric,
     map_axis(data_axis = data_axis)
 }
 
-map_dgo_axis <- function(map, selected_axis = selected_axis(), region_axis = network_region_axis()){
-
+#' Add DGO axis to a Leaflet map
+#'
+#' This function adds DGO axis to a Leaflet map with the option to highlight selected axes.
+#'
+#' @param map A Leaflet map object.
+#' @param selected_axis A data frame containing selected axe to be displayed.
+#' @param region_axis A data frame containing region-specific axes to be displayed.
+#' @return A modified Leaflet map object with DGO axes added.
+#'
+#' @importFrom leaflet clearGroup addPolylines highlightOptions pathOptions
+#'
+#' @examples
+#' # Create a basic Leaflet map
+#' my_map <- leaflet() %>%
+#'   setView(lng = -73.985, lat = 40.748, zoom = 12)
+#'
+#' # Define selected and region-specific axes data frames
+#' selected_axes <- data.frame(...)
+#' region_axes <- data.frame(...)
+#'
+#' # Add DGO axes to the map
+#' my_map <- map_dgo_axis(my_map, selected_axes, region_axes)
+#' my_map
+#'
+#' @export
+map_dgo_axis <- function(map, selected_axis, region_axis) {
   map %>%
     clearGroup(params_map_group()$dgo_axis) %>%
     clearGroup(params_map_group()$axis) %>%
     map_axis(data_axis = region_axis) %>%
-    addPolylines(data = selected_axis,
-                 layerId = ~fid,
-                 weight = 5,
-                 color = "#ffffff00",
-                 opacity = 1,
-                 highlight = highlightOptions(
-                   opacity = 1,
-                   color = "red"
-                 ),
-                 options = pathOptions(zIndex = 100),
-                 group = params_map_group()$dgo_axis
+    addPolylines(
+      data = selected_axis,
+      layerId = ~fid,
+      weight = 5,
+      color = "#ffffff00",
+      opacity = 1,
+      highlight = highlightOptions(
+        opacity = 1,
+        color = "red"
+      ),
+      options = pathOptions(zIndex = 100),
+      group = params_map_group()$dgo_axis
     )
 }
+
 
 #' Add start and end markers to a leaflet map
 #'
@@ -307,7 +333,6 @@ map_dgo_axis <- function(map, selected_axis = selected_axis(), region_axis = net
 #' @return A Leaflet map object with start and end markers added.
 #'
 #' @importFrom leaflet addMarkers clearGroup makeIcon pathOptions
-#' @importFrom mapdoapp params_map_group axis_start_end
 #'
 #' @examples
 #' # Create a simple Leaflet map

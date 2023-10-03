@@ -360,8 +360,6 @@ mod_explore_server <- function(input, output, session){
     }
   })
 
-  ### MAP DGO AXIS ####
-
   # map dgo axis when axis clicked and metric selected
   observe({
     req(network_region_axis())
@@ -372,23 +370,14 @@ mod_explore_server <- function(input, output, session){
     }
   })
 
+  # map axis start and end point
   observeEvent(axis_start_end(), {
     req(axis_start_end())
     leafletProxy("exploremap") %>%
       map_axis_start_end(axis_start_end = axis_start_end())
   })
 
-  observe({
-    if (datamoveover()$group == "DGOAXIS" && !is.null(datamoveover())){
-      select_measure <- dgo_axis() %>%
-        filter(fid == datamoveover()$id)
 
-    # Access the plotlyProxy for the plot
-    plotlyProxy("long_profile", session) %>%
-      # Clear all selections
-      plotlyProxyInvoke("relayout", list(shapes = list(vline(select_measure$measure))))
-    }
-  })
 
   ### MAP LEGEND ####
 
@@ -473,6 +462,18 @@ mod_explore_server <- function(input, output, session){
     if (is.null(event_data("plotly_hover"))) {
       leafletProxy("exploremap") %>%
         clearGroup("LIGHT")
+    }
+  })
+
+  # add vertical line on profil on map user mouseover axis
+  observe({
+    if (datamoveover()$group == params_map_group()$dgo_axis && !is.null(datamoveover())){
+      # extract dgo axis fid from map
+      select_measure <- dgo_axis() %>%
+        filter(fid == datamoveover()$id)
+      # change profile layout with vertial line
+      plotlyProxy("long_profile", session) %>%
+        plotlyProxyInvoke("relayout", list(shapes = list(lg_vertical_line(select_measure$measure))))
     }
   })
 }
