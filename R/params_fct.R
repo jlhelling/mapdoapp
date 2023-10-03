@@ -157,6 +157,8 @@ params_map_group <- function(){
     select_region = "SELECT_REGION",
     metric = "METRIC",
     axis = "AXIS",
+    dgo_axis = "DGOAXIS",
+    axis_start_end = "AXIS_START_END",
     legend = "LEGEND",
     roe = "ROE",
     inondation = params_wms()$inondation$name,
@@ -187,39 +189,41 @@ params_map_group <- function(){
 params_metrics_choice <- function() {
   choices_map <- list(
     "Largeurs (m)" = c(
-      "Chenal actif" = "active_channel_width",
-      "Corridor naturel" = "natural_corridor_width",
-      "Corridor connecté" = "connected_corridor_width",
-      "Fond de vallée" = "valley_bottom_width"
+      active_channel_width = "Chenal actif",
+      natural_corridor_width = "Corridor naturel",
+      connected_corridor_width = "Corridor connecté",
+      valley_bottom_width = "Fond de vallée"
+    ),
+    "Elévation (m)" = c(
+      talweg_elevation_min = "Talweg"
     ),
     "Pentes" = c(
-      "Pente du talweg" = "talweg_slope",
-      "Pente du fond de vallée" = "floodplain_slope"
+      talweg_slope = "Talweg",
+      floodplain_slope = "Fond de vallée"
     ),
     "Occupation du sol" = c(
-      "Surface en eau" = "water_channel",
-      "Bancs sédimentaires" = "gravel_bars",
-      "Espace naturel ouvert" = "natural_open",
-      "Forêt" = "forest",
-      "Prairie permanente" = "grassland",
-      "Culture" = "crops",
-      "Périurbain" = "diffuse_urban",
-      "Urbain dense" = "dense_urban",
-      "Infrastructure de transport" = "infrastructures"
+      water_channel = "Surface en eau",
+      gravel_bars = "Bancs sédimentaires",
+      natural_open = "Espace naturel ouvert",
+      forest = "Forêt",
+      grassland = "Prairie permanente",
+      crops = "Culture",
+      diffuse_urban = "Périurbain",
+      dense_urban = "Urbain dense",
+      infrastructures = "Infrastructure de transport"
     ),
     "Continuité latérale" = c(
-      "Bande active" = "active_channel",
-      "Corridor naturel" = "riparian_corridor",
-      "Corridor semi-naturel" = "semi_natural",
-      "Espace de réversibilité" = "reversible",
-      "Espace déconnecté" = "disconnected",
-      "Espace artificialisé" = "built_environment"
+      active_channel = "Bande active",
+      riparian_corridor = "Corridor naturel",
+      semi_natural = "Corridor semi-naturel",
+      reversible = "Espace de réversibilité",
+      disconnected = "Espace déconnecté",
+      built_environment = "Espace artificialisé"
     ),
     "Indices" = c(
-      "Indice de confinement" = "idx_confinement"
+      idx_confinement = "Indice de confinement"
     )
   )
 
   return(choices_map)
 }
-

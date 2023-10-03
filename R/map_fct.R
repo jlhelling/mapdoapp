@@ -276,6 +276,103 @@ map_metric <- function(map, wms_params = params_wms()$metric,
     map_axis(data_axis = data_axis)
 }
 
+#' Add DGO axis to a Leaflet map
+#'
+#' This function adds DGO axis to a Leaflet map with the option to highlight selected axes.
+#'
+#' @param map A Leaflet map object.
+#' @param selected_axis A data frame containing selected axe to be displayed.
+#' @param region_axis A data frame containing region-specific axes to be displayed.
+#' @return A modified Leaflet map object with DGO axes added.
+#'
+#' @importFrom leaflet clearGroup addPolylines highlightOptions pathOptions
+#'
+#' @examples
+#' # Create a basic Leaflet map
+#' my_map <- leaflet() %>%
+#'   setView(lng = -73.985, lat = 40.748, zoom = 12)
+#'
+#' # Define selected and region-specific axes data frames
+#' selected_axes <- data.frame(...)
+#' region_axes <- data.frame(...)
+#'
+#' # Add DGO axes to the map
+#' my_map <- map_dgo_axis(my_map, selected_axes, region_axes)
+#' my_map
+#'
+#' @export
+map_dgo_axis <- function(map, selected_axis, region_axis) {
+  map %>%
+    clearGroup(params_map_group()$dgo_axis) %>%
+    clearGroup(params_map_group()$axis) %>%
+    map_axis(data_axis = region_axis) %>%
+    addPolylines(
+      data = selected_axis,
+      layerId = ~fid,
+      weight = 5,
+      color = "#ffffff00",
+      opacity = 1,
+      highlight = highlightOptions(
+        opacity = 1,
+        color = "red"
+      ),
+      options = pathOptions(zIndex = 100),
+      group = params_map_group()$dgo_axis
+    )
+}
+
+
+#' Add start and end markers to a leaflet map
+#'
+#' This function adds start and end markers to a Leaflet map based on the provided
+#' start and end coordinates.
+#'
+#' @param map A Leaflet map object created using the 'leaflet' package.
+#' @param axis_start_end A data frame containing start and end coordinates with
+#'        columns 'X' for longitude and 'Y' for latitude.
+#' @return A Leaflet map object with start and end markers added.
+#'
+#' @importFrom leaflet addMarkers clearGroup makeIcon pathOptions
+#'
+#' @examples
+#' # Create a simple Leaflet map
+#' my_map <- leaflet() %>%
+#'   setView(lng = -73.985, lat = 40.748, zoom = 12)
+#'
+#' # Create a data frame with start and end coordinates
+#' coordinates_df <- data.frame(
+#'   X = c(-73.985, -73.995),
+#'   Y = c(40.748, 40.755)
+#' )
+#'
+#' # Add start and end markers to the map
+#' my_map <- map_axis_start_end(my_map, coordinates_df)
+#' my_map
+#'
+#' @export
+map_axis_start_end <- function(map, axis_start_end = axis_start_end()) {
+
+  # Define the start and end icon
+  start_end_icon <- makeIcon(
+    iconUrl = system.file("pin-sharp.png", package = "mapdoapp"),
+    iconWidth = 24,
+    iconHeight = 24,
+    iconAnchorX = 16,
+    iconAnchorY = 24
+  )
+
+  # Clear the previous group of markers and add new markers to the map
+  map %>%
+    clearGroup(params_map_group()$axis_start_end) %>%
+    addMarkers(
+      lng = axis_start_end$X,
+      lat = axis_start_end$Y,
+      options = pathOptions(interactive = FALSE),
+      icon = start_end_icon,
+      group = params_map_group()$axis_start_end
+    )
+}
+
 
 #' Add Basemap Layers to an Existing Leaflet Map
 #'

@@ -1,0 +1,139 @@
+#' Create an empty longitudinal profile plot
+#'
+#' This function generates an empty longitudinal profile plot using the 'plot_ly'
+#' function from the 'plotly' package.
+#'
+#' @return An empty longitudinal profile plot with a specified title.
+#'
+#' @importFrom plotly plot_ly layout
+#'
+#' @examples
+#' # Create an empty longitudinal profile plot
+#' empty_plot <- lg_profile_empty()
+#' empty_plot
+#'
+#' @export
+lg_profile_empty <- function() {
+  temp <- data.frame()
+  plot <- plot_ly(data = temp) %>%
+    layout(title = list(
+      text = "Click on a watercourse and select a metric to display the longitudinal profile",
+      y = 0.80,  # y title position
+      x = 0.3,   # x title position
+      font = list(size = 15)
+    ))
+  return(plot)
+}
+
+
+#' Create a vertical dashed line annotation for longitudinal profile plots
+#'
+#' This function generates a vertical dashed line annotation for longitudinal profile
+#' plots using the 'plotly' package.
+#'
+#' @param x The x-coordinate where the vertical line should be positioned.
+#' @param color The color of the vertical dashed line (default is "green").
+#'
+#' @return A list object representing a vertical dashed line annotation.
+#'
+#' @examples
+#' # Create a vertical dashed line annotation at x = 10 with a red color
+#' vertical_line_annotation <- lg_vertical_line(x = 10, color = "red")
+#'
+#' @export
+lg_vertical_line <- function(x = 0, color = "green") {
+  list(
+    type = "line",
+    y0 = 0,
+    y1 = 1,
+    yref = "paper",
+    x0 = x,
+    x1 = x,
+    line = list(color = color, dash="dot")
+  )
+}
+
+#' Create a longitudinal profile plot for selected axis data
+#'
+#' This function generates a longitudinal profile plot using the 'plot_ly'
+#' function from the 'plotly' package. It allows you to visualize a specific
+#' metric along the selected axis.
+#'
+#' @param data A data frame containing the selected axis data.
+#' @param y The metric to be plotted on the y-axis.
+#'
+#' @return A longitudinal profile plot with the specified metric.
+#'
+#' @importFrom plotly plot_ly layout
+#'
+#' @examples
+#' # Create a longitudinal profile plot for active channel width
+#' profile_plot <- lg_profile_main(data = selected_axis_df, y = "active_channel_width")
+#'
+#' @export
+lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width") {
+  plot <- plot_ly(data = data, x = ~measure, y = as.formula(paste0("~", y)), yaxis = 'y1',
+                  key = ~fid,  # the "id" column for hover text
+                  type = 'scatter', mode = 'lines', name = utile_get_metric_name(y)) %>%
+    layout(
+      xaxis = list(title = 'Distance depuis l\'exutoire (km)'),
+      yaxis = list(
+        title = paste0(utile_get_category_name(y), " - ", utile_get_metric_name(y)),
+        side = 'left'
+      ),
+      legend = list(orientation = 'h'),
+      hovermode = "x unified",
+      shapes = list(lg_vertical_line(2.5))
+    )
+  return(plot)
+}
+
+
+#' Create a dual-axis longitudinal profile plot for selected axis data
+#'
+#' This function generates a dual-axis longitudinal profile plot using the 'plot_ly'
+#' function from the 'plotly' package. It allows you to visualize two different
+#' metrics along the selected axis.
+#'
+#' @param data A data frame containing the selected axis data.
+#' @param y The primary metric to be plotted on the left y-axis.
+#' @param y2 The secondary metric to be plotted on the right y-axis.
+#'
+#' @return A dual-axis longitudinal profile plot with the specified metrics.
+#'
+#' @importFrom plotly plot_ly layout add_trace
+#'
+#' @examples
+#' # Create a dual-axis longitudinal profile plot for active channel width and
+#' # talweg elevation min
+#' dual_axis_plot <- lg_profile_second(data = selected_axis_df,
+#'                                    y = "active_channel_width",
+#'                                    y2 = "talweg_elevation_min")
+#'
+#' @export
+lg_profile_second <- function(data = selected_axis_df, y = "active_channel_width", y2 = "talweg_elevation_min"){
+  plot <- lg_profile_main(data = data,
+                          y = y) %>%
+    add_trace(data = data, x = ~measure, y = as.formula(paste0("~", y2),),
+              key = ~fid,  # the "id" column for hover text
+              type = 'scatter', mode = 'lines', name = utile_get_metric_name(y2),
+              yaxis = 'y2') %>%
+    layout(
+      yaxis2 = list(
+        title = list(text = paste0(utile_get_category_name(y2), " - ",
+                       utile_get_metric_name(y2)),
+                     standoff = 15  # control the distance between the title and the graph
+        ),
+        overlaying = 'y',
+        side = 'right',
+        showgrid = FALSE,  # Hide the gridlines for the second y-axis
+        showline = FALSE  # Hide the axis line for the second y-axis
+      ),
+      margin = list(
+        r = 80  # create space for the second y-axis title
+      ),
+      legend = list(orientation = 'h'),
+      hovermode = "x unified"
+    )
+  return(plot)
+}

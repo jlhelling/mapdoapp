@@ -21,7 +21,8 @@ Imports:
     readr,
     RPostgres,
     sf,
-    shiny (>= 1.7.4.1)
+    shiny (>= 1.7.4.1),
+    shinythemes
 Suggests: 
     spelling,
     testthat (>= 3.0.0)

@@ -1,3 +1,4 @@
+library(shinythemes)
 library(leaflet)
 library(sf)
 library(DBI)
@@ -35,23 +36,23 @@ mod_explore_ui <- function(id){
     golem_add_external_resources(),
     # UI elements
     fluidPage(
+      theme = shinytheme("spacelab"),
       fluidRow(
         column(
           width = 3,
-          titlePanel("Metriques"),
+          titlePanel(""),
           uiOutput(ns("metricUI")),
           uiOutput(ns("areaUI")),
           uiOutput(ns("radioButtonsUI")) # uiOutput radios buttons metrics
         ), # column
         column(
-          width = 6,
+          width = 7,
           titlePanel(""),
-          leafletOutput(ns("exploremap")),
-          textOutput("coords")
+          leafletOutput(ns("exploremap"))
         ), # column
         column(
           width = 2,
-          titlePanel("Filtre"),
+          titlePanel("Filtres"),
           uiOutput(ns("strahlerfilterUI")),
           uiOutput(ns("metricsfilterUI")),
           uiOutput(ns("legendUI")),
@@ -60,8 +61,21 @@ mod_explore_ui <- function(id){
       ), # fluidRow
       fluidRow(
         tabsetPanel(
-          tabPanel(title = "Profil en long",
-                   plotlyOutput(ns("long_profile"))
+          tabPanel(
+            "Profil en long",
+              div(
+                fluidRow(
+                  column(width = 9,
+                         plotlyOutput(ns("long_profile"))
+                  ),
+                  column(
+                    width = 3,
+                    style = "margin-top: 20px;",
+                    uiOutput(ns("profilemetricUI")),
+                    uiOutput(ns("profileradiobuttonUI"))
+                  )
+                )
+              )
           ), # tabPanel
           tabPanel(title = "Profil en travers"
           ) # tabPanel
@@ -80,12 +94,13 @@ mod_explore_server <- function(input, output, session){
 
   ns <- session$ns
 
+
   # # dev print to debug value
   # output$printcheck = renderPrint({
   #   tryCatch({
-  #     network_filter()
-  #     print(click_value()$group)
-  #     print(network_filter())
+  #     click_value()
+  #     print(click_value())
+  #     print(network_region_axis()$fid)
   #     print("exists")
   #   },
   #   shiny.silent.error = function(e) {
@@ -99,11 +114,6 @@ mod_explore_server <- function(input, output, session){
   # map initialization
   output$exploremap <- renderLeaflet({
     map_init_bassins(bassins_data = data_get_bassins())
-  })
-
-  # clicked polygon data
-  click_value <- reactive({
-    input$exploremap_shape_click
   })
 
 
@@ -126,23 +136,79 @@ mod_explore_server <- function(input, output, session){
     }
   })
 
-  ### DYNAMIC UI ####
+  ### DYNAMIC PROFILE UI ####
+
+
+
+  # add input UI for profile additionnal metrique
+  output$profilemetricUI <- renderUI({
+
+
+    req(axis_click(), selected_metric())
+    selectInput(ns("profile_metric_type"), "Ajoutez une métrique :",
+                choices = names(params_metrics_choice()),
+                selected  = names(params_metrics_choice())[1])
+  })
+
+  # add radiobutton for profile additionnal metrique
+  output$profileradiobuttonUI <- renderUI({
+
+    req(input$profile_metric_type)
+
+    selected_metric <- input$profile_metric_type
+
+    radioButtons(ns("profile_metric"), "",
+                 choiceNames = as.list(unname(params_metrics_choice()[[selected_metric]])),
+                 choiceValues = names(params_metrics_choice()[[selected_metric]]),
+                 selected = character(0))
+  })
+
+  ### DYNAMIC METRIC UI ####
 
   # UI create choose metric
   output$metricUI <- renderUI({
-    # req(click_value()$group == params_map_group()[["region"]])
-    req(region_click_id())
-    selectInput(ns("metric"), "Sélectionez une métrique :",
+
+    # wait region hydrographic to display metric selection
+    if (!is.null(region_click())){
+    selectInput(ns("metric_type"), "Sélectionez une métrique :",
                 choices = names(params_metrics_choice()),
-                selected  = "Largeurs") # selectInput for dynamic radio buttons
+                selected  = names(params_metrics_choice())[1])
+    } else {
+      HTML('<label class="control-label" id="wait-metric-label">
+           Cliquez sur une région hydrographique pour afficher la sélection des métriques</label>')
+    }
   })
+
+  # UI metrics radio buttons
+  output$radioButtonsUI <- renderUI({
+
+    req(input$metric_type)
+
+    selected_metric_category <- input$metric_type
+
+    radioButtons(ns("metric"), sprintf("%s :", selected_metric_category),
+                 choiceNames = as.list(unname(params_metrics_choice()[[selected_metric_category]])),
+                 choiceValues = names(params_metrics_choice()[[selected_metric_category]]),
+                 selected = character(0))
+  })
+
+  # UI switch unit area
+  output$areaUI <- renderUI({
+    req(input$metric_type == "Occupation du sol" || input$metric_type == "Continuité latérale")
+
+    selectInput(ns("unit_area"), "Surfaces :",
+                choices = c("Hectares", "% du fond de vallée"),
+                selected = "Hectares")
+  })
+
+  ### DYNAMIC FILTER UI ####
 
   # UI strahler filter
   output$strahlerfilterUI <- renderUI(
     {
-      req(region_click_id())
+      req(region_click())
       # query data from database
-      strahler <- isolate(data_get_min_max_strahler(selected_region_id = region_click_id()))
+      strahler <- isolate(data_get_min_max_strahler(selected_region_id = region_click()$id))
 
       sliderInput(ns("strahler"),
                   label="Ordre de strahler",
@@ -153,27 +219,14 @@ mod_explore_server <- function(input, output, session){
                   step=1)
     })
 
-  # UI metrics radio buttons
-  output$radioButtonsUI <- renderUI({
-
-    req(input$metric)
-
-    selected_metric <- input$metric
-
-    radioButtons(ns("dynamicRadio"), sprintf("%s :", selected_metric),
-                 choiceNames = names(params_metrics_choice()[[selected_metric]]),
-                 choiceValues = as.list(unname(params_metrics_choice()[[selected_metric]])),
-                 selected = character(0))
-  })
-
   # UI dynamic filter on metric selected
   output$metricsfilterUI <- renderUI({
     req(selected_metric())
 
-    metric <- data_get_min_max_metric(selected_region_id = region_click_id(), selected_metric = selected_metric())
+    metric <- data_get_min_max_metric(selected_region_id = region_click()$id, selected_metric = selected_metric())
 
     sliderInput(ns("metricfilter"),
-                label = names(unlist(params_metrics_choice()[[input$metric]]))[unlist(params_metrics_choice()[[input$metric]]) == selected_metric()], # extract key from value
+                label = utile_get_metric_name(selected_metric = selected_metric()),
                 min = isolate(metric[["min"]]),
                 max = isolate(metric[["max"]]),
                 value = c(
@@ -183,61 +236,70 @@ mod_explore_server <- function(input, output, session){
     )
   })
 
-  # UI switch unit area
-  output$areaUI <- renderUI({
-    req(input$metric == "Occupation du sol" || input$metric == "Continuité latérale")
+  ### DATA ####
 
-    selectInput(ns("unit_area"), "Surfaces :",
-                choices = c("Hectares", "% du fond de vallée"),
-                selected = "Hectares")
+  # store clicked data
+  click_value <- reactive({
+    input$exploremap_shape_click
   })
 
-  ### DATA ####
+  # DATA get network axis
+  network_region_axis <- reactiveVal()
+  # get data on map click
+  selected_region_feature <- reactiveVal()
+  region_click <- reactiveVal()
+  axis_click <- reactiveVal()
+  dgo_axis <- reactiveVal()
+  axis_start_end <- reactiveVal()
+
+  observeEvent(click_value(),{
+    # when region clicked get data axis in region
+    if (click_value()$group == params_map_group()$region){
+      # store the region click values
+      region_click(click_value())
+      # save the selected region feature for mapping
+      selected_region_feature(data_get_region(region_click_id = region_click()$id))
+      # get the axis in the region
+      network_region_axis(data_get_axis(selected_region_id = click_value()$id))
+    }
+    # when axis clicked get axis region without the axis selected
+    if (click_value()$group == params_map_group()$axis) {
+      # save the clicked axis values
+      axis_click(click_value())
+      # reget the axis in the region without the selected axis
+      network_region_axis(data_get_axis(selected_region_id = region_click()$id) %>%
+                            filter(fid != axis_click()$id))
+      # get the DGO axis data
+      dgo_axis(data_get_network_axis(selected_axis_id = axis_click()$id) %>%
+        mutate(measure = measure/1000))
+      # extract axis start end point
+      axis_start_end (data_get_axis_start_end(dgo_axis = dgo_axis()))
+    }
+  })
 
   # metric selected by user
   selected_metric <- reactiveVal()
 
   # change field if unit_area in percentage
-  observeEvent(!is.null(input$dynamicRadio) && !is.null(input$unit_area), ignoreInit = TRUE, {
+  observeEvent(!is.null(input$metric) && !is.null(input$unit_area), ignoreInit = TRUE, {
     if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"
-        && (input$metric %in% c("Occupation du sol", "Continuité latérale"))){
-      selected_metric(paste0(input$dynamicRadio,"_pc"))
+        && (input$metric_type %in% c("Occupation du sol", "Continuité latérale"))){
+      selected_metric(paste0(input$metric,"_pc"))
     } else {
-      selected_metric(input$dynamicRadio)
+      selected_metric(input$metric)
     }
   })
 
-  # DATA get network axis in region
-  network_region_axis <- reactiveVal()
-
-  observeEvent(click_value(),{
-    if (click_value()$group == params_map_group()[["region"]]){
-      network_region_axis(data_get_axis(selected_region_id = click_value()$id))
-    }
-  })
-
-  # DATA get only the region selected feature
-  selected_region_feature <- reactiveVal()
-  region_click_id <- reactiveVal()
-
-  observeEvent(click_value(),{
-    if (click_value()$group == params_map_group()[["region"]]){
-      region_click_id(click_value()$id)
-      selected_region_feature(data_get_region(region_click_id = region_click_id()))
-    }
-  })
-
-  # DATA network by selected axis
-  selected_axis <- reactive({
-    req(click_value()$group == params_map_group()[["axis"]])
-    data_get_network_axis(selected_axis_id = click_value()$id)
+  # store mouseover map DGO axis feature
+  datamoveover <- reactive({
+    input$exploremap_shape_mouseover
   })
 
   ### MAP ####
 
   # MAP region selected
   observeEvent(click_value(), {
-    if (click_value()$group == params_map_group()[["region"]]){
+    if (click_value()$group == params_map_group()$region){
 
       # map region clicked with region clicked and overlayers
       leafletProxy("exploremap") %>%
@@ -248,7 +310,7 @@ mod_explore_server <- function(input, output, session){
 
   # reactive list to activate map update
   map_update <- reactive({
-    list(region_click_id(), input$strahler, input$metricfilter)
+    list(region_click()$id, input$strahler, input$metricfilter)
   })
 
   # MAP network metric
@@ -263,6 +325,7 @@ mod_explore_server <- function(input, output, session){
       cql_filter=paste0("gid_region=", selected_region_feature()[["gid"]],
                         " AND strahler>=", input$strahler[1],
                         " AND strahler <= ", input$strahler[2])
+
       # update map with basic style
       leafletProxy("exploremap") %>%
         map_metric(wms_params = params_wms()$metric_basic, # metric_basic to have blue network
@@ -274,8 +337,8 @@ mod_explore_server <- function(input, output, session){
     if (!is.null(selected_metric())){
 
       # build SLD symbology
-      sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = region_click_id(), selected_metric = selected_metric()),
-                                colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
+      sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = region_click()$id, selected_metric = selected_metric()),
+                                colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click()$id,
                                                                                                            selected_metric = selected_metric())),
                                 metric = selected_metric())
 
@@ -297,11 +360,31 @@ mod_explore_server <- function(input, output, session){
     }
   })
 
+  # map dgo axis when axis clicked and metric selected
+  observe({
+    req(network_region_axis())
+    if(!is.null(dgo_axis()) && !is.null(selected_metric())){
+
+      leafletProxy("exploremap") %>%
+        map_dgo_axis(selected_axis = dgo_axis(), region_axis = network_region_axis())
+    }
+  })
+
+  # map axis start and end point
+  observeEvent(axis_start_end(), {
+    req(axis_start_end())
+    leafletProxy("exploremap") %>%
+      map_axis_start_end(axis_start_end = axis_start_end())
+  })
+
+
+
   ### MAP LEGEND ####
 
   metric_legend <- reactiveVal(NULL)
 
   output$legendUI <- renderUI({
+
     div(
       HTML('<label class="control-label" id="legend-label">Légende</label>'),
       # metric
@@ -326,43 +409,71 @@ mod_explore_server <- function(input, output, session){
 
   ### PROFILE ####
 
-  # PROFILE longitudinale profile if axis clicked
+
   output$long_profile <- renderPlotly({
-    req(click_value()$group == params_map_group()[["axis"]])
 
-    selected_axis_df <- selected_axis() %>%
-      as.data.frame()
+    if (!is.null(axis_click()) && !is.null(selected_metric())){
 
-    plot <- plot_ly(data = selected_axis_df, x = ~measure, y = ~talweg_elevation_min,
-                    key = ~fid,  # Specify the "id" column for hover text
-                    type = 'scatter', mode = 'lines', name = 'Ligne')
+      selected_axis_df <- dgo_axis() %>%
+        as.data.frame()
 
-    # Add hover information
-    plot <- plot %>%
-      event_register("plotly_hover")  # Enable hover events
+      if (!is.null(selected_metric()) && is.null(input$profile_metric)){
 
-    # Define an observeEvent to capture hover events
-    observeEvent(event_data("plotly_hover"), {
-      hover_data <- event_data("plotly_hover")
-
-      if (!is.null(hover_data)) {
-        hover_fid <- hover_data$key
-
-        highlighted_feature <- selected_axis()[selected_axis()$fid == hover_fid, ]
-
-        leafletProxy("exploremap") %>%
-          addPolylines(data = highlighted_feature, color = "red", weight = 10, group = "LIGHT")
-
+        plot <- lg_profile_main(data = selected_axis_df,
+                                y = selected_metric()
+        )
       }
-    })
 
-    return(plot)
+      if (!is.null(selected_metric()) && !is.null(input$profile_metric)){
+        plot <- lg_profile_second(data = selected_axis_df,
+                                  y = selected_metric(),
+                                  y2 = input$profile_metric)
+      }
+
+      # Add hover information
+      plot <- plot %>%
+        event_register("plotly_hover")  # Enable hover events
+
+      # Define an observeEvent to capture hover events
+      observeEvent(event_data("plotly_hover"), {
+        hover_data <- event_data("plotly_hover")
+
+        if (!is.null(hover_data)) {
+          hover_fid <- hover_data$key
+
+          highlighted_feature <- dgo_axis()[dgo_axis()$fid == hover_fid, ]
+
+          leafletProxy("exploremap") %>%
+            addPolylines(data = highlighted_feature, color = "red", weight = 10, group = "LIGHT")
+
+        }
+      })
+      return(plot)
+    }
+    else {
+      # create empty plotly graph with user message
+      plot <- lg_profile_empty()
+      return(plot)
+    }
   })
 
+  # clear previous point on map when moving along profile to not display all the point move over
   observe({
     if (is.null(event_data("plotly_hover"))) {
       leafletProxy("exploremap") %>%
         clearGroup("LIGHT")
+    }
+  })
+
+  # add vertical line on profil on map user mouseover axis
+  observe({
+    if (datamoveover()$group == params_map_group()$dgo_axis && !is.null(datamoveover())){
+      # extract dgo axis fid from map
+      select_measure <- dgo_axis() %>%
+        filter(fid == datamoveover()$id)
+      # change profile layout with vertial line
+      plotlyProxy("long_profile", session) %>%
+        plotlyProxyInvoke("relayout", list(shapes = list(lg_vertical_line(select_measure$measure))))
     }
   })
 }
