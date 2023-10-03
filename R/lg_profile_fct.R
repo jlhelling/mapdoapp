@@ -36,7 +36,7 @@ lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width")
                   key = ~fid,  # the "id" column for hover text
                   type = 'scatter', mode = 'lines', name = utile_get_metric_name(y))%>%
     layout(
-      xaxis = list(title = 'Distance depuis la source (km)'),
+      xaxis = list(title = 'Distance depuis l\'exutoire (km)'),
       yaxis = list(
         title = paste0(utile_get_category_name(y), " - ",
                        utile_get_metric_name(y)),

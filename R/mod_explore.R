@@ -95,19 +95,19 @@ mod_explore_server <- function(input, output, session){
   ns <- session$ns
 
 
-  # dev print to debug value
-  output$printcheck = renderPrint({
-    tryCatch({
-      click_value()
-      print(click_value())
-      print(network_region_axis()$fid)
-      print("exists")
-    },
-    shiny.silent.error = function(e) {
-      print("doesn't exist")
-    }
-    )
-  })
+  # # dev print to debug value
+  # output$printcheck = renderPrint({
+  #   tryCatch({
+  #     click_value()
+  #     print(click_value())
+  #     print(network_region_axis()$fid)
+  #     print("exists")
+  #   },
+  #   shiny.silent.error = function(e) {
+  #     print("doesn't exist")
+  #   }
+  #   )
+  # })
 
   ### BASSIN ####
 
@@ -250,6 +250,7 @@ mod_explore_server <- function(input, output, session){
   region_click <- reactiveVal()
   axis_click <- reactiveVal()
   dgo_axis <- reactiveVal()
+  axis_start_end <- reactiveVal()
 
   observeEvent(click_value(),{
     # when region clicked get data axis in region
@@ -265,12 +266,14 @@ mod_explore_server <- function(input, output, session){
     if (click_value()$group == params_map_group()$axis) {
       # save the clicked axis values
       axis_click(click_value())
-      # get the axis in the region without the selected axis
+      # reget the axis in the region without the selected axis
       network_region_axis(data_get_axis(selected_region_id = region_click()$id) %>%
                             filter(fid != axis_click()$id))
       # get the DGO axis data
       dgo_axis(data_get_network_axis(selected_axis_id = axis_click()$id) %>%
         mutate(measure = measure/1000))
+      # extract axis start end point
+      axis_start_end (data_get_axis_start_end(dgo_axis = dgo_axis()))
     }
   })
 
@@ -322,8 +325,7 @@ mod_explore_server <- function(input, output, session){
       cql_filter=paste0("gid_region=", selected_region_feature()[["gid"]],
                         " AND strahler>=", input$strahler[1],
                         " AND strahler <= ", input$strahler[2])
-      print(cql_filter)
-      print(network_region_axis())
+
       # update map with basic style
       leafletProxy("exploremap") %>%
         map_metric(wms_params = params_wms()$metric_basic, # metric_basic to have blue network
@@ -360,21 +362,14 @@ mod_explore_server <- function(input, output, session){
 
   ### MAP DGO AXIS ####
 
+  # map dgo axis when axis clicked and metric selected
   observe({
     req(network_region_axis())
     if(!is.null(dgo_axis()) && !is.null(selected_metric())){
 
-      # if (!is.null(axis_click())){
-      #   data_network_region_axis <- network_region_axis() %>%
-      #     filter(axis != axis_click()$id)
-      # }else{
-      #   data_network_region_axis <- network_region_axis()
-      # }
-
-      print(network_region_axis()$fid)
-
       leafletProxy("exploremap") %>%
-        map_dgo_axis(selected_axis = dgo_axis(), region_axis = network_region_axis())
+        map_dgo_axis(selected_axis = dgo_axis(), region_axis = network_region_axis(),
+                     axis_start_end = axis_start_end())
     }
   })
 

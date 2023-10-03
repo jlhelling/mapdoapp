@@ -276,10 +276,21 @@ map_metric <- function(map, wms_params = params_wms()$metric,
     map_axis(data_axis = data_axis)
 }
 
-map_dgo_axis <- function(map, selected_axis = selected_axis(), region_axis = network_region_axis()){
+map_dgo_axis <- function(map, selected_axis = selected_axis(), region_axis = network_region_axis(),
+                         axis_start_end = axis_start_end()){
+
+  start_end_icon <- makeIcon(
+    iconUrl = system.file("pin-sharp.png", package = "mapdoapp"),
+    iconWidth = 24,
+    iconHeight = 24,
+    iconAnchorX = 16,
+    iconAnchorY = 24
+  )
+
   map %>%
     clearGroup(params_map_group()$dgo_axis) %>%
     clearGroup(params_map_group()$axis) %>%
+    clearGroup(params_map_group()$axis_start_end) %>%
     map_axis(data_axis = region_axis) %>%
     addPolylines(data = selected_axis,
                  layerId = ~fid,
@@ -292,6 +303,12 @@ map_dgo_axis <- function(map, selected_axis = selected_axis(), region_axis = net
                  ),
                  options = pathOptions(zIndex = 100),
                  group = params_map_group()$dgo_axis
+    ) %>%
+    addMarkers(lng = axis_start_end$X,
+               lat = axis_start_end$Y,
+               options = pathOptions(interactive = FALSE),
+               icon = start_end_icon,
+               group = params_map_group()$axis_start_end
     )
 }
 

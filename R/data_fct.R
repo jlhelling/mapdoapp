@@ -237,3 +237,36 @@ data_get_network_axis <- function(selected_axis_id = click_value()$id) {
 
   return(data)
 }
+
+
+#' Get the start and end coordinates of a spatial object's axis
+#'
+#' This function takes a spatial object with a LINESTRING geometry and returns
+#' a data frame containing the start and end coordinates of the axis.
+#'
+#' @param dgo_axis A spatial object with a LINESTRING geometry representing an axis.
+#' @return A data frame with two rows, where the first row contains the start
+#'         coordinates (x and y) and the second row contains the end coordinates (x and y).
+#'
+#' @importFrom sf st_coordinates
+#' @importFrom sf st_cast
+#'
+#' @examples
+#' # Create a simple LINESTRING object
+#' line <- st_linestring(matrix(c(0, 0, 1, 1, 2, 2), ncol = 2))
+#' df <- data_get_axis_start_end(line)
+#' print(df)
+#'
+#' @export
+data_get_axis_start_end <- function(dgo_axis = dgo_axis()) {
+
+  # Extract the start and end points of the axis
+  axis_point_start <- st_coordinates(head(st_cast(tail(dgo_axis, n = 1), "POINT")$geom, n = 1))
+  axis_point_end <- st_coordinates(tail(st_cast(head(dgo_axis, n = 1), "POINT")$geom, n = 1))
+
+  # Combine the coordinates into a data frame
+  axis_start_end <- data.frame(rbind(axis_point_start, axis_point_end))
+
+  return(axis_start_end)
+}
+

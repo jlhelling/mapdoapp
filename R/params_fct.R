@@ -158,6 +158,7 @@ params_map_group <- function(){
     metric = "METRIC",
     axis = "AXIS",
     dgo_axis = "DGOAXIS",
+    axis_start_end = "AXIS_START_END",
     legend = "LEGEND",
     roe = "ROE",
     inondation = params_wms()$inondation$name,
