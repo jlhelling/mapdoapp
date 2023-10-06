@@ -558,12 +558,7 @@ map_legend_wms_overlayer <- function(wms_params){
       responsive = "width: 100%; height: auto;",
       class="responsive",
       ""
-    ), # img
-    img(
-      src = "www/information-icon-6068.png",
-      style = "width: 24px; height: auto;",
-      class="responsive"
-    ) # Text div
+    ) # img
   ) # div
 }
 

@@ -387,6 +387,12 @@ mod_explore_server <- function(input, output, session){
 
     div(
       HTML('<label class="control-label" id="legend-label">Légende</label>'),
+      img(
+        title = "Information sur la légende",
+        src = "www/information-icon-6068.png",
+        style = "width: 10%; height: auto;",
+        class="responsive"
+      ), # img
       # metric
       div(
         style = "display: flex; align-items: center;",
