@@ -374,7 +374,7 @@ mod_explore_server <- function(input, output, session){
   observeEvent(axis_start_end(), {
     req(axis_start_end())
     leafletProxy("exploremap") %>%
-      map_axis_start_end(axis_start_end = axis_start_end())
+      map_axis_start_end(axis_start_end = axis_start_end(), region_axis = network_region_axis())
   })
 
 

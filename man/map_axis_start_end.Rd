@@ -4,13 +4,19 @@
 \alias{map_axis_start_end}
 \title{Add start and end markers to a leaflet map}
 \usage{
-map_axis_start_end(map, axis_start_end = axis_start_end())
+map_axis_start_end(
+  map,
+  axis_start_end = axis_start_end(),
+  region_axis = network_region_axis()
+)
 }
 \arguments{
 \item{map}{A Leaflet map object created using the 'leaflet' package.}
 
 \item{axis_start_end}{A data frame containing start and end coordinates with
 columns 'X' for longitude and 'Y' for latitude.}
+
+\item{region_axis}{A data frame containing region-specific axes to be displayed.}
 }
 \value{
 A Leaflet map object with start and end markers added.
