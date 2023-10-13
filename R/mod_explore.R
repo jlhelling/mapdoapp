@@ -72,6 +72,7 @@ mod_explore_ui <- function(id){
                     width = 3,
                     style = "margin-top: 20px;",
                     uiOutput(ns("profilemetricUI")),
+                    uiOutput(ns("profileareaUI")),
                     uiOutput(ns("profileradiobuttonUI"))
                   )
                 )
@@ -138,11 +139,8 @@ mod_explore_server <- function(input, output, session){
 
   ### DYNAMIC PROFILE UI ####
 
-
-
-  # add input UI for profile additionnal metrique
+  # add input UI for profile additional metric
   output$profilemetricUI <- renderUI({
-
 
     req(axis_click(), selected_metric())
     selectInput(ns("profile_metric_type"), "Ajoutez une métrique :",
@@ -150,17 +148,25 @@ mod_explore_server <- function(input, output, session){
                 selected  = names(params_metrics_choice())[1])
   })
 
-  # add radiobutton for profile additionnal metrique
+  # add radiobutton for profile additional metric
   output$profileradiobuttonUI <- renderUI({
 
     req(input$profile_metric_type)
+    metric_type <- input$profile_metric_type
 
-    selected_metric <- input$profile_metric_type
-
-    radioButtons(ns("profile_metric"), "",
-                 choiceNames = as.list(unname(params_metrics_choice()[[selected_metric]])),
-                 choiceValues = names(params_metrics_choice()[[selected_metric]]),
+    radioButtons(ns("profile_metric"), sprintf("%s :", metric_type),
+                 choiceNames = as.list(unname(params_metrics_choice()[[metric_type]])),
+                 choiceValues = names(params_metrics_choice()[[metric_type]]),
                  selected = character(0))
+  })
+
+  # UI switch unit area for profile additional metric
+  output$profileareaUI <- renderUI({
+    req(input$profile_metric_type == "Occupation du sol" || input$profile_metric_type == "Continuité latérale")
+
+    selectInput(ns("profile_unit_area"), "Surfaces :",
+                choices = c("Hectares", "% du fond de vallée"),
+                selected = "Hectares")
   })
 
   ### DYNAMIC METRIC UI ####
@@ -184,11 +190,11 @@ mod_explore_server <- function(input, output, session){
 
     req(input$metric_type)
 
-    selected_metric_category <- input$metric_type
+    metric_type <- input$metric_type
 
-    radioButtons(ns("metric"), sprintf("%s :", selected_metric_category),
-                 choiceNames = as.list(unname(params_metrics_choice()[[selected_metric_category]])),
-                 choiceValues = names(params_metrics_choice()[[selected_metric_category]]),
+    radioButtons(ns("metric"), sprintf("%s :", metric_type),
+                 choiceNames = as.list(unname(params_metrics_choice()[[metric_type]])),
+                 choiceValues = names(params_metrics_choice()[[metric_type]]),
                  selected = character(0))
   })
 
@@ -221,12 +227,12 @@ mod_explore_server <- function(input, output, session){
 
   # UI dynamic filter on metric selected
   output$metricsfilterUI <- renderUI({
-    req(selected_metric())
+    req(selected_metric(), selected_metric_name())
 
     metric <- data_get_min_max_metric(selected_region_id = region_click()$id, selected_metric = selected_metric())
 
     sliderInput(ns("metricfilter"),
-                label = utile_get_metric_name(selected_metric = input$metric),
+                label = selected_metric_name(),
                 min = isolate(metric[["min"]]),
                 max = isolate(metric[["max"]]),
                 value = c(
@@ -279,14 +285,38 @@ mod_explore_server <- function(input, output, session){
 
   # metric selected by user
   selected_metric <- reactiveVal()
+  selected_metric_name <- reactiveVal()
 
-  # change field if unit_area in percentage
-  observeEvent(!is.null(input$metric) && !is.null(input$unit_area), ignoreInit = TRUE, {
+  # set metric value and name
+  observeEvent(!is.null(input$metric) && !is.null(input$unit_area),
+               ignoreInit = TRUE, {
+    # change field if unit_area in percentage
     if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"
         && (input$metric_type %in% c("Occupation du sol", "Continuité latérale"))){
       selected_metric(paste0(input$metric,"_pc"))
-    } else {
+      selected_metric_name(utile_get_metric_name(selected_metric = input$metric))
+    } else if (!is.null(input$metric)) {
       selected_metric(input$metric)
+      selected_metric_name(utile_get_metric_name(selected_metric = input$metric))
+    }
+
+  })
+
+  # additional profile metric selected by user
+  selected_profile_metric <- reactiveVal()
+  selected_profile_metric_name <- reactiveVal()
+
+  # set profile metric value and name
+  observeEvent(!is.null(input$profile_metric) && !is.null(input$profile_unit_area),
+               ignoreInit = TRUE, {
+    # change field if unit_area in percentage
+    if (!is.null(input$profile_unit_area) && input$profile_unit_area == "% du fond de vallée"
+        && (input$profile_metric_type %in% c("Occupation du sol", "Continuité latérale"))){
+      selected_profile_metric(paste0(input$profile_metric,"_pc"))
+      selected_profile_metric_name(utile_get_metric_name(selected_metric = input$profile_metric))
+    } else if (!is.null(input$profile_metric)) {
+      selected_profile_metric(input$profile_metric)
+      selected_profile_metric_name(utile_get_metric_name(selected_metric = input$profile_metric))
     }
   })
 
@@ -415,25 +445,26 @@ mod_explore_server <- function(input, output, session){
 
   ### PROFILE ####
 
-
   output$long_profile <- renderPlotly({
 
     if (!is.null(axis_click()) && !is.null(selected_metric())){
-
       selected_axis_df <- dgo_axis() %>%
         as.data.frame()
-
-      if (!is.null(selected_metric()) && is.null(input$profile_metric)){
-
+      # no additional metric
+      if (!is.null(selected_metric()) && is.null(selected_profile_metric())){
         plot <- lg_profile_main(data = selected_axis_df,
-                                y = selected_metric()
+                                y = selected_metric(),
+                                y_label = selected_metric_name()
         )
       }
-
-      if (!is.null(selected_metric()) && !is.null(input$profile_metric)){
+      # the user select an additional metric
+      if (!is.null(selected_metric()) && !is.null(selected_profile_metric())){
         plot <- lg_profile_second(data = selected_axis_df,
                                   y = selected_metric(),
-                                  y2 = input$profile_metric)
+                                  y_label = selected_metric_name(),
+                                  y2 = selected_profile_metric(),
+                                  y2_label = selected_profile_metric_name()
+        )
       }
 
       # Add hover information
@@ -446,9 +477,7 @@ mod_explore_server <- function(input, output, session){
 
         if (!is.null(hover_data)) {
           hover_fid <- hover_data$key
-
           highlighted_feature <- dgo_axis()[dgo_axis()$fid == hover_fid, ]
-
           leafletProxy("exploremap") %>%
             addPolylines(data = highlighted_feature, color = "red", weight = 10, group = "LIGHT")
 
