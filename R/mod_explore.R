@@ -226,7 +226,7 @@ mod_explore_server <- function(input, output, session){
     metric <- data_get_min_max_metric(selected_region_id = region_click()$id, selected_metric = selected_metric())
 
     sliderInput(ns("metricfilter"),
-                label = utile_get_metric_name(selected_metric = selected_metric()),
+                label = utile_get_metric_name(selected_metric = input$metric),
                 min = isolate(metric[["min"]]),
                 max = isolate(metric[["max"]]),
                 value = c(
