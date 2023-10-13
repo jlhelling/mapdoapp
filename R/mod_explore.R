@@ -9,6 +9,7 @@ library(plotly)
 library(reactlog)
 library(glue)
 library(httr)
+library(shinycssloaders)
 
 reactlog_enable()
 
@@ -48,7 +49,7 @@ mod_explore_ui <- function(id){
         column(
           width = 7,
           titlePanel(""),
-          leafletOutput(ns("exploremap"))
+          withSpinner(leafletOutput(ns("exploremap")))
         ), # column
         column(
           width = 2,
@@ -95,6 +96,8 @@ mod_explore_server <- function(input, output, session){
 
   ns <- session$ns
 
+  # suppress warnings
+  # options(warn = -1)
 
   # # dev print to debug value
   # output$printcheck = renderPrint({
