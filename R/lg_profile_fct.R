@@ -62,6 +62,7 @@ lg_vertical_line <- function(x = 0, color = "green") {
 #' @param data A data frame containing the selected axis data.
 #' @param y The metric to be plotted on the y-axis.
 #' @param y_label The name of the metric plotted.
+#' @param y_label_category The metric category name.
 #'
 #' @return A longitudinal profile plot with the specified metric.
 #'
@@ -70,18 +71,19 @@ lg_vertical_line <- function(x = 0, color = "green") {
 #' @examples
 #' # Create a longitudinal profile plot for active channel width
 #' profile_plot <- lg_profile_main(data = selected_axis_df, y = "active_channel_width",
-#'                                  y_label = "Chenal actif")
+#'                                  y_label = "Chenal actif",
+#'                                  y_label_category = "Largeurs")
 #'
 #' @export
 lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
-                            y_label = "Chenal actif") {
+                            y_label = "Chenal actif", y_label_category = "Largeurs") {
   plot <- plot_ly(data = data, x = ~measure, y = as.formula(paste0("~", y)), yaxis = 'y1',
                   key = ~fid,  # the "id" column for hover text
                   type = 'scatter', mode = 'lines', name = y_label) %>%
     layout(
       xaxis = list(title = 'Distance depuis l\'exutoire (km)'),
       yaxis = list(
-        title = paste0(utile_get_category_name(y), " - ", y_label),
+        title = paste0(y_label_category, " - ", y_label),
         side = 'left'
       ),
       legend = list(orientation = 'h'),
@@ -101,8 +103,10 @@ lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
 #' @param data A data frame containing the selected axis data.
 #' @param y The primary metric to be plotted on the left y-axis.
 #' @param y_label The name of the metric plotted.
+#' @param y_label_category The metric category name.
 #' @param y2 The secondary metric to be plotted on the right y-axis.
 #' @param y2_label The name of the secondary metric plotted.
+#' @param y2_label_category The metric category name of the secondary metric plotted.
 #'
 #' @return A dual-axis longitudinal profile plot with the specified metrics.
 #'
@@ -114,22 +118,26 @@ lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
 #' dual_axis_plot <- lg_profile_second(data = selected_axis_df,
 #'                                    y = "active_channel_width",
 #'                                    y_label = "Chenal actif",
+#'                                    y_label_category = "Largeurs,
 #'                                    y2 = "talweg_elevation_min",
-#'                                    y2_label = "Chenal actif")
+#'                                    y2_label = "Chenal actif",
+#'                                    y2_label_category = "Pentes")
 #'
 #' @export
 lg_profile_second <- function(data = selected_axis_df, y = "active_channel_width", y_label = "Chenal actif",
-                              y2 = "talweg_elevation_min", y2_label = "Chenal actif"){
+                              y_label_category = "Largeurs", y2 = "talweg_elevation_min", y2_label = "Chenal actif",
+                              y2_label_category = "Pentes"){
   plot <- lg_profile_main(data = data,
                           y = y,
-                          y_label = y_label) %>%
+                          y_label = y_label,
+                          y_label_category = y_label_category) %>%
     add_trace(data = data, x = ~measure, y = as.formula(paste0("~", y2),),
               key = ~fid,  # the "id" column for hover text
               type = 'scatter', mode = 'lines', name = y2_label,
               yaxis = 'y2') %>%
     layout(
       yaxis2 = list(
-        title = list(text = paste0(utile_get_category_name(y2), " - ",
+        title = list(text = paste0(y2_label_category, " - ",
                        y2_label),
                      standoff = 15  # control the distance between the title and the graph
         ),

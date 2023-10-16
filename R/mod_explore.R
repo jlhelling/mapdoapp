@@ -289,6 +289,7 @@ mod_explore_server <- function(input, output, session){
   # metric selected by user
   selected_metric <- reactiveVal()
   selected_metric_name <- reactiveVal()
+  select_metric_category <- reactiveVal()
 
   # set metric value and name
   observeEvent(!is.null(input$metric) && !is.null(input$unit_area),
@@ -298,9 +299,11 @@ mod_explore_server <- function(input, output, session){
         && (input$metric_type %in% c("Occupation du sol", "Continuité latérale"))){
       selected_metric(paste0(input$metric,"_pc"))
       selected_metric_name(utile_get_metric_name(selected_metric = input$metric))
+      select_metric_category(utile_get_category_name(selected_metric = input$metric))
     } else if (!is.null(input$metric)) {
       selected_metric(input$metric)
       selected_metric_name(utile_get_metric_name(selected_metric = input$metric))
+      select_metric_category(utile_get_category_name(selected_metric = input$metric))
     }
 
   })
@@ -308,6 +311,7 @@ mod_explore_server <- function(input, output, session){
   # additional profile metric selected by user
   selected_profile_metric <- reactiveVal()
   selected_profile_metric_name <- reactiveVal()
+  select_profile_metric_category <- reactiveVal()
 
   # set profile metric value and name
   observeEvent(!is.null(input$profile_metric) && !is.null(input$profile_unit_area),
@@ -317,9 +321,11 @@ mod_explore_server <- function(input, output, session){
         && (input$profile_metric_type %in% c("Occupation du sol", "Continuité latérale"))){
       selected_profile_metric(paste0(input$profile_metric,"_pc"))
       selected_profile_metric_name(utile_get_metric_name(selected_metric = input$profile_metric))
+      select_profile_metric_category(utile_get_category_name(selected_metric = input$profile_metric))
     } else if (!is.null(input$profile_metric)) {
       selected_profile_metric(input$profile_metric)
       selected_profile_metric_name(utile_get_metric_name(selected_metric = input$profile_metric))
+      select_profile_metric_category(utile_get_category_name(selected_metric = input$profile_metric))
     }
   })
 
@@ -457,7 +463,8 @@ mod_explore_server <- function(input, output, session){
       if (!is.null(selected_metric()) && is.null(selected_profile_metric())){
         plot <- lg_profile_main(data = selected_axis_df,
                                 y = selected_metric(),
-                                y_label = selected_metric_name()
+                                y_label = selected_metric_name(),
+                                y_label_category = select_metric_category()
         )
       }
       # the user select an additional metric
@@ -465,8 +472,10 @@ mod_explore_server <- function(input, output, session){
         plot <- lg_profile_second(data = selected_axis_df,
                                   y = selected_metric(),
                                   y_label = selected_metric_name(),
+                                  y_label_category = select_metric_category(),
                                   y2 = selected_profile_metric(),
-                                  y2_label = selected_profile_metric_name()
+                                  y2_label = selected_profile_metric_name(),
+                                  y2_label_category = select_profile_metric_category()
         )
       }
 
