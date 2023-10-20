@@ -6,7 +6,6 @@
 #' @description A shiny Module.
 #'
 #' @param id shiny id
-#' @param input,output,session Internal parameters for {shiny}.
 #'
 #' @rdname mod_explore
 #'
@@ -71,6 +70,8 @@ mod_explore_ui <- function(id){
 }
 
 #' explore Server Functions
+#'
+#' @param input,output,session Internal parameters for {shiny}.
 #'
 #' @noRd
 #'

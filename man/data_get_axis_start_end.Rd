@@ -7,7 +7,7 @@
 data_get_axis_start_end(dgo_axis = dgo_axis())
 }
 \arguments{
-\item{dgo_axis}{A spatial object with a LINESTRING geometry representing an axis.}
+\item{dgo_axis}{A spatial sf object with a LINESTRING geometry representing an axis.}
 }
 \value{
 A data frame with two rows, where the first row contains the start
@@ -18,9 +18,10 @@ This function takes a spatial object with a LINESTRING geometry and returns
 a data frame containing the start and end coordinates of the axis.
 }
 \examples{
-# Create a simple LINESTRING object
-line <- st_linestring(matrix(c(0, 0, 1, 1, 2, 2), ncol = 2))
-df <- data_get_axis_start_end(line)
-print(df)
+library(sf)
+line_coords <- matrix(c(0, 0, 1, 1), ncol = 2)
+# Create an sf object with the LINESTRING
+line_sf <- st_sf(geometry = st_sfc(st_linestring(line_coords)))
+df <- data_get_axis_start_end(line_sf)
 
 }
