@@ -4,12 +4,18 @@
 \alias{lg_profile_main}
 \title{Create a longitudinal profile plot for selected axis data}
 \usage{
-lg_profile_main(data = selected_axis_df, y = "active_channel_width")
+lg_profile_main(
+  data = selected_axis_df,
+  y = "active_channel_width",
+  y_label = "Chenal actif"
+)
 }
 \arguments{
 \item{data}{A data frame containing the selected axis data.}
 
 \item{y}{The metric to be plotted on the y-axis.}
+
+\item{y_label}{The name of the metric plotted.}
 }
 \value{
 A longitudinal profile plot with the specified metric.
@@ -21,6 +27,7 @@ metric along the selected axis.
 }
 \examples{
 # Create a longitudinal profile plot for active channel width
-profile_plot <- lg_profile_main(data = selected_axis_df, y = "active_channel_width")
+profile_plot <- lg_profile_main(data = selected_axis_df, y = "active_channel_width",
+                                 y_label = "Chenal actif")
 
 }

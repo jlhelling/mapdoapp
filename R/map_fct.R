@@ -195,7 +195,7 @@ map_wms_metric <-function(map, wms_params = params_wms()$metric,
         style = wms_params$style,
         cql_filter = cql_filter,
         sld_body = sld_body,
-        zIndex = 100
+        zIndex = 90
       ),
       group = params_map_group()[["metric"]]
     )
@@ -226,9 +226,9 @@ map_axis <- function(map, data_axis) {
                  weight = 5,
                  color = "#ffffff00",
                  opacity = 1,
-                 highlight = highlightOptions(
-                   opacity = 1,
-                   color = "red"
+                 highlightOptions = highlightOptions(
+                   color = "red",
+                   bringToFront = TRUE
                  ),
                  group = params_map_group()[["axis"]]
     )
@@ -283,6 +283,7 @@ map_metric <- function(map, wms_params = params_wms()$metric,
 #' @param map A Leaflet map object.
 #' @param selected_axis A data frame containing selected axe to be displayed.
 #' @param region_axis A data frame containing region-specific axes to be displayed.
+#'
 #' @return A modified Leaflet map object with DGO axes added.
 #'
 #' @importFrom leaflet clearGroup addPolylines highlightOptions pathOptions
@@ -330,6 +331,8 @@ map_dgo_axis <- function(map, selected_axis, region_axis) {
 #' @param map A Leaflet map object created using the 'leaflet' package.
 #' @param axis_start_end A data frame containing start and end coordinates with
 #'        columns 'X' for longitude and 'Y' for latitude.
+#' @param region_axis A data frame containing region-specific axes to be displayed.
+#'
 #' @return A Leaflet map object with start and end markers added.
 #'
 #' @importFrom leaflet addMarkers clearGroup makeIcon pathOptions
@@ -350,7 +353,8 @@ map_dgo_axis <- function(map, selected_axis, region_axis) {
 #' my_map
 #'
 #' @export
-map_axis_start_end <- function(map, axis_start_end = axis_start_end()) {
+map_axis_start_end <- function(map, axis_start_end = axis_start_end(),
+                               region_axis = network_region_axis()) {
 
   # Define the start and end icon
   start_end_icon <- makeIcon(
@@ -364,12 +368,22 @@ map_axis_start_end <- function(map, axis_start_end = axis_start_end()) {
   # Clear the previous group of markers and add new markers to the map
   map %>%
     clearGroup(params_map_group()$axis_start_end) %>%
+    clearGroup(params_map_group()$axis_opacity) %>%
     addMarkers(
       lng = axis_start_end$X,
       lat = axis_start_end$Y,
       options = pathOptions(interactive = FALSE),
       icon = start_end_icon,
       group = params_map_group()$axis_start_end
+    ) %>%
+    addPolylines(data = region_axis,
+                 layerId = ~fid,
+                 weight = 5,
+                 color = "white",
+                 opacity = 0.4,
+                 options = pathOptions(interactive = FALSE,
+                                       zIndex = 100),
+                 group = params_map_group()$axis_opacity
     )
 }
 

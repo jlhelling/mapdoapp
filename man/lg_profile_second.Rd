@@ -7,7 +7,9 @@
 lg_profile_second(
   data = selected_axis_df,
   y = "active_channel_width",
-  y2 = "talweg_elevation_min"
+  y_label = "Chenal actif",
+  y2 = "talweg_elevation_min",
+  y2_label = "Chenal actif"
 )
 }
 \arguments{
@@ -15,7 +17,11 @@ lg_profile_second(
 
 \item{y}{The primary metric to be plotted on the left y-axis.}
 
+\item{y_label}{The name of the metric plotted.}
+
 \item{y2}{The secondary metric to be plotted on the right y-axis.}
+
+\item{y2_label}{The name of the secondary metric plotted.}
 }
 \value{
 A dual-axis longitudinal profile plot with the specified metrics.
@@ -30,6 +36,8 @@ metrics along the selected axis.
 # talweg elevation min
 dual_axis_plot <- lg_profile_second(data = selected_axis_df,
                                    y = "active_channel_width",
-                                   y2 = "talweg_elevation_min")
+                                   y_label = "Chenal actif",
+                                   y2 = "talweg_elevation_min",
+                                   y2_label = "Chenal actif")
 
 }
