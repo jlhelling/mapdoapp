@@ -7,6 +7,6 @@ query <-"SELECT
 
 network_axis <- sf::st_read(dsn = db_con(), query = query)
 
-usethis::use_data(network_axis, overwrite = TRUE)
-checkhelper::use_data_doc(name = "network_axis")
-attachment::att_amend_desc()
+# usethis::use_data(network_axis, overwrite = TRUE)
+# checkhelper::use_data_doc(name = "network_axis")
+# attachment::att_amend_desc()

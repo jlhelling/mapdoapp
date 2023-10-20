@@ -53,7 +53,7 @@ golem::add_sass_file("custom")
 
 ## Add internal datasets ----
 ## If you have data in your package
-usethis::use_data_raw(name = "network_axis", open = TRUE)
+usethis::use_data_raw(name = "network_dgo", open = TRUE)
 
 ## Tests ----
 ## Add one line by test you want to create
