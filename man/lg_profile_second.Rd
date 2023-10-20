@@ -8,8 +8,10 @@ lg_profile_second(
   data = selected_axis_df,
   y = "active_channel_width",
   y_label = "Chenal actif",
+  y_label_category = "Largeurs",
   y2 = "talweg_elevation_min",
-  y2_label = "Chenal actif"
+  y2_label = "Chenal actif",
+  y2_label_category = "Pentes"
 )
 }
 \arguments{
@@ -19,9 +21,13 @@ lg_profile_second(
 
 \item{y_label}{The name of the metric plotted.}
 
+\item{y_label_category}{The metric category name.}
+
 \item{y2}{The secondary metric to be plotted on the right y-axis.}
 
 \item{y2_label}{The name of the secondary metric plotted.}
+
+\item{y2_label_category}{The metric category name of the secondary metric plotted.}
 }
 \value{
 A dual-axis longitudinal profile plot with the specified metrics.
@@ -32,12 +38,12 @@ function from the 'plotly' package. It allows you to visualize two different
 metrics along the selected axis.
 }
 \examples{
-# Create a dual-axis longitudinal profile plot for active channel width and
-# talweg elevation min
 dual_axis_plot <- lg_profile_second(data = selected_axis_df,
                                    y = "active_channel_width",
                                    y_label = "Chenal actif",
+                                   y_label_category = "Largeurs",
                                    y2 = "talweg_elevation_min",
-                                   y2_label = "Chenal actif")
+                                   y2_label = "Chenal actif",
+                                   y2_label_category = "Pentes")
 
 }

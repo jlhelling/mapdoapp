@@ -1,17 +1,5 @@
-library(shinythemes)
-library(leaflet)
-library(sf)
-library(DBI)
-library(htmltools)
-library(dplyr)
-library(readr)
-library(plotly)
-library(reactlog)
-library(glue)
-library(httr)
-library(shinycssloaders)
-
-reactlog_enable()
+# library(reactlog)
+# reactlog_enable()
 
 #' explore UI Function
 #'
@@ -22,14 +10,9 @@ reactlog_enable()
 #'
 #' @rdname mod_explore
 #'
-#' @importFrom leaflet leafletOutput renderLeaflet addProviderTiles colorQuantile
-#' @importFrom shiny NS tagList
-#' @importFrom plotly plotlyOutput
-#' @importFrom dplyr left_join right_join
-#' @importFrom readr read_csv2
-#' @import sf
-#' @import DBI
-#' @import plotly
+#' @import shiny
+#' @import shinythemes
+#' @importFrom shinycssloaders withSpinner
 mod_explore_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -90,6 +73,12 @@ mod_explore_ui <- function(id){
 #' explore Server Functions
 #'
 #' @noRd
+#'
+#' @import shiny
+#' @importFrom leaflet leafletProxy clearGroup leafletOutput renderLeaflet
+#' @importFrom htmltools HTML div img
+#' @importFrom dplyr filter mutate
+#' @importFrom plotly event_register event_data plotlyProxy plotlyProxyInvoke renderPlotly plotlyOutput
 #'
 # mod_explore_server <- function(id){
 mod_explore_server <- function(input, output, session){

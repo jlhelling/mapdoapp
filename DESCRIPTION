@@ -17,8 +17,6 @@ Imports:
     leaflet,
     magrittr,
     plotly,
-    reactlog,
-    readr,
     RPostgres,
     sf,
     shiny (>= 1.7.4.1),

@@ -113,12 +113,10 @@ lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
 #' @importFrom plotly plot_ly layout add_trace
 #'
 #' @examples
-#' # Create a dual-axis longitudinal profile plot for active channel width and
-#' # talweg elevation min
 #' dual_axis_plot <- lg_profile_second(data = selected_axis_df,
 #'                                    y = "active_channel_width",
 #'                                    y_label = "Chenal actif",
-#'                                    y_label_category = "Largeurs,
+#'                                    y_label_category = "Largeurs",
 #'                                    y2 = "talweg_elevation_min",
 #'                                    y2_label = "Chenal actif",
 #'                                    y2_label_category = "Pentes")

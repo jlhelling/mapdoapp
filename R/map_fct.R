@@ -12,11 +12,8 @@
 #'   map <- map_init_bassins(bassins_data = some_bassins_data)
 #' }
 #'
-#' @importFrom leaflet leaflet
-#' @importFrom leaflet setView
-#' @importFrom leaflet addPolygons
-#' @importFrom leaflet addScaleBar
-#' @importFrom leaflet addLayersControl
+#' @importFrom leaflet leaflet setView addPolygons addScaleBar addLayersControl
+#' @importFrom leaflet layersControlOptions addProviderTiles scaleBarOptions providers
 #' @importFrom htmltools htmlEscape
 #'
 #' @export
@@ -116,11 +113,7 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
 #'     region_click = clicked_region_data, selected_region_feature = selected_feature_data)
 #' }
 #'
-#' @importFrom leaflet setView
-#' @importFrom leaflet addPolygons
-#' @importFrom leaflet clearGroup
-#' @importFrom leaflet addCircleMarkers
-#' @importFrom leaflet addLayersControl
+#' @importFrom leaflet setView layersControlOptions addPolygons addCircleMarkers addLayersControl hideGroup
 #'
 #' @export
 map_region_clicked <- function(map,
@@ -178,7 +171,7 @@ map_region_clicked <- function(map,
 #'   updated_map <- map_wms_metric(map = existing_map, wms_params = params_wms()$metric, cql_filter = "metric > 100", sld_body = "<sld>...</sld>")
 #' }
 #'
-#' @importFrom leaflet addWMSTiles
+#' @importFrom leaflet addWMSTiles WMSTileOptions
 #'
 #' @export
 map_wms_metric <-function(map, wms_params = params_wms()$metric,
@@ -441,7 +434,7 @@ map_add_basemaps <- function(map) {
 #'   updated_map <- map_add_wms_overlayers(map = existing_map)
 #' }
 #'
-#' @importFrom leaflet addWMSTiles
+#' @importFrom leaflet addWMSTiles hideGroup
 #'
 #' @export
 map_add_wms_overlayers <- function(map) {
