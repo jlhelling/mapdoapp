@@ -249,6 +249,7 @@ data_get_network_axis <- function(selected_axis_id = click_value()$id) {
 #'         coordinates (x and y) and the second row contains the end coordinates (x and y).
 #'
 #' @importFrom sf st_coordinates st_cast st_sf st_linestring
+#' @importFrom utils tail head
 #'
 #' @examples
 #' library(sf)

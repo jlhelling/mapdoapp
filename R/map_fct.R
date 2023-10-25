@@ -45,10 +45,10 @@ map_init_bassins <- function(bassins_data = get_bassins()) {
       options = layersControlOptions(collapsed = TRUE)
     )
 
-    # addControl(html = legend_image,
-    #            position = "bottomright", layerId = params_map_group()[["legend"]]) %>%
-    # addControl(html = icon(name = "circle-info", class="fa-solid fa-circle-info fa-xl", lib = "font-awesome"),
-    #            position = "topright", layerId = "GEOL_LEGEND")
+  # addControl(html = legend_image,
+  #            position = "bottomright", layerId = params_map_group()[["legend"]]) %>%
+  # addControl(html = icon(name = "circle-info", class="fa-solid fa-circle-info fa-xl", lib = "font-awesome"),
+  #            position = "topright", layerId = "GEOL_LEGEND")
 }
 
 #' Add hydrological Regions in a Bassin to an existing Leaflet Map
@@ -507,7 +507,7 @@ map_add_basemaps <- function(map) {
           ),
           group = i$name
         )
-      }
+    }
   }
   return(map)
 }
@@ -532,18 +532,18 @@ map_add_basemaps <- function(map) {
 map_add_wms_overlayers <- function(map) {
   for (i in params_wms()) {
     if (i$overlayer == TRUE){
-    map <- map %>%
-      addWMSTiles(
-        baseUrl = i$url,
-        layers = i$layer,
-        attribution = i$attribution,
-        options = WMSTileOptions(
-          format = i$format,
-          transparent = TRUE
-        ),
-        group = i$name
-      )%>%
-      hideGroup(i$name)
+      map <- map %>%
+        addWMSTiles(
+          baseUrl = i$url,
+          layers = i$layer,
+          attribution = i$attribution,
+          options = WMSTileOptions(
+            format = i$format,
+            transparent = TRUE
+          ),
+          group = i$name
+        )%>%
+        hideGroup(i$name)
     }
   }
   return(map)
