@@ -6,24 +6,27 @@ Authors@R:
 Description: Application de description des caractéristiques
     morphologiques des réseaux hydrographiques.
 License: MIT + file LICENSE
+Depends: 
+    R (>= 2.10)
 Imports: 
     config (>= 0.3.1),
     DBI,
     dplyr,
     glue,
     golem (>= 0.4.1),
+    grDevices,
     htmltools,
     httr,
     leaflet,
     magrittr,
     plotly,
-    reactlog,
-    readr,
     RPostgres,
     sf,
     shiny (>= 1.7.4.1),
     shinycssloaders,
-    shinythemes
+    shinythemes,
+    stats,
+    utils
 Suggests: 
     spelling,
     testthat (>= 3.0.0)

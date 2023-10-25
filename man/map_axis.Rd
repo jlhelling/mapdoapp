@@ -19,8 +19,7 @@ This function adds axis data as polylines to an existing Leaflet map.
 }
 \examples{
 \dontrun{
-  # Example usage:
-  updated_map <- map_axis(map = existing_map, data_axis = some_axis_data)
+  # Used in map_metric() function, see full example in map_metric() documentation
 }
 
 }

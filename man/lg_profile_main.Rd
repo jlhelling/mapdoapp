@@ -7,7 +7,8 @@
 lg_profile_main(
   data = selected_axis_df,
   y = "active_channel_width",
-  y_label = "Chenal actif"
+  y_label = "Chenal actif",
+  y_label_category = "Largeurs"
 )
 }
 \arguments{
@@ -16,6 +17,8 @@ lg_profile_main(
 \item{y}{The metric to be plotted on the y-axis.}
 
 \item{y_label}{The name of the metric plotted.}
+
+\item{y_label_category}{The metric category name.}
 }
 \value{
 A longitudinal profile plot with the specified metric.
@@ -27,7 +30,6 @@ metric along the selected axis.
 }
 \examples{
 # Create a longitudinal profile plot for active channel width
-profile_plot <- lg_profile_main(data = selected_axis_df, y = "active_channel_width",
-                                 y_label = "Chenal actif")
+selected_axis_df <- as.data.frame(network_dgo)
 
 }

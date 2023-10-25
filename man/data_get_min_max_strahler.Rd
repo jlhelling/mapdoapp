@@ -4,7 +4,7 @@
 \alias{data_get_min_max_strahler}
 \title{Get Minimum and Maximum Strahler Values for a Selected Region}
 \usage{
-data_get_min_max_strahler(selected_region_id = region_click_id())
+data_get_min_max_strahler(selected_region_id)
 }
 \arguments{
 \item{selected_region_id}{The ID of the selected region.}
@@ -16,9 +16,6 @@ A data frame containing two columns: 'min' and 'max', representing the minimum a
 This function retrieves the minimum and maximum values of the Strahler metric for a specified region.
 }
 \examples{
-\dontrun{
-  # Example usage:
-  data <- data_get_min_max_strahler(selected_region_id = 1)
-}
+data <- data_get_min_max_strahler(selected_region_id = 11)
 
 }

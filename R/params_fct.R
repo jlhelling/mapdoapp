@@ -144,10 +144,11 @@ params_wms <- function(){
 #' @return A list of parameters including names for groups such as "BASSIN," "REGION," "SELECT_REGION," "METRIC," "AXIS," "LEGEND," and "ROE."
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   map_group_params <- params_map_group()
-#' }
+#' # all group available
+#' map_group_params <- params_map_group()
+#' # get specific group name
+#' map_metric_group <- params_map_group()$metric
+#' map_selected_region_group <- params_map_group()$select_region
 #'
 #' @export
 params_map_group <- function(){
@@ -181,10 +182,11 @@ params_map_group <- function(){
 #' @return A list of choices for selecting metrics, categorized into "Largeurs (m)," "Pentes," "Occupation du sol," "Continuité latérale," and "Indices."
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   metric_choices <- params_metrics_choice()
-#' }
+#' metric_choices <- params_metrics_choice()
+#' # all "Largeurs (m)" metrics available name
+#' largeurs <- names(params_metrics_choice()[["Largeurs (m)"]])
+#' # get "active_channel_width" label
+#' params_metrics_choice()[["Largeurs (m)"]][["active_channel_width"]]
 #'
 #' @export
 params_metrics_choice <- function() {

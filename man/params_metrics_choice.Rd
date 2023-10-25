@@ -13,9 +13,10 @@ A list of choices for selecting metrics, categorized into "Largeurs (m)," "Pente
 This function returns a list of choices for selecting metrics organized into categories.
 }
 \examples{
-\dontrun{
-  # Example usage:
-  metric_choices <- params_metrics_choice()
-}
+metric_choices <- params_metrics_choice()
+# all "Largeurs (m)" metrics available name
+largeurs <- names(params_metrics_choice()[["Largeurs (m)"]])
+# get "active_channel_width" label
+params_metrics_choice()[["Largeurs (m)"]][["active_channel_width"]]
 
 }

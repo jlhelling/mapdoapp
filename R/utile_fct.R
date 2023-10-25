@@ -33,6 +33,10 @@ utile_get_category_name <- function(selected_metric) {
 #'
 #' @return The name of the selected metric.
 #'
+#' @examples
+#' # get name label from metric name
+#' utile_get_metric_name("active_channel_width")
+#'
 #' @export
 utile_get_metric_name <- function(selected_metric) {
   category_name <- utile_get_category_name(selected_metric = selected_metric)

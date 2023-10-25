@@ -1,10 +1,13 @@
 #' Connection to postgresql database
 #'
+#' @importFrom DBI dbConnect
+#' @importFrom RPostgres Postgres
+#'
 #' @return connection
 #' @export
 #'
 #' @examples
-#' data <- st_read(dsn = db_con(), query = query)
+#' db_connection <- db_con()
 db_con <- function(){
   con <- DBI::dbConnect(RPostgres::Postgres(),
                  host = Sys.getenv("DBMAPDO_HOST"),

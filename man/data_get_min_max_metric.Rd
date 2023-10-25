@@ -4,10 +4,7 @@
 \alias{data_get_min_max_metric}
 \title{Get Minimum and Maximum Metric Values for a Selected Region}
 \usage{
-data_get_min_max_metric(
-  selected_region_id = region_click_id(),
-  selected_metric = selected_metric()
-)
+data_get_min_max_metric(selected_region_id, selected_metric)
 }
 \arguments{
 \item{selected_region_id}{The ID of the selected region.}
@@ -21,9 +18,6 @@ A data frame containing two columns: 'min' and 'max', representing the minimum a
 This function retrieves the minimum and maximum values of a selected metric for a specified region
 }
 \examples{
-\dontrun{
-  # Example usage:
-  data <- data_get_min_max_metric(selected_region_id = 1, selected_metric = "some_metric")
-}
+data <- data_get_min_max_metric(selected_region_id = 11, selected_metric = "active_channel_width")
 
 }

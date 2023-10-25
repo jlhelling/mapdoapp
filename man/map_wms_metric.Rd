@@ -2,7 +2,7 @@
 % Please edit documentation in R/map_fct.R
 \name{map_wms_metric}
 \alias{map_wms_metric}
-\title{Add WMS Tiles with Metric Data to an Existing Leaflet Map}
+\title{Map WMS metric}
 \usage{
 map_wms_metric(
   map,
@@ -28,8 +28,7 @@ This function adds WMS tiles with metric data to an existing Leaflet map, allowi
 }
 \examples{
 \dontrun{
-  # Example usage:
-  updated_map <- map_wms_metric(map = existing_map, wms_params = params_wms()$metric, cql_filter = "metric > 100", sld_body = "<sld>...</sld>")
+  # Used in map_metric() function, see full example in map_metric() documentation
 }
 
 }

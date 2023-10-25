@@ -13,9 +13,6 @@ A sf data frame containing information about hydrographic basins.
 This function retrieves hydrographic basins.
 }
 \examples{
-\dontrun{
-  # Example usage:
-  data <- data_get_bassins()
-}
+data <- data_get_bassins()
 
 }

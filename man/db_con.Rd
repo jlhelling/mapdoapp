@@ -13,5 +13,5 @@ connection
 Connection to postgresql database
 }
 \examples{
-data <- st_read(dsn = db_con(), query = query)
+db_connection <- db_con()
 }

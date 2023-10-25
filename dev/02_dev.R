@@ -18,10 +18,17 @@
 ## install.package('attachment') # if needed.
 attachment::att_amend_desc()
 
+# run application in dev mode with golem
+golem::run_dev()
+
 # load packages app
 pkgload::load_all()
 # run application
 run_app()
+
+# check function examples
+attachment::att_amend_desc()
+devtools::run_examples(run=FALSE, fresh = T)
 
 # show react log (run after run_app())
 shiny::reactlogShow()
@@ -53,7 +60,7 @@ golem::add_sass_file("custom")
 
 ## Add internal datasets ----
 ## If you have data in your package
-usethis::use_data_raw(name = "my_dataset", open = FALSE)
+usethis::use_data_raw(name = "network_dgo", open = TRUE)
 
 ## Tests ----
 ## Add one line by test you want to create

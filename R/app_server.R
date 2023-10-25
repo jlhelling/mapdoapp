@@ -7,5 +7,5 @@
 #' @noRd
 app_server <- function(input, output, session) {
   # Your application server logic
-  callModule(mod_explore_server, "explore_1")
+  mod_explore_server("explore_1")
 }

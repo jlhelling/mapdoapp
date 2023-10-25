@@ -4,7 +4,7 @@
 \alias{data_get_axis}
 \title{Get Network Axis Data for a Region}
 \usage{
-data_get_axis(selected_region_id = region_click$id)
+data_get_axis(selected_region_id)
 }
 \arguments{
 \item{selected_region_id}{The ID of the selected region.}
@@ -16,9 +16,6 @@ A sf data frame containing information about the network axis within the specifi
 This function retrieves data about the network axis within a specified region based on its ID.
 }
 \examples{
-\dontrun{
-  # Example usage:
-  axis_data <- data_get_axis(selected_region_id = 1)
-}
+axis_data <- data_get_axis(selected_region_id = 11)
 
 }

@@ -4,7 +4,7 @@
 \alias{map_init_bassins}
 \title{Initialize a Leaflet Map with hydrological Bassins}
 \usage{
-map_init_bassins(bassins_data = get_bassins())
+map_init_bassins(bassins_data)
 }
 \arguments{
 \item{bassins_data}{A hydrological bassins sf data frame.}
@@ -16,9 +16,7 @@ A Leaflet map object with basemaps, scale and layer control.
 This function initializes a Leaflet map with bassins data and various map layers.
 }
 \examples{
-\dontrun{
-  # Example usage:
-  map <- map_init_bassins(bassins_data = some_bassins_data)
-}
+map <- map_init_bassins(bassins_data = bassin_hydrographique)
+map
 
 }

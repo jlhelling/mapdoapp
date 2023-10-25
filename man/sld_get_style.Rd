@@ -4,14 +4,7 @@
 \alias{sld_get_style}
 \title{Get Styled Layer Descriptor (SLD) for network metric layer}
 \usage{
-sld_get_style(
-  breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
-    selected_metric = selected_metric()),
-  colors = sld_get_quantile_colors(quantile_breaks =
-    sld_get_quantile_metric(selected_region_id = region_click_id(), selected_metric =
-    selected_metric())),
-  metric = selected_metrics()
-)
+sld_get_style(breaks, colors, metric)
 }
 \arguments{
 \item{breaks}{A numeric vector containing quantile breaks.}
@@ -27,11 +20,15 @@ A character string containing the SLD XML for styling data visualization.
 This function generates a Styled Layer Descriptor (SLD) XML for styling network metric layer based on quantile breaks colors.
 }
 \examples{
-\dontrun{
-  # Example usage:
-  sld_style <- sld_get_style(breaks = c(0.1, 0.3, 0.5, 0.7, 0.9),
-                             colors = c("green", "yellow", "orange", "red", "blue"),
-                             metric = "some_metric")
-}
+# get quantiles from active_channel_width metric
+quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11,
+                                            selected_metric = "active_channel_width")
+# get color from quantile
+quantile_colors <- sld_get_quantile_colors(quantile_breaks = quantile_metrics)
+# create sld style
+sld_style <- sld_get_style(breaks = quantile_metrics,
+                           colors = quantile_colors,
+                           metric = "active_channel_width")
+sld_style
 
 }

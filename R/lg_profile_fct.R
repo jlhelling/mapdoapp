@@ -37,6 +37,7 @@ lg_profile_empty <- function() {
 #' @return A list object representing a vertical dashed line annotation.
 #'
 #' @examples
+#' # see lg_profile_main() function to use it in a plotly graph
 #' # Create a vertical dashed line annotation at x = 10 with a red color
 #' vertical_line_annotation <- lg_vertical_line(x = 10, color = "red")
 #'
@@ -67,12 +68,15 @@ lg_vertical_line <- function(x = 0, color = "green") {
 #' @return A longitudinal profile plot with the specified metric.
 #'
 #' @importFrom plotly plot_ly layout
+#' @importFrom stats as.formula
 #'
 #' @examples
 #' # Create a longitudinal profile plot for active channel width
-#' profile_plot <- lg_profile_main(data = selected_axis_df, y = "active_channel_width",
-#'                                  y_label = "Chenal actif",
-#'                                  y_label_category = "Largeurs")
+#' selected_axis_df <- as.data.frame(network_dgo)
+# profile_plot <- lg_profile_main(data = selected_axis_df, y = "active_channel_width",
+#                                  y_label = "Chenal actif",
+#                                  y_label_category = "Largeurs")
+# profile_plot
 #'
 #' @export
 lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
@@ -111,17 +115,19 @@ lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
 #' @return A dual-axis longitudinal profile plot with the specified metrics.
 #'
 #' @importFrom plotly plot_ly layout add_trace
+#' @importFrom stats as.formula
 #'
 #' @examples
-#' # Create a dual-axis longitudinal profile plot for active channel width and
-#' # talweg elevation min
+#' selected_axis_df <- as.data.frame(network_dgo)
+#'
 #' dual_axis_plot <- lg_profile_second(data = selected_axis_df,
 #'                                    y = "active_channel_width",
 #'                                    y_label = "Chenal actif",
-#'                                    y_label_category = "Largeurs,
+#'                                    y_label_category = "Largeurs",
 #'                                    y2 = "talweg_elevation_min",
 #'                                    y2_label = "Chenal actif",
 #'                                    y2_label_category = "Pentes")
+#' dual_axis_plot
 #'
 #' @export
 lg_profile_second <- function(data = selected_axis_df, y = "active_channel_width", y_label = "Chenal actif",

@@ -24,9 +24,23 @@ An updated Leaflet map with regions added.
 This function adds regions within a bassin to an existing Leaflet map.
 }
 \examples{
-\dontrun{
-  # Example usage:
-  updated_map <- map_add_regions_in_bassin(map = existing_map, bassin_click = some_bassin_data, regions_data = some_regions_data)
-}
+library(leaflet)
+library(dplyr)
+library(sf)
+# Create init bassin map
+my_map <- map_init_bassins(bassins_data = bassin_hydrographique)
+
+# simulate bassin selected
+selected_bassin <- bassin_hydrographique
+
+# get centroid coordinate (in shiny see leaflet mapid_shape_click)
+centre <- sf::st_centroid(selected_bassin)
+centre_coord <- as.data.frame(st_coordinates(centre)) \%>\%
+  rename("lng" = X,
+         "lat" = Y)
+# map region
+map <- map_add_regions_in_bassin(map = my_map,
+                                 bassin_click = centre_coord, regions_data = region_hydrographique)
+map
 
 }

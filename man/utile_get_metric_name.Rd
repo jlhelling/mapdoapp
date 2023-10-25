@@ -19,3 +19,8 @@ It first determines the category name of the metric using the
 `utile_get_category_name` function and then retrieves the metric name
 from the category's metrics list provided by the `params_metrics_choice` function.
 }
+\examples{
+# get name label from metric name
+utile_get_metric_name("active_channel_width")
+
+}

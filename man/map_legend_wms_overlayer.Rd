@@ -26,18 +26,8 @@ An HTML div element containing an img tag representing the legend for the specif
 This function constructs a legend for a WMS layer overlay by sending a GetLegendGraphic request to a WMS server.
 }
 \examples{
-# Define WMS parameters for a layer overlay
-wms_params <- list(
-  language = "en",
-  version = "1.3.0",
-  service = "WMS",
-  request = "GetLegendGraphic",
-  sld_version = "1.1.0",
-  layer = "overlay_layer",
-  format = "image/png",
-  style = "default",
-  url = "http://wms.example.com/wms"
-)
+# Define WMS parameters for a layer overlay like
+wms_params <- params_wms()$inondation
 
 # Generate and display the legend for the WMS layer overlay
 legend <- map_legend_wms_overlayer(wms_params)

@@ -8,16 +8,16 @@
 #' @return A numeric vector containing quantile metrics (Q1, Q2, Q3, Q4, Q5) for the selected metric within the specified region.
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   quantile_metrics <- sld_get_quantile_metric(selected_region_id = 1, selected_metric = "some_metric")
-#' }
+#' # get quantiles from active_channel_width metric
+#' quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11,
+#'                                             selected_metric = "active_channel_width")
+#' quantile_metrics
 #'
 #' @importFrom glue glue
 #' @importFrom DBI dbGetQuery
 #'
 #' @export
-sld_get_quantile_metric <- function(selected_region_id = region_click_id(), selected_metric = selected_metric()) {
+sld_get_quantile_metric <- function(selected_region_id, selected_metric) {
   query <- glue::glue("
       SELECT
         ROUND(percentile_cont(0) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q1,
@@ -44,15 +44,18 @@ sld_get_quantile_metric <- function(selected_region_id = region_click_id(), sele
 #'
 #' @return A character vector of colors generated based on quantile breaks.
 #'
+#' @importFrom grDevices colorRampPalette
+#'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   quantile_colors <- sld_get_quantile_colors(quantile_breaks = c(0.1, 0.3, 0.5, 0.7, 0.9))
-#' }
+#' # get quantiles from active_channel_width metric
+#' quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11,
+#'                                             selected_metric = "active_channel_width")
+#' # get color from quantile
+#' quantile_colors <- sld_get_quantile_colors(quantile_breaks = quantile_metrics)
+#' quantile_colors
 #'
 #' @export
-sld_get_quantile_colors <- function(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
-                                                                              selected_metric = selected_metric())) {
+sld_get_quantile_colors <- function(quantile_breaks) {
   colors_palette <- colorRampPalette(c("green", "red"))(length(quantile_breaks))
   return(colors_palette)
 }
@@ -69,21 +72,21 @@ sld_get_quantile_colors <- function(quantile_breaks = sld_get_quantile_metric(se
 #' @return A character string containing the SLD XML for styling data visualization.
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   sld_style <- sld_get_style(breaks = c(0.1, 0.3, 0.5, 0.7, 0.9),
-#'                              colors = c("green", "yellow", "orange", "red", "blue"),
-#'                              metric = "some_metric")
-#' }
+#' # get quantiles from active_channel_width metric
+#' quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11,
+#'                                             selected_metric = "active_channel_width")
+#' # get color from quantile
+#' quantile_colors <- sld_get_quantile_colors(quantile_breaks = quantile_metrics)
+#' # create sld style
+#' sld_style <- sld_get_style(breaks = quantile_metrics,
+#'                            colors = quantile_colors,
+#'                            metric = "active_channel_width")
+#' sld_style
 #'
 #' @importFrom glue glue
 #'
 #' @export
-sld_get_style <- function(breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
-                                                           selected_metric = selected_metric()),
-                          colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
-                                                                                                     selected_metric = selected_metric())),
-                          metric = selected_metrics()) {
+sld_get_style <- function(breaks, colors, metric) {
   sld_begin <- glue::glue('<?xml version="1.0" encoding="UTF-8"?>
     <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:se="http://www.opengis.net/se" xmlns:ogc="http://www.opengis.net/ogc">
       <NamedLayer>

@@ -4,7 +4,7 @@
 \alias{data_get_regions_in_bassin}
 \title{Get all the hydrological regions in a Hydrographic Basin}
 \usage{
-data_get_regions_in_bassin(selected_bassin_id = bassin_click$id)
+data_get_regions_in_bassin(selected_bassin_id)
 }
 \arguments{
 \item{selected_bassin_id}{The ID of the selected hydrographic basin.}
@@ -16,9 +16,6 @@ A df data frame containing regions within the specified hydrographic basin.
 This function retrieves regions within a specified hydrographic basin based on its ID.
 }
 \examples{
-\dontrun{
-  # Example usage:
-  data <- data_get_regions_in_bassin(selected_bassin_id = 'cdbh_id')
-}
+data <- data_get_regions_in_bassin(selected_bassin_id = "06")
 
 }

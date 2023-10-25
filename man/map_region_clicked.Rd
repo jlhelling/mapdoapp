@@ -24,10 +24,39 @@ An updated Leaflet map with relevant layers and information displayed.
 This function updates an existing Leaflet map when a region is clicked, displaying the region and overlayers.
 }
 \examples{
-\dontrun{
-  # Example usage:
-  updated_map <- map_region_clicked(map = existing_map,
-    region_click = clicked_region_data, selected_region_feature = selected_feature_data)
-}
+library(leaflet)
+library(dplyr)
+library(sf)
+# Create init bassin map
+map_bassin <- map_init_bassins(bassins_data = bassin_hydrographique)
+
+# simulate bassin selected
+selected_bassin <- bassin_hydrographique
+
+# get centroid coordinate (in shiny see leaflet mapid_shape_click)
+centre <- sf::st_centroid(selected_bassin)
+centre_coord <- as.data.frame(st_coordinates(centre)) \%>\%
+  rename("lng" = X,
+         "lat" = Y)
+
+# map region
+map_region <- map_add_regions_in_bassin(map = map_bassin,
+                                        bassin_click = centre_coord,
+                                        regions_data = region_hydrographique)
+# simulate selected region
+selected_region <- region_hydrographique
+
+# get centroid coordinate (in shiny see leaflet mapid_shape_click)
+centre_region <- sf::st_centroid(selected_bassin)
+centre_region_coord <- as.data.frame(st_coordinates(centre_region)) \%>\%
+  rename("lng" = X,
+         "lat" = Y)
+centre_region_coord$id <- 11
+
+# map the element in the region clicked
+map <- map_region_clicked(map = map_region,
+                          region_click = centre_region_coord,
+                          selected_region_feature = selected_region)
+map
 
 }

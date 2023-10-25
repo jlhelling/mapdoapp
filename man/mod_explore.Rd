@@ -8,8 +8,6 @@ mod_explore_ui(id)
 }
 \arguments{
 \item{id}{shiny id}
-
-\item{input, output, session}{Internal parameters for {shiny}.}
 }
 \description{
 A shiny Module.

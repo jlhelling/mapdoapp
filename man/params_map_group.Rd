@@ -13,9 +13,10 @@ A list of parameters including names for groups such as "BASSIN," "REGION," "SEL
 This function returns a list of parameters representing different map layer groups.
 }
 \examples{
-\dontrun{
-  # Example usage:
-  map_group_params <- params_map_group()
-}
+# all group available
+map_group_params <- params_map_group()
+# get specific group name
+map_metric_group <- params_map_group()$metric
+map_selected_region_group <- params_map_group()$select_region
 
 }
