@@ -26,18 +26,21 @@ This function adds start and end markers to a Leaflet map based on the provided
 start and end coordinates.
 }
 \examples{
+library(leaflet)
+library(dplyr)
+
 # Create a simple Leaflet map
 my_map <- leaflet() \%>\%
-  setView(lng = -73.985, lat = 40.748, zoom = 12)
+  setView(lng = 4.968697, lat = 45.103354, zoom = 8) \%>\%
+  addProviderTiles(providers$CartoDB.Positron)
 
 # Create a data frame with start and end coordinates
-coordinates_df <- data.frame(
-  X = c(-73.985, -73.995),
-  Y = c(40.748, 40.755)
-)
+coordinates_df <- data_get_axis_start_end(network_axis \%>\%
+                                            filter(fid == 5))
 
 # Add start and end markers to the map
-my_map <- map_axis_start_end(my_map, coordinates_df)
+my_map <- map_axis_start_end(my_map, axis_start_end = coordinates_df,
+                             region_axis = network_axis)
 my_map
 
 }

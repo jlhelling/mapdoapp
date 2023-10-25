@@ -30,8 +30,6 @@ metric along the selected axis.
 }
 \examples{
 # Create a longitudinal profile plot for active channel width
-profile_plot <- lg_profile_main(data = selected_axis_df, y = "active_channel_width",
-                                 y_label = "Chenal actif",
-                                 y_label_category = "Largeurs")
+selected_axis_df <- as.data.frame(network_dgo)
 
 }

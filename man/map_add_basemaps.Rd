@@ -17,8 +17,7 @@ This function adds basemap layers to an existing Leaflet map.
 }
 \examples{
 \dontrun{
-  # Example usage:
-  updated_map <- map_add_basemaps(map = existing_map)
+  # Used in map_init_bassins() function, its use is in the function
 }
 
 }

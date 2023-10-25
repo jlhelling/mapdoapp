@@ -17,7 +17,7 @@ This function generates an HTML representation of a legend entry for a vector ov
 }
 \examples{
 # Create a legend entry for a vector overlay layer
-legend_entry <- map_legend_vector_overlayer("Vector Layer A")
+legend_entry <- map_legend_vector_overlayer(layer_label = "ROE")
 print(legend_entry)
 
 }

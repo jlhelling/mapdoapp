@@ -70,9 +70,11 @@ lg_vertical_line <- function(x = 0, color = "green") {
 #'
 #' @examples
 #' # Create a longitudinal profile plot for active channel width
-#' profile_plot <- lg_profile_main(data = selected_axis_df, y = "active_channel_width",
-#'                                  y_label = "Chenal actif",
-#'                                  y_label_category = "Largeurs")
+#' selected_axis_df <- as.data.frame(network_dgo)
+# profile_plot <- lg_profile_main(data = selected_axis_df, y = "active_channel_width",
+#                                  y_label = "Chenal actif",
+#                                  y_label_category = "Largeurs")
+# profile_plot
 #'
 #' @export
 lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
@@ -113,6 +115,8 @@ lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
 #' @importFrom plotly plot_ly layout add_trace
 #'
 #' @examples
+#' selected_axis_df <- as.data.frame(network_dgo)
+#'
 #' dual_axis_plot <- lg_profile_second(data = selected_axis_df,
 #'                                    y = "active_channel_width",
 #'                                    y_label = "Chenal actif",
@@ -120,6 +124,7 @@ lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
 #'                                    y2 = "talweg_elevation_min",
 #'                                    y2_label = "Chenal actif",
 #'                                    y2_label_category = "Pentes")
+#' dual_axis_plot
 #'
 #' @export
 lg_profile_second <- function(data = selected_axis_df, y = "active_channel_width", y_label = "Chenal actif",

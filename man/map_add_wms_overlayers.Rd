@@ -17,8 +17,7 @@ This function adds overlayer layers to an existing Leaflet map.
 }
 \examples{
 \dontrun{
-  # Example usage:
-  updated_map <- map_add_wms_overlayers(map = existing_map)
+  # Used in map_region_clicked() function, its use is in the function
 }
 
 }

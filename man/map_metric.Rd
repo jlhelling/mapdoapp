@@ -30,12 +30,61 @@ A leaflet map object with the metric layer added.
 This function adds a metric layer with custom symbology to a leaflet map. It allows you to specify custom parameters for the Web Map Service (WMS) request, apply a CQL (Common Query Language) filter, and provide a custom SLD (Styled Layer Descriptor) body for styling the layer. Additionally, you can specify the data axis to display on the map.
 }
 \examples{
-# Create a leaflet map
-my_map <- leaflet() \%>\%
-  addTiles() \%>\%
-  setView(lng = 0, lat = 0, zoom = 3)
+library(leaflet)
+library(dplyr)
+library(sf)
+# Create init bassin map
+map_bassin <- map_init_bassins(bassins_data = bassin_hydrographique)
 
-# Add a custom metric layer to the map
-map_metric(my_map, wms_params = params_wms()$metric, cql_filter = "value > 100", sld_body = my_custom_sld, data_axis = my_axis_data)
+# simulate bassin selected
+selected_bassin <- bassin_hydrographique
+
+# get centroid coordinate (in shiny see leaflet mapid_shape_click)
+centre <- sf::st_centroid(selected_bassin)
+centre_coord <- as.data.frame(st_coordinates(centre)) \%>\%
+  rename("lng" = X,
+         "lat" = Y)
+
+# map region
+map_region <- map_add_regions_in_bassin(map = map_bassin,
+                                        bassin_click = centre_coord, regions_data = region_hydrographique)
+
+# simulate selected region
+selected_region <- region_hydrographique
+
+# get centroid coordinate (in shiny see leaflet mapid_shape_click)
+centre_region <- sf::st_centroid(selected_bassin)
+centre_region_coord <- as.data.frame(st_coordinates(centre_region)) \%>\%
+  rename("lng" = X,
+         "lat" = Y)
+centre_region_coord$id <- 11
+
+# map the element in the region clicked
+map <- map_region_clicked(map = map_region,
+                          region_click = centre_region_coord, selected_region_feature = selected_region)
+map
+
+# build geoserver WMS filter
+cql_filter=paste0("gid_region=", selected_region[["gid"]])
+
+# build geoserver SLD symbology
+sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = selected_region[["gid"]],
+                                                           selected_metric = "active_channel_width"),
+                          colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = selected_region[["gid"]],
+                                                                                                     selected_metric = "active_channel_width")),
+                          metric = "active_channel_width")
+
+# Network axis by region
+network_region_axis <- network_axis \%>\%
+  filter(gid_region == selected_region[["gid"]])
+
+# Add metric with quantile symbology
+# wms_params = params_wms()$metric_basic with sld_body = NULL for default blue style$
+map_metric <- map_metric(map = map,
+                         wms_params = params_wms()$metric,
+                         cql_filter = cql_filter,
+                         sld_body = sld_body,
+                         data_axis = network_region_axis)
+map_metric
 
 }

@@ -20,13 +20,16 @@ A modified Leaflet map object with DGO axes added.
 This function adds DGO axis to a Leaflet map with the option to highlight selected axes.
 }
 \examples{
-# Create a basic Leaflet map
+library(leaflet)
+library(dplyr)
+
 my_map <- leaflet() \%>\%
-  setView(lng = -73.985, lat = 40.748, zoom = 12)
+  setView(lng = 4.968697, lat = 45.103354, zoom = 8) \%>\%
+  addProviderTiles(providers$CartoDB.Positron)
 
 # Define selected and region-specific axes data frames
-selected_axes <- data.frame(...)
-region_axes <- data.frame(...)
+selected_axes <- network_axis \%>\% filter(fid == 5)
+region_axes <- network_axis
 
 # Add DGO axes to the map
 my_map <- map_dgo_axis(my_map, selected_axes, region_axes)

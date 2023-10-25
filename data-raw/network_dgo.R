@@ -17,6 +17,6 @@ query <- "SELECT
 network_dgo <- sf::st_read(dsn = db_con(), query = query) %>%
   dplyr::arrange(measure)
 
-usethis::use_data(network_dgo, overwrite = TRUE)
-checkhelper::use_data_doc(name = "network_dgo")
-attachment::att_amend_desc()
+# usethis::use_data(network_dgo, overwrite = TRUE)
+# checkhelper::use_data_doc(name = "network_dgo")
+# attachment::att_amend_desc()

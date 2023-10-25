@@ -7,10 +7,8 @@
 #' @return A Leaflet map object with basemaps, scale and layer control.
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   map <- map_init_bassins(bassins_data = some_bassins_data)
-#' }
+#' map <- map_init_bassins(bassins_data = bassin_hydrographique)
+#' map
 #'
 #' @importFrom leaflet leaflet setView addPolygons addScaleBar addLayersControl
 #' @importFrom leaflet layersControlOptions addProviderTiles scaleBarOptions providers
@@ -63,16 +61,30 @@ map_init_bassins <- function(bassins_data = get_bassins()) {
 #'
 #' @return An updated Leaflet map with regions added.
 #'
-#' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   updated_map <- map_add_regions_in_bassin(map = existing_map, bassin_click = some_bassin_data, regions_data = some_regions_data)
-#' }
-#'
 #' @importFrom leaflet setView
 #' @importFrom leaflet clearGroup
 #' @importFrom leaflet addPolygons
 #' @importFrom htmltools htmlEscape
+#'
+#' @examples
+#' library(leaflet)
+#' library(dplyr)
+#' library(sf)
+#' # Create init bassin map
+#' my_map <- map_init_bassins(bassins_data = bassin_hydrographique)
+#'
+#' # simulate bassin selected
+#' selected_bassin <- bassin_hydrographique
+#'
+#' # get centroid coordinate (in shiny see leaflet mapid_shape_click)
+#' centre <- sf::st_centroid(selected_bassin)
+#' centre_coord <- as.data.frame(st_coordinates(centre)) %>%
+#'   rename("lng" = X,
+#'          "lat" = Y)
+#' # map region
+#' map <- map_add_regions_in_bassin(map = my_map,
+#'                                  bassin_click = centre_coord, regions_data = region_hydrographique)
+#' map
 #'
 #' @export
 map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
@@ -106,14 +118,41 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
 #'
 #' @return An updated Leaflet map with relevant layers and information displayed.
 #'
-#' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   updated_map <- map_region_clicked(map = existing_map,
-#'     region_click = clicked_region_data, selected_region_feature = selected_feature_data)
-#' }
-#'
 #' @importFrom leaflet setView layersControlOptions addPolygons addCircleMarkers addLayersControl hideGroup
+#'
+#' @examples
+#' library(leaflet)
+#' library(dplyr)
+#' library(sf)
+#' # Create init bassin map
+#' map_bassin <- map_init_bassins(bassins_data = bassin_hydrographique)
+#'
+#' # simulate bassin selected
+#' selected_bassin <- bassin_hydrographique
+#'
+#' # get centroid coordinate (in shiny see leaflet mapid_shape_click)
+#' centre <- sf::st_centroid(selected_bassin)
+#' centre_coord <- as.data.frame(st_coordinates(centre)) %>%
+#'   rename("lng" = X,
+#'          "lat" = Y)
+#'
+#' # map region
+#' map_region <- map_add_regions_in_bassin(map = map_bassin,
+#'                                         bassin_click = centre_coord, regions_data = region_hydrographique)
+#' # simulate selected region
+#' selected_region <- region_hydrographique
+#'
+#' # get centroid coordinate (in shiny see leaflet mapid_shape_click)
+#' centre_region <- sf::st_centroid(selected_bassin)
+#' centre_region_coord <- as.data.frame(st_coordinates(centre_region)) %>%
+#'   rename("lng" = X,
+#'          "lat" = Y)
+#' centre_region_coord$id <- 11
+#'
+#' # map the element in the region clicked
+#' map <- map_region_clicked(map = map_region,
+#'                           region_click = centre_region_coord, selected_region_feature = selected_region)
+#' map
 #'
 #' @export
 map_region_clicked <- function(map,
@@ -154,7 +193,7 @@ map_region_clicked <- function(map,
     )
 }
 
-#' Add WMS Tiles with Metric Data to an Existing Leaflet Map
+#' Map WMS metric
 #'
 #' This function adds WMS tiles with metric data to an existing Leaflet map, allowing for customization of style and filtering.
 #'
@@ -165,13 +204,12 @@ map_region_clicked <- function(map,
 #'
 #' @return An updated Leaflet map with WMS tiles containing metric data added.
 #'
+#' @importFrom leaflet addWMSTiles WMSTileOptions
+#'
 #' @examples
 #' \dontrun{
-#'   # Example usage:
-#'   updated_map <- map_wms_metric(map = existing_map, wms_params = params_wms()$metric, cql_filter = "metric > 100", sld_body = "<sld>...</sld>")
+#'   # Used in map_metric() function, see full example in map_metric() documentation
 #' }
-#'
-#' @importFrom leaflet addWMSTiles WMSTileOptions
 #'
 #' @export
 map_wms_metric <-function(map, wms_params = params_wms()$metric,
@@ -205,8 +243,7 @@ map_wms_metric <-function(map, wms_params = params_wms()$metric,
 #'
 #' @examples
 #' \dontrun{
-#'   # Example usage:
-#'   updated_map <- map_axis(map = existing_map, data_axis = some_axis_data)
+#'   # Used in map_metric() function, see full example in map_metric() documentation
 #' }
 #'
 #' @importFrom leaflet addPolylines
@@ -241,13 +278,62 @@ map_axis <- function(map, data_axis) {
 #' @return A leaflet map object with the metric layer added.
 #'
 #' @examples
-#' # Create a leaflet map
-#' my_map <- leaflet() %>%
-#'   addTiles() %>%
-#'   setView(lng = 0, lat = 0, zoom = 3)
+#' library(leaflet)
+#' library(dplyr)
+#' library(sf)
+#' # Create init bassin map
+#' map_bassin <- map_init_bassins(bassins_data = bassin_hydrographique)
 #'
-#' # Add a custom metric layer to the map
-#' map_metric(my_map, wms_params = params_wms()$metric, cql_filter = "value > 100", sld_body = my_custom_sld, data_axis = my_axis_data)
+#' # simulate bassin selected
+#' selected_bassin <- bassin_hydrographique
+#'
+#' # get centroid coordinate (in shiny see leaflet mapid_shape_click)
+#' centre <- sf::st_centroid(selected_bassin)
+#' centre_coord <- as.data.frame(st_coordinates(centre)) %>%
+#'   rename("lng" = X,
+#'          "lat" = Y)
+#'
+#' # map region
+#' map_region <- map_add_regions_in_bassin(map = map_bassin,
+#'                                         bassin_click = centre_coord, regions_data = region_hydrographique)
+#'
+#' # simulate selected region
+#' selected_region <- region_hydrographique
+#'
+#' # get centroid coordinate (in shiny see leaflet mapid_shape_click)
+#' centre_region <- sf::st_centroid(selected_bassin)
+#' centre_region_coord <- as.data.frame(st_coordinates(centre_region)) %>%
+#'   rename("lng" = X,
+#'          "lat" = Y)
+#' centre_region_coord$id <- 11
+#'
+#' # map the element in the region clicked
+#' map <- map_region_clicked(map = map_region,
+#'                           region_click = centre_region_coord, selected_region_feature = selected_region)
+#' map
+#'
+#' # build geoserver WMS filter
+#' cql_filter=paste0("gid_region=", selected_region[["gid"]])
+#'
+#' # build geoserver SLD symbology
+#' sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = selected_region[["gid"]],
+#'                                                            selected_metric = "active_channel_width"),
+#'                           colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = selected_region[["gid"]],
+#'                                                                                                      selected_metric = "active_channel_width")),
+#'                           metric = "active_channel_width")
+#'
+#' # Network axis by region
+#' network_region_axis <- network_axis %>%
+#'   filter(gid_region == selected_region[["gid"]])
+#'
+#' # Add metric with quantile symbology
+#' # wms_params = params_wms()$metric_basic with sld_body = NULL for default blue style$
+#' map_metric <- map_metric(map = map,
+#'                          wms_params = params_wms()$metric,
+#'                          cql_filter = cql_filter,
+#'                          sld_body = sld_body,
+#'                          data_axis = network_region_axis)
+#' map_metric
 #'
 #' @importFrom leaflet leaflet
 #' @importFrom leaflet addTiles
@@ -282,13 +368,17 @@ map_metric <- function(map, wms_params = params_wms()$metric,
 #' @importFrom leaflet clearGroup addPolylines highlightOptions pathOptions
 #'
 #' @examples
-#' # Create a basic Leaflet map
+# Create a basic Leaflet map
+#' library(leaflet)
+#' library(dplyr)
+#'
 #' my_map <- leaflet() %>%
-#'   setView(lng = -73.985, lat = 40.748, zoom = 12)
+#'   setView(lng = 4.968697, lat = 45.103354, zoom = 8) %>%
+#'   addProviderTiles(providers$CartoDB.Positron)
 #'
 #' # Define selected and region-specific axes data frames
-#' selected_axes <- data.frame(...)
-#' region_axes <- data.frame(...)
+#' selected_axes <- network_axis %>% filter(fid == 5)
+#' region_axes <- network_axis
 #'
 #' # Add DGO axes to the map
 #' my_map <- map_dgo_axis(my_map, selected_axes, region_axes)
@@ -329,20 +419,24 @@ map_dgo_axis <- function(map, selected_axis, region_axis) {
 #' @return A Leaflet map object with start and end markers added.
 #'
 #' @importFrom leaflet addMarkers clearGroup makeIcon pathOptions
+#' @importFrom dplyr filter
 #'
 #' @examples
+#' library(leaflet)
+#' library(dplyr)
+#'
 #' # Create a simple Leaflet map
 #' my_map <- leaflet() %>%
-#'   setView(lng = -73.985, lat = 40.748, zoom = 12)
+#'   setView(lng = 4.968697, lat = 45.103354, zoom = 8) %>%
+#'   addProviderTiles(providers$CartoDB.Positron)
 #'
 #' # Create a data frame with start and end coordinates
-#' coordinates_df <- data.frame(
-#'   X = c(-73.985, -73.995),
-#'   Y = c(40.748, 40.755)
-#' )
+#' coordinates_df <- data_get_axis_start_end(network_axis %>%
+#'                                             filter(fid == 5))
 #'
 #' # Add start and end markers to the map
-#' my_map <- map_axis_start_end(my_map, coordinates_df)
+#' my_map <- map_axis_start_end(my_map, axis_start_end = coordinates_df,
+#'                              region_axis = network_axis)
 #' my_map
 #'
 #' @export
@@ -391,8 +485,7 @@ map_axis_start_end <- function(map, axis_start_end = axis_start_end(),
 #'
 #' @examples
 #' \dontrun{
-#'   # Example usage:
-#'   updated_map <- map_add_basemaps(map = existing_map)
+#'   # Used in map_init_bassins() function, its use is in the function
 #' }
 #'
 #' @importFrom leaflet addWMSTiles
@@ -430,8 +523,7 @@ map_add_basemaps <- function(map) {
 #'
 #' @examples
 #' \dontrun{
-#'   # Example usage:
-#'   updated_map <- map_add_wms_overlayers(map = existing_map)
+#'   # Used in map_region_clicked() function, its use is in the function
 #' }
 #'
 #' @importFrom leaflet addWMSTiles hideGroup
@@ -466,16 +558,19 @@ map_add_wms_overlayers <- function(map) {
 #'
 #' @return An HTML img tag representing the legend for the specified map layer.
 #'
+#' @importFrom httr modify_url
+#' @importFrom htmltools tags
+#'
 #' @examples
-#' # Define an SLD body for a map layer
-#' sld_body <- '<StyledLayerDescriptor>...</StyledLayerDescriptor>'
+# Define an SLD body for a map layer
+#' sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = 11,
+#'                                                            selected_metric = "active_channel_width"),
+#'                           colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = 11,
+#'                                                                                                      selected_metric = "active_channel_width")),
+#'                           metric = "active_channel_width")
 #'
 #' # Generate and display the legend for the map layer
 #' legend <- map_legend_metric(sld_body)
-#' print(legend)
-#'
-#' @importFrom httr modify_url
-#' @importFrom htmltools tags
 #'
 #' @export
 map_legend_metric <- function(sld_body){
@@ -517,27 +612,17 @@ map_legend_metric <- function(sld_body){
 #'
 #' @return An HTML div element containing an img tag representing the legend for the specified WMS layer overlay.
 #'
+#' @importFrom httr modify_url
+#' @importFrom htmltools div
+#' @importFrom htmltools img
+#'
 #' @examples
-#' # Define WMS parameters for a layer overlay
-#' wms_params <- list(
-#'   language = "en",
-#'   version = "1.3.0",
-#'   service = "WMS",
-#'   request = "GetLegendGraphic",
-#'   sld_version = "1.1.0",
-#'   layer = "overlay_layer",
-#'   format = "image/png",
-#'   style = "default",
-#'   url = "http://wms.example.com/wms"
-#' )
+#' # Define WMS parameters for a layer overlay like
+#' wms_params <- params_wms()$inondation
 #'
 #' # Generate and display the legend for the WMS layer overlay
 #' legend <- map_legend_wms_overlayer(wms_params)
 #' print(legend)
-#'
-#' @importFrom httr modify_url
-#' @importFrom htmltools div
-#' @importFrom htmltools img
 #'
 #' @export
 map_legend_wms_overlayer <- function(wms_params){
@@ -580,7 +665,7 @@ map_legend_wms_overlayer <- function(wms_params){
 #'
 #' @examples
 #' # Create a legend entry for a vector overlay layer
-#' legend_entry <- map_legend_vector_overlayer("Vector Layer A")
+#' legend_entry <- map_legend_vector_overlayer(layer_label = "ROE")
 #' print(legend_entry)
 #'
 #' @importFrom htmltools div

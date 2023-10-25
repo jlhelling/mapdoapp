@@ -16,9 +16,7 @@ A Leaflet map object with basemaps, scale and layer control.
 This function initializes a Leaflet map with bassins data and various map layers.
 }
 \examples{
-\dontrun{
-  # Example usage:
-  map <- map_init_bassins(bassins_data = some_bassins_data)
-}
+map <- map_init_bassins(bassins_data = bassin_hydrographique)
+map
 
 }

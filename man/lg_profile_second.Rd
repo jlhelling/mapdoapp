@@ -38,6 +38,8 @@ function from the 'plotly' package. It allows you to visualize two different
 metrics along the selected axis.
 }
 \examples{
+selected_axis_df <- as.data.frame(network_dgo)
+
 dual_axis_plot <- lg_profile_second(data = selected_axis_df,
                                    y = "active_channel_width",
                                    y_label = "Chenal actif",
@@ -45,5 +47,6 @@ dual_axis_plot <- lg_profile_second(data = selected_axis_df,
                                    y2 = "talweg_elevation_min",
                                    y2_label = "Chenal actif",
                                    y2_label_category = "Pentes")
+dual_axis_plot
 
 }
