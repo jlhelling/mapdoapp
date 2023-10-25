@@ -19,9 +19,10 @@ A character vector of colors generated based on quantile breaks.
 This function generates a color palette based on quantile breaks for data mapping.
 }
 \examples{
-\dontrun{
-  # Example usage:
-  quantile_colors <- sld_get_quantile_colors(quantile_breaks = c(0.1, 0.3, 0.5, 0.7, 0.9))
-}
+# get quantiles from active_channel_width metric
+quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11, selected_metric = "active_channel_width")
+# get color from quantile
+quantile_colors <- sld_get_quantile_colors(quantile_breaks = quantile_metrics)
+quantile_colors
 
 }
