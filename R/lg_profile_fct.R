@@ -37,6 +37,7 @@ lg_profile_empty <- function() {
 #' @return A list object representing a vertical dashed line annotation.
 #'
 #' @examples
+#' # see lg_profile_main() function to use it in a plotly graph
 #' # Create a vertical dashed line annotation at x = 10 with a red color
 #' vertical_line_annotation <- lg_vertical_line(x = 10, color = "red")
 #'

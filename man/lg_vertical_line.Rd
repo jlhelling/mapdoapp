@@ -19,6 +19,7 @@ This function generates a vertical dashed line annotation for longitudinal profi
 plots using the 'plotly' package.
 }
 \examples{
+# see lg_profile_main() function to use it in a plotly graph
 # Create a vertical dashed line annotation at x = 10 with a red color
 vertical_line_annotation <- lg_vertical_line(x = 10, color = "red")
 
