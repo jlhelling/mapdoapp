@@ -9,7 +9,7 @@ map_metric(
   wms_params = params_wms()$metric,
   cql_filter = "",
   sld_body = "",
-  data_axis = network_region_axis()
+  data_axis
 )
 }
 \arguments{
@@ -47,7 +47,8 @@ centre_coord <- as.data.frame(st_coordinates(centre)) \%>\%
 
 # map region
 map_region <- map_add_regions_in_bassin(map = map_bassin,
-                                        bassin_click = centre_coord, regions_data = region_hydrographique)
+                                        bassin_click = centre_coord,
+                                        regions_data = region_hydrographique)
 
 # simulate selected region
 selected_region <- region_hydrographique
@@ -61,17 +62,21 @@ centre_region_coord$id <- 11
 
 # map the element in the region clicked
 map <- map_region_clicked(map = map_region,
-                          region_click = centre_region_coord, selected_region_feature = selected_region)
+                          region_click = centre_region_coord,
+                          selected_region_feature = selected_region)
 map
 
 # build geoserver WMS filter
 cql_filter=paste0("gid_region=", selected_region[["gid"]])
 
 # build geoserver SLD symbology
-sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = selected_region[["gid"]],
-                                                           selected_metric = "active_channel_width"),
-                          colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = selected_region[["gid"]],
-                                                                                                     selected_metric = "active_channel_width")),
+sld_body <- sld_get_style(breaks = sld_get_quantile_metric(
+                                    selected_region_id = selected_region[["gid"]],
+                                    selected_metric = "active_channel_width"),
+                          colors = sld_get_quantile_colors(
+                                    quantile_breaks = sld_get_quantile_metric(
+                                       selected_region_id = selected_region[["gid"]],
+                                       selected_metric = "active_channel_width")),
                           metric = "active_channel_width")
 
 # Network axis by region

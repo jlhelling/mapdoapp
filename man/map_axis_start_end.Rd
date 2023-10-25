@@ -4,11 +4,7 @@
 \alias{map_axis_start_end}
 \title{Add start and end markers to a leaflet map}
 \usage{
-map_axis_start_end(
-  map,
-  axis_start_end = axis_start_end(),
-  region_axis = network_region_axis()
-)
+map_axis_start_end(map, axis_start_end, region_axis)
 }
 \arguments{
 \item{map}{A Leaflet map object created using the 'leaflet' package.}

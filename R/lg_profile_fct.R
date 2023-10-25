@@ -68,6 +68,7 @@ lg_vertical_line <- function(x = 0, color = "green") {
 #' @return A longitudinal profile plot with the specified metric.
 #'
 #' @importFrom plotly plot_ly layout
+#' @importFrom stats as.formula
 #'
 #' @examples
 #' # Create a longitudinal profile plot for active channel width
@@ -114,6 +115,7 @@ lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
 #' @return A dual-axis longitudinal profile plot with the specified metrics.
 #'
 #' @importFrom plotly plot_ly layout add_trace
+#' @importFrom stats as.formula
 #'
 #' @examples
 #' selected_axis_df <- as.data.frame(network_dgo)

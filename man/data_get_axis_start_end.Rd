@@ -4,7 +4,7 @@
 \alias{data_get_axis_start_end}
 \title{Get the start and end coordinates of a spatial object's axis}
 \usage{
-data_get_axis_start_end(dgo_axis = dgo_axis())
+data_get_axis_start_end(dgo_axis)
 }
 \arguments{
 \item{dgo_axis}{A spatial sf object with a LINESTRING geometry representing an axis.}

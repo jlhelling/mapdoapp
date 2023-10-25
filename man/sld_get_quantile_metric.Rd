@@ -4,10 +4,7 @@
 \alias{sld_get_quantile_metric}
 \title{Get Quantile Metrics for a Selected Region}
 \usage{
-sld_get_quantile_metric(
-  selected_region_id = region_click_id(),
-  selected_metric = selected_metric()
-)
+sld_get_quantile_metric(selected_region_id, selected_metric)
 }
 \arguments{
 \item{selected_region_id}{The ID of the selected region.}
@@ -22,7 +19,8 @@ This function calculates quantile metrics (Q1, Q2, Q3, Q4, Q5) for a selected me
 }
 \examples{
 # get quantiles from active_channel_width metric
-quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11, selected_metric = "active_channel_width")
+quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11,
+                                            selected_metric = "active_channel_width")
 quantile_metrics
 
 }

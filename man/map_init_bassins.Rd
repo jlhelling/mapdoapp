@@ -4,7 +4,7 @@
 \alias{map_init_bassins}
 \title{Initialize a Leaflet Map with hydrological Bassins}
 \usage{
-map_init_bassins(bassins_data = get_bassins())
+map_init_bassins(bassins_data)
 }
 \arguments{
 \item{bassins_data}{A hydrological bassins sf data frame.}

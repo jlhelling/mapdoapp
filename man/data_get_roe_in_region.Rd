@@ -4,7 +4,7 @@
 \alias{data_get_roe_in_region}
 \title{Get Referentiel des Obstacles aux Ecoulement Data for a Region}
 \usage{
-data_get_roe_in_region(selected_region_id = region_click$id)
+data_get_roe_in_region(selected_region_id)
 }
 \arguments{
 \item{selected_region_id}{The ID of the selected region.}
@@ -16,9 +16,6 @@ A sf data frame containing information about ROE within the specified region.
 This function retrieves data about Referentiel des Obstacles aux Ecoulement (ROE) within a specified region based on its ID.
 }
 \examples{
-\dontrun{
-  # Example usage:
-  roe_data <- data_get_roe_in_region(selected_region_id = 1)
-}
+roe_data <- data_get_roe_in_region(selected_region_id = 11)
 
 }

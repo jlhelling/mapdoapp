@@ -18,6 +18,9 @@
 ## install.package('attachment') # if needed.
 attachment::att_amend_desc()
 
+# run application in dev mode with golem
+golem::run_dev()
+
 # load packages app
 pkgload::load_all()
 # run application

@@ -41,7 +41,8 @@ centre_coord <- as.data.frame(st_coordinates(centre)) \%>\%
 
 # map region
 map_region <- map_add_regions_in_bassin(map = map_bassin,
-                                        bassin_click = centre_coord, regions_data = region_hydrographique)
+                                        bassin_click = centre_coord,
+                                        regions_data = region_hydrographique)
 # simulate selected region
 selected_region <- region_hydrographique
 
@@ -54,7 +55,8 @@ centre_region_coord$id <- 11
 
 # map the element in the region clicked
 map <- map_region_clicked(map = map_region,
-                          region_click = centre_region_coord, selected_region_feature = selected_region)
+                          region_click = centre_region_coord,
+                          selected_region_feature = selected_region)
 map
 
 }

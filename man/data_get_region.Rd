@@ -4,7 +4,7 @@
 \alias{data_get_region}
 \title{Get hydrological region selected by user}
 \usage{
-data_get_region(region_click_id = click_value()$id)
+data_get_region(region_click_id)
 }
 \arguments{
 \item{region_click_id}{The ID of the selected region.}
@@ -16,9 +16,6 @@ A sf data frame containing hydrographical data for the specified region.
 This function retrieves hydrographical data for a specified region based on its ID.
 }
 \examples{
-\dontrun{
-  # Example usage:
-  data <- data_get_region(region_click_id = 'some_region_id')
-}
+data <- data_get_region(region_click_id = 11)
 
 }

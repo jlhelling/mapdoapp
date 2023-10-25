@@ -5,10 +5,7 @@
 #' @return A sf data frame containing information about hydrographic basins.
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   data <- data_get_bassins()
-#' }
+#' data <- data_get_bassins()
 #'
 #' @importFrom sf st_read
 #'
@@ -29,15 +26,12 @@ data_get_bassins <- function() {
 #' @return A df data frame containing regions within the specified hydrographic basin.
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   data <- data_get_regions_in_bassin(selected_bassin_id = 'cdbh_id')
-#' }
+#' data <- data_get_regions_in_bassin(selected_bassin_id = "06")
 #'
 #' @importFrom sf st_read
 #'
 #' @export
-data_get_regions_in_bassin <- function(selected_bassin_id = bassin_click$id) {
+data_get_regions_in_bassin <- function(selected_bassin_id) {
   query <-
     sprintf("SELECT * FROM region_hydrographique WHERE cdbh LIKE '%s'",
             selected_bassin_id)
@@ -55,15 +49,12 @@ data_get_regions_in_bassin <- function(selected_bassin_id = bassin_click$id) {
 #' @return A sf data frame containing hydrographical data for the specified region.
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   data <- data_get_region(region_click_id = 'some_region_id')
-#' }
+#' data <- data_get_region(region_click_id = 11)
 #'
 #' @importFrom sf st_read
 #'
 #' @export
-data_get_region <- function(region_click_id = click_value()$id) {
+data_get_region <- function(region_click_id) {
   query <- sprintf("SELECT * FROM region_hydrographique
                    WHERE gid = '%s'", region_click_id)
   data <- sf::st_read(dsn = db_con(), query = query)
@@ -80,16 +71,13 @@ data_get_region <- function(region_click_id = click_value()$id) {
 #' @return A data frame containing two columns: 'min' and 'max', representing the minimum and maximum Strahler values for the specified region.
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   data <- data_get_min_max_strahler(selected_region_id = 1)
-#' }
+#' data <- data_get_min_max_strahler(selected_region_id = 11)
 #'
 #' @importFrom glue glue
 #' @importFrom DBI dbGetQuery
 #'
 #' @export
-data_get_min_max_strahler <- function(selected_region_id = region_click_id()) {
+data_get_min_max_strahler <- function(selected_region_id) {
   query <- glue::glue("
       SELECT
         MIN(strahler) AS min,
@@ -113,16 +101,13 @@ data_get_min_max_strahler <- function(selected_region_id = region_click_id()) {
 #' @return A data frame containing two columns: 'min' and 'max', representing the minimum and maximum values of the selected metric for the specified region.
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   data <- data_get_min_max_metric(selected_region_id = 1, selected_metric = "some_metric")
-#' }
+#' data <- data_get_min_max_metric(selected_region_id = 11, selected_metric = "active_channel_width")
 #'
 #' @importFrom glue glue
 #' @importFrom DBI dbGetQuery
 #'
 #' @export
-data_get_min_max_metric <- function(selected_region_id = region_click_id(), selected_metric = selected_metric()) {
+data_get_min_max_metric <- function(selected_region_id, selected_metric) {
   query <- glue::glue("
       SELECT
         ROUND(MIN({selected_metric})::numeric, 1) AS min,
@@ -144,16 +129,13 @@ data_get_min_max_metric <- function(selected_region_id = region_click_id(), sele
 #' @return A sf data frame containing information about ROE within the specified region.
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   roe_data <- data_get_roe_in_region(selected_region_id = 1)
-#' }
+#' roe_data <- data_get_roe_in_region(selected_region_id = 11)
 #'
 #' @importFrom glue glue
 #' @importFrom sf st_read
 #'
 #' @export
-data_get_roe_in_region <- function(selected_region_id = region_click$id) {
+data_get_roe_in_region <- function(selected_region_id) {
   query <- glue::glue("
       SELECT
       roe.gid, nomprincip, lbtypeouvr, lbhautchut, gid_region, roe.geom
@@ -175,16 +157,13 @@ data_get_roe_in_region <- function(selected_region_id = region_click$id) {
 #' @return A sf data frame containing information about the network axis within the specified region.
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   axis_data <- data_get_axis(selected_region_id = 1)
-#' }
+#' axis_data <- data_get_axis(selected_region_id = 11)
 #'
 #' @importFrom glue glue
 #' @importFrom sf st_read
 #'
 #' @export
-data_get_axis <- function(selected_region_id = region_click$id) {
+data_get_axis <- function(selected_region_id) {
   query <- glue::glue("
       SELECT
       network_axis.fid, axis, gid_region, network_axis.geom
@@ -205,17 +184,14 @@ data_get_axis <- function(selected_region_id = region_click$id) {
 #' @return A sf data frame containing information about network metrics for the specified network axis.
 #'
 #' @examples
-#' \dontrun{
-#'   # Example usage:
-#'   network_metrics_data <- data_get_network_axis(selected_axis_id = 11)
-#' }
+#' network_metrics_data <- data_get_network_axis(selected_axis_id = 11)
 #'
 #' @importFrom glue glue
 #' @importFrom sf st_read
 #' @importFrom dplyr arrange
 #'
 #' @export
-data_get_network_axis <- function(selected_axis_id = click_value()$id) {
+data_get_network_axis <- function(selected_axis_id) {
 
   query <- glue::glue("
       SELECT
@@ -259,7 +235,7 @@ data_get_network_axis <- function(selected_axis_id = click_value()$id) {
 #' df <- data_get_axis_start_end(line_sf)
 #'
 #' @export
-data_get_axis_start_end <- function(dgo_axis = dgo_axis()) {
+data_get_axis_start_end <- function(dgo_axis) {
 
   # Extract the start and end points of the axis
   axis_point_start <- st_coordinates(head(st_cast(tail(dgo_axis, n = 1), "POINT")$geom, n = 1))

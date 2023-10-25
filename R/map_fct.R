@@ -15,7 +15,7 @@
 #' @importFrom htmltools htmlEscape
 #'
 #' @export
-map_init_bassins <- function(bassins_data = get_bassins()) {
+map_init_bassins <- function(bassins_data) {
 
 
   # Build the legend URL
@@ -138,7 +138,8 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
 #'
 #' # map region
 #' map_region <- map_add_regions_in_bassin(map = map_bassin,
-#'                                         bassin_click = centre_coord, regions_data = region_hydrographique)
+#'                                         bassin_click = centre_coord,
+#'                                         regions_data = region_hydrographique)
 #' # simulate selected region
 #' selected_region <- region_hydrographique
 #'
@@ -151,7 +152,8 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
 #'
 #' # map the element in the region clicked
 #' map <- map_region_clicked(map = map_region,
-#'                           region_click = centre_region_coord, selected_region_feature = selected_region)
+#'                           region_click = centre_region_coord,
+#'                           selected_region_feature = selected_region)
 #' map
 #'
 #' @export
@@ -295,7 +297,8 @@ map_axis <- function(map, data_axis) {
 #'
 #' # map region
 #' map_region <- map_add_regions_in_bassin(map = map_bassin,
-#'                                         bassin_click = centre_coord, regions_data = region_hydrographique)
+#'                                         bassin_click = centre_coord,
+#'                                         regions_data = region_hydrographique)
 #'
 #' # simulate selected region
 #' selected_region <- region_hydrographique
@@ -309,17 +312,21 @@ map_axis <- function(map, data_axis) {
 #'
 #' # map the element in the region clicked
 #' map <- map_region_clicked(map = map_region,
-#'                           region_click = centre_region_coord, selected_region_feature = selected_region)
+#'                           region_click = centre_region_coord,
+#'                           selected_region_feature = selected_region)
 #' map
 #'
 #' # build geoserver WMS filter
 #' cql_filter=paste0("gid_region=", selected_region[["gid"]])
 #'
 #' # build geoserver SLD symbology
-#' sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = selected_region[["gid"]],
-#'                                                            selected_metric = "active_channel_width"),
-#'                           colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = selected_region[["gid"]],
-#'                                                                                                      selected_metric = "active_channel_width")),
+#' sld_body <- sld_get_style(breaks = sld_get_quantile_metric(
+#'                                     selected_region_id = selected_region[["gid"]],
+#'                                     selected_metric = "active_channel_width"),
+#'                           colors = sld_get_quantile_colors(
+#'                                     quantile_breaks = sld_get_quantile_metric(
+#'                                        selected_region_id = selected_region[["gid"]],
+#'                                        selected_metric = "active_channel_width")),
 #'                           metric = "active_channel_width")
 #'
 #' # Network axis by region
@@ -343,8 +350,7 @@ map_axis <- function(map, data_axis) {
 #'
 #' @export
 map_metric <- function(map, wms_params = params_wms()$metric,
-                       cql_filter = "", sld_body = "",
-                       data_axis = network_region_axis()) {
+                       cql_filter = "", sld_body = "", data_axis) {
   map %>%
     clearGroup(params_map_group()[["axis"]]) %>%
     clearGroup(params_map_group()[["metric"]]) %>%
@@ -440,8 +446,7 @@ map_dgo_axis <- function(map, selected_axis, region_axis) {
 #' my_map
 #'
 #' @export
-map_axis_start_end <- function(map, axis_start_end = axis_start_end(),
-                               region_axis = network_region_axis()) {
+map_axis_start_end <- function(map, axis_start_end, region_axis) {
 
   # Define the start and end icon
   start_end_icon <- makeIcon(
@@ -563,10 +568,13 @@ map_add_wms_overlayers <- function(map) {
 #'
 #' @examples
 # Define an SLD body for a map layer
-#' sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = 11,
-#'                                                            selected_metric = "active_channel_width"),
-#'                           colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = 11,
-#'                                                                                                      selected_metric = "active_channel_width")),
+#' sld_body <- sld_get_style(breaks = sld_get_quantile_metric(
+#'                                      selected_region_id = 11,
+#'                                      selected_metric = "active_channel_width"),
+#'                           colors = sld_get_quantile_colors(
+#'                                      quantile_breaks = sld_get_quantile_metric(
+#'                                                          selected_region_id = 11,
+#'                                                          selected_metric = "active_channel_width")),
 #'                           metric = "active_channel_width")
 #'
 #' # Generate and display the legend for the map layer

@@ -4,10 +4,7 @@
 \alias{sld_get_quantile_colors}
 \title{Get Quantile Colors}
 \usage{
-sld_get_quantile_colors(
-  quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click_id(),
-    selected_metric = selected_metric())
-)
+sld_get_quantile_colors(quantile_breaks)
 }
 \arguments{
 \item{quantile_breaks}{A numeric vector containing quantile breaks.}
@@ -20,7 +17,8 @@ This function generates a color palette based on quantile breaks for data mappin
 }
 \examples{
 # get quantiles from active_channel_width metric
-quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11, selected_metric = "active_channel_width")
+quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11,
+                                            selected_metric = "active_channel_width")
 # get color from quantile
 quantile_colors <- sld_get_quantile_colors(quantile_breaks = quantile_metrics)
 quantile_colors
