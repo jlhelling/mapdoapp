@@ -103,6 +103,27 @@ mod_explore_server <- function(id){
     #   )
     # })
 
+    ### R_VAL ####
+    r_val <- reactiveValues(
+      regions_in_bassin = NULL, # all the regions in selected bassin
+      network_region_axis = NULL, # all the axis in the selected region
+      selected_region_feature = NULL,
+      region_click = NULL,
+      axis_click = NULL,
+      dgo_axis = NULL, # all selected axis DGO
+      axis_start_end = NULL, # start / end df coordinates to add pin on map
+      # metric selected by user
+      selected_metric = NULL,
+      selected_metric_name = NULL,
+      select_metric_category = NULL,
+      # profile metric selected by user
+      selected_profile_metric = NULL,
+      selected_profile_metric_name = NULL,
+      select_profile_metric_category = NULL,
+      strahler = NULL,
+      strahler_slider = NULL
+    )
+
     ### BASSIN INIT MAP ####
 
     # map initialization
@@ -185,17 +206,7 @@ mod_explore_server <- function(id){
     # UI strahler filter
     output$strahlerfilterUI <- renderUI(
       {
-        req(r_val$region_click)
-        # query data from database
-        strahler <- isolate(data_get_min_max_strahler(selected_region_id = r_val$region_click$id))
-
-        sliderInput(ns("strahler"),
-                    label="Ordre de strahler",
-                    min=strahler[["min"]],
-                    max=strahler[["max"]],
-                    value=c(strahler[["min"]],
-                            strahler[["max"]]),
-                    step=1)
+        r_val$strahler_slider
       })
 
     # UI dynamic filter on metric selected
@@ -215,29 +226,10 @@ mod_explore_server <- function(id){
       )
     })
 
-    ### R_VAL ####
-    r_val <- reactiveValues(
-      regions_in_bassin = NULL, # all the regions in selected bassin
-      network_region_axis = NULL, # all the axis in the selected region
-      selected_region_feature = NULL,
-      region_click = NULL,
-      axis_click = NULL,
-      dgo_axis = NULL, # all selected axis DGO
-      axis_start_end = NULL, # start / end df coordinates to add pin on map
-      # metric selected by user
-      selected_metric = NULL,
-      selected_metric_name = NULL,
-      select_metric_category = NULL,
-      # profile metric selected by user
-      selected_profile_metric = NULL,
-      selected_profile_metric_name = NULL,
-      select_profile_metric_category = NULL
-    )
+    ### EVENT MAP CLICK ####
 
-    ### EVENT ON MAP CLICK ####
-    # get data on map click
     observeEvent(input$exploremap_shape_click,{
-      # bassin clicked
+      #### bassin clicked ####
       if (input$exploremap_shape_click$group == params_map_group()[["bassin"]]){
         # get the regions data in selected bassin
         r_val$regions_in_bassin = data_get_regions_in_bassin(selected_bassin_id = input$exploremap_shape_click$id)
@@ -246,7 +238,7 @@ mod_explore_server <- function(id){
           map_add_regions_in_bassin(bassin_click = input$exploremap_shape_click,
                                     regions_data = r_val$regions_in_bassin)
       }
-      # region clicked
+      ### region clicked ####
       if (input$exploremap_shape_click$group == params_map_group()$region){
         # store the region click values
         r_val$region_click = input$exploremap_shape_click
@@ -254,13 +246,29 @@ mod_explore_server <- function(id){
         r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id)
         # get the axis in the region
         r_val$network_region_axis = data_get_axis(selected_region_id = input$exploremap_shape_click$id)
+        # get strahler data
+        r_val$strahler = isolate(data_get_min_max_strahler(selected_region_id = r_val$region_click$id))
+        # build strahler slider
+        r_val$strahler_slider = sliderInput(ns("strahler"),
+                                       label="Ordre de strahler",
+                                       min=r_val$strahler[["min"]],
+                                       max=r_val$strahler[["max"]],
+                                       value=c(r_val$strahler[["min"]],
+                                               r_val$strahler[["max"]]),
+                                       step=1)
+        # build WMS filter
+        cql_filter=paste0("gid_region=", r_val$selected_region_feature[["gid"]],
+                          " AND strahler>=", input$strahler[1],
+                          " AND strahler <= ", input$strahler[2])
+
 
         # map region clicked with region clicked and overlayers
         leafletProxy("exploremap") %>%
           map_region_clicked(region_click = input$exploremap_shape_click,
                              selected_region_feature = r_val$selected_region_feature)
+
       }
-      # axis clicked
+      ### axis clicked ####
       if (input$exploremap_shape_click$group == params_map_group()$axis) {
         # save the clicked axis values
         r_val$axis_click = input$exploremap_shape_click
@@ -280,8 +288,8 @@ mod_explore_server <- function(id){
       }
     })
 
-    ### METRIC EVENT SELECT ####
-    # set metric value and name
+    ### EVENT METRIC SELECT ####
+
     observeEvent(c(input$metric, input$unit_area), ignoreInit = TRUE, {
       # change field if unit_area in percentage
       if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"
@@ -297,8 +305,8 @@ mod_explore_server <- function(id){
 
     })
 
-    ### PROFILE METRIC EVENT SELECT ####
-    # set profile metric value and name
+    ### EVENT PROFILE SELECT ####
+
     observeEvent(c(input$profile_metric, input$profile_unit_area), ignoreInit = TRUE, {
       # change field if unit_area in percentage
       if (!is.null(input$profile_unit_area) && input$profile_unit_area == "% du fond de vallée"
