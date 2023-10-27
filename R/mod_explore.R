@@ -110,26 +110,6 @@ mod_explore_server <- function(id){
       map_init_bassins(bassins_data = data_get_bassins())
     })
 
-
-    ### REGION ####
-
-    # get regions data in clicked bassin
-    region_hydro <- reactive({
-      req(input$exploremap_shape_click$group == params_map_group()[["bassin"]])
-      data_get_regions_in_bassin(selected_bassin_id = input$exploremap_shape_click$id)
-    })
-
-    # Event on click
-    observeEvent(input$exploremap_shape_click, {
-      # map regions or selected bassin
-      if (input$exploremap_shape_click$group == params_map_group()[["bassin"]]){
-        # update map : zoom in clicked bassin, clear bassin data, display region in bassin
-        leafletProxy("exploremap") %>%
-          map_add_regions_in_bassin(bassin_click = input$exploremap_shape_click,
-                                    regions_data = region_hydro())
-      }
-    })
-
     ### DYNAMIC PROFILE UI ####
 
     # add input UI for profile additional metric
@@ -238,6 +218,7 @@ mod_explore_server <- function(id){
     ### DATA ####
 
     r_val <- reactiveValues(
+      regions_in_bassin = NULL, # all the regions in selected bassin
       network_region_axis = NULL, # all the axis in the selected region
       selected_region_feature = NULL,
       region_click = NULL,
@@ -256,6 +237,15 @@ mod_explore_server <- function(id){
 
     # get data on map click
     observeEvent(input$exploremap_shape_click,{
+      # A bassin is clicked
+      if (input$exploremap_shape_click$group == params_map_group()[["bassin"]]){
+        # get the regions data in selected bassin
+        r_val$regions_in_bassin = data_get_regions_in_bassin(selected_bassin_id = input$exploremap_shape_click$id)
+        # update map : zoom in clicked bassin, clear bassin data, display region in bassin
+        leafletProxy("exploremap") %>%
+          map_add_regions_in_bassin(bassin_click = input$exploremap_shape_click,
+                                    regions_data = r_val$regions_in_bassin)
+      }
       # when region clicked get data axis in region
       if (input$exploremap_shape_click$group == params_map_group()$region){
         # store the region click values
@@ -264,6 +254,11 @@ mod_explore_server <- function(id){
         r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id)
         # get the axis in the region
         r_val$network_region_axis = data_get_axis(selected_region_id = input$exploremap_shape_click$id)
+
+        # map region clicked with region clicked and overlayers
+        leafletProxy("exploremap") %>%
+          map_region_clicked(region_click = input$exploremap_shape_click,
+                             selected_region_feature = r_val$selected_region_feature)
       }
       # when axis clicked get axis region without the axis selected
       if (input$exploremap_shape_click$group == params_map_group()$axis) {
@@ -314,17 +309,6 @@ mod_explore_server <- function(id){
     })
 
     ### MAP ####
-
-    # MAP region selected
-    observeEvent(input$exploremap_shape_click, {
-      if (input$exploremap_shape_click$group == params_map_group()$region){
-
-        # map region clicked with region clicked and overlayers
-        leafletProxy("exploremap") %>%
-          map_region_clicked(region_click = input$exploremap_shape_click,
-                             selected_region_feature = r_val$selected_region_feature)
-      }
-    })
 
     # reactive list to activate map update
     map_update <- reactive({
