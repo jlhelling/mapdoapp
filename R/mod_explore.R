@@ -128,7 +128,8 @@ mod_explore_server <- function(id){
       min_max_metric = NULL,
       ui_metric_filter = NULL,
       ui_profile_metric_type = NULL,
-      ui_profile_metric = NULL
+      ui_profile_metric = NULL,
+      ui_profile_unit_area = NULL
     )
 
     ### BASSIN INIT MAP ####
@@ -152,11 +153,7 @@ mod_explore_server <- function(id){
 
     # UI switch unit area for profile additional metric
     output$profileareaUI <- renderUI({
-      req(input$profile_metric_type == "Occupation du sol" || input$profile_metric_type == "Continuité latérale")
-
-      selectInput(ns("profile_unit_area"), "Surfaces :",
-                  choices = c("Hectares", "% du fond de vallée"),
-                  selected = "Hectares")
+      r_val$ui_profile_unit_area
     })
 
     ### DYNAMIC METRIC UI ####
@@ -336,6 +333,18 @@ mod_explore_server <- function(id){
         selected = character(0)
       )
 
+      # build profile unit area select
+      if (input$profile_metric_type == "Occupation du sol" ||
+          input$profile_metric_type == "Continuité latérale") {
+        r_val$ui_profile_unit_area = selectInput(
+          ns("profile_unit_area"),
+          "Surfaces :",
+          choices = c("Hectares", "% du fond de vallée"),
+          selected = "Hectares"
+        )
+      } else{
+        r_val$ui_profile_unit_area = NULL
+      }
     })
 
 
@@ -353,6 +362,8 @@ mod_explore_server <- function(id){
         r_val$selected_profile_metric_name = utile_get_metric_name(selected_metric = input$profile_metric)
         r_val$select_profile_metric_category = utile_get_category_name(selected_metric = input$profile_metric)
       }
+
+
     })
 
     ### MAP ####
