@@ -126,7 +126,9 @@ mod_explore_server <- function(id){
       ui_metric = NULL,
       ui_unit_area = NULL,
       min_max_metric = NULL,
-      ui_metric_filter = NULL
+      ui_metric_filter = NULL,
+      ui_profile_metric_type = NULL,
+      ui_profile_metric = NULL
     )
 
     ### BASSIN INIT MAP ####
@@ -140,23 +142,12 @@ mod_explore_server <- function(id){
 
     # add input UI for profile additional metric
     output$profilemetricUI <- renderUI({
-
-      req(r_val$axis_click, r_val$selected_metric)
-      selectInput(ns("profile_metric_type"), "Ajoutez une métrique :",
-                  choices = names(params_metrics_choice()),
-                  selected  = names(params_metrics_choice())[1])
+      r_val$ui_profile_metric_type
     })
 
     # add radiobutton for profile additional metric
     output$profileradiobuttonUI <- renderUI({
-
-      req(input$profile_metric_type)
-      metric_type <- input$profile_metric_type
-
-      radioButtons(ns("profile_metric"), sprintf("%s :", metric_type),
-                   choiceNames = as.list(unname(params_metrics_choice()[[metric_type]])),
-                   choiceValues = names(params_metrics_choice()[[metric_type]]),
-                   selected = character(0))
+      r_val$ui_profile_metric
     })
 
     # UI switch unit area for profile additional metric
@@ -271,6 +262,7 @@ mod_explore_server <- function(id){
     })
 
     ### EVENT METRIC TYPE SELECT ####
+
     observeEvent(input$metric_type, {
       # build metric radioButtons
       r_val$ui_metric = radioButtons(ns("metric"), sprintf("%s :", input$metric_type),
@@ -319,7 +311,35 @@ mod_explore_server <- function(id){
 
     })
 
-    ### EVENT PROFILE SELECT ####
+    ### EVENT METRIC & AXIS ####
+
+    observeEvent(c(input$metric, input$exploremap_shape_click), {
+      if (is.null(input$metric)==FALSE && input$exploremap_shape_click$group == params_map_group()$axis){
+
+        # build input for profile metric type
+        r_val$ui_profile_metric_type = selectInput(ns("profile_metric_type"), "Ajoutez une métrique :",
+                                                   choices = names(params_metrics_choice()),
+                                                   selected  = names(params_metrics_choice())[1])
+      }
+    })
+
+    ### EVENT PROFILE METRIC TYPE SELECT ####
+
+    observeEvent(input$profile_metric_type, {
+
+      # build profile metric radio button
+      r_val$ui_profile_metric = radioButtons(
+        ns("profile_metric"),
+        sprintf("%s :", input$profile_metric_type),
+        choiceNames = as.list(unname(params_metrics_choice()[[input$profile_metric_type]])),
+        choiceValues = names(params_metrics_choice()[[input$profile_metric_type]]),
+        selected = character(0)
+      )
+
+    })
+
+
+    ### EVENT PROFILE METRIC SELECT ####
 
     observeEvent(c(input$profile_metric, input$profile_unit_area), ignoreInit = TRUE, {
       # change field if unit_area in percentage
