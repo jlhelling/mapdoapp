@@ -129,7 +129,9 @@ mod_explore_server <- function(id){
       ui_metric_filter = NULL,
       ui_profile_metric_type = NULL,
       ui_profile_metric = NULL,
-      ui_profile_unit_area = NULL
+      ui_profile_unit_area = NULL,
+      cql_filter = NULL, # WMS filter
+      sld_body = NULL # WMS SLD symbology
     )
 
     ### BASSIN INIT MAP ####
@@ -221,10 +223,6 @@ mod_explore_server <- function(id){
                                        value=c(r_val$strahler[["min"]],
                                                r_val$strahler[["max"]]),
                                        step=1)
-        # build WMS filter
-        cql_filter=paste0("gid_region=", r_val$selected_region_feature[["gid"]],
-                          " AND strahler>=", input$strahler[1],
-                          " AND strahler <= ", input$strahler[2])
 
 
         # map region clicked with region clicked and overlayers
@@ -362,62 +360,52 @@ mod_explore_server <- function(id){
         r_val$selected_profile_metric_name = utile_get_metric_name(selected_metric = input$profile_metric)
         r_val$select_profile_metric_category = utile_get_category_name(selected_metric = input$profile_metric)
       }
-
-
     })
 
-    ### MAP ####
+    ### EVENT FILTER ####
 
-    # reactive list to activate map update
-    map_update <- reactive({
-      list(r_val$region_click$id, input$strahler, input$metricfilter)
-    })
+    observeEvent(c(input$strahler, input$metricfilter), {
+      if (is.null(input$metricfilter)){
+        # build WMS cql_filter
+        r_val$cql_filter = paste0("gid_region=", r_val$selected_region_feature[["gid"]],
+                                  " AND strahler>=", input$strahler[1],
+                                  " AND strahler <= ", input$strahler[2])
 
-    # MAP network metric
-    observeEvent(map_update(), {
+        r_val$sld_body = NULL
 
-      if (is.null(input$strahler)) {
-        return (NULL)
-      }
-      # no metric selected
-      if (is.null(r_val$selected_metric)) {
-        # build WMS filter
-        cql_filter=paste0("gid_region=", r_val$selected_region_feature[["gid"]],
-                          " AND strahler>=", input$strahler[1],
-                          " AND strahler <= ", input$strahler[2])
-
-        # update map with basic style
-        leafletProxy("exploremap") %>%
-          map_metric(wms_params = params_wms()$metric_basic, # metric_basic to have blue network
-                        cql_filter = cql_filter, sld_body = NULL,
-                        data_axis = r_val$network_region_axis)
-
-      }
-      # metric selected
-      if (!is.null(r_val$selected_metric)){
+      } else {
+        # build WMS cql_filter
+        r_val$cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]],
+                                  " AND strahler>=",input$strahler[1],
+                                  " AND strahler <= ",input$strahler[2],
+                                  " AND ",r_val$selected_metric,">=",input$metricfilter[1],
+                                  " AND ",r_val$selected_metric,"<=",input$metricfilter[2])
 
         # build SLD symbology
-        sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = r_val$region_click$id, selected_metric = r_val$selected_metric),
-                                  colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = r_val$region_click$id,
-                                                                                                             selected_metric = r_val$selected_metric)),
-                                  metric = r_val$selected_metric)
-
-        # build WMS filter
-        cql_filter=paste0("gid_region=",r_val$selected_region_feature[["gid"]],
-                          " AND strahler>=",input$strahler[1],
-                          " AND strahler <= ",input$strahler[2],
-                          " AND ",r_val$selected_metric,">=",input$metricfilter[1],
-                          " AND ",r_val$selected_metric,"<=",input$metricfilter[2])
-
-        # update map
-        leafletProxy("exploremap") %>%
-          map_metric(wms_params = params_wms()$metric,
-                     cql_filter = cql_filter, sld_body = sld_body,
-                     data_axis = r_val$network_region_axis)
+        r_val$sld_body = sld_get_style(
+          breaks = sld_get_quantile_metric(
+            selected_region_id = r_val$region_click$id,
+            selected_metric = r_val$selected_metric
+          ),
+          colors = sld_get_quantile_colors(
+            quantile_breaks = sld_get_quantile_metric(
+              selected_region_id = r_val$region_click$id,
+              selected_metric = r_val$selected_metric
+            )
+          ),
+          metric = r_val$selected_metric
+        )
 
         # update legend
-        metric_legend(map_legend_metric(sld_body = sld_body))
+        metric_legend(map_legend_metric(sld_body = r_val$sld_body))
       }
+      # update map with basic style
+      leafletProxy("exploremap") %>%
+        map_metric(wms_params = params_wms()$metric, # metric_basic to have blue network
+                   cql_filter = r_val$cql_filter, sld_body = r_val$sld_body,
+                   data_axis = r_val$network_region_axis)
+
+
     })
 
     ### MAP LEGEND ####
