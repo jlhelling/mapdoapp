@@ -237,11 +237,6 @@ mod_explore_server <- function(id){
 
     ### DATA ####
 
-    # store clicked data
-    # click_value <- reactive({
-    #   input$exploremap_shape_click
-    # })
-
     r_val <- reactiveValues(
       network_region_axis = NULL,
       selected_region_feature = NULL,
