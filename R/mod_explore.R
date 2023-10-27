@@ -238,12 +238,12 @@ mod_explore_server <- function(id){
     ### DATA ####
 
     r_val <- reactiveValues(
-      network_region_axis = NULL,
+      network_region_axis = NULL, # all the axis in the selected region
       selected_region_feature = NULL,
       region_click = NULL,
       axis_click = NULL,
-      dgo_axis = NULL,
-      axis_start_end = NULL
+      dgo_axis = NULL, # all selected axis DGO
+      axis_start_end = NULL # start / end df coordinates to add pin on map
     )
 
     # get data on map click
