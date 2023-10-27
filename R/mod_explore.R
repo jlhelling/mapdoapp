@@ -94,7 +94,7 @@ mod_explore_server <- function(id){
     #   tryCatch({
     #     click_value()
     #     print(click_value())
-    #     print(network_region_axis()$fid)
+    #     print(r_val$network_region_axis$fid)
     #     print("exists")
     #   },
     #   shiny.silent.error = function(e) {
@@ -135,7 +135,7 @@ mod_explore_server <- function(id){
     # add input UI for profile additional metric
     output$profilemetricUI <- renderUI({
 
-      req(axis_click(), selected_metric())
+      req(r_val$axis_click, selected_metric())
       selectInput(ns("profile_metric_type"), "Ajoutez une métrique :",
                   choices = names(params_metrics_choice()),
                   selected  = names(params_metrics_choice())[1])
@@ -168,7 +168,7 @@ mod_explore_server <- function(id){
     output$metricUI <- renderUI({
 
       # wait region hydrographic to display metric selection
-      if (!is.null(region_click())){
+      if (!is.null(r_val$region_click)){
       selectInput(ns("metric_type"), "Sélectionez une métrique :",
                   choices = names(params_metrics_choice()),
                   selected  = names(params_metrics_choice())[1])
@@ -205,9 +205,9 @@ mod_explore_server <- function(id){
     # UI strahler filter
     output$strahlerfilterUI <- renderUI(
       {
-        req(region_click())
+        req(r_val$region_click)
         # query data from database
-        strahler <- isolate(data_get_min_max_strahler(selected_region_id = region_click()$id))
+        strahler <- isolate(data_get_min_max_strahler(selected_region_id = r_val$region_click$id))
 
         sliderInput(ns("strahler"),
                     label="Ordre de strahler",
@@ -222,7 +222,7 @@ mod_explore_server <- function(id){
     output$metricsfilterUI <- renderUI({
       req(selected_metric(), selected_metric_name())
 
-      metric <- data_get_min_max_metric(selected_region_id = region_click()$id, selected_metric = selected_metric())
+      metric <- data_get_min_max_metric(selected_region_id = r_val$region_click$id, selected_metric = selected_metric())
 
       sliderInput(ns("metricfilter"),
                   label = selected_metric_name(),
@@ -242,37 +242,38 @@ mod_explore_server <- function(id){
       input$exploremap_shape_click
     })
 
-    # DATA get network axis
-    network_region_axis <- reactiveVal()
-    # get data on map click
-    selected_region_feature <- reactiveVal()
-    region_click <- reactiveVal()
-    axis_click <- reactiveVal()
-    dgo_axis <- reactiveVal()
-    axis_start_end <- reactiveVal()
+    r_val <- reactiveValues(
+      network_region_axis = NULL,
+      selected_region_feature = NULL,
+      region_click = NULL,
+      axis_click = NULL,
+      dgo_axis = NULL,
+      axis_start_end = NULL
+    )
 
+    # get data on map click
     observeEvent(click_value(),{
       # when region clicked get data axis in region
       if (click_value()$group == params_map_group()$region){
         # store the region click values
-        region_click(click_value())
+        r_val$region_click = click_value()
         # save the selected region feature for mapping
-        selected_region_feature(data_get_region(region_click_id = region_click()$id))
+        r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id)
         # get the axis in the region
-        network_region_axis(data_get_axis(selected_region_id = click_value()$id))
+        r_val$network_region_axis = data_get_axis(selected_region_id = click_value()$id)
       }
       # when axis clicked get axis region without the axis selected
       if (click_value()$group == params_map_group()$axis) {
         # save the clicked axis values
-        axis_click(click_value())
+        r_val$axis_click = click_value()
         # reget the axis in the region without the selected axis
-        network_region_axis(data_get_axis(selected_region_id = region_click()$id) %>%
-                              filter(fid != axis_click()$id))
+        r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id) %>%
+          filter(fid != r_val$axis_click$id)
         # get the DGO axis data
-        dgo_axis(data_get_network_axis(selected_axis_id = axis_click()$id) %>%
-          mutate(measure = measure/1000))
+        r_val$dgo_axis = data_get_network_axis(selected_axis_id = r_val$axis_click$id) %>%
+          mutate(measure = measure/1000)
         # extract axis start end point
-        axis_start_end (data_get_axis_start_end(dgo_axis = dgo_axis()))
+        r_val$axis_start_end = data_get_axis_start_end(dgo_axis = r_val$dgo_axis)
       }
     })
 
@@ -333,13 +334,13 @@ mod_explore_server <- function(id){
         # map region clicked with region clicked and overlayers
         leafletProxy("exploremap") %>%
           map_region_clicked(region_click = click_value(),
-                             selected_region_feature = selected_region_feature())
+                             selected_region_feature = r_val$selected_region_feature)
       }
     })
 
     # reactive list to activate map update
     map_update <- reactive({
-      list(region_click()$id, input$strahler, input$metricfilter)
+      list(r_val$region_click$id, input$strahler, input$metricfilter)
     })
 
     # MAP network metric
@@ -351,7 +352,7 @@ mod_explore_server <- function(id){
       # no metric selected
       if (is.null(selected_metric())) {
         # build WMS filter
-        cql_filter=paste0("gid_region=", selected_region_feature()[["gid"]],
+        cql_filter=paste0("gid_region=", r_val$selected_region_feature[["gid"]],
                           " AND strahler>=", input$strahler[1],
                           " AND strahler <= ", input$strahler[2])
 
@@ -359,20 +360,20 @@ mod_explore_server <- function(id){
         leafletProxy("exploremap") %>%
           map_metric(wms_params = params_wms()$metric_basic, # metric_basic to have blue network
                         cql_filter = cql_filter, sld_body = NULL,
-                        data_axis = network_region_axis())
+                        data_axis = r_val$network_region_axis)
 
       }
       # metric selected
       if (!is.null(selected_metric())){
 
         # build SLD symbology
-        sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = region_click()$id, selected_metric = selected_metric()),
-                                  colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = region_click()$id,
+        sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = r_val$region_click$id, selected_metric = selected_metric()),
+                                  colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = r_val$region_click$id,
                                                                                                              selected_metric = selected_metric())),
                                   metric = selected_metric())
 
         # build WMS filter
-        cql_filter=paste0("gid_region=",selected_region_feature()[["gid"]],
+        cql_filter=paste0("gid_region=",r_val$selected_region_feature[["gid"]],
                           " AND strahler>=",input$strahler[1],
                           " AND strahler <= ",input$strahler[2],
                           " AND ",selected_metric(),">=",input$metricfilter[1],
@@ -382,7 +383,7 @@ mod_explore_server <- function(id){
         leafletProxy("exploremap") %>%
           map_metric(wms_params = params_wms()$metric,
                      cql_filter = cql_filter, sld_body = sld_body,
-                     data_axis = network_region_axis())
+                     data_axis = r_val$network_region_axis)
 
         # update legend
         metric_legend(map_legend_metric(sld_body = sld_body))
@@ -391,19 +392,19 @@ mod_explore_server <- function(id){
 
     # map dgo axis when axis clicked and metric selected
     observe({
-      req(network_region_axis())
-      if(!is.null(dgo_axis()) && !is.null(selected_metric())){
+      req(r_val$network_region_axis)
+      if(!is.null(r_val$dgo_axis) && !is.null(selected_metric())){
 
         leafletProxy("exploremap") %>%
-          map_dgo_axis(selected_axis = dgo_axis(), region_axis = network_region_axis())
+          map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis)
       }
     })
 
     # map axis start and end point
-    observeEvent(axis_start_end(), {
-      req(axis_start_end())
+    observeEvent(r_val$axis_start_end, {
+      req(r_val$axis_start_end)
       leafletProxy("exploremap") %>%
-        map_axis_start_end(axis_start_end = axis_start_end(), region_axis = network_region_axis())
+        map_axis_start_end(axis_start_end = r_val$axis_start_end, region_axis = r_val$network_region_axis)
     })
 
 
@@ -446,8 +447,8 @@ mod_explore_server <- function(id){
 
     output$long_profile <- renderPlotly({
 
-      if (!is.null(axis_click()) && !is.null(selected_metric())){
-        selected_axis_df <- dgo_axis() %>%
+      if (!is.null(r_val$axis_click) && !is.null(selected_metric())){
+        selected_axis_df <- r_val$dgo_axis %>%
           as.data.frame()
         # no additional metric
         if (!is.null(selected_metric()) && is.null(selected_profile_metric())){
@@ -479,7 +480,7 @@ mod_explore_server <- function(id){
 
           if (!is.null(hover_data)) {
             hover_fid <- hover_data$key
-            highlighted_feature <- dgo_axis()[dgo_axis()$fid == hover_fid, ]
+            highlighted_feature <- r_val$dgo_axis[r_val$dgo_axis$fid == hover_fid, ]
             leafletProxy("exploremap") %>%
               addPolylines(data = highlighted_feature, color = "red", weight = 10, group = "LIGHT")
 
@@ -506,7 +507,7 @@ mod_explore_server <- function(id){
     observe({
       if (datamoveover()$group == params_map_group()$dgo_axis && !is.null(datamoveover())){
         # extract dgo axis fid from map
-        select_measure <- dgo_axis() %>%
+        select_measure <- r_val$dgo_axis %>%
           filter(fid == datamoveover()$id)
         # change profile layout with vertial line
         plotlyProxy("long_profile", session) %>%
