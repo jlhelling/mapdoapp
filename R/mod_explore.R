@@ -237,7 +237,7 @@ mod_explore_server <- function(id){
 
     # get data on map click
     observeEvent(input$exploremap_shape_click,{
-      # A bassin is clicked
+      # bassin clicked
       if (input$exploremap_shape_click$group == params_map_group()[["bassin"]]){
         # get the regions data in selected bassin
         r_val$regions_in_bassin = data_get_regions_in_bassin(selected_bassin_id = input$exploremap_shape_click$id)
@@ -246,7 +246,7 @@ mod_explore_server <- function(id){
           map_add_regions_in_bassin(bassin_click = input$exploremap_shape_click,
                                     regions_data = r_val$regions_in_bassin)
       }
-      # when region clicked get data axis in region
+      # region clicked
       if (input$exploremap_shape_click$group == params_map_group()$region){
         # store the region click values
         r_val$region_click = input$exploremap_shape_click
@@ -260,7 +260,7 @@ mod_explore_server <- function(id){
           map_region_clicked(region_click = input$exploremap_shape_click,
                              selected_region_feature = r_val$selected_region_feature)
       }
-      # when axis clicked get axis region without the axis selected
+      # axis clicked
       if (input$exploremap_shape_click$group == params_map_group()$axis) {
         # save the clicked axis values
         r_val$axis_click = input$exploremap_shape_click
@@ -272,6 +272,10 @@ mod_explore_server <- function(id){
           mutate(measure = measure/1000)
         # extract axis start end point
         r_val$axis_start_end = data_get_axis_start_end(dgo_axis = r_val$dgo_axis)
+
+        # map dgo axis when axis clicked and metric selected
+        leafletProxy("exploremap") %>%
+          map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis)
       }
     })
 
@@ -359,16 +363,6 @@ mod_explore_server <- function(id){
 
         # update legend
         metric_legend(map_legend_metric(sld_body = sld_body))
-      }
-    })
-
-    # map dgo axis when axis clicked and metric selected
-    observe({
-      req(r_val$network_region_axis)
-      if(!is.null(r_val$dgo_axis) && !is.null(r_val$selected_metric)){
-
-        leafletProxy("exploremap") %>%
-          map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis)
       }
     })
 
