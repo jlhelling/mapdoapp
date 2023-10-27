@@ -121,7 +121,7 @@ mod_explore_server <- function(id){
       selected_profile_metric_name = NULL,
       select_profile_metric_category = NULL,
       strahler = NULL,
-      strahler_slider = NULL
+      ui_strahler_slider = NULL
     )
 
     ### BASSIN INIT MAP ####
@@ -206,7 +206,7 @@ mod_explore_server <- function(id){
     # UI strahler filter
     output$strahlerfilterUI <- renderUI(
       {
-        r_val$strahler_slider
+        r_val$ui_strahler_slider
       })
 
     # UI dynamic filter on metric selected
@@ -249,7 +249,7 @@ mod_explore_server <- function(id){
         # get strahler data
         r_val$strahler = isolate(data_get_min_max_strahler(selected_region_id = r_val$region_click$id))
         # build strahler slider
-        r_val$strahler_slider = sliderInput(ns("strahler"),
+        r_val$ui_strahler_slider = sliderInput(ns("strahler"),
                                        label="Ordre de strahler",
                                        min=r_val$strahler[["min"]],
                                        max=r_val$strahler[["max"]],
