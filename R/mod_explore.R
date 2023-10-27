@@ -121,10 +121,12 @@ mod_explore_server <- function(id){
       selected_profile_metric_name = NULL,
       select_profile_metric_category = NULL,
       strahler = NULL,
-      ui_strahler_slider = NULL,
-      ui_metric_selectInput = NULL,
-      ui_metric_radioButtons = NULL,
-      ui_unit_area = NULL
+      ui_strahler_filter = NULL,
+      ui_metric_type = NULL,
+      ui_metric = NULL,
+      ui_unit_area = NULL,
+      min_max_metric = NULL,
+      ui_metric_filter = NULL
     )
 
     ### BASSIN INIT MAP ####
@@ -170,9 +172,8 @@ mod_explore_server <- function(id){
 
     # UI create choose metric
     output$metricUI <- renderUI({
-      # wait region hydrographic to display metric selection
-      if (!is.null(r_val$ui_metric_selectInput)){
-        r_val$ui_metric_selectInput
+      if (!is.null(r_val$ui_metric_type)){
+        r_val$ui_metric_type
       } else {
         HTML('<label class="control-label" id="wait-metric-label">
              Cliquez sur une région hydrographique pour afficher la sélection des métriques</label>')
@@ -181,7 +182,7 @@ mod_explore_server <- function(id){
 
     # UI metrics radio buttons
     output$radioButtonsUI <- renderUI({
-      r_val$ui_metric_radioButtons
+      r_val$ui_metric
     })
 
     # UI switch unit area
@@ -194,24 +195,12 @@ mod_explore_server <- function(id){
     # UI strahler filter
     output$strahlerfilterUI <- renderUI(
       {
-        r_val$ui_strahler_slider
+        r_val$ui_strahler_filter
       })
 
     # UI dynamic filter on metric selected
     output$metricsfilterUI <- renderUI({
-      req(r_val$selected_metric, r_val$selected_metric_name)
-
-      metric <- data_get_min_max_metric(selected_region_id = r_val$region_click$id, selected_metric = r_val$selected_metric)
-
-      sliderInput(ns("metricfilter"),
-                  label = r_val$selected_metric_name,
-                  min = isolate(metric[["min"]]),
-                  max = isolate(metric[["max"]]),
-                  value = c(
-                    isolate(metric[["min"]]),
-                    isolate(metric[["max"]])
-                  )
-      )
+      r_val$ui_metric_filter
     })
 
     ### EVENT MAP CLICK ####
@@ -237,7 +226,7 @@ mod_explore_server <- function(id){
         # get strahler data
         r_val$strahler = isolate(data_get_min_max_strahler(selected_region_id = r_val$region_click$id))
         # build strahler slider
-        r_val$ui_strahler_slider = sliderInput(ns("strahler"),
+        r_val$ui_strahler_filter = sliderInput(ns("strahler"),
                                        label="Ordre de strahler",
                                        min=r_val$strahler[["min"]],
                                        max=r_val$strahler[["max"]],
@@ -256,7 +245,7 @@ mod_explore_server <- function(id){
                              selected_region_feature = r_val$selected_region_feature)
 
         # build metric selectInput
-        r_val$ui_metric_selectInput = selectInput(ns("metric_type"), "Sélectionez une métrique :",
+        r_val$ui_metric_type = selectInput(ns("metric_type"), "Sélectionez une métrique :",
                                              choices = names(params_metrics_choice()),
                                              selected  = names(params_metrics_choice())[1])
 
@@ -284,7 +273,7 @@ mod_explore_server <- function(id){
     ### EVENT METRIC TYPE SELECT ####
     observeEvent(input$metric_type, {
       # build metric radioButtons
-      r_val$ui_metric_radioButtons = radioButtons(ns("metric"), sprintf("%s :", input$metric_type),
+      r_val$ui_metric = radioButtons(ns("metric"), sprintf("%s :", input$metric_type),
                                                   choiceNames = as.list(unname(params_metrics_choice()[[input$metric_type]])),
                                                   choiceValues = names(params_metrics_choice()[[input$metric_type]]),
                                                   selected = character(0))
@@ -314,6 +303,19 @@ mod_explore_server <- function(id){
         r_val$selected_metric_name = utile_get_metric_name(selected_metric = input$metric)
         r_val$select_metric_category = utile_get_category_name(selected_metric = input$metric)
       }
+
+      # build metric filter slider
+      r_val$min_max_metric <- data_get_min_max_metric(selected_region_id = r_val$region_click$id, selected_metric = r_val$selected_metric)
+
+      r_val$ui_metric_filter = sliderInput(ns("metricfilter"),
+                                           label = r_val$selected_metric_name,
+                                           min = isolate(r_val$min_max_metric[["min"]]),
+                                           max = isolate(r_val$min_max_metric[["max"]]),
+                                           value = c(
+                                             isolate(r_val$min_max_metric[["min"]]),
+                                             isolate(r_val$min_max_metric[["max"]])
+                                           )
+      )
 
     })
 
