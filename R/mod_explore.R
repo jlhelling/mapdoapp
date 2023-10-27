@@ -275,7 +275,8 @@ mod_explore_server <- function(id){
 
         # map dgo axis when axis clicked and metric selected
         leafletProxy("exploremap") %>%
-          map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis)
+          map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis) %>%
+          map_axis_start_end(axis_start_end = r_val$axis_start_end, region_axis = r_val$network_region_axis)
       }
     })
 
@@ -365,15 +366,6 @@ mod_explore_server <- function(id){
         metric_legend(map_legend_metric(sld_body = sld_body))
       }
     })
-
-    # map axis start and end point
-    observeEvent(r_val$axis_start_end, {
-      req(r_val$axis_start_end)
-      leafletProxy("exploremap") %>%
-        map_axis_start_end(axis_start_end = r_val$axis_start_end, region_axis = r_val$network_region_axis)
-    })
-
-
 
     ### MAP LEGEND ####
 
