@@ -123,7 +123,8 @@ mod_explore_server <- function(id){
       strahler = NULL,
       ui_strahler_slider = NULL,
       ui_metric_selectInput = NULL,
-      ui_metric_radioButtons = NULL
+      ui_metric_radioButtons = NULL,
+      ui_unit_area = NULL
     )
 
     ### BASSIN INIT MAP ####
@@ -185,11 +186,7 @@ mod_explore_server <- function(id){
 
     # UI switch unit area
     output$areaUI <- renderUI({
-      req(input$metric_type == "Occupation du sol" || input$metric_type == "Continuité latérale")
-
-      selectInput(ns("unit_area"), "Surfaces :",
-                  choices = c("Hectares", "% du fond de vallée"),
-                  selected = "Hectares")
+      r_val$ui_unit_area
     })
 
     ### DYNAMIC FILTER UI ####
@@ -291,6 +288,15 @@ mod_explore_server <- function(id){
                                                   choiceNames = as.list(unname(params_metrics_choice()[[input$metric_type]])),
                                                   choiceValues = names(params_metrics_choice()[[input$metric_type]]),
                                                   selected = character(0))
+
+      # build selectInput unit area for Occupation du sol or continuity
+      if (input$metric_type == "Occupation du sol" || input$metric_type == "Continuité latérale"){
+        r_val$ui_unit_area = selectInput(ns("unit_area"), "Surfaces :",
+                                         choices = c("Hectares", "% du fond de vallée"),
+                                         selected = "Hectares")
+      }else{
+        r_val$ui_unit_area = NULL
+      }
     })
 
 
