@@ -135,7 +135,7 @@ mod_explore_server <- function(id){
     # add input UI for profile additional metric
     output$profilemetricUI <- renderUI({
 
-      req(r_val$axis_click, selected_metric())
+      req(r_val$axis_click, r_val$selected_metric)
       selectInput(ns("profile_metric_type"), "Ajoutez une métrique :",
                   choices = names(params_metrics_choice()),
                   selected  = names(params_metrics_choice())[1])
@@ -220,12 +220,12 @@ mod_explore_server <- function(id){
 
     # UI dynamic filter on metric selected
     output$metricsfilterUI <- renderUI({
-      req(selected_metric(), selected_metric_name())
+      req(r_val$selected_metric, r_val$selected_metric_name)
 
-      metric <- data_get_min_max_metric(selected_region_id = r_val$region_click$id, selected_metric = selected_metric())
+      metric <- data_get_min_max_metric(selected_region_id = r_val$region_click$id, selected_metric = r_val$selected_metric)
 
       sliderInput(ns("metricfilter"),
-                  label = selected_metric_name(),
+                  label = r_val$selected_metric_name,
                   min = isolate(metric[["min"]]),
                   max = isolate(metric[["max"]]),
                   value = c(
@@ -243,7 +243,15 @@ mod_explore_server <- function(id){
       region_click = NULL,
       axis_click = NULL,
       dgo_axis = NULL, # all selected axis DGO
-      axis_start_end = NULL # start / end df coordinates to add pin on map
+      axis_start_end = NULL, # start / end df coordinates to add pin on map
+      # metric selected by user
+      selected_metric = NULL,
+      selected_metric_name = NULL,
+      select_metric_category = NULL,
+      # profile metric selected by user
+      selected_profile_metric = NULL,
+      selected_profile_metric_name = NULL,
+      select_profile_metric_category = NULL
     )
 
     # get data on map click
@@ -272,32 +280,22 @@ mod_explore_server <- function(id){
       }
     })
 
-    # metric selected by user
-    selected_metric <- reactiveVal()
-    selected_metric_name <- reactiveVal()
-    select_metric_category <- reactiveVal()
-
     # set metric value and name
     observeEvent(!is.null(input$metric) && !is.null(input$unit_area),
                  ignoreInit = TRUE, {
       # change field if unit_area in percentage
       if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"
           && (input$metric_type %in% c("Occupation du sol", "Continuité latérale"))){
-        selected_metric(paste0(input$metric,"_pc"))
-        selected_metric_name(utile_get_metric_name(selected_metric = input$metric))
-        select_metric_category(utile_get_category_name(selected_metric = input$metric))
+        r_val$selected_metric = paste0(input$metric,"_pc")
+        r_val$selected_metric_name = utile_get_metric_name(selected_metric = input$metric)
+        r_val$select_metric_category = utile_get_category_name(selected_metric = input$metric)
       } else if (!is.null(input$metric)) {
-        selected_metric(input$metric)
-        selected_metric_name(utile_get_metric_name(selected_metric = input$metric))
-        select_metric_category(utile_get_category_name(selected_metric = input$metric))
+        r_val$selected_metric = input$metric
+        r_val$selected_metric_name = utile_get_metric_name(selected_metric = input$metric)
+        r_val$select_metric_category = utile_get_category_name(selected_metric = input$metric)
       }
 
     })
-
-    # additional profile metric selected by user
-    selected_profile_metric <- reactiveVal()
-    selected_profile_metric_name <- reactiveVal()
-    select_profile_metric_category <- reactiveVal()
 
     # set profile metric value and name
     observeEvent(!is.null(input$profile_metric) && !is.null(input$profile_unit_area),
@@ -305,13 +303,13 @@ mod_explore_server <- function(id){
       # change field if unit_area in percentage
       if (!is.null(input$profile_unit_area) && input$profile_unit_area == "% du fond de vallée"
           && (input$profile_metric_type %in% c("Occupation du sol", "Continuité latérale"))){
-        selected_profile_metric(paste0(input$profile_metric,"_pc"))
-        selected_profile_metric_name(utile_get_metric_name(selected_metric = input$profile_metric))
-        select_profile_metric_category(utile_get_category_name(selected_metric = input$profile_metric))
+        r_val$selected_profile_metric = paste0(input$profile_metric,"_pc")
+        r_val$selected_profile_metric_name = utile_get_metric_name(selected_metric = input$profile_metric)
+        r_val$select_profile_metric_category = utile_get_category_name(selected_metric = input$profile_metric)
       } else if (!is.null(input$profile_metric)) {
-        selected_profile_metric(input$profile_metric)
-        selected_profile_metric_name(utile_get_metric_name(selected_metric = input$profile_metric))
-        select_profile_metric_category(utile_get_category_name(selected_metric = input$profile_metric))
+        r_val$selected_profile_metric = input$profile_metric
+        r_val$selected_profile_metric_name = utile_get_metric_name(selected_metric = input$profile_metric)
+        r_val$select_profile_metric_category = utile_get_category_name(selected_metric = input$profile_metric)
       }
     })
 
@@ -345,7 +343,7 @@ mod_explore_server <- function(id){
         return (NULL)
       }
       # no metric selected
-      if (is.null(selected_metric())) {
+      if (is.null(r_val$selected_metric)) {
         # build WMS filter
         cql_filter=paste0("gid_region=", r_val$selected_region_feature[["gid"]],
                           " AND strahler>=", input$strahler[1],
@@ -359,20 +357,20 @@ mod_explore_server <- function(id){
 
       }
       # metric selected
-      if (!is.null(selected_metric())){
+      if (!is.null(r_val$selected_metric)){
 
         # build SLD symbology
-        sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = r_val$region_click$id, selected_metric = selected_metric()),
+        sld_body <- sld_get_style(breaks = sld_get_quantile_metric(selected_region_id = r_val$region_click$id, selected_metric = r_val$selected_metric),
                                   colors = sld_get_quantile_colors(quantile_breaks = sld_get_quantile_metric(selected_region_id = r_val$region_click$id,
-                                                                                                             selected_metric = selected_metric())),
-                                  metric = selected_metric())
+                                                                                                             selected_metric = r_val$selected_metric)),
+                                  metric = r_val$selected_metric)
 
         # build WMS filter
         cql_filter=paste0("gid_region=",r_val$selected_region_feature[["gid"]],
                           " AND strahler>=",input$strahler[1],
                           " AND strahler <= ",input$strahler[2],
-                          " AND ",selected_metric(),">=",input$metricfilter[1],
-                          " AND ",selected_metric(),"<=",input$metricfilter[2])
+                          " AND ",r_val$selected_metric,">=",input$metricfilter[1],
+                          " AND ",r_val$selected_metric,"<=",input$metricfilter[2])
 
         # update map
         leafletProxy("exploremap") %>%
@@ -388,7 +386,7 @@ mod_explore_server <- function(id){
     # map dgo axis when axis clicked and metric selected
     observe({
       req(r_val$network_region_axis)
-      if(!is.null(r_val$dgo_axis) && !is.null(selected_metric())){
+      if(!is.null(r_val$dgo_axis) && !is.null(r_val$selected_metric)){
 
         leafletProxy("exploremap") %>%
           map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis)
@@ -442,26 +440,26 @@ mod_explore_server <- function(id){
 
     output$long_profile <- renderPlotly({
 
-      if (!is.null(r_val$axis_click) && !is.null(selected_metric())){
+      if (!is.null(r_val$axis_click) && !is.null(r_val$selected_metric)){
         selected_axis_df <- r_val$dgo_axis %>%
           as.data.frame()
         # no additional metric
-        if (!is.null(selected_metric()) && is.null(selected_profile_metric())){
+        if (!is.null(r_val$selected_metric) && is.null(r_val$selected_profile_metric)){
           plot <- lg_profile_main(data = selected_axis_df,
-                                  y = selected_metric(),
-                                  y_label = selected_metric_name(),
-                                  y_label_category = select_metric_category()
+                                  y = r_val$selected_metric,
+                                  y_label = r_val$selected_metric_name,
+                                  y_label_category = r_val$select_metric_category
           )
         }
         # the user select an additional metric
-        if (!is.null(selected_metric()) && !is.null(selected_profile_metric())){
+        if (!is.null(r_val$selected_metric) && !is.null(r_val$selected_profile_metric)){
           plot <- lg_profile_second(data = selected_axis_df,
-                                    y = selected_metric(),
-                                    y_label = selected_metric_name(),
-                                    y_label_category = select_metric_category(),
-                                    y2 = selected_profile_metric(),
-                                    y2_label = selected_profile_metric_name(),
-                                    y2_label_category = select_profile_metric_category()
+                                    y = r_val$selected_metric,
+                                    y_label = r_val$selected_metric_name,
+                                    y_label_category = r_val$select_metric_category,
+                                    y2 = r_val$selected_profile_metric,
+                                    y2_label = r_val$selected_profile_metric_name,
+                                    y2_label_category = r_val$select_profile_metric_category
           )
         }
 
