@@ -103,7 +103,7 @@ mod_explore_server <- function(id){
     #   )
     # })
 
-    ### BASSIN ####
+    ### BASSIN INIT MAP ####
 
     # map initialization
     output$exploremap <- renderLeaflet({
@@ -215,8 +215,7 @@ mod_explore_server <- function(id){
       )
     })
 
-    ### DATA ####
-
+    ### R_VAL ####
     r_val <- reactiveValues(
       regions_in_bassin = NULL, # all the regions in selected bassin
       network_region_axis = NULL, # all the axis in the selected region
@@ -235,6 +234,7 @@ mod_explore_server <- function(id){
       select_profile_metric_category = NULL
     )
 
+    ### EVENT ON MAP CLICK ####
     # get data on map click
     observeEvent(input$exploremap_shape_click,{
       # bassin clicked
@@ -280,9 +280,9 @@ mod_explore_server <- function(id){
       }
     })
 
+    ### METRIC EVENT SELECT ####
     # set metric value and name
-    observeEvent(!is.null(input$metric) && !is.null(input$unit_area),
-                 ignoreInit = TRUE, {
+    observeEvent(c(input$metric, input$unit_area), ignoreInit = TRUE, {
       # change field if unit_area in percentage
       if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"
           && (input$metric_type %in% c("Occupation du sol", "Continuité latérale"))){
@@ -297,9 +297,9 @@ mod_explore_server <- function(id){
 
     })
 
+    ### PROFILE METRIC EVENT SELECT ####
     # set profile metric value and name
-    observeEvent(!is.null(input$profile_metric) && !is.null(input$profile_unit_area),
-                 ignoreInit = TRUE, {
+    observeEvent(c(input$profile_metric, input$profile_unit_area), ignoreInit = TRUE, {
       # change field if unit_area in percentage
       if (!is.null(input$profile_unit_area) && input$profile_unit_area == "% du fond de vallée"
           && (input$profile_metric_type %in% c("Occupation du sol", "Continuité latérale"))){
