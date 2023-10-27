@@ -313,11 +313,6 @@ mod_explore_server <- function(id){
       }
     })
 
-    # store mouseover map DGO axis feature
-    datamoveover <- reactive({
-      input$exploremap_shape_mouseover
-    })
-
     ### MAP ####
 
     # MAP region selected
@@ -498,10 +493,10 @@ mod_explore_server <- function(id){
 
     # add vertical line on profil on map user mouseover axis
     observe({
-      if (datamoveover()$group == params_map_group()$dgo_axis && !is.null(datamoveover())){
+      if (input$exploremap_shape_mouseover$group == params_map_group()$dgo_axis && !is.null(input$exploremap_shape_mouseover)){
         # extract dgo axis fid from map
         select_measure <- r_val$dgo_axis %>%
-          filter(fid == datamoveover()$id)
+          filter(fid == input$exploremap_shape_mouseover$id)
         # change profile layout with vertial line
         plotlyProxy("long_profile", session) %>%
           plotlyProxyInvoke("relayout", list(shapes = list(lg_vertical_line(select_measure$measure))))
