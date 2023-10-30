@@ -15,14 +15,13 @@
 #' @export
 lg_profile_empty <- function() {
   temp <- data.frame()
-  plot <- plot_ly(data = temp) %>%
+  plot <- plot_ly(data = temp, source = "plot_pg") %>%
     layout(title = list(
       text = "Sélectionnez un cours d'eau sur la carte et une métrique pour afficher le graphique",
       y = 0.80,  # y title position
       x = 0.3,   # x title position
       font = list(size = 15)
     ))
-  return(plot)
 }
 
 
@@ -81,8 +80,8 @@ lg_vertical_line <- function(x = 0, color = "green") {
 #' @export
 lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
                             y_label = "Chenal actif", y_label_category = "Largeurs") {
-  plot <- plot_ly(data = data, x = ~measure, y = as.formula(paste0("~", y)), yaxis = 'y1',
-                  key = ~fid,  # the "id" column for hover text
+  plot <- plot_ly(x = data$measure, y = data[[y]], yaxis = 'y1',
+                  key = data$fid,  # the "id" column for hover text
                   type = 'scatter', mode = 'lines', name = y_label) %>%
     layout(
       xaxis = list(title = 'Distance depuis l\'exutoire (km)'),
