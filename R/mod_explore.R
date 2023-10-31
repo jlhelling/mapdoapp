@@ -137,14 +137,19 @@ mod_explore_server <- function(id){
       plotly_hover = NULL
     )
 
-    ### BASSIN INIT MAP ####
+    ### INIT MAP & PROFILE ####
 
-    # map initialization
     output$exploremap <- renderLeaflet({
       map_init_bassins(bassins_data = data_get_bassins())
     })
 
-    ### DYNAMIC PROFILE UI ####
+    output$long_profile <- renderPlotly({
+      return(r_val$plot)
+    })
+
+    ### RENDER UI ####
+
+    #### profile ####
 
     # add input UI for profile additional metric
     output$profilemetricUI <- renderUI({
@@ -161,7 +166,7 @@ mod_explore_server <- function(id){
       r_val$ui_profile_unit_area
     })
 
-    ### DYNAMIC METRIC UI ####
+    #### metric ####
 
     # UI create choose metric
     output$metricUI <- renderUI({
@@ -183,7 +188,7 @@ mod_explore_server <- function(id){
       r_val$ui_unit_area
     })
 
-    ### DYNAMIC FILTER UI ####
+    #### filter ####
 
     # UI strahler filter
     output$strahlerfilterUI <- renderUI(
@@ -194,6 +199,40 @@ mod_explore_server <- function(id){
     # UI dynamic filter on metric selected
     output$metricsfilterUI <- renderUI({
       r_val$ui_metric_filter
+    })
+
+    #### map legend ####
+
+    metric_legend <- reactiveVal(NULL)
+
+    output$legendUI <- renderUI({
+
+      div(
+        HTML('<label class="control-label" id="legend-label">Légende</label>'),
+        img(
+          title = "Information sur la légende",
+          src = "www/information-icon-6068.png",
+          style = "width: 10%; height: auto;",
+          class="responsive"
+        ), # img
+        # metric
+        div(
+          style = "display: flex; align-items: center;",
+          metric_legend(),
+        ),
+        # zone inondable
+        if (any(input$exploremap_groups %in% params_map_group()$inondation)) {
+          map_legend_wms_overlayer(wms_params = params_wms()$inondation)
+        },
+        # ouvrage de protection
+        if (any(input$exploremap_groups %in% params_map_group()[["ouvrage_protection"]])) {
+          map_legend_wms_overlayer(wms_params = params_wms()$ouvrage_protection)
+        },
+        # ROE
+        if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
+          map_legend_vector_overlayer(layer_label = "ROE")
+        }
+      ) # div
     })
 
     ### EVENT MAP CLICK ####
@@ -292,7 +331,9 @@ mod_explore_server <- function(id){
       }
     })
 
-    ### EVENT METRIC TYPE SELECT ####
+    ### EVENT METRIC ####
+
+    #### metric type select ####
 
     observeEvent(input$metric_type, {
       # build metric radioButtons
@@ -312,7 +353,7 @@ mod_explore_server <- function(id){
     })
 
 
-    ### EVENT METRIC SELECT ####
+    #### event metric select ####
 
     observeEvent(c(input$metric, input$unit_area), ignoreInit = TRUE, {
       # change field if unit_area in percentage
@@ -381,7 +422,9 @@ mod_explore_server <- function(id){
       }
     })
 
-    ### EVENT PROFILE METRIC TYPE SELECT ####
+    ### EVENT PROFILE METRIC ####
+
+    #### profile metric type select ####
 
     observeEvent(input$profile_metric_type, {
 
@@ -409,7 +452,7 @@ mod_explore_server <- function(id){
     })
 
 
-    ### EVENT PROFILE METRIC SELECT ####
+    #### profile metric select ####
 
     observeEvent(c(input$profile_metric, input$profile_unit_area), ignoreInit = TRUE, {
       # change field if unit_area in percentage
@@ -482,45 +525,9 @@ mod_explore_server <- function(id){
 
     })
 
-    ### MAP LEGEND ####
+    ### EVENT MOUSEOVER ####
 
-    metric_legend <- reactiveVal(NULL)
-
-    output$legendUI <- renderUI({
-
-      div(
-        HTML('<label class="control-label" id="legend-label">Légende</label>'),
-        img(
-          title = "Information sur la légende",
-          src = "www/information-icon-6068.png",
-          style = "width: 10%; height: auto;",
-          class="responsive"
-        ), # img
-        # metric
-        div(
-          style = "display: flex; align-items: center;",
-          metric_legend(),
-        ),
-        # zone inondable
-        if (any(input$exploremap_groups %in% params_map_group()$inondation)) {
-          map_legend_wms_overlayer(wms_params = params_wms()$inondation)
-        },
-        # ouvrage de protection
-        if (any(input$exploremap_groups %in% params_map_group()[["ouvrage_protection"]])) {
-          map_legend_wms_overlayer(wms_params = params_wms()$ouvrage_protection)
-        },
-        # ROE
-        if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
-          map_legend_vector_overlayer(layer_label = "ROE")
-        }
-      ) # div
-    })
-
-    ### PROFILE ####
-
-    output$long_profile <- renderPlotly({
-      return(r_val$plot)
-    })
+    #### plotly profile ####
 
     # Define an observeEvent to capture hover events
     observeEvent(event_data("plotly_hover"), {
@@ -541,8 +548,10 @@ mod_explore_server <- function(id){
       }
     })
 
+    #### leaflet map ####
+
     # add vertical line on profil on map user mouseover axis
-    observe({
+    observeEvent(input$exploremap_shape_mouseover, {
       if (input$exploremap_shape_mouseover$group == params_map_group()$dgo_axis && !is.null(input$exploremap_shape_mouseover)){
         # extract dgo axis fid from map
         select_measure <- r_val$dgo_axis %>%
