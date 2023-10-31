@@ -11,6 +11,11 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 <!-- badges: end -->
 
 L’application MAPDO est une application de visualisation, d’analyse et
-d’interprétation de données de morphologie fluviale.
+d’interprétation de données en hydromorphologie fluviale de réseaux
+hydrographiques à l’échelle du bassin versant.
 
 ## Installation
+
+``` r
+remotes::install_github("https://github.com/EVS-GIS/mapdoapp.git")
+```
