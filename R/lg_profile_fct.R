@@ -15,7 +15,7 @@
 #' @export
 lg_profile_empty <- function() {
   temp <- data.frame()
-  plot <- plot_ly(data = temp) %>%
+  plot <- plot_ly(data = temp, source = "plot_pg") %>%
     layout(title = list(
       text = "Sélectionnez un cours d'eau sur la carte et une métrique pour afficher le graphique",
       y = 0.80,  # y title position
@@ -68,7 +68,6 @@ lg_vertical_line <- function(x = 0, color = "green") {
 #' @return A longitudinal profile plot with the specified metric.
 #'
 #' @importFrom plotly plot_ly layout
-#' @importFrom stats as.formula
 #'
 #' @examples
 #' # Create a longitudinal profile plot for active channel width
@@ -79,10 +78,10 @@ lg_vertical_line <- function(x = 0, color = "green") {
 # profile_plot
 #'
 #' @export
-lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
-                            y_label = "Chenal actif", y_label_category = "Largeurs") {
-  plot <- plot_ly(data = data, x = ~measure, y = as.formula(paste0("~", y)), yaxis = 'y1',
-                  key = ~fid,  # the "id" column for hover text
+lg_profile_main <- function(data, y, y_label, y_label_category) {
+
+  plot <- plot_ly(x = data$measure, y = y, yaxis = 'y1',
+                  key = data$fid,  # the "id" column for hover text
                   type = 'scatter', mode = 'lines', name = y_label) %>%
     layout(
       xaxis = list(title = 'Distance depuis l\'exutoire (km)'),
@@ -90,13 +89,86 @@ lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
         title = paste0(y_label_category, " - ", y_label),
         side = 'left'
       ),
+      showlegend=TRUE,
       legend = list(orientation = 'h'),
       hovermode = "x unified",
-      shapes = list(lg_vertical_line(2.5))
+      shapes = list(lg_vertical_line(2.5)),
+      margin = list(
+        t = 20,
+        b = 10,
+        l = 50,
+        r = 80  # create space for the second y-axis title
+      )
     )
   return(plot)
 }
 
+#' Generate list to update main plot in plotlyProxy
+#'
+#' This function generates a list to update the main axe in existing plotly graph with plotlyProxy.
+#'
+#' @param data A data frame containing the data to be plotted.
+#' @param y The name of the y-axis variable to plot.
+#' @param y_label The label for the y-axis.
+#' @param y_label_category The category label for the y-axis.
+#'
+#' @return A list containing trace and layout lists to plot with plotlyProxy.
+#'
+#' @details
+#' This function generates a main profile update plot with the specified data and axis labels.
+# The plot is returned as a list containing both the trace and layout information.
+# The trace contains x and y data for the plot, while the layout specifies the y-axis title.
+#
+#' @examples
+#' \dontrun{
+#' data <- data.frame(
+#' measure = 1:10,
+#' selected_metric = rnorm(10, mean = 1)
+#' )
+#' output$scatter_plot <- renderPlotly({
+#'   plot_ly(data, x = ~measure, y = ~selected_metric, type = 'scatter', mode = 'line')
+#' })
+#' data_updated <- data.frame(
+#'   measure = 1:10,
+#'   selected_metric = rnorm(10, mean = 1)
+#' )
+#' selected_metric_name <-  "my metric"
+#' select_metric_category <-  "my metric category"
+#' update_main_axe <-
+#'   lg_profile_update_main(
+#'     data = data_updated,
+#'     y = data_updated[[selected_metric]],
+#'     y_label = selected_metric_name,
+#'     y_label_category = r_val$select_metric_category
+#'   )
+#' plotlyProxy("scatter_plot") %>%
+#'   plotlyProxyInvoke("deleteTraces", 0) %>%
+#'   plotlyProxyInvoke("addTraces", update_main_axe$trace, 0) %>%
+#'   plotlyProxyInvoke("relayout", update_main_axe$layout)
+#' }
+#'
+#' @export
+lg_profile_update_main <- function(data, y, y_label, y_label_category){
+  proxy_trace <- list(
+    x = data$measure,
+    y = y,
+    key = data$fid,  # the "id" column for hover text
+    type = 'scatter',
+    mode = 'lines',
+    name = y_label,
+    yaxis = 'y1'
+  )
+
+  proxy_layout <- list(
+    yaxis = list(
+      title = paste0(y_label_category, " - ", y_label),
+      side = 'left'
+    )
+  )
+  proxy <- list("trace" = proxy_trace,
+                "layout" = proxy_layout)
+  return(proxy)
+}
 
 #' Create a dual-axis longitudinal profile plot for selected axis data
 #'
@@ -108,55 +180,40 @@ lg_profile_main <- function(data = selected_axis_df, y = "active_channel_width",
 #' @param y The primary metric to be plotted on the left y-axis.
 #' @param y_label The name of the metric plotted.
 #' @param y_label_category The metric category name.
-#' @param y2 The secondary metric to be plotted on the right y-axis.
-#' @param y2_label The name of the secondary metric plotted.
-#' @param y2_label_category The metric category name of the secondary metric plotted.
 #'
 #' @return A dual-axis longitudinal profile plot with the specified metrics.
 #'
-#' @importFrom plotly plot_ly layout add_trace
-#' @importFrom stats as.formula
-#'
 #' @examples
-#' selected_axis_df <- as.data.frame(network_dgo)
-#'
-#' dual_axis_plot <- lg_profile_second(data = selected_axis_df,
-#'                                    y = "active_channel_width",
-#'                                    y_label = "Chenal actif",
-#'                                    y_label_category = "Largeurs",
-#'                                    y2 = "talweg_elevation_min",
-#'                                    y2_label = "Chenal actif",
-#'                                    y2_label_category = "Pentes")
-#' dual_axis_plot
+#' \dontrun{
+#' # like lg_profile_update_main function, see example in documentation
+#'}
 #'
 #' @export
-lg_profile_second <- function(data = selected_axis_df, y = "active_channel_width", y_label = "Chenal actif",
-                              y_label_category = "Largeurs", y2 = "talweg_elevation_min", y2_label = "Chenal actif",
-                              y2_label_category = "Pentes"){
-  plot <- lg_profile_main(data = data,
-                          y = y,
-                          y_label = y_label,
-                          y_label_category = y_label_category) %>%
-    add_trace(data = data, x = ~measure, y = as.formula(paste0("~", y2),),
-              key = ~fid,  # the "id" column for hover text
-              type = 'scatter', mode = 'lines', name = y2_label,
-              yaxis = 'y2') %>%
-    layout(
-      yaxis2 = list(
-        title = list(text = paste0(y2_label_category, " - ",
-                       y2_label),
-                     standoff = 15  # control the distance between the title and the graph
-        ),
-        overlaying = 'y',
-        side = 'right',
-        showgrid = FALSE,  # Hide the gridlines for the second y-axis
-        showline = FALSE  # Hide the axis line for the second y-axis
+lg_profile_second <- function(data, y, y_label, y_label_category){
+  proxy_trace <- list(
+    x = data$measure,
+    y = y,
+    key = data$fid,  # the "id" column for hover text
+    type = 'scatter',
+    mode = 'lines',
+    name = y_label,
+    yaxis = 'y2'
+  )
+
+  proxy_layout <- list(
+    yaxis2 = list(
+      title = list(text = paste0( y_label_category, " - ",
+                                  y_label)
       ),
-      margin = list(
-        r = 80  # create space for the second y-axis title
-      ),
-      legend = list(orientation = 'h'),
-      hovermode = "x unified"
+      overlaying = 'y',
+      side = 'right',
+      showgrid = FALSE,  # Hide the gridlines for the second y-axis
+      showline = FALSE  # Hide the axis line for the second y-axis
     )
-  return(plot)
+  )
+  proxy <- list("trace" = proxy_trace,
+                "layout" = proxy_layout)
+  return(proxy)
 }
+
+

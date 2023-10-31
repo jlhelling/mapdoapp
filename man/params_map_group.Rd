@@ -7,7 +7,7 @@
 params_map_group()
 }
 \value{
-A list of parameters including names for groups such as "BASSIN," "REGION," "SELECT_REGION," "METRIC," "AXIS," "LEGEND," and "ROE."
+A list of parameters including names for groups such as "BASSIN," "REGION," "SELECT_REGION," "METRIC," "AXIS," "LEGEND," and "ROE".
 }
 \description{
 This function returns a list of parameters representing different map layer groups.

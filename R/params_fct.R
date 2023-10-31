@@ -28,19 +28,6 @@ params_wms <- function(){
                             attribution = "CNRS - EVS",
                             basemap = FALSE,
                             overlayer = FALSE),
-              metric_basic = list(name = "Métrique",
-                                  url = "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms",
-                                  language = "",
-                                  service = "WMS",
-                                  version = "1.0.0",
-                                  sld_version = "",
-                                  layer = "mapdo:network_metrics",
-                                  format = "image/png",
-                                  sld = "",
-                                  style = "mapdo:network_basic_style", # basic blue style when no metric selected
-                                  attribution = "CNRS - EVS",
-                                  basemap = FALSE,
-                                  overlayer = FALSE),
               carteign = list(name = "Plan IGN",
                               url = "https://wxs.ign.fr/cartes/geoportail/r/wms",
                               language = "",
@@ -141,7 +128,7 @@ params_wms <- function(){
 #'
 #' This function returns a list of parameters representing different map layer groups.
 #'
-#' @return A list of parameters including names for groups such as "BASSIN," "REGION," "SELECT_REGION," "METRIC," "AXIS," "LEGEND," and "ROE."
+#' @return A list of parameters including names for groups such as "BASSIN," "REGION," "SELECT_REGION," "METRIC," "AXIS," "LEGEND," and "ROE".
 #'
 #' @examples
 #' # all group available
@@ -163,6 +150,7 @@ params_map_group <- function(){
     axis_opacity = "AXIS_OPACITY",
     legend = "LEGEND",
     roe = "ROE",
+    light = "LIGHT",
     inondation = params_wms()$inondation$name,
     ouvrage_protection = params_wms()$ouvrage_protection$name,
     landuse = params_wms()$landuse$name,
