@@ -128,7 +128,7 @@ params_wms <- function(){
 #'
 #' This function returns a list of parameters representing different map layer groups.
 #'
-#' @return A list of parameters including names for groups such as "BASSIN," "REGION," "SELECT_REGION," "METRIC," "AXIS," "LEGEND," and "ROE."
+#' @return A list of parameters including names for groups such as "BASSIN," "REGION," "SELECT_REGION," "METRIC," "AXIS," "LEGEND," and "ROE".
 #'
 #' @examples
 #' # all group available
@@ -150,6 +150,7 @@ params_map_group <- function(){
     axis_opacity = "AXIS_OPACITY",
     legend = "LEGEND",
     roe = "ROE",
+    light = "LIGHT",
     inondation = params_wms()$inondation$name,
     ouvrage_protection = params_wms()$ouvrage_protection$name,
     landuse = params_wms()$landuse$name,

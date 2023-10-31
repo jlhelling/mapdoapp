@@ -89,18 +89,18 @@ mod_explore_server <- function(id){
     # suppress warnings
     # options(warn = -1)
 
-    # dev print to debug value
-    output$printcheck = renderPrint({
-      tryCatch({
-        event_data("plotly_hover")
-        print(event_data("plotly_hover"))
-        print("exists")
-      },
-      shiny.silent.error = function(e) {
-        print("doesn't exist")
-      }
-      )
-    })
+    # # dev print to debug value
+    # output$printcheck = renderPrint({
+    #   tryCatch({
+    #     event_data("plotly_hover")
+    #     print(event_data("plotly_hover"))
+    #     print("exists")
+    #   },
+    #   shiny.silent.error = function(e) {
+    #     print("doesn't exist")
+    #   }
+    #   )
+    # })
 
     ### R_VAL ####
     r_val <- reactiveValues(
@@ -133,6 +133,7 @@ mod_explore_server <- function(id){
       sld_body = NULL, # WMS SLD symbology
       selected_axis_df = NULL, # dgo_axis dataframe to plot graph
       profile_display = FALSE, # controle if metric and axis is selected = display the profile
+      plot = lg_profile_empty(),
       plotly_hover = NULL
     )
 
@@ -260,57 +261,32 @@ mod_explore_server <- function(id){
         r_val$selected_axis_df = r_val$dgo_axis %>%
           as.data.frame()
 
+        # update profile with new metric selected
         if (r_val$profile_display == TRUE){
+          proxy_main_axe <-
+            lg_profile_update_main(
+              data = r_val$selected_axis_df,
+              y = r_val$selected_axis_df[[r_val$selected_metric]],
+              y_label = r_val$selected_metric_name,
+              y_label_category = r_val$select_metric_category
+            )
+
           plotlyProxy("long_profile") %>%
             plotlyProxyInvoke("deleteTraces", 0) %>%
-            plotlyProxyInvoke("addTraces", list(
-              x = r_val$selected_axis_df$measure,
-              y = r_val$selected_axis_df[[r_val$selected_metric]],
-              key = r_val$selected_axis_df$fid,  # the "id" column for hover text
-              type = 'scatter',
-              mode = 'lines',
-              name = r_val$selected_metric_name,
-              yaxis = 'y1'
-            ),0
-            ) %>%
-            plotlyProxyInvoke("relayout", list(
-              yaxis = list(
-                title = paste0(r_val$select_metric_category, " - ", r_val$selected_metric_name),
-                side = 'left'
-              )
-            )
-            )
+            plotlyProxyInvoke("addTraces", proxy_main_axe$trace, 0) %>%
+            plotlyProxyInvoke("relayout", proxy_main_axe$layout)
+
           if(!is.null(input$profile_metric)){ # second metric selected = update second metric profile
+            # create the list to add trace and layout to change second axe plot
+            proxy_second_axe <- lg_profile_second(data = r_val$selected_axis_df,
+                                                  y = r_val$selected_axis_df[[r_val$selected_profile_metric]],
+                                                  y_label = r_val$selected_profile_metric_name,
+                                                  y_label_category = r_val$select_profile_metric_category)
+
             plotlyProxy("long_profile") %>%
               plotlyProxyInvoke("deleteTraces", 1) %>%
-              plotlyProxyInvoke("addTraces", list(
-                x = r_val$selected_axis_df$measure,
-                y = r_val$selected_axis_df[[r_val$selected_profile_metric]],
-                key = r_val$selected_axis_df$fid,  # the "id" column for hover text
-                type = 'scatter',
-                mode = 'lines',
-                name = r_val$selected_profile_metric_name,
-                yaxis = 'y2'
-              )
-              ) %>%
-              plotlyProxyInvoke("relayout", list(
-                yaxis2 = list(
-                  title = list(text = paste0( r_val$select_profile_metric_category, " - ",
-                                              r_val$selected_profile_metric_name),
-                               standoff = 15  # control the distance between the title and the graph
-                  ),
-                  overlaying = 'y',
-                  side = 'right',
-                  showgrid = FALSE,  # Hide the gridlines for the second y-axis
-                  showline = FALSE  # Hide the axis line for the second y-axis
-                ),
-                margin = list(
-                  r = 80  # create space for the second y-axis title
-                ),
-                legend = list(orientation = 'h'),
-                hovermode = "x unified"
-              )
-              )
+              plotlyProxyInvoke("addTraces", proxy_second_axe$trace, 1) %>%
+              plotlyProxyInvoke("relayout", proxy_second_axe$layout)
           }
         }
       }
@@ -366,25 +342,18 @@ mod_explore_server <- function(id){
 
       # update profile with new metric selected
       if (r_val$profile_display == TRUE){
+        proxy_main_axe <-
+          lg_profile_update_main(
+            data = r_val$selected_axis_df,
+            y = r_val$selected_axis_df[[r_val$selected_metric]],
+            y_label = r_val$selected_metric_name,
+            y_label_category = r_val$select_metric_category
+          )
+
         plotlyProxy("long_profile") %>%
           plotlyProxyInvoke("deleteTraces", 0) %>%
-          plotlyProxyInvoke("addTraces", list(
-            x = r_val$selected_axis_df$measure,
-            y = r_val$selected_axis_df[[r_val$selected_metric]],
-            key = r_val$selected_axis_df$fid,  # the "id" column for hover text
-            type = 'scatter',
-            mode = 'lines',
-            name = r_val$selected_metric_name,
-            yaxis = 'y1'
-          ),0
-          ) %>%
-          plotlyProxyInvoke("relayout", list(
-            yaxis = list(
-              title = paste0(r_val$select_metric_category, " - ", r_val$selected_metric_name),
-              side = 'left'
-            )
-          )
-          )
+          plotlyProxyInvoke("addTraces", proxy_main_axe$trace, 0) %>%
+          plotlyProxyInvoke("relayout", proxy_main_axe$layout)
       }
     })
 
@@ -402,28 +371,12 @@ mod_explore_server <- function(id){
                                                      selected  = names(params_metrics_choice())[1])
 
 
-          plotlyProxy("long_profile") %>%
-            plotlyProxyInvoke("newPlot", list(list(
-              x = r_val$selected_axis_df$measure,
-              y = r_val$selected_axis_df[[r_val$selected_metric]],
-              yaxis = 'y1',
-              key = r_val$selected_axis_df$fid,  # the "id" column for hover text
-              type = 'scatter',
-              mode = 'lines',
-              name = r_val$selected_metric_name
-            )),
-            list(
-              xaxis = list(title = 'Distance depuis l\'exutoire (km)'),
-              yaxis = list(
-                title = paste0(r_val$select_metric_category, " - ", r_val$selected_metric_name),
-                side = 'left'
-              ),
-              legend = list(orientation = 'h'),
-              hovermode = "x unified",
-              shapes = list(lg_vertical_line(2.5))
-            ))
-
-          # r_val$plotly_hover = event_data("plotly_hover", source = "plot_lg")
+          # plot single axe with metric selected
+          r_val$plot = lg_profile_main(data = r_val$selected_axis_df,
+                                       y = r_val$selected_axis_df[[r_val$selected_metric]],
+                                       y_label = r_val$selected_metric_name,
+                                       y_label_category = r_val$select_metric_category) %>%
+            event_register("plotly_hover")
         }
       }
     })
@@ -471,36 +424,16 @@ mod_explore_server <- function(id){
         r_val$select_profile_metric_category = utile_get_category_name(selected_metric = input$profile_metric)
       }
 
+      # create the list to add trace and layout to change second axe plot
+      proxy_second_axe <- lg_profile_second(data = r_val$selected_axis_df,
+                                            y = r_val$selected_axis_df[[r_val$selected_profile_metric]],
+                                            y_label = r_val$selected_profile_metric_name,
+                                            y_label_category = r_val$select_profile_metric_category)
+
       plotlyProxy("long_profile") %>%
         plotlyProxyInvoke("deleteTraces", 1) %>%
-        plotlyProxyInvoke("addTraces", list(
-          x = r_val$selected_axis_df$measure,
-          y = r_val$selected_axis_df[[r_val$selected_profile_metric]],
-          key = r_val$selected_axis_df$fid,  # the "id" column for hover text
-          type = 'scatter',
-          mode = 'lines',
-          name = r_val$selected_profile_metric_name,
-          yaxis = 'y2'
-        )
-        ) %>%
-        plotlyProxyInvoke("relayout", list(
-          yaxis2 = list(
-            title = list(text = paste0( r_val$select_profile_metric_category, " - ",
-                                        r_val$selected_profile_metric_name),
-                         standoff = 15  # control the distance between the title and the graph
-            ),
-            overlaying = 'y',
-            side = 'right',
-            showgrid = FALSE,  # Hide the gridlines for the second y-axis
-            showline = FALSE  # Hide the axis line for the second y-axis
-          ),
-          margin = list(
-            r = 80  # create space for the second y-axis title
-          ),
-          legend = list(orientation = 'h'),
-          hovermode = "x unified"
-        )
-        )
+        plotlyProxyInvoke("addTraces", proxy_second_axe$trace, 1) %>%
+        plotlyProxyInvoke("relayout", proxy_second_axe$layout)
     })
 
     ### EVENT FILTER ####
@@ -586,97 +519,25 @@ mod_explore_server <- function(id){
     ### PROFILE ####
 
     output$long_profile <- renderPlotly({
-      temp <- data.frame()
-      plot_ly(data = temp) %>%
-        layout(title = list(
-          text = "Sélectionnez un cours d'eau sur la carte et une métrique pour afficher le graphique",
-          y = 0.80,  # y title position
-          x = 0.3,   # x title position
-          font = list(size = 15)
-        )) %>%
-        event_register('plotly_hover')
-      # print(event_data("plotly_hover"))
-
-
-      # return(plot)
-
-      # # create empty plotly graph with user message
-      # plot <-  lg_profile_empty()
-      # # Add hover information
-      # plot <- plot %>%
-      #   event_register("plotly_hover")  # Enable hover events
-      # return(plot)
+      return(r_val$plot)
     })
 
     # Define an observeEvent to capture hover events
     observeEvent(event_data("plotly_hover"), {
-      print("pouet")
-      hover_data <- event_data("plotly_hover")
-
-      if (!is.null(hover_data)) {
-        hover_fid <- hover_data$key
+      if (!is.null(event_data("plotly_hover"))) {
+        hover_fid <- event_data("plotly_hover")$key[1]
         highlighted_feature <- r_val$dgo_axis[r_val$dgo_axis$fid == hover_fid, ]
         leafletProxy("exploremap") %>%
-          addPolylines(data = highlighted_feature, color = "red", weight = 10, group = "LIGHT")
-
+          addPolylines(data = highlighted_feature, color = "red", weight = 10,
+                       group = params_map_group()$light)
       }
-
     })
-#
-#       if (!is.null(r_val$axis_click) && !is.null(r_val$selected_metric)){
-#         # selected_axis_df <- r_val$dgo_axis %>%
-#         #   as.data.frame()
-#         # no additional metric
-#         # if (!is.null(r_val$selected_metric) && is.null(r_val$selected_profile_metric)){
-#         #   plot <- lg_profile_main(data = r_val$selected_axis_df,
-#         #                           y = r_val$selected_metric,
-#         #                           y_label = r_val$selected_metric_name,
-#         #                           y_label_category = r_val$select_metric_category
-#         #   )
-#         # }
-#         # the user select an additional metric
-#         if (!is.null(r_val$selected_metric) && !is.null(r_val$selected_profile_metric)){
-#           plot <- lg_profile_second(data = r_val$selected_axis_df,
-#                                     y = r_val$selected_metric,
-#                                     y_label = r_val$selected_metric_name,
-#                                     y_label_category = r_val$select_metric_category,
-#                                     y2 = r_val$selected_profile_metric,
-#                                     y2_label = r_val$selected_profile_metric_name,
-#                                     y2_label_category = r_val$select_profile_metric_category
-#           )
-#         }
-#
-        # # Add hover information
-        # plot <- plot %>%
-        #   event_register("plotly_hover")  # Enable hover events
 
-        # # Define an observeEvent to capture hover events
-        # observeEvent(event_data("plotly_hover"), {
-        #   print(event_data("plotly_hover"))
-        #   hover_data <- event_data("plotly_hover")
-        #
-        #   if (!is.null(hover_data)) {
-        #     hover_fid <- hover_data$key
-        #     highlighted_feature <- r_val$dgo_axis[r_val$dgo_axis$fid == hover_fid, ]
-        #     leafletProxy("exploremap") %>%
-        #       addPolylines(data = highlighted_feature, color = "red", weight = 10, group = "LIGHT")
-        #
-        #   }
-        # })
-#         return(plot)
-#       }
-#       else {
-#         # create empty plotly graph with user message
-#         plot <- lg_profile_empty()
-#         return(plot)
-#       }
-#     })
-#
     # clear previous point on map when moving along profile to not display all the point move over
     observe({
       if (is.null(event_data("plotly_hover"))) {
         leafletProxy("exploremap") %>%
-          clearGroup("LIGHT")
+          clearGroup(params_map_group()$light)
       }
     })
 
