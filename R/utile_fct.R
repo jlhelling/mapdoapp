@@ -44,3 +44,32 @@ utile_get_metric_name <- function(selected_metric) {
   return(metric_name)
 }
 
+#' Normalize a string by removing spaces, accents, and special characters.
+#'
+#' This function takes an input string and normalizes it by removing spaces, accents, diacritics,
+#' and special characters. It then converts the string to lowercase.
+#'
+#' @param input_string The input string to be normalized.
+#'
+#' @return The normalized string with spaces, accents, and special characters removed, and in lowercase.
+#'
+#' @examples
+#' original_string <- "Thïs is à sâmplè strîng with spèciál chàracters!"
+#' normalized_string <- normalize_string(original_string)
+#' cat(normalized_string)  # "thisisasamplestringwithspecialcharacters"
+#'
+#' @export
+normalize_string <- function(input_string) {
+  # Remove accents and diacritics
+  input_string <- chartr("ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÌÍÎÏìíîïÙÚÛÜùúûüÝýÑñÇç",
+                         "AAAAAAaaaaaaOOOOOOooooooEEEEeeeeIIIIiiiiUUUUuuuuYyNnCc",
+                         input_string)
+
+  # Remove spaces and special characters
+  input_string <- gsub("[^a-zA-Z0-9]", "", input_string)
+
+  # Convert to lowercase
+  normalized_string <- tolower(input_string)
+
+  return(normalized_string)
+}

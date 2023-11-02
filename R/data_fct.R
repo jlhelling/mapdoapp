@@ -247,3 +247,36 @@ data_get_axis_start_end <- function(dgo_axis) {
   return(axis_start_end)
 }
 
+#' Get Network DGO Data in a Region
+#'
+#' This function retrieves data about the network DGO with the metrics within a specified region based on its ID.
+#'
+#' @param selected_region_id The ID of the selected region.
+#'
+#' @return A sf data frame containing information about the network axis within the specified region.
+#'
+#' @examples
+#' axis_data <- data_get_dgo_in_region(selected_region_id = 11)
+#'
+#' @importFrom glue glue
+#' @importFrom sf st_read
+#'
+#' @export
+data_get_dgo_in_region <- function(selected_region_id){
+  query <- glue::glue("
+      SELECT
+        network_metrics.fid, axis, measure, toponyme, strahler, talweg_elevation_min,
+        active_channel_width, natural_corridor_width,
+        connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
+        water_channel, gravel_bars, natural_open, forest, grassland, crops,
+        diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
+        semi_natural, reversible, disconnected, built_environment,
+        water_channel_pc, gravel_bars_pc, natural_open_pc, forest_pc, grassland_pc, crops_pc,
+        diffuse_urban_pc, dense_urban_pc, infrastructures_pc, active_channel_pc,
+        riparian_corridor_pc, semi_natural_pc, reversible_pc, disconnected_pc,
+        built_environment_pc, sum_area, idx_confinement, gid_region, network_metrics.geom
+      FROM network_metrics
+      WHERE  gid_region = {selected_region_id}")
+
+  data <- sf::st_read(dsn = db_con(), query = query)
+}
