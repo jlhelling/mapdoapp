@@ -430,6 +430,7 @@ mod_explore_server <- function(id){
 
     observeEvent(input$profile_metric_type, {
 
+
       # build profile metric radio button
       r_val$ui_profile_metric = radioButtons(
         ns("profile_metric"),
@@ -458,7 +459,7 @@ mod_explore_server <- function(id){
 
     observeEvent(c(input$profile_metric, input$profile_unit_area), ignoreInit = TRUE, {
       # change field if unit_area in percentage
-      if (!is.null(input$profile_unit_area) && input$profile_unit_area == "% du fond de vallée"
+      if (!is.null(input$profile_metric) && input$profile_unit_area == "% du fond de vallée"
           && (input$profile_metric_type %in% c("Occupation du sol", "Continuité latérale"))){
         r_val$selected_profile_metric = paste0(input$profile_metric,"_pc")
         r_val$selected_profile_metric_name = utile_get_metric_name(selected_metric = input$profile_metric)
@@ -469,16 +470,18 @@ mod_explore_server <- function(id){
         r_val$select_profile_metric_category = utile_get_category_name(selected_metric = input$profile_metric)
       }
 
-      # create the list to add trace and layout to change second axe plot
-      proxy_second_axe <- lg_profile_second(data = r_val$selected_axis_df,
-                                            y = r_val$selected_axis_df[[r_val$selected_profile_metric]],
-                                            y_label = r_val$selected_profile_metric_name,
-                                            y_label_category = r_val$select_profile_metric_category)
+      if (!is.null(input$profile_metric)){
+        # create the list to add trace and layout to change second axe plot
+        proxy_second_axe <- lg_profile_second(data = r_val$selected_axis_df,
+                                              y = r_val$selected_axis_df[[r_val$selected_profile_metric]],
+                                              y_label = r_val$selected_profile_metric_name,
+                                              y_label_category = r_val$select_profile_metric_category)
 
-      plotlyProxy("long_profile") %>%
-        plotlyProxyInvoke("deleteTraces", 1) %>%
-        plotlyProxyInvoke("addTraces", proxy_second_axe$trace, 1) %>%
-        plotlyProxyInvoke("relayout", proxy_second_axe$layout)
+        plotlyProxy("long_profile") %>%
+          plotlyProxyInvoke("deleteTraces", 1) %>%
+          plotlyProxyInvoke("addTraces", proxy_second_axe$trace, 1) %>%
+          plotlyProxyInvoke("relayout", proxy_second_axe$layout)
+      }
     })
 
     ### EVENT FILTER ####
