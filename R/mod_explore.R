@@ -211,7 +211,8 @@ mod_explore_server <- function(id){
       },
       content = function(file) {
         data = data_get_dgo_in_region(r_val$region_click$id)
-        st_write(obj = data, dsn = file, driver = "GPKG", delete_dsn = TRUE)
+        st_write(obj = data, dsn = file, layer = r_val$region_name,
+                 driver = "GPKG", delete_dsn = TRUE)
       }
     )
 
