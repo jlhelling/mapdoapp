@@ -357,7 +357,7 @@ mod_explore_server <- function(id){
 
     observeEvent(c(input$metric, input$unit_area), ignoreInit = TRUE, {
       # change field if unit_area in percentage
-      if (!is.null(input$unit_area) && input$unit_area == "% du fond de vallée"
+      if (!is.null(input$metric) && input$unit_area == "% du fond de vallée"
           && (input$metric_type %in% c("Occupation du sol", "Continuité latérale"))){
         r_val$selected_metric = paste0(input$metric,"_pc")
         r_val$selected_metric_name = utile_get_metric_name(selected_metric = input$metric)
@@ -368,33 +368,35 @@ mod_explore_server <- function(id){
         r_val$select_metric_category = utile_get_category_name(selected_metric = input$metric)
       }
 
-      # build metric filter slider
-      r_val$min_max_metric <- data_get_min_max_metric(selected_region_id = r_val$region_click$id, selected_metric = r_val$selected_metric)
+      if (!is.null(input$metric){
+        # build metric filter slider
+        r_val$min_max_metric <- data_get_min_max_metric(selected_region_id = r_val$region_click$id, selected_metric = r_val$selected_metric)
 
-      r_val$ui_metric_filter = sliderInput(ns("metricfilter"),
-                                           label = r_val$selected_metric_name,
-                                           min = isolate(r_val$min_max_metric[["min"]]),
-                                           max = isolate(r_val$min_max_metric[["max"]]),
-                                           value = c(
-                                             isolate(r_val$min_max_metric[["min"]]),
-                                             isolate(r_val$min_max_metric[["max"]])
-                                           )
-      )
+        r_val$ui_metric_filter = sliderInput(ns("metricfilter"),
+                                             label = r_val$selected_metric_name,
+                                             min = isolate(r_val$min_max_metric[["min"]]),
+                                             max = isolate(r_val$min_max_metric[["max"]]),
+                                             value = c(
+                                               isolate(r_val$min_max_metric[["min"]]),
+                                               isolate(r_val$min_max_metric[["max"]])
+                                             )
+        )
 
-      # update profile with new metric selected
-      if (r_val$profile_display == TRUE){
-        proxy_main_axe <-
-          lg_profile_update_main(
-            data = r_val$selected_axis_df,
-            y = r_val$selected_axis_df[[r_val$selected_metric]],
-            y_label = r_val$selected_metric_name,
-            y_label_category = r_val$select_metric_category
-          )
+        # update profile with new metric selected
+        if (r_val$profile_display == TRUE){
+          proxy_main_axe <-
+            lg_profile_update_main(
+              data = r_val$selected_axis_df,
+              y = r_val$selected_axis_df[[r_val$selected_metric]],
+              y_label = r_val$selected_metric_name,
+              y_label_category = r_val$select_metric_category
+            )
 
-        plotlyProxy("long_profile") %>%
-          plotlyProxyInvoke("deleteTraces", 0) %>%
-          plotlyProxyInvoke("addTraces", proxy_main_axe$trace, 0) %>%
-          plotlyProxyInvoke("relayout", proxy_main_axe$layout)
+          plotlyProxy("long_profile") %>%
+            plotlyProxyInvoke("deleteTraces", 0) %>%
+            plotlyProxyInvoke("addTraces", proxy_main_axe$trace, 0) %>%
+            plotlyProxyInvoke("relayout", proxy_main_axe$layout)
+        }
       }
     })
 
