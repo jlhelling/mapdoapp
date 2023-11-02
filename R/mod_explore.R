@@ -35,10 +35,11 @@ mod_explore_ui <- function(id){
         ), # column
         column(
           width = 2,
-          titlePanel("Filtres"),
+          titlePanel(""),
           uiOutput(ns("strahlerfilterUI")),
           uiOutput(ns("metricsfilterUI")),
           uiOutput(ns("legendUI")),
+          uiOutput(ns("downloadUI")),
           verbatimTextOutput(ns("printcheck"))
         ) # column
       ), # fluidRow
@@ -131,6 +132,7 @@ mod_explore_server <- function(id){
       ui_profile_metric = NULL,
       ui_profile_unit_area = NULL,
       ui_remove_profile_axe = NULL,
+      ui_download = NULL,
       cql_filter = NULL, # WMS filter
       sld_body = NULL, # WMS SLD symbology
       selected_axis_df = NULL, # dgo_axis dataframe to plot graph
@@ -195,6 +197,12 @@ mod_explore_server <- function(id){
       r_val$ui_unit_area
     })
 
+    #### download ####
+
+    output$downloadUI <- renderUI({
+      r_val$ui_download
+    })
+
     #### filter ####
 
     # UI strahler filter
@@ -238,7 +246,8 @@ mod_explore_server <- function(id){
         # ROE
         if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
           map_legend_vector_overlayer(layer_label = "ROE")
-        }
+        },
+        style = "margin-bottom: 10px;"
       ) # div
     })
 
@@ -283,6 +292,12 @@ mod_explore_server <- function(id){
         r_val$ui_metric_type = selectInput(ns("metric_type"), "Sélectionez une métrique :",
                                              choices = names(params_metrics_choice()),
                                              selected  = names(params_metrics_choice())[1])
+
+        # create dwonload button
+        r_val$ui_download = downloadButton(
+          ns("download"),
+          label = "Téléchager les données"
+        )
 
       }
       ### axis clicked ####
