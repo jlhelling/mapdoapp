@@ -35,10 +35,11 @@ mod_explore_ui <- function(id){
         ), # column
         column(
           width = 2,
-          titlePanel("Filtres"),
+          titlePanel(""),
           uiOutput(ns("strahlerfilterUI")),
           uiOutput(ns("metricsfilterUI")),
           uiOutput(ns("legendUI")),
+          uiOutput(ns("downloadUI")),
           verbatimTextOutput(ns("printcheck"))
         ) # column
       ), # fluidRow
@@ -81,6 +82,7 @@ mod_explore_ui <- function(id){
 #' @importFrom htmltools HTML div img
 #' @importFrom dplyr filter mutate
 #' @importFrom plotly event_register event_data plotlyProxy plotlyProxyInvoke renderPlotly plotlyOutput
+#' @importFrom sf st_write
 #'
 mod_explore_server <- function(id){
   moduleServer(id, function(input, output, session){
@@ -131,12 +133,14 @@ mod_explore_server <- function(id){
       ui_profile_metric = NULL,
       ui_profile_unit_area = NULL,
       ui_remove_profile_axe = NULL,
+      ui_download = NULL,
       cql_filter = NULL, # WMS filter
       sld_body = NULL, # WMS SLD symbology
       selected_axis_df = NULL, # dgo_axis dataframe to plot graph
       profile_display = FALSE, # controle if metric and axis is selected = display the profile
       plot = lg_profile_empty(),
-      plotly_hover = NULL
+      plotly_hover = NULL,
+      region_name = NULL
     )
 
     ### INIT MAP & PROFILE ####
@@ -195,6 +199,22 @@ mod_explore_server <- function(id){
       r_val$ui_unit_area
     })
 
+    #### download ####
+
+    output$downloadUI <- renderUI({
+      r_val$ui_download
+    })
+
+    output$download <- downloadHandler(
+      filename = function() {
+        paste0(Sys.Date(), "_", r_val$region_name, ".gpkg")
+      },
+      content = function(file) {
+        data = data_get_dgo_in_region(r_val$region_click$id)
+        st_write(obj = data, dsn = file, driver = "GPKG", delete_dsn = TRUE)
+      }
+    )
+
     #### filter ####
 
     # UI strahler filter
@@ -238,7 +258,8 @@ mod_explore_server <- function(id){
         # ROE
         if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
           map_legend_vector_overlayer(layer_label = "ROE")
-        }
+        },
+        style = "margin-bottom: 10px;"
       ) # div
     })
 
@@ -254,12 +275,15 @@ mod_explore_server <- function(id){
           map_add_regions_in_bassin(bassin_click = input$exploremap_shape_click,
                                     regions_data = r_val$regions_in_bassin)
       }
+
       ### region clicked ####
       if (input$exploremap_shape_click$group == params_map_group()$region){
         # store the region click values
         r_val$region_click = input$exploremap_shape_click
         # save the selected region feature for mapping
         r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id)
+        # set region name to download
+        r_val$region_name = normalize_string(r_val$selected_region_feature$lbregionhy)
         # get the axis in the region
         r_val$network_region_axis = data_get_axis(selected_region_id = input$exploremap_shape_click$id)
         # get strahler data
@@ -283,6 +307,12 @@ mod_explore_server <- function(id){
         r_val$ui_metric_type = selectInput(ns("metric_type"), "Sélectionez une métrique :",
                                              choices = names(params_metrics_choice()),
                                              selected  = names(params_metrics_choice())[1])
+
+        # create download button
+        r_val$ui_download = downloadButton(
+          ns("download"),
+          label = "Téléchager les données"
+        )
 
       }
       ### axis clicked ####
