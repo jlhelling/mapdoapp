@@ -29,13 +29,14 @@ jobs:
       R_KEEP_PKG_SOURCE: yes
 
     steps:
-      - name: Create and populate .Renviron file
-          run: |
-            echo DBMAPDO_HOST="DBMAPDO_HOST" >> ~/.Renviron
-            echo DBMAPDO_PORT="DBMAPDO_PORT" >> ~/.Renviron
-            shell: bash
 
       - uses: actions/checkout@v3
+
+      - name: Create and populate .Renviron file
+        run: |
+          echo "DBMAPDO_HOST=${{ secrets.DBMAPDO_HOST }}" >> $HOME/.Renviron
+          echo "DBMAPDO_PORT=${{ secrets.DBMAPDO_PORT }}" >> $HOME/.Renviron
+        shell: bash
 
       - uses: r-lib/actions/setup-pandoc@v2
 
