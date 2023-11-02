@@ -56,7 +56,8 @@ mod_explore_ui <- function(id){
                     style = "margin-top: 20px;",
                     uiOutput(ns("profilemetricUI")),
                     uiOutput(ns("profileareaUI")),
-                    uiOutput(ns("profileradiobuttonUI"))
+                    uiOutput(ns("profileradiobuttonUI")),
+                    uiOutput(ns("removeprofileaxeUI"))
                   )
                 )
               )
@@ -129,6 +130,7 @@ mod_explore_server <- function(id){
       ui_profile_metric_type = NULL,
       ui_profile_metric = NULL,
       ui_profile_unit_area = NULL,
+      ui_remove_profile_axe = NULL,
       cql_filter = NULL, # WMS filter
       sld_body = NULL, # WMS SLD symbology
       selected_axis_df = NULL, # dgo_axis dataframe to plot graph
@@ -164,6 +166,11 @@ mod_explore_server <- function(id){
     # UI switch unit area for profile additional metric
     output$profileareaUI <- renderUI({
       r_val$ui_profile_unit_area
+    })
+
+    # button to remove second axe
+    output$removeprofileaxeUI <- renderUI({
+      r_val$ui_remove_profile_axe
     })
 
     #### metric ####
@@ -452,8 +459,12 @@ mod_explore_server <- function(id){
       } else{
         r_val$ui_profile_unit_area = NULL
       }
-    })
 
+      r_val$ui_remove_profile_axe = actionButton(
+        ns("remove_profile_axe"),
+        label = "Retirer le second axe"
+      )
+    })
 
     #### profile metric select ####
 
@@ -482,6 +493,16 @@ mod_explore_server <- function(id){
           plotlyProxyInvoke("addTraces", proxy_second_axe$trace, 1) %>%
           plotlyProxyInvoke("relayout", proxy_second_axe$layout)
       }
+    })
+
+    #### profile metric remove axe ####
+
+    observeEvent(input$remove_profile_axe, {
+      plotlyProxy("long_profile") %>%
+        plotlyProxyInvoke("deleteTraces", 1)
+
+      updateRadioButtons(session, "profile_metric", selected = character(0))
+
     })
 
     ### EVENT FILTER ####
