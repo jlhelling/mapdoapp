@@ -279,6 +279,7 @@ mod_explore_server <- function(id){
 
       }
       ### axis clicked ####
+
       if (input$exploremap_shape_click$group == params_map_group()$axis) {
         # save the clicked axis values
         r_val$axis_click = input$exploremap_shape_click
@@ -368,7 +369,7 @@ mod_explore_server <- function(id){
         r_val$select_metric_category = utile_get_category_name(selected_metric = input$metric)
       }
 
-      if (!is.null(input$metric){
+      if (!is.null(input$metric)){
         # build metric filter slider
         r_val$min_max_metric <- data_get_min_max_metric(selected_region_id = r_val$region_click$id, selected_metric = r_val$selected_metric)
 
@@ -400,19 +401,18 @@ mod_explore_server <- function(id){
       }
     })
 
-    ### EVENT METRIC & AXIS ####
+    ### EVENT METRIC & AXIS RESULTS ####
 
-    observeEvent(c(input$metric, input$exploremap_shape_click), {
+    observeEvent(c(r_val$selected_metric, r_val$axis_click), {
       if (r_val$profile_display == FALSE){
-        if (is.null(input$metric)==FALSE && input$exploremap_shape_click$group == params_map_group()$axis){
+        if (!is.null(r_val$selected_metric) && !is.null(r_val$axis_click)){
 
-          r_val$profile_display = TRUE
+          r_val$profile_display = TRUE # this event run only one time controlled with profile_display
 
           # build input for profile metric type
           r_val$ui_profile_metric_type = selectInput(ns("profile_metric_type"), "Ajoutez une métrique :",
                                                      choices = names(params_metrics_choice()),
                                                      selected  = names(params_metrics_choice())[1])
-
 
           # plot single axe with metric selected
           r_val$plot = lg_profile_main(data = r_val$selected_axis_df,
