@@ -305,9 +305,24 @@ mod_explore_server <- function(id){
                              selected_region_feature = r_val$selected_region_feature)
 
         # build metric selectInput
-        r_val$ui_metric_type = selectInput(ns("metric_type"), "Sélectionez une métrique :",
-                                             choices = names(params_metrics_choice()),
-                                             selected  = names(params_metrics_choice())[1])
+        r_val$ui_metric_type =
+          div(
+            class = "input-with-icon",
+            selectInput(ns("metric_type"), "Sélectionez une métrique :",
+                        choices = names(params_metrics_choice()),
+                        selected  = names(params_metrics_choice())[1]
+            ),
+            style = "display: flex; align-items: center;",
+            img(
+              id = "info-icon",
+              src = "www/information-icon-6068.png",
+              style = "width: 7%; height: auto; margin-left: 10px",
+              class = "icon"
+            ),
+            shinyBS::bsPopover(id = "info-icon",
+                               title = "This is a tooltip for the label",
+                               placement = "right", trigger = "click")
+          )
 
         # create download button
         r_val$ui_download = downloadButton(
