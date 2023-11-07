@@ -23,8 +23,10 @@ Imports:
     RPostgres,
     sf,
     shiny (>= 1.7.4.1),
+    shinyBS,
     shinycssloaders,
     shinythemes,
+    stats,
     utils
 Suggests: 
     spelling,

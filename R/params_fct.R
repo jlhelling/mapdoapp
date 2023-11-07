@@ -167,54 +167,157 @@ params_map_group <- function(){
 #'
 #' This function returns a list of choices for selecting metrics organized into categories.
 #'
-#' @return A list of choices for selecting metrics, categorized into "Largeurs (m)," "Pentes," "Occupation du sol," "Continuité latérale," and "Indices."
+#' @return A list of choices for selecting metric type."
 #'
 #' @examples
 #' metric_choices <- params_metrics_choice()
-#' # all "Largeurs (m)" metrics available name
-#' largeurs <- names(params_metrics_choice()[["Largeurs (m)"]])
-#' # get "active_channel_width" label
-#' params_metrics_choice()[["Largeurs (m)"]][["active_channel_width"]]
 #'
 #' @export
 params_metrics_choice <- function() {
   choices_map <- list(
-    "Largeurs (m)" = c(
-      active_channel_width = "Chenal actif",
-      natural_corridor_width = "Corridor naturel",
-      connected_corridor_width = "Corridor connecté",
-      valley_bottom_width = "Fond de vallée"
+    largeur = list(
+      metric_type_title = "Largeurs (m)",
+      metric_type_info = "Largeurs moyennes par tronçon de 200m sur le corridor considéré.",
+      metric_type_values = list(
+        active_channel_width = list(
+          metric_title = "Chenal actif",
+          metric_info = "Surface en eau et bancs sédimentaires."),
+        natural_corridor_width = list(
+          metric_title = "Corridor naturel",
+          metric_info = "Surface en eau, bancs sédimentaires et végétation rivulaire connectée."),
+        connected_corridor_width = list(
+          metric_title = "Corridor connecté",
+          metric_info = "Surface en eau, bancs sédimentaires, végétation rivulaire connectée et surfaces agricoles connectées."),
+        valley_bottom_width = list(
+          metric_title = "Fond de vallée",
+          metric_info = "Fond de vallée déterminer par seuil de pente et d'élévation.")
+      )
     ),
-    "Elévation (m)" = c(
-      talweg_elevation_min = "Talweg"
+    elevation = list(
+      metric_type_title = "Elévations (m)",
+      metric_type_info = "Elévations par tronçon de 200m.",
+      metric_type_values = list(
+        talweg_elevation_min = list(
+          metric_title = "Talweg min",
+          metric_info = "Elévation minimale du talweg."
+        )
+      )
     ),
-    "Pentes" = c(
-      talweg_slope = "Talweg",
-      floodplain_slope = "Fond de vallée"
+    pente = list(
+      metric_type_title = "Pentes (%)",
+      metric_type_info = "Pentes longitudinales par tronçon de 200m.",
+      metric_type_values = list(
+        talweg_slope = list(
+          metric_title = "Talweg",
+          metric_info = "Pente moyenne du talweg."
+        ),
+        floodplain_slope = list(
+          metric_title = "Fond de vallée",
+          metric_info = "Pente moyenne du fond de vallée."
+        )
+      )
     ),
-    "Occupation du sol" = c(
-      water_channel = "Surface en eau",
-      gravel_bars = "Bancs sédimentaires",
-      natural_open = "Espace naturel ouvert",
-      forest = "Forêt",
-      grassland = "Prairie permanente",
-      crops = "Culture",
-      diffuse_urban = "Périurbain",
-      dense_urban = "Urbain dense",
-      infrastructures = "Infrastructure de transport"
+    landuse = list(
+      metric_type_title = "Occupation du sol",
+      metric_type_info = "Occupation du sol en hectares ou en pourcentage de la surface du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique. \n La carte et les données ont sont issus de traitements de la BD TOPO® et du RPG®, la démarche et la méthode sont détaillées sur [github.com](https://github.com/EVS-GIS/landuse-fct).",
+      metric_type_values = list(
+        water_channel = list(
+          metric_title = "Surface en eau",
+          metric_info = "Surface en eau défini par la BD TOPO® de l'IGN."
+        ),
+        gravel_bars = list(
+          metric_title = "Banc sédimentaire",
+          metric_info = "Surface des eaux intermittentes de la BD TOPO® de l'IGN."
+        ),
+        natural_open = list(
+          metric_title = "Espace naturel ouvert",
+          metric_info = "Zone de végétation ouverte telles que les forêts ouvertes, les haies ou bandes ligneuses."
+        ),
+        forest = list(
+          metric_title = "Forêt",
+          metric_info = "Zone de végétation fermée."
+        ),
+        grassland = list(
+          metric_title = "Prairie permanente",
+          metric_info = "Parcelle de prairie permanente défini dans le RPG®."
+        ),
+        crops = list(
+          metric_title = "Culture",
+          metric_info = "Zone de culture rassemblant les grandes cultures, l'arboricultre et les vignes."
+        ),
+        diffuse_urban = list(
+          metric_title = "Périurbain",
+          metric_info = "Zone d'habitation diffus proche de la zone d'habitation de la BD TOPO®."
+        ),
+        dense_urban = list(
+          metric_title = "Urbain dense",
+          metric_info = "Zone continue de l'espace bâti dense ou artificialisée."
+        ),
+        infrastructures = list(
+          metric_title = "Infrastructure de transport",
+          metric_info = "Infrastructure routières et férrovières."
+        )
+      )
     ),
-    "Continuité latérale" = c(
-      active_channel = "Bande active",
-      riparian_corridor = "Corridor naturel",
-      semi_natural = "Corridor semi-naturel",
-      reversible = "Espace de réversibilité",
-      disconnected = "Espace déconnecté",
-      built_environment = "Espace artificialisé"
+    continuity = list(
+      metric_type_title = "Continuité latérale",
+      metric_type_info = "Surface de continuité latérale par corridor fluvial depuis le chenal en eau dans le fond de vallée à partir des surfaces d'occupation du sol continues. \n La surface peut être exprimée en hectares ou en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique.",
+      metric_type_values = list(
+        active_channel = list(
+          metric_title = "Bande active",
+          metric_info = "Les surfaces en eau et les bancs sédimentaires connectées."
+        ),
+        riparian_corridor = list(
+          metric_title = "Corridor naturel",
+          metric_info = "Le chenal actif avec la végétation ouverte et fermée connectées."
+        ),
+        semi_natural = list(
+          metric_title = "Corridor semi-naturel",
+          metric_info = "Le corridor naturel avec les prairies permanentes connectées."
+        ),
+        reversible = list(
+          metric_title = "Corridor semi-naturel",
+          metric_info = "Le corridor Corridor semi-naturel avec les cultures connectées."
+        ),
+        disconnected = list(
+          metric_title = "Espace déconnecté",
+          metric_info = "Espace non urbanisé déconnecté du corridor fluvial par des infrastructures ou du bâti."
+        ),
+        built_environment = list(
+          metric_title = "Espace artificialisé",
+          metric_info = "Zone bâti, dense ou peu dense, et les infrastructures de transport."
+        )
+      )
     ),
-    "Indices" = c(
-      idx_confinement = "Indice de confinement"
+    index = list(
+      metric_type_title = "Indices",
+      metric_type_info = "Indice géomorphologique par tronçon de 200m.",
+      metric_type_values = list(
+        idx_confinement = list(
+          metric_title = "Indice de confinement",
+          metric_info = "Ratio de la largeur de la bande active sur la largeur du fond de vallée. \n Il permet d'estimer si le cours d'eau est contraint par la topographie. Plus l'indice est faible plus le cours d'eau a d'espace potentiel pour s'élargir."
+        )
+      )
     )
   )
-
   return(choices_map)
+}
+
+#' Get a list of available unit areas.
+#'
+#' This function returns a vector of available unit areas with their respective labels.
+#'
+#' @return A named character vector containing unit areas and their labels.
+#'
+#' @examples
+#' unit_areas <- params_unit_area()
+#' unit_areas["Hectares"]
+#'
+#' @export
+params_unit_area <- function(){
+  unit_area <- c(
+    "Hectares" = "hectare",
+    "% du fond de vallée" = "percent"
+  )
+  return(unit_area)
 }

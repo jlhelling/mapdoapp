@@ -7,16 +7,12 @@
 params_metrics_choice()
 }
 \value{
-A list of choices for selecting metrics, categorized into "Largeurs (m)," "Pentes," "Occupation du sol," "Continuité latérale," and "Indices."
+A list of choices for selecting metric type."
 }
 \description{
 This function returns a list of choices for selecting metrics organized into categories.
 }
 \examples{
 metric_choices <- params_metrics_choice()
-# all "Largeurs (m)" metrics available name
-largeurs <- names(params_metrics_choice()[["Largeurs (m)"]])
-# get "active_channel_width" label
-params_metrics_choice()[["Largeurs (m)"]][["active_channel_width"]]
 
 }

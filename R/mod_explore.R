@@ -19,6 +19,11 @@ mod_explore_ui <- function(id){
     golem_add_external_resources(),
     # UI elements
     fluidPage(
+      tags$head(
+        tags$style(
+          HTML(".control-label, .selectize-control{margin-bottom: 0px;}")
+        )
+      ),
       theme = shinytheme("spacelab"),
       fluidRow(
         column(
@@ -83,6 +88,7 @@ mod_explore_ui <- function(id){
 #' @importFrom dplyr filter mutate
 #' @importFrom plotly event_register event_data plotlyProxy plotlyProxyInvoke renderPlotly plotlyOutput
 #' @importFrom sf st_write
+#' @importFrom shinyBS bsPopover
 #'
 mod_explore_server <- function(id){
   moduleServer(id, function(input, output, session){
@@ -95,8 +101,8 @@ mod_explore_server <- function(id){
     # # dev print to debug value
     # output$printcheck = renderPrint({
     #   tryCatch({
-    #     event_data("plotly_hover")
-    #     print(event_data("plotly_hover"))
+    #     # event_data("plotly_hover")
+    #     print(input$unit_area)
     #     print("exists")
     #   },
     #   shiny.silent.error = function(e) {
@@ -117,11 +123,11 @@ mod_explore_server <- function(id){
       # metric selected by user
       selected_metric = NULL,
       selected_metric_name = NULL,
-      select_metric_category = NULL,
+      selected_metric_type = NULL,
       # profile metric selected by user
       selected_profile_metric = NULL,
       selected_profile_metric_name = NULL,
-      select_profile_metric_category = NULL,
+      selected_profile_metric_type = NULL,
       strahler = NULL,
       ui_strahler_filter = NULL,
       ui_metric_type = NULL,
@@ -284,7 +290,7 @@ mod_explore_server <- function(id){
         # save the selected region feature for mapping
         r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id)
         # set region name to download
-        r_val$region_name = normalize_string(r_val$selected_region_feature$lbregionhy)
+        r_val$region_name = utile_normalize_string(r_val$selected_region_feature$lbregionhy)
         # get the axis in the region
         r_val$network_region_axis = data_get_axis(selected_region_id = input$exploremap_shape_click$id)
         # get strahler data
@@ -298,7 +304,6 @@ mod_explore_server <- function(id){
                                                r_val$strahler[["max"]]),
                                        step=1)
 
-
         # map region clicked with region clicked and overlayers
         leafletProxy("exploremap") %>%
           map_region_clicked(region_click = input$exploremap_shape_click,
@@ -309,18 +314,19 @@ mod_explore_server <- function(id){
           div(
             class = "input-with-icon",
             selectInput(ns("metric_type"), "Sélectionez une métrique :",
-                        choices = names(params_metrics_choice()),
-                        selected  = names(params_metrics_choice())[1]
+                        choices = utile_get_metric_type(params_metrics_choice()),
+                        selected  = utile_get_metric_type(params_metrics_choice())[1]
             ),
-            style = "display: flex; align-items: center;",
+            style = "display: flex; align-items: center; margin-bottom: 0px",
             img(
               id = "info-icon",
               src = "www/information-icon-6068.png",
-              style = "width: 7%; height: auto; margin-left: 10px",
+              style = "width: 7%; height: auto; margin-left: 10px; cursor: pointer",
               class = "icon"
             ),
-            shinyBS::bsPopover(id = "info-icon",
+            bsPopover(id = "info-icon",
                                title = "This is a tooltip for the label",
+                               content = "I see the content",
                                placement = "right", trigger = "click")
           )
 
@@ -361,7 +367,7 @@ mod_explore_server <- function(id){
               data = r_val$selected_axis_df,
               y = r_val$selected_axis_df[[r_val$selected_metric]],
               y_label = r_val$selected_metric_name,
-              y_label_category = r_val$select_metric_category
+              y_label_category = r_val$selected_metric_type
             )
 
           plotlyProxy("long_profile") %>%
@@ -374,7 +380,7 @@ mod_explore_server <- function(id){
             proxy_second_axe <- lg_profile_second(data = r_val$selected_axis_df,
                                                   y = r_val$selected_axis_df[[r_val$selected_profile_metric]],
                                                   y_label = r_val$selected_profile_metric_name,
-                                                  y_label_category = r_val$select_profile_metric_category)
+                                                  y_label_category = r_val$selected_profile_metric_type)
 
             plotlyProxy("long_profile") %>%
               plotlyProxyInvoke("deleteTraces", 1) %>%
@@ -391,38 +397,40 @@ mod_explore_server <- function(id){
 
     observeEvent(input$metric_type, {
       # build metric radioButtons
-      r_val$ui_metric = radioButtons(ns("metric"), sprintf("%s :", input$metric_type),
-                                                  choiceNames = as.list(unname(params_metrics_choice()[[input$metric_type]])),
-                                                  choiceValues = names(params_metrics_choice()[[input$metric_type]]),
-                                                  selected = character(0))
+        r_val$ui_metric = radioButtons(
+        inputId = ns("metric"),
+        label = NULL,
+        choiceNames = unname(utile_get_metric_name_value(input$metric_type)),
+        choiceValues = names(utile_get_metric_name_value(input$metric_type)),
+        selected = character(0)
+      )
 
-      # build selectInput unit area for Occupation du sol or continuity
-      if (input$metric_type == "Occupation du sol" || input$metric_type == "Continuité latérale"){
+      # build selectInput unit area for landuse or continuity
+      if (input$metric_type == "landuse" || input$metric_type == "continuity"){
         r_val$ui_unit_area = selectInput(ns("unit_area"), "Surfaces :",
-                                         choices = c("Hectares", "% du fond de vallée"),
-                                         selected = "Hectares")
+                                         choices = params_unit_area(),
+                                         selected = unname(params_unit_area()[1]))
       }else{
         r_val$ui_unit_area = NULL
       }
     })
 
 
-    #### event metric select ####
+    #### metric select ####
 
     observeEvent(c(input$metric, input$unit_area), ignoreInit = TRUE, {
       # change field if unit_area in percentage
-      if (!is.null(input$metric) && input$unit_area == "% du fond de vallée"
-          && (input$metric_type %in% c("Occupation du sol", "Continuité latérale"))){
+      if (!is.null(input$metric) && input$unit_area == "percent"
+          && (input$metric_type %in% c("landuse", "continuity"))){
         r_val$selected_metric = paste0(input$metric,"_pc")
-        r_val$selected_metric_name = utile_get_metric_name(selected_metric = input$metric)
-        r_val$select_metric_category = utile_get_category_name(selected_metric = input$metric)
       } else if (!is.null(input$metric)) {
         r_val$selected_metric = input$metric
-        r_val$selected_metric_name = utile_get_metric_name(selected_metric = input$metric)
-        r_val$select_metric_category = utile_get_category_name(selected_metric = input$metric)
       }
 
       if (!is.null(input$metric)){
+        r_val$selected_metric_name = params_metrics_choice()[[input$metric_type]]$metric_type_values[[input$metric]]$metric_title
+        r_val$selected_metric_type = params_metrics_choice()[[input$metric_type]]$metric_type_title
+
         # build metric filter slider
         r_val$min_max_metric <- data_get_min_max_metric(selected_region_id = r_val$region_click$id, selected_metric = r_val$selected_metric)
 
@@ -443,7 +451,7 @@ mod_explore_server <- function(id){
               data = r_val$selected_axis_df,
               y = r_val$selected_axis_df[[r_val$selected_metric]],
               y_label = r_val$selected_metric_name,
-              y_label_category = r_val$select_metric_category
+              y_label_category = r_val$selected_metric_type
             )
 
           plotlyProxy("long_profile") %>%
@@ -464,14 +472,14 @@ mod_explore_server <- function(id){
 
           # build input for profile metric type
           r_val$ui_profile_metric_type = selectInput(ns("profile_metric_type"), "Ajoutez une métrique :",
-                                                     choices = names(params_metrics_choice()),
-                                                     selected  = names(params_metrics_choice())[1])
+                                                     choices = utile_get_metric_type(params_metrics_choice()),
+                                                     selected  = utile_get_metric_type(params_metrics_choice())[1])
 
           # plot single axe with metric selected
           r_val$plot = lg_profile_main(data = r_val$selected_axis_df,
                                        y = r_val$selected_axis_df[[r_val$selected_metric]],
                                        y_label = r_val$selected_metric_name,
-                                       y_label_category = r_val$select_metric_category) %>%
+                                       y_label_category = r_val$selected_metric_type) %>%
             event_register("plotly_hover")
         }
       }
@@ -483,24 +491,23 @@ mod_explore_server <- function(id){
 
     observeEvent(input$profile_metric_type, {
 
-
       # build profile metric radio button
       r_val$ui_profile_metric = radioButtons(
-        ns("profile_metric"),
-        sprintf("%s :", input$profile_metric_type),
-        choiceNames = as.list(unname(params_metrics_choice()[[input$profile_metric_type]])),
-        choiceValues = names(params_metrics_choice()[[input$profile_metric_type]]),
+        inputId = ns("profile_metric"),
+        label = NULL,
+        choiceNames = unname(utile_get_metric_name_value(input$profile_metric_type)),
+        choiceValues = names(utile_get_metric_name_value(input$profile_metric_type)),
         selected = character(0)
       )
 
       # build profile unit area select
-      if (input$profile_metric_type == "Occupation du sol" ||
-          input$profile_metric_type == "Continuité latérale") {
+      if (input$profile_metric_type == "landuse" ||
+          input$profile_metric_type == "continuity") {
         r_val$ui_profile_unit_area = selectInput(
           ns("profile_unit_area"),
           "Surfaces :",
-          choices = c("Hectares", "% du fond de vallée"),
-          selected = "Hectares"
+          choices = params_unit_area(),
+          selected = unname(params_unit_area()[1])
         )
       } else{
         r_val$ui_profile_unit_area = NULL
@@ -516,23 +523,22 @@ mod_explore_server <- function(id){
 
     observeEvent(c(input$profile_metric, input$profile_unit_area), ignoreInit = TRUE, {
       # change field if unit_area in percentage
-      if (!is.null(input$profile_metric) && input$profile_unit_area == "% du fond de vallée"
-          && (input$profile_metric_type %in% c("Occupation du sol", "Continuité latérale"))){
+      if (!is.null(input$profile_metric) && input$profile_unit_area == "percent"
+          && (input$profile_metric_type %in% c("landuse", "continuity"))){
         r_val$selected_profile_metric = paste0(input$profile_metric,"_pc")
-        r_val$selected_profile_metric_name = utile_get_metric_name(selected_metric = input$profile_metric)
-        r_val$select_profile_metric_category = utile_get_category_name(selected_metric = input$profile_metric)
       } else if (!is.null(input$profile_metric)) {
         r_val$selected_profile_metric = input$profile_metric
-        r_val$selected_profile_metric_name = utile_get_metric_name(selected_metric = input$profile_metric)
-        r_val$select_profile_metric_category = utile_get_category_name(selected_metric = input$profile_metric)
       }
 
       if (!is.null(input$profile_metric)){
+        r_val$selected_profile_metric_name = params_metrics_choice()[[input$profile_metric_type]]$metric_type_values[[input$profile_metric]]$metric_title
+        r_val$selected_profile_metric_type = params_metrics_choice()[[input$profile_metric_type]]$metric_type_title
+
         # create the list to add trace and layout to change second axe plot
         proxy_second_axe <- lg_profile_second(data = r_val$selected_axis_df,
                                               y = r_val$selected_axis_df[[r_val$selected_profile_metric]],
                                               y_label = r_val$selected_profile_metric_name,
-                                              y_label_category = r_val$select_profile_metric_category)
+                                              y_label_category = r_val$selected_profile_metric_type)
 
         plotlyProxy("long_profile") %>%
           plotlyProxyInvoke("deleteTraces", 1) %>%
@@ -593,8 +599,6 @@ mod_explore_server <- function(id){
         map_metric(wms_params = params_wms()$metric, # metric_basic to have blue network
                    cql_filter = r_val$cql_filter, sld_body = r_val$sld_body,
                    data_axis = r_val$network_region_axis)
-
-
     })
 
     ### EVENT MOUSEOVER ####
