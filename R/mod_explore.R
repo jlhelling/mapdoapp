@@ -20,7 +20,7 @@ mod_explore_ui <- function(id){
     fluidPage(
       tags$head(
         tags$style(
-            HTML(".form-group{margin-bottom: 0px}")
+            HTML(".form-group{margin-bottom: 0px}") # less space below selectInput metric_type
         )
       ),
       fluidRow(
@@ -62,7 +62,7 @@ mod_explore_ui <- function(id){
                     uiOutput(ns("profileareaUI")),
                     uiOutput(ns("profileradiobuttonUI")),
                     uiOutput(ns("removeprofileaxeUI"),
-                             style = "margin-top: 10px;")
+                             style = "margin-top: 10px;") # more space above button
                   )
                 )
               )
@@ -192,7 +192,7 @@ mod_explore_server <- function(id){
           style = "display: flex; align-items: center; margin-bottom: 0px",
           r_val$ui_metric_type,
           span(
-            style = "display: flex; align-items: center; margin-left: 10px",
+            style = "display: flex; margin-left: 10px; margin-top: 12px",
             popover(
               trigger = bsicons::bs_icon("info-circle"),
               "",
@@ -255,12 +255,6 @@ mod_explore_server <- function(id){
 
       div(
         HTML('<label class="control-label" id="legend-label">Légende</label>'),
-        img(
-          title = "Information sur la légende",
-          src = "www/information-icon-6068.png",
-          style = "width: 10%; height: auto;",
-          class="responsive"
-        ), # img
         # metric
         div(
           style = "display: flex; align-items: center;",
