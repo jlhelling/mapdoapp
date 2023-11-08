@@ -3,15 +3,13 @@
 #' @param request Internal parameter for `{shiny}`.
 #'     DO NOT REMOVE.
 #' @import shiny
+#' @importFrom bslib bs_theme
 #' @noRd
 app_ui <- function(request){
   navbarPage(
+    theme = bs_theme(version = 5, bootswatch = "simplex"),
     title =
-      div(
-        img(
-          src = "www/favicon_mapdo.png"
-        ),"" # empty title only logo
-      ),
+        img(src = "www/favicon_mapdo.png"),
     tabPanel("Exploration", mod_explore_ui("explore_1"))
   )
 }

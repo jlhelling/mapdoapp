@@ -10,7 +10,6 @@
 #' @rdname mod_explore
 #'
 #' @import shiny
-#' @import shinythemes
 #' @importFrom shinycssloaders withSpinner
 mod_explore_ui <- function(id){
   ns <- NS(id)
@@ -24,7 +23,6 @@ mod_explore_ui <- function(id){
           HTML(".control-label, .selectize-control{margin-bottom: 0px;}")
         )
       ),
-      theme = shinytheme("spacelab"),
       fluidRow(
         column(
           width = 3,
@@ -87,8 +85,9 @@ mod_explore_ui <- function(id){
 #' @importFrom htmltools HTML div img
 #' @importFrom dplyr filter mutate
 #' @importFrom plotly event_register event_data plotlyProxy plotlyProxyInvoke renderPlotly plotlyOutput
+#' @importFrom bslib popover update_popover
+#' @importFrom bsicons bs_icon
 #' @importFrom sf st_write
-#' @importFrom shinyBS bsPopover
 #'
 mod_explore_server <- function(id){
   moduleServer(id, function(input, output, session){
@@ -188,7 +187,19 @@ mod_explore_server <- function(id){
     # UI create choose metric
     output$metricUI <- renderUI({
       if (!is.null(r_val$ui_metric_type)){
-        r_val$ui_metric_type
+        div(
+          style = "display: flex; align-items: center; margin-bottom: 0px",
+          r_val$ui_metric_type,
+          span(
+            style = "display: flex; align-items: center; margin-left: 10px",
+            popover(
+              trigger = bsicons::bs_icon("info-circle"),
+              "",
+              placement = "right",
+              id = ns("popover_metric_type")
+            )
+          )
+        )
       } else {
         HTML('<label class="control-label" id="wait-metric-label">
              Cliquez sur une région hydrographique pour afficher la sélection des métriques</label>')
@@ -311,24 +322,9 @@ mod_explore_server <- function(id){
 
         # build metric selectInput
         r_val$ui_metric_type =
-          div(
-            class = "input-with-icon",
             selectInput(ns("metric_type"), "Sélectionez une métrique :",
                         choices = utile_get_metric_type(params_metrics_choice()),
-                        selected  = utile_get_metric_type(params_metrics_choice())[1]
-            ),
-            style = "display: flex; align-items: center; margin-bottom: 0px",
-            img(
-              id = "info-icon",
-              src = "www/information-icon-6068.png",
-              style = "width: 7%; height: auto; margin-left: 10px; cursor: pointer",
-              class = "icon"
-            ),
-            bsPopover(id = "info-icon",
-                               title = "This is a tooltip for the label",
-                               content = "I see the content",
-                               placement = "right", trigger = "click")
-          )
+                        selected  = utile_get_metric_type(params_metrics_choice())[1])
 
         # create download button
         r_val$ui_download = downloadButton(
@@ -396,6 +392,13 @@ mod_explore_server <- function(id){
     #### metric type select ####
 
     observeEvent(input$metric_type, {
+
+      if (!is.null(input$metric_type)){
+        update_popover("popover_metric_type",
+                       HTML(params_metrics_choice()[[input$metric_type]]$metric_type_info))
+      }
+
+
       # build metric radioButtons
         r_val$ui_metric = radioButtons(
         inputId = ns("metric"),

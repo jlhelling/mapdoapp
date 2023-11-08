@@ -219,7 +219,7 @@ params_metrics_choice <- function() {
     ),
     landuse = list(
       metric_type_title = "Occupation du sol",
-      metric_type_info = "Occupation du sol en hectares ou en pourcentage de la surface du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique. \n La carte et les données ont sont issus de traitements de la BD TOPO® et du RPG®, la démarche et la méthode sont détaillées sur [github.com](https://github.com/EVS-GIS/landuse-fct).",
+      metric_type_info = "Occupation du sol en hectares ou en pourcentage de la surface du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique. \n La carte et les données ont sont issus de traitements de la BD TOPO® et du RPG®, la démarche et la méthode sont détaillées sur <a href='https://github.com/EVS-GIS/landuse-fct'>github.com</a>.",
       metric_type_values = list(
         water_channel = list(
           metric_title = "Surface en eau",
