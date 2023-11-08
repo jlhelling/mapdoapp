@@ -1,49 +1,3 @@
-#' Get the category name of a selected metric
-#'
-#' This function takes a selected metric and returns the category name to which
-#' the metric belongs. It does this by comparing the selected metric to the
-#' metric names in the categories provided by the `params_metrics_choice` function.
-#'
-#' @param selected_metric The name of the metric for which you want to find the
-#'                       category name.
-#'
-#' @return The category name to which the selected metric belongs.
-#'
-#' @examples
-#' selected_metric <- "some_metric"
-#' category_name <- utile_get_category_name(selected_metric)
-#'
-#' @export
-utile_get_category_name <- function(selected_metric) {
-  category_name <- names(params_metrics_choice())[
-    sapply(params_metrics_choice(), function(x) selected_metric %in% names(x))
-  ]
-  return(category_name)
-}
-
-#' Get the name of a selected metric
-#'
-#' This function takes a selected metric and returns its corresponding name.
-#' It first determines the category name of the metric using the
-#' `utile_get_category_name` function and then retrieves the metric name
-#' from the category's metrics list provided by the `params_metrics_choice` function.
-#'
-#' @param selected_metric The name of the metric for which you want to retrieve
-#'                       the metric name.
-#'
-#' @return The name of the selected metric.
-#'
-#' @examples
-#' # get name label from metric name
-#' utile_get_metric_name("active_channel_width")
-#'
-#' @export
-utile_get_metric_name <- function(selected_metric) {
-  category_name <- utile_get_category_name(selected_metric = selected_metric)
-  metric_name <- params_metrics_choice()[[category_name]][[selected_metric]]
-  return(metric_name)
-}
-
 #' Normalize a string by removing spaces, accents, and special characters.
 #'
 #' This function takes an input string and normalizes it by removing spaces, accents, diacritics,
@@ -55,11 +9,11 @@ utile_get_metric_name <- function(selected_metric) {
 #'
 #' @examples
 #' original_string <- "Thïs is à sâmplè strîng with spèciál chàracters!"
-#' normalized_string <- normalize_string(original_string)
+#' normalized_string <- utile_normalize_string(original_string)
 #' cat(normalized_string)  # "thisisasamplestringwithspecialcharacters"
 #'
 #' @export
-normalize_string <- function(input_string) {
+utile_normalize_string <- function(input_string) {
   # Remove accents and diacritics
   input_string <- chartr("ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÌÍÎÏìíîïÙÚÛÜùúûüÝýÑñÇç",
                          "AAAAAAaaaaaaOOOOOOooooooEEEEeeeeIIIIiiiiUUUUuuuuYyNnCc",
@@ -73,3 +27,95 @@ normalize_string <- function(input_string) {
 
   return(normalized_string)
 }
+
+#' Get a named vector of metric types from the params metric list.
+#'
+#' This function extracts metric types from a list of objects and returns a named
+#' vector with metric type titles as names and metric type values as values.
+#'
+#' @param input_list A list of objects where each object has a 'metric_type_title' field.
+#'
+#' @importFrom stats setNames
+#'
+#' @return A named character vector with metric type titles as names and metric type values as values.
+#'
+#' @examples
+#' metric_types <- utile_get_metric_type(params_metrics_choice())
+#'
+#' @export
+utile_get_metric_type <- function(input_list) {
+  metric_type <- setNames(names(sapply(input_list, function(x) x$metric_type_title)), sapply(input_list, function(x) x$metric_type_title))
+  return(metric_type)
+}
+
+#' Get a named vector of all the metric from the metric type from the params metric list.
+#'
+#' This function extracts metric names and value with metric type stored in params metric list.
+#'
+#' @param metric_type A character with metric type.
+#'
+#' @return A named character vector with all the metric names and values.
+#'
+#' @examples
+#' metrics <- utile_get_metric_name_value("largeur")
+#'
+#' @export
+utile_get_metric_name_value <- function(metric_type){
+  metric_name <- sapply(params_metrics_choice()[[metric_type]]$metric_type_value, function(x) x$metric_title)
+  return(metric_name)
+}
+
+#' Create buttons with popover for metric labels.
+#'
+#' This function generates a list of buttons with popovers that display additional
+#' information for each metric label.
+#'
+#' @param metric_type A character string specifying the metric type.
+#'
+#' @importFrom bslib popover
+#' @importFrom bsicons bs_icon
+#'
+#' @return A list of buttons with popovers.
+#'
+#' @details This function uses the `params_metrics_choice` data structure to
+#' extract metric labels and corresponding popover information for the specified
+#' metric type.
+#'
+#' @examples
+#' metric_buttons <- button_label_with_popover("largeur")
+#'
+#' @export
+button_label_with_popover <- function(metric_type) {
+  metrics <-
+    names(params_metrics_choice()[[metric_type]]$metric_type_value)
+  buttons <- list()
+  for (var in metrics) {
+    metric_title <-
+      params_metrics_choice()[[metric_type]]$metric_type_value[[var]]$metric_title
+    # popover to display
+    metric_popover <-
+      params_metrics_choice()[[metric_type]]$metric_type_value[[var]]$metric_info
+    bttn <-
+      list(
+        div(
+          # metric title to display next to the radioButton
+          metric_title,
+          style = "display: inline; align-items: center;",
+          # info icon with popover label
+          span(
+            style = "display: inline; align-items: center",
+            popover(
+              trigger = bs_icon("info-circle"),
+              metric_popover,
+              placement = "right",
+              id = "popover_metric"
+            )
+          )
+        )
+      )
+
+    buttons <- append(buttons, bttn)
+  }
+  return(buttons)
+}
+

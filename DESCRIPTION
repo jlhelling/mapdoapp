@@ -9,6 +9,8 @@ License: MIT + file LICENSE
 Depends: 
     R (>= 2.10)
 Imports: 
+    bsicons,
+    bslib,
     config (>= 0.3.1),
     DBI,
     dplyr,
@@ -24,7 +26,7 @@ Imports:
     sf,
     shiny (>= 1.7.4.1),
     shinycssloaders,
-    shinythemes,
+    stats,
     utils
 Suggests: 
     spelling,
