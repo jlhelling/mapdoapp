@@ -64,3 +64,58 @@ utile_get_metric_name_value <- function(metric_type){
   metric_name <- sapply(params_metrics_choice()[[metric_type]]$metric_type_value, function(x) x$metric_title)
   return(metric_name)
 }
+
+#' Create buttons with popover for metric labels.
+#'
+#' This function generates a list of buttons with popovers that display additional
+#' information for each metric label.
+#'
+#' @param metric_type A character string specifying the metric type.
+#'
+#' @importFrom bslib popover
+#' @importFrom bsicons bs_icon
+#'
+#' @return A list of buttons with popovers.
+#'
+#' @details This function uses the `params_metrics_choice` data structure to
+#' extract metric labels and corresponding popover information for the specified
+#' metric type.
+#'
+#' @examples
+#' metric_buttons <- button_label_with_popover("largeur")
+#'
+#' @export
+button_label_with_popover <- function(metric_type) {
+  metrics <-
+    names(params_metrics_choice()[[metric_type]]$metric_type_value)
+  buttons <- list()
+  for (var in metrics) {
+    metric_title <-
+      params_metrics_choice()[[metric_type]]$metric_type_value[[var]]$metric_title
+    # popover to display
+    metric_popover <-
+      params_metrics_choice()[[metric_type]]$metric_type_value[[var]]$metric_info
+    bttn <-
+      list(
+        div(
+          # metric title to display next to the radioButton
+          metric_title,
+          style = "display: inline; align-items: center;",
+          # info icon with popover label
+          span(
+            style = "display: inline; align-items: center",
+            popover(
+              trigger = bs_icon("info-circle"),
+              metric_popover,
+              placement = "right",
+              id = "popover_metric"
+            )
+          )
+        )
+      )
+
+    buttons <- append(buttons, bttn)
+  }
+  return(buttons)
+}
+

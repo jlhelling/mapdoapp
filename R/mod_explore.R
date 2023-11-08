@@ -20,7 +20,7 @@ mod_explore_ui <- function(id){
     fluidPage(
       tags$head(
         tags$style(
-          HTML(".control-label, .selectize-control{margin-bottom: 0px;}")
+            HTML(".form-group{margin-bottom: 0px}")
         )
       ),
       fluidRow(
@@ -322,7 +322,7 @@ mod_explore_server <- function(id){
 
         # build metric selectInput
         r_val$ui_metric_type =
-            selectInput(ns("metric_type"), "Sélectionez une métrique :",
+            selectInput(ns("metric_type"), "Sélectionnez une métrique :",
                         choices = utile_get_metric_type(params_metrics_choice()),
                         selected  = utile_get_metric_type(params_metrics_choice())[1])
 
@@ -399,12 +399,12 @@ mod_explore_server <- function(id){
       }
 
 
-      # build metric radioButtons
+      # build metric radioButtons with popover icon
         r_val$ui_metric = radioButtons(
         inputId = ns("metric"),
         label = NULL,
-        choiceNames = unname(utile_get_metric_name_value(input$metric_type)),
-        choiceValues = names(utile_get_metric_name_value(input$metric_type)),
+        choiceNames = button_label_with_popover(input$metric_type),
+        choiceValues = as.list(names(utile_get_metric_name_value(input$metric_type))),
         selected = character(0)
       )
 
@@ -417,7 +417,6 @@ mod_explore_server <- function(id){
         r_val$ui_unit_area = NULL
       }
     })
-
 
     #### metric select ####
 

@@ -190,7 +190,7 @@ params_metrics_choice <- function() {
           metric_info = "Surface en eau, bancs sédimentaires, végétation rivulaire connectée et surfaces agricoles connectées."),
         valley_bottom_width = list(
           metric_title = "Fond de vallée",
-          metric_info = "Fond de vallée déterminer par seuil de pente et d'élévation.")
+          metric_info = "Fond de vallée déterminé par seuil de pente et d'élévation.")
       )
     ),
     elevation = list(
