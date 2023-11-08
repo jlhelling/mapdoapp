@@ -61,7 +61,8 @@ mod_explore_ui <- function(id){
                     uiOutput(ns("profilemetricUI")),
                     uiOutput(ns("profileareaUI")),
                     uiOutput(ns("profileradiobuttonUI")),
-                    uiOutput(ns("removeprofileaxeUI"))
+                    uiOutput(ns("removeprofileaxeUI"),
+                             style = "margin-top: 10px;")
                   )
                 )
               )
