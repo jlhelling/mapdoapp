@@ -11,3 +11,6 @@ $run_dev.*
 ^rsconnect$
 ^restart.txt
 ^\.github$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
