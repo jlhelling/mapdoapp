@@ -1,4 +1,7 @@
 url: https://evs-gis.github.io/mapdoapp/
 template:
   bootstrap: 5
+  bootswatch: simplex
+
+lang: fr
 
