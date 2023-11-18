@@ -4,10 +4,12 @@
 \alias{map_init_bassins}
 \title{Initialize a Leaflet Map with hydrological Bassins}
 \usage{
-map_init_bassins(bassins_data)
+map_init_bassins(bassins_data, id_logo_ign_remonterletemps)
 }
 \arguments{
 \item{bassins_data}{A hydrological bassins sf data frame.}
+
+\item{id_logo_ign_remonterletemps}{id of the IGN remonter le temps image.}
 }
 \value{
 A Leaflet map object with basemaps, scale and layer control.
@@ -16,7 +18,8 @@ A Leaflet map object with basemaps, scale and layer control.
 This function initializes a Leaflet map with bassins data and various map layers.
 }
 \examples{
-map <- map_init_bassins(bassins_data = bassin_hydrographique)
+map <- map_init_bassins(bassins_data = bassin_hydrographique,
+                        id_logo_ign_remonterletemps = "logo_ign_remonterletemps")
 map
 
 }

@@ -6,6 +6,7 @@ Authors@R:
 Description: Application de description des caractéristiques
     morphologiques des réseaux hydrographiques.
 License: MIT + file LICENSE
+URL: https://evs-gis.github.io/mapdoapp/
 Depends: 
     R (>= 2.10)
 Imports: 
@@ -18,6 +19,7 @@ Imports:
     golem (>= 0.4.1),
     grDevices,
     htmltools,
+    htmlwidgets,
     httr,
     leaflet,
     magrittr,
@@ -26,6 +28,7 @@ Imports:
     sf,
     shiny (>= 1.7.4.1),
     shinycssloaders,
+    shinyjs,
     stats,
     utils
 Suggests: 
@@ -36,4 +39,3 @@ Encoding: UTF-8
 Language: en-US
 LazyData: true
 RoxygenNote: 7.2.3
-URL: https://evs-gis.github.io/mapdoapp/

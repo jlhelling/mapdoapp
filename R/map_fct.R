@@ -3,19 +3,22 @@
 #' This function initializes a Leaflet map with bassins data and various map layers.
 #'
 #' @param bassins_data A hydrological bassins sf data frame.
+#' @param id_logo_ign_remonterletemps id of the IGN remonter le temps image.
 #'
 #' @return A Leaflet map object with basemaps, scale and layer control.
 #'
 #' @examples
-#' map <- map_init_bassins(bassins_data = bassin_hydrographique)
+#' map <- map_init_bassins(bassins_data = bassin_hydrographique,
+#'                         id_logo_ign_remonterletemps = "logo_ign_remonterletemps")
 #' map
 #'
-#' @importFrom leaflet leaflet setView addPolygons addScaleBar addLayersControl
+#' @importFrom leaflet leaflet setView addPolygons addScaleBar addLayersControl addControl
 #' @importFrom leaflet layersControlOptions addProviderTiles scaleBarOptions providers
 #' @importFrom htmltools htmlEscape
+#' @importFrom shiny tags
 #'
 #' @export
-map_init_bassins <- function(bassins_data) {
+map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
 
 
   # Build the legend URL
@@ -43,12 +46,15 @@ map_init_bassins <- function(bassins_data) {
     addLayersControl(
       baseGroups = c("CartoDB Positron", unlist(sapply(params_wms(), function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),
       options = layersControlOptions(collapsed = TRUE)
+    ) %>%
+    addControl(
+      position = "topleft",
+      html = tags$a(href = "javascript:void(0);",
+                    tags$img(
+                      id = id_logo_ign_remonterletemps,
+                      src = "www/logo_ign_remonterletemps.jpg",
+                      width = 40, height = 40))
     )
-
-  # addControl(html = legend_image,
-  #            position = "bottomright", layerId = params_map_group()[["legend"]]) %>%
-  # addControl(html = icon(name = "circle-info", class="fa-solid fa-circle-info fa-xl", lib = "font-awesome"),
-  #            position = "topright", layerId = "GEOL_LEGEND")
 }
 
 #' Add hydrological Regions in a Bassin to an existing Leaflet Map
