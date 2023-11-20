@@ -53,7 +53,8 @@ map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
                     tags$img(
                       id = id_logo_ign_remonterletemps,
                       src = "www/logo_ign_remonterletemps.jpg",
-                      width = 40, height = 40))
+                      width = 40, height = 40,
+                      title="Vers le site IGN remonterletemps"))
     )
 }
 
