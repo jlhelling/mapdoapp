@@ -10,7 +10,10 @@ app_ui <- function(request){
     theme = bs_theme(version = 5, bootswatch = "simplex"),
     title =
         img(src = "www/favicon_mapdo.png"),
-    tabPanel("Exploration", mod_explore_ui("explore_1"))
+    tabPanel("Exploration", mod_explore_ui("explore_1")),
+    tabPanel("Documentation",
+             icon = icon("info"),
+             mod_documentation_ui("documentation_1"))
   )
 }
 

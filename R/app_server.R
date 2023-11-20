@@ -8,4 +8,5 @@
 app_server <- function(input, output, session) {
   # Your application server logic
   mod_explore_server("explore_1")
+  mod_documentation_server("documentation_1")
 }

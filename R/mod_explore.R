@@ -18,7 +18,6 @@ mod_explore_ui <- function(id){
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
-    # UI elements
     fluidPage(
       useShinyjs(),
       tags$head(
