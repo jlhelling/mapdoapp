@@ -159,21 +159,12 @@ mod_explore_server <- function(id){
                        id_logo_ign_remonterletemps = ns("logo_ign_remonterletemps"))
     })
 
-    # url <- "https://remonterletemps.ign.fr/comparer/basic?x=6.869433&y=45.923690&z=16&layer1=ORTHOIMAGERY.ORTHOPHOTOS.1950-1965&layer2=ORTHOIMAGERY.ORTHOPHOTOS&mode=vSlider"
-
     onclick(id = "logo_ign_remonterletemps", expr =
               runjs(sprintf("window.open('%s', '_blank')",
                             params_url_remonterletemps(lng = input$exploremap_center$lng,
                                                        lat = input$exploremap_center$lat,
                                                        zoom = input$exploremap_zoom)))
-
-              # runjs(sprintf("window.open(%s, '_blank')",
-              #               params_url_remonterletemps(input$exploremap_center$lng,
-              #                                          input$exploremap_center$lat)
-              #               )
-              #       )
     )
-    # params_url_remonterletemps(input$exploremap_center$lng, input$exploremap_center$lat)
 
     output$long_profile <- renderPlotly({
       return(r_val$plot)

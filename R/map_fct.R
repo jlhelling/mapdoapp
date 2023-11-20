@@ -48,6 +48,7 @@ map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
       options = layersControlOptions(collapsed = TRUE)
     ) %>%
     addControl(
+      className = "img_div_ign_remonterletemps",
       position = "topleft",
       html = tags$a(href = "javascript:void(0);",
                     tags$img(
