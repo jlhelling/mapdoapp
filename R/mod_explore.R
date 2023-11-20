@@ -10,7 +10,9 @@
 #' @rdname mod_explore
 #'
 #' @import shiny
+#' @importFrom shinyjs useShinyjs
 #' @importFrom shinycssloaders withSpinner
+#'
 mod_explore_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -18,6 +20,7 @@ mod_explore_ui <- function(id){
     golem_add_external_resources(),
     # UI elements
     fluidPage(
+      useShinyjs(),
       tags$head(
         tags$style(
             HTML(".form-group{margin-bottom: 0px}") # less space below selectInput metric_type
@@ -89,6 +92,7 @@ mod_explore_ui <- function(id){
 #' @importFrom bslib popover update_popover
 #' @importFrom bsicons bs_icon
 #' @importFrom sf st_write
+#' @importFrom shinyjs onclick runjs
 #'
 mod_explore_server <- function(id){
   moduleServer(id, function(input, output, session){
@@ -98,11 +102,11 @@ mod_explore_server <- function(id){
     # suppress warnings
     # options(warn = -1)
 
-    # # dev print to debug value
+    # dev print to debug value
     # output$printcheck = renderPrint({
     #   tryCatch({
     #     # event_data("plotly_hover")
-    #     print(input$unit_area)
+    #     print(input$exploremap_center)
     #     print("exists")
     #   },
     #   shiny.silent.error = function(e) {
@@ -152,8 +156,25 @@ mod_explore_server <- function(id){
     ### INIT MAP & PROFILE ####
 
     output$exploremap <- renderLeaflet({
-      map_init_bassins(bassins_data = data_get_bassins())
+      map_init_bassins(bassins_data = data_get_bassins(),
+                       id_logo_ign_remonterletemps = ns("logo_ign_remonterletemps"))
     })
+
+    # url <- "https://remonterletemps.ign.fr/comparer/basic?x=6.869433&y=45.923690&z=16&layer1=ORTHOIMAGERY.ORTHOPHOTOS.1950-1965&layer2=ORTHOIMAGERY.ORTHOPHOTOS&mode=vSlider"
+
+    onclick(id = "logo_ign_remonterletemps", expr =
+              runjs(sprintf("window.open('%s', '_blank')",
+                            params_url_remonterletemps(lng = input$exploremap_center$lng,
+                                                       lat = input$exploremap_center$lat,
+                                                       zoom = input$exploremap_zoom)))
+
+              # runjs(sprintf("window.open(%s, '_blank')",
+              #               params_url_remonterletemps(input$exploremap_center$lng,
+              #                                          input$exploremap_center$lat)
+              #               )
+              #       )
+    )
+    # params_url_remonterletemps(input$exploremap_center$lng, input$exploremap_center$lat)
 
     output$long_profile <- renderPlotly({
       return(r_val$plot)
