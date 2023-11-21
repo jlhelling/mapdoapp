@@ -19,7 +19,6 @@ Imports:
     golem (>= 0.4.1),
     grDevices,
     htmltools,
-    htmlwidgets,
     httr,
     leaflet,
     magrittr,
