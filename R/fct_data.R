@@ -280,3 +280,40 @@ data_get_dgo_in_region <- function(selected_region_id){
 
   data <- sf::st_read(dsn = db_con(), query = query)
 }
+
+#' get hydrometric station from Hubeau API
+#'
+#' Extract hydrometric station from Hubeau API https://hubeau.eaufrance.fr/page/api-ecoulement#/ecoulement
+#'
+#' @importFrom httr GET content http_status
+#' @importFrom dplyr bind_rows
+#'
+#' @return data.frame
+#' @export
+#'
+#' @examples
+#' data <- data_get_station_hubeau("https://hubeau.eaufrance.fr/api/v1/ecoulement/stations?format=json&bbox=1.6194&bbox=47.7965&bbox=2.1910&bbox=47.9988&size=2")
+#'
+data_get_station_hubeau <- function(hubeau_url){
+
+  response <- GET(hubeau_url)
+
+  # Check the status of the response
+  if (http_status(response)$category == "Success") {
+
+    data <- content(response, "parsed")
+
+  } else {
+    cat("Error:", http_status(response)$reason, "\n")
+  }
+
+  # select only some columns
+  filtered_data_list <- lapply(data$data, function(x) {
+    x[c("code_station", "libelle_station", "uri_station", "code_cours_eau", "uri_cours_eau", "etat_station", "latitude", "longitude")]
+  })
+
+  df <- bind_rows(filtered_data_list)
+
+  return(df)
+
+}

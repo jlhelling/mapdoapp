@@ -150,6 +150,7 @@ params_map_group <- function(){
     axis_opacity = "AXIS_OPACITY",
     legend = "LEGEND",
     roe = "ROE",
+    hydro_station = "Station hydrométrique",
     light = "LIGHT",
     inondation = params_wms()$inondation$name,
     ouvrage_protection = params_wms()$ouvrage_protection$name,
@@ -320,4 +321,24 @@ params_unit_area <- function(){
     "% du fond de vallée" = "percent"
   )
   return(unit_area)
+}
+
+#' create Hubeau url API from map bounds
+#'
+#' @param leafletmap_bounds list leaflet map bounds event.
+#'
+#' @importFrom glue glue
+#'
+#' @return character
+#' @export
+#'
+#' @examples
+#' url <- params_hubeau_url(list(north = 52.2950422845374,
+#'                               east = 10.546875,
+#'                               south = 40.2124407182865,
+#'                               west = -5.625))
+params_hubeau_url <- function(leafletmap_bounds){
+  api_url <- glue::glue("https://hubeau.eaufrance.fr/api/v1/ecoulement/stations?format=json&bbox={leafletmap_bounds$west}&bbox={leafletmap_bounds$south}&bbox={leafletmap_bounds$east}&bbox={leafletmap_bounds$north}")
+
+  return(api_url)
 }

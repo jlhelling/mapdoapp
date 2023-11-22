@@ -7,7 +7,8 @@
 map_region_clicked(
   map,
   region_click = region_click,
-  selected_region_feature = selected_region_feature
+  selected_region_feature = selected_region_feature,
+  hubeau_url
 )
 }
 \arguments{

@@ -167,7 +167,8 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
 #' @export
 map_region_clicked <- function(map,
                                region_click = region_click,
-                               selected_region_feature = selected_region_feature) {
+                               selected_region_feature = selected_region_feature,
+                               hubeau_url) {
   map %>%
     setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
     # display the region clicked
@@ -192,14 +193,30 @@ map_region_clicked <- function(map,
                      popup = ~nomprincip,
                      group = params_map_group()[["roe"]]
     ) %>%
+    addCircleMarkers(data = data_get_station_hubeau(hubeau_url),
+                     lng = ~longitude,
+                     lat = ~latitude,
+                     radius = 3,
+                     weight = 0.5,
+                     opacity = 0.9,
+                     color = "blue",
+                     fillColor = "blue",
+                     fillOpacity = 0.9,
+                     popup = ~libelle_station,
+                     group = params_map_group()[["hydro_station"]]
+    ) %>%
     # ROE layer hidden by default
     hideGroup(params_map_group()[["roe"]]) %>%
+    # Hydrometric station layer hidden by default
+    hideGroup(params_map_group()[["hydro_station"]]) %>%
     # add WMS overlayers
     map_add_wms_overlayers() %>%
     addLayersControl(
       baseGroups = c("CartoDB Positron", unlist(sapply(params_wms(), function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),
       options = layersControlOptions(collapsed = TRUE),
-      overlayGroups = c(params_map_group()[["roe"]], unlist(sapply(params_wms(), function(x) if (x$overlayer) x$name else NULL), use.names = FALSE))
+      overlayGroups = c(params_map_group()[["roe"]],
+                        params_map_group()[["hydro_station"]],
+                        unlist(sapply(params_wms(), function(x) if (x$overlayer) x$name else NULL), use.names = FALSE))
     )
 }
 
