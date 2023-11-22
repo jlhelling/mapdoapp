@@ -9,7 +9,7 @@ app_ui <- function(request){
   navbarPage(
     theme = bs_theme(version = 5, bootswatch = "simplex"),
     title =
-        img(src = "www/favicon_mapdo.png"),
+        img(src = "www/logos_mapdo_evs_ofb.png"),
     tabPanel("Exploration", mod_explore_ui("explore_1")),
     tabPanel("Documentation",
              icon = icon("info"),
