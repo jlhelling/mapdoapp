@@ -192,14 +192,28 @@ map_region_clicked <- function(map,
                      popup = ~nomprincip,
                      group = params_map_group()[["roe"]]
     ) %>%
+    addCircleMarkers(data = data_get_station_hubeau(selected_region_feature),
+                     radius = 3,
+                     weight = 0.5,
+                     opacity = 0.9,
+                     color = "blue",
+                     fillColor = "blue",
+                     fillOpacity = 0.9,
+                     popup = ~libelle_station,
+                     group = params_map_group()[["hydro_station"]]
+    ) %>%
     # ROE layer hidden by default
     hideGroup(params_map_group()[["roe"]]) %>%
+    # Hydrometric station layer hidden by default
+    hideGroup(params_map_group()[["hydro_station"]]) %>%
     # add WMS overlayers
     map_add_wms_overlayers() %>%
     addLayersControl(
       baseGroups = c("CartoDB Positron", unlist(sapply(params_wms(), function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),
       options = layersControlOptions(collapsed = TRUE),
-      overlayGroups = c(params_map_group()[["roe"]], unlist(sapply(params_wms(), function(x) if (x$overlayer) x$name else NULL), use.names = FALSE))
+      overlayGroups = c(params_map_group()[["roe"]],
+                        params_map_group()[["hydro_station"]],
+                        unlist(sapply(params_wms(), function(x) if (x$overlayer) x$name else NULL), use.names = FALSE))
     )
 }
 

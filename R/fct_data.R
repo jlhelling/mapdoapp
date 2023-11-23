@@ -280,3 +280,47 @@ data_get_dgo_in_region <- function(selected_region_id){
 
   data <- sf::st_read(dsn = db_con(), query = query)
 }
+
+#' get hydrometric station from Hubeau API
+#'
+#' Extract hydrometric station from Hubeau API https://hubeau.eaufrance.fr/page/api-ecoulement#/ecoulement
+#'
+#' @param region_hydro sf polygon object.
+#'
+#' @importFrom glue glue
+#' @importFrom httr GET content http_status
+#' @importFrom dplyr bind_rows filter
+#' @importFrom sf st_as_sf st_filter st_within
+#'
+#' @return sf object
+#' @export
+#'
+data_get_station_hubeau <- function(region_hydro){
+
+  api_url <- glue::glue("https://hubeau.eaufrance.fr/api/v1/ecoulement/stations?format=json&code_bassin={region_hydro$cdbh}")
+
+  response <- GET(api_url)
+
+  # Check the status of the response
+  if (http_status(response)$category == "Success") {
+
+    data <- content(response, "parsed")
+
+  } else {
+    cat("Error:", http_status(response)$reason, "\n")
+  }
+
+  # select only some columns
+  filtered_data_list <- lapply(data$data, function(x) {
+    x[c("code_station", "libelle_station", "uri_station", "code_cours_eau", "uri_cours_eau", "etat_station", "latitude", "longitude")]
+  })
+
+  # convert to dataframe and filter the result
+  stations <- bind_rows(filtered_data_list) %>%
+    st_as_sf(coords = c("longitude","latitude"), crs = 4326) %>%
+    filter(etat_station == "Active") %>%
+    st_filter(region_hydro, .predicate = st_within)
+
+  return(stations)
+
+}
