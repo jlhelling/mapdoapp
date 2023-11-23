@@ -149,8 +149,7 @@ mod_explore_server <- function(id){
       profile_display = FALSE, # controle if metric and axis is selected = display the profile
       plot = lg_profile_empty(),
       plotly_hover = NULL,
-      region_name = NULL,
-      hubeau_url = NULL
+      region_name = NULL
     )
 
     ### INIT MAP & PROFILE ####
@@ -321,15 +320,11 @@ mod_explore_server <- function(id){
                                        value=c(r_val$strahler[["min"]],
                                                r_val$strahler[["max"]]),
                                        step=1)
-        # get hubeau_url to map hydrometric stations
-        r_val$hubeau_url = params_hubeau_url(input$exploremap_bounds)
-        # print(r_val$hubeau_url)
 
         # map region clicked with region clicked and overlayers
         leafletProxy("exploremap") %>%
           map_region_clicked(region_click = input$exploremap_shape_click,
-                             selected_region_feature = r_val$selected_region_feature,
-                             hubeau_url = r_val$hubeau_url)
+                             selected_region_feature = r_val$selected_region_feature)
 
         # build metric selectInput
         r_val$ui_metric_type =

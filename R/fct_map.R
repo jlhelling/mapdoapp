@@ -167,8 +167,7 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
 #' @export
 map_region_clicked <- function(map,
                                region_click = region_click,
-                               selected_region_feature = selected_region_feature,
-                               hubeau_url) {
+                               selected_region_feature = selected_region_feature) {
   map %>%
     setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
     # display the region clicked
@@ -193,9 +192,7 @@ map_region_clicked <- function(map,
                      popup = ~nomprincip,
                      group = params_map_group()[["roe"]]
     ) %>%
-    addCircleMarkers(data = data_get_station_hubeau(hubeau_url),
-                     lng = ~longitude,
-                     lat = ~latitude,
+    addCircleMarkers(data = data_get_station_hubeau(selected_region_feature),
                      radius = 3,
                      weight = 0.5,
                      opacity = 0.9,

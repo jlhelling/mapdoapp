@@ -4,15 +4,14 @@
 \alias{data_get_station_hubeau}
 \title{get hydrometric station from Hubeau API}
 \usage{
-data_get_station_hubeau(hubeau_url)
+data_get_station_hubeau(region_hydro)
+}
+\arguments{
+\item{region_hydro}{sf polygon object.}
 }
 \value{
-data.frame
+sf object
 }
 \description{
 Extract hydrometric station from Hubeau API https://hubeau.eaufrance.fr/page/api-ecoulement#/ecoulement
-}
-\examples{
-data <- data_get_station_hubeau("https://hubeau.eaufrance.fr/api/v1/ecoulement/stations?format=json&bbox=1.6194&bbox=47.7965&bbox=2.1910&bbox=47.9988&size=2")
-
 }
