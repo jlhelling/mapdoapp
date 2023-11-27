@@ -30,13 +30,14 @@ map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
                 layerId = ~cdbh,
                 smoothFactor = 2,
                 fillColor = "black",
-                fillOpacity = 0.01,
+                fillOpacity = ~opacity,
                 weight = 2,
                 color = "black",
                 highlightOptions = highlightOptions(
                   fillColor = "#a8d1ff",
                   fillOpacity = 0.5),
                 label = ~htmlEscape(lbbh),
+                options = pathOptions(clickable = ~click),
                 group = params_map_group()[["bassin"]]
     ) %>%
     addScaleBar(pos = "bottomleft",
@@ -104,13 +105,14 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
                 layerId = ~gid,
                 smoothFactor = 2,
                 fillColor = "black",
-                fillOpacity = 0.01,
+                fillOpacity = ~opacity,
                 weight = 2,
                 color = "black",
                 highlightOptions = highlightOptions(
                   fillColor = "#a8d1ff",
                   fillOpacity = 0.5),
                 label = ~htmlEscape(lbregionhy),
+                options = pathOptions(clickable = ~click),
                 group = params_map_group()[["region"]]
     )
 }
