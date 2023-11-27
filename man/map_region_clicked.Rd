@@ -4,11 +4,7 @@
 \alias{map_region_clicked}
 \title{Update Leaflet Map for a Clicked Region}
 \usage{
-map_region_clicked(
-  map,
-  region_click = region_click,
-  selected_region_feature = selected_region_feature
-)
+map_region_clicked(map, region_click, selected_region_feature, regions)
 }
 \arguments{
 \item{map}{An existing Leaflet map to be updated.}

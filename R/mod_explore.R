@@ -324,7 +324,8 @@ mod_explore_server <- function(id){
         # map region clicked with region clicked and overlayers
         leafletProxy("exploremap") %>%
           map_region_clicked(region_click = input$exploremap_shape_click,
-                             selected_region_feature = r_val$selected_region_feature)
+                             selected_region_feature = r_val$selected_region_feature,
+                             regions = r_val$regions_in_bassin)
 
         # build metric selectInput
         r_val$ui_metric_type =

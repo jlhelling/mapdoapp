@@ -168,11 +168,24 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
 #'
 #' @export
 map_region_clicked <- function(map,
-                               region_click = region_click,
-                               selected_region_feature = selected_region_feature) {
+                               region_click,
+                               selected_region_feature,
+                               regions) {
   map %>%
     setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
-    # display the region clicked
+    clearGroup(params_map_group()[["region"]]) %>%
+    # restyle the regions
+    addPolygons(data = regions,
+                smoothFactor = 2,
+                fillColor = "black",
+                fillOpacity = 0.01,
+                weight = 2,
+                color = "black",
+                opacity = 0.20,
+                group = params_map_group()[["region"]],
+                options = pathOptions(interactive = FALSE)
+    ) %>%
+    # restyle selected region
     addPolygons(data = selected_region_feature,
                 smoothFactor = 2,
                 fillColor = "black",
@@ -182,7 +195,6 @@ map_region_clicked <- function(map,
                 group = params_map_group()[["select_region"]],
                 options = pathOptions(interactive = FALSE)
     ) %>%
-    clearGroup(params_map_group()[["region"]]) %>%
     # add ROE overlayers from PostgreSQL
     addCircleMarkers(data = data_get_roe_in_region(region_click$id),
                      radius = 3,
