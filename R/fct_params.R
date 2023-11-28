@@ -68,7 +68,7 @@ params_wms <- function(){
                                basemap = TRUE,
                                overlayer = FALSE),
               landuse = list(name = "Occupation du sol",
-                             url = "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms",
+                             url = Sys.getenv("GEOSERVER"),
                              language = "",
                              service = "WMS",
                              version = "1.0.0",
