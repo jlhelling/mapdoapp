@@ -116,6 +116,7 @@ mod_explore_server <- function(id){
 
     ### R_VAL ####
     r_val <- reactiveValues(
+      bassins = NULL,
       regions_in_bassin = NULL, # all the regions in selected bassin
       network_region_axis = NULL, # all the axis in the selected region
       selected_region_feature = NULL,
@@ -155,7 +156,8 @@ mod_explore_server <- function(id){
     ### INIT MAP & PROFILE ####
 
     output$exploremap <- renderLeaflet({
-      map_init_bassins(bassins_data = data_get_bassins(),
+      r_val$bassins = data_get_bassins()
+      map_init_bassins(bassins_data = r_val$bassins,
                        id_logo_ign_remonterletemps = ns("logo_ign_remonterletemps"))
     })
 
@@ -292,12 +294,15 @@ mod_explore_server <- function(id){
     observeEvent(input$exploremap_shape_click,{
       #### bassin clicked ####
       if (input$exploremap_shape_click$group == params_map_group()[["bassin"]]){
+        r_val$bassins = r_val$bassins %>%
+          mutate(click = FALSE)
         # get the regions data in selected bassin
         r_val$regions_in_bassin = data_get_regions_in_bassin(selected_bassin_id = input$exploremap_shape_click$id)
         # update map : zoom in clicked bassin, clear bassin data, display region in bassin
         leafletProxy("exploremap") %>%
           map_add_regions_in_bassin(bassin_click = input$exploremap_shape_click,
-                                    regions_data = r_val$regions_in_bassin)
+                                    regions_data = r_val$regions_in_bassin,
+                                    bassins_data = r_val$bassins)
       }
 
       ### region clicked ####

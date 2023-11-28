@@ -6,6 +6,7 @@
 \usage{
 map_add_regions_in_bassin(
   map,
+  bassins_data,
   bassin_click = bassin_click,
   regions_data = region_hydro
 )

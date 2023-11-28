@@ -32,7 +32,8 @@ map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
                 fillColor = "black",
                 fillOpacity = ~opacity,
                 weight = 2,
-                color = "black",
+                color = "blue",
+                opacity = 0.30,
                 highlightOptions = highlightOptions(
                   fillColor = "#a8d1ff",
                   fillOpacity = 0.5),
@@ -97,11 +98,26 @@ map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
 #' map
 #'
 #' @export
-map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
+map_add_regions_in_bassin <- function(map, bassins_data, bassin_click = bassin_click,
                                       regions_data = region_hydro) {
   map %>%
     setView(lng = bassin_click$lng , lat = bassin_click$lat, zoom = 6.5) %>%
     clearGroup(params_map_group()[["bassin"]]) %>%
+    addPolygons(data = bassins_data,
+                layerId = ~cdbh,
+                smoothFactor = 2,
+                fillColor = "black",
+                fillOpacity = ~opacity,
+                weight = 2,
+                color = "blue",
+                opacity = 0.20,
+                highlightOptions = highlightOptions(
+                  fillColor = "#a8d1ff",
+                  fillOpacity = 0.5),
+                label = ~htmlEscape(lbbh),
+                options = pathOptions(clickable = ~click),
+                group = params_map_group()[["bassin"]]
+    ) %>%
     addPolygons(data = regions_data,
                 layerId = ~gid,
                 smoothFactor = 2,
