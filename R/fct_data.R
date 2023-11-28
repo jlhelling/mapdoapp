@@ -141,7 +141,9 @@ data_get_roe_in_region <- function(selected_region_id) {
       roe.gid, nomprincip, lbtypeouvr, lbhautchut, gid_region, roe.geom
       FROM roe
       WHERE gid_region = {selected_region_id}
-          AND (roe.cdetouvrag LIKE '2')")
+          AND (roe.cdetouvrag LIKE '2')
+          AND (roe.stobstecou LIKE 'Validé')
+                      ")
 
   data <- sf::st_read(dsn = db_con(), query = query)
   return(data)

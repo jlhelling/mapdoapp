@@ -28,7 +28,8 @@ library(leaflet)
 library(dplyr)
 library(sf)
 # Create init bassin map
-my_map <- map_init_bassins(bassins_data = bassin_hydrographique)
+my_map <- map_init_bassins(bassins_data = bassin_hydrographique,
+                           id_logo_ign_remonterletemps = "logo_ign_remonterletemps")
 
 # simulate bassin selected
 selected_bassin <- bassin_hydrographique

@@ -16,7 +16,7 @@
 #' @export
 params_wms <- function(){
   wms <- list(metric = list(name = "Métrique",
-                            url = "https://geoserver-dev.evs.ens-lyon.fr/geoserver/mapdo/wms",
+                            url = Sys.getenv("GEOSERVER"),
                             language = "",
                             service = "WMS",
                             version = "1.0.0",
