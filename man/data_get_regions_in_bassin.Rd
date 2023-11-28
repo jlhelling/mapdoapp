@@ -4,10 +4,12 @@
 \alias{data_get_regions_in_bassin}
 \title{Get all the hydrological regions in a Hydrographic Basin}
 \usage{
-data_get_regions_in_bassin(selected_bassin_id)
+data_get_regions_in_bassin(selected_bassin_id, opacity)
 }
 \arguments{
 \item{selected_bassin_id}{The ID of the selected hydrographic basin.}
+
+\item{opacity}{A list that contain numeric values clickable and not_clickable to inform the user the non available features.}
 }
 \value{
 A df data frame containing regions within the specified hydrographic basin.
@@ -16,6 +18,9 @@ A df data frame containing regions within the specified hydrographic basin.
 This function retrieves regions within a specified hydrographic basin based on its ID.
 }
 \examples{
-data <- data_get_regions_in_bassin(selected_bassin_id = "06")
+opacity = list(clickable = 0.01,
+               not_clickable = 0.10)
+data <- data_get_regions_in_bassin(selected_bassin_id = "06",
+                                   opacity = opacity)
 
 }

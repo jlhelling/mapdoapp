@@ -4,7 +4,7 @@
 \alias{map_region_clicked}
 \title{Update Leaflet Map for a Clicked Region}
 \usage{
-map_region_clicked(map, region_click, selected_region_feature, regions)
+map_region_clicked(map, region_click, selected_region_feature, regions_data)
 }
 \arguments{
 \item{map}{An existing Leaflet map to be updated.}
@@ -13,7 +13,7 @@ map_region_clicked(map, region_click, selected_region_feature, regions)
 
 \item{selected_region_feature}{A sf data frame containing information about the selected region feature.}
 
-\item{regions}{A sf data.frame with the hydrographic regions of the bassin selected.}
+\item{regions_data}{A sf data.frame with the hydrographic regions of the bassin selected.}
 }
 \value{
 An updated Leaflet map with relevant layers and information displayed.
@@ -40,6 +40,7 @@ centre_coord <- as.data.frame(st_coordinates(centre)) \%>\%
 
 # map region
 map_region <- map_add_regions_in_bassin(map = map_bassin,
+                                        bassin_data = bassin_hydrographique,
                                         bassin_click = centre_coord,
                                         regions_data = region_hydrographique)
 # simulate selected region
@@ -56,7 +57,7 @@ centre_region_coord$id <- 11
 map <- map_region_clicked(map = map_region,
                           region_click = centre_region_coord,
                           selected_region_feature = selected_region,
-                          regions = region_hydrographique)
+                          regions_data = region_hydrographique)
 map
 
 }
