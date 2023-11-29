@@ -40,7 +40,7 @@ centre_coord <- as.data.frame(st_coordinates(centre)) \%>\%
 
 # map region
 map_region <- map_add_regions_in_bassin(map = map_bassin,
-                                        bassin_data = bassin_hydrographique,
+                                        bassins_data = bassin_hydrographique,
                                         bassin_click = centre_coord,
                                         regions_data = region_hydrographique)
 # simulate selected region

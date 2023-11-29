@@ -319,7 +319,6 @@ mod_explore_server <- function(id){
       if (input$exploremap_shape_click$group == params_map_group()$region){
         # store the region click values
         r_val$region_click = input$exploremap_shape_click
-
         # disable the click interactivity for the bassin selected
         r_val$regions_in_bassin = r_val$regions_in_bassin %>%
           mutate(click = if_else(display == TRUE,

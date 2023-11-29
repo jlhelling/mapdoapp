@@ -101,7 +101,8 @@ map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
 #' map
 #'
 #' @export
-map_add_regions_in_bassin <- function(map, bassins_data, bassin_click = bassin_click,
+map_add_regions_in_bassin <- function(map, bassins_data,
+                                      bassin_click = bassin_click,
                                       regions_data = region_hydro) {
   map %>%
     setView(lng = bassin_click$lng , lat = bassin_click$lat, zoom = 6.5) %>%
@@ -170,7 +171,7 @@ map_add_regions_in_bassin <- function(map, bassins_data, bassin_click = bassin_c
 #'
 #' # map region
 #' map_region <- map_add_regions_in_bassin(map = map_bassin,
-#'                                         bassin_data = bassin_hydrographique,
+#'                                         bassins_data = bassin_hydrographique,
 #'                                         bassin_click = centre_coord,
 #'                                         regions_data = region_hydrographique)
 #' # simulate selected region
@@ -355,7 +356,7 @@ map_axis <- function(map, data_axis) {
 #'
 #' # map region
 #' map_region <- map_add_regions_in_bassin(map = map_bassin,
-#'                                         bassin_data = bassin_hydrographique,
+#'                                         bassins_data = bassin_hydrographique,
 #'                                         bassin_click = centre_coord,
 #'                                         regions_data = region_hydrographique)
 #'
