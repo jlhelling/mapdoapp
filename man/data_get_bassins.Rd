@@ -4,7 +4,10 @@
 \alias{data_get_bassins}
 \title{Get Hydrographic Basins}
 \usage{
-data_get_bassins()
+data_get_bassins(opacity)
+}
+\arguments{
+\item{opacity}{A list that contain numeric values clickable and not_clickable to inform the user the non available features.}
 }
 \value{
 A sf data frame containing information about hydrographic basins.
@@ -13,6 +16,9 @@ A sf data frame containing information about hydrographic basins.
 This function retrieves hydrographic basins.
 }
 \examples{
-data <- data_get_bassins()
+opacity = list(clickable = 0.01,
+               not_clickable = 0.10)
+
+data <- data_get_bassins(opacity = opacity)
 
 }

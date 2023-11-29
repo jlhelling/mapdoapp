@@ -6,6 +6,7 @@
 \usage{
 map_add_regions_in_bassin(
   map,
+  bassins_data,
   bassin_click = bassin_click,
   regions_data = region_hydro
 )
@@ -13,9 +14,11 @@ map_add_regions_in_bassin(
 \arguments{
 \item{map}{An existing Leaflet map to which regions will be added.}
 
+\item{bassins_data}{A sf data.frame with bassins data.}
+
 \item{bassin_click}{A vector containing information about the clicked bassin.}
 
-\item{regions_data}{A sf data frame containing information about regions within the bassin.}
+\item{regions_data}{A sf data.frame containing information about regions within the bassin.}
 }
 \value{
 An updated Leaflet map with regions added.
@@ -41,7 +44,9 @@ centre_coord <- as.data.frame(st_coordinates(centre)) \%>\%
          "lat" = Y)
 # map region
 map <- map_add_regions_in_bassin(map = my_map,
-                                 bassin_click = centre_coord, regions_data = region_hydrographique)
+                                 bassins_data = bassin_hydrographique,
+                                 bassin_click = centre_coord,
+                                 regions_data = region_hydrographique)
 map
 
 }

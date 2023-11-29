@@ -32,7 +32,8 @@ map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
                 fillColor = "black",
                 fillOpacity = ~opacity,
                 weight = 2,
-                color = "black",
+                color = "blue",
+                opacity = 0.20,
                 highlightOptions = highlightOptions(
                   fillColor = "#a8d1ff",
                   fillOpacity = 0.5),
@@ -66,7 +67,8 @@ map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
 #'
 #' @param map An existing Leaflet map to which regions will be added.
 #' @param bassin_click A vector containing information about the clicked bassin.
-#' @param regions_data A sf data frame containing information about regions within the bassin.
+#' @param regions_data A sf data.frame containing information about regions within the bassin.
+#' @param bassins_data A sf data.frame with bassins data.
 #'
 #' @return An updated Leaflet map with regions added.
 #'
@@ -93,15 +95,33 @@ map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
 #'          "lat" = Y)
 #' # map region
 #' map <- map_add_regions_in_bassin(map = my_map,
-#'                                  bassin_click = centre_coord, regions_data = region_hydrographique)
+#'                                  bassins_data = bassin_hydrographique,
+#'                                  bassin_click = centre_coord,
+#'                                  regions_data = region_hydrographique)
 #' map
 #'
 #' @export
-map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
+map_add_regions_in_bassin <- function(map, bassins_data,
+                                      bassin_click = bassin_click,
                                       regions_data = region_hydro) {
   map %>%
     setView(lng = bassin_click$lng , lat = bassin_click$lat, zoom = 6.5) %>%
     clearGroup(params_map_group()[["bassin"]]) %>%
+    addPolygons(data = bassins_data,
+                layerId = ~cdbh,
+                smoothFactor = 2,
+                fillColor = "black",
+                fillOpacity = ~opacity,
+                weight = 2,
+                color = "blue",
+                opacity = 0.20,
+                highlightOptions = highlightOptions(
+                  fillColor = "#a8d1ff",
+                  fillOpacity = 0.5),
+                label = ~htmlEscape(lbbh),
+                options = pathOptions(clickable = ~click),
+                group = params_map_group()[["bassin"]]
+    ) %>%
     addPolygons(data = regions_data,
                 layerId = ~gid,
                 smoothFactor = 2,
@@ -126,7 +146,7 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
 #' @param map An existing Leaflet map to be updated.
 #' @param region_click A vector containing information about the clicked region.
 #' @param selected_region_feature A sf data frame containing information about the selected region feature.
-#' @param regions A sf data.frame with the hydrographic regions of the bassin selected.
+#' @param regions_data A sf data.frame with the hydrographic regions of the bassin selected.
 #'
 #' @return An updated Leaflet map with relevant layers and information displayed.
 #'
@@ -151,6 +171,7 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
 #'
 #' # map region
 #' map_region <- map_add_regions_in_bassin(map = map_bassin,
+#'                                         bassins_data = bassin_hydrographique,
 #'                                         bassin_click = centre_coord,
 #'                                         regions_data = region_hydrographique)
 #' # simulate selected region
@@ -167,37 +188,34 @@ map_add_regions_in_bassin <- function(map, bassin_click = bassin_click,
 #' map <- map_region_clicked(map = map_region,
 #'                           region_click = centre_region_coord,
 #'                           selected_region_feature = selected_region,
-#'                           regions = region_hydrographique)
+#'                           regions_data = region_hydrographique)
 #' map
 #'
 #' @export
 map_region_clicked <- function(map,
                                region_click,
                                selected_region_feature,
-                               regions) {
+                               regions_data) {
   map %>%
     setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
-    clearGroup(params_map_group()[["region"]]) %>%
+    clearGroup(c(params_map_group()[["region"]],
+                 params_map_group()[["roe"]],
+                 params_map_group()[["hydro_station"]],
+                 unlist(sapply(params_wms(), function(x) if (x$overlayer) x$name else NULL), use.names = FALSE))) %>%
     # restyle the regions
-    addPolygons(data = regions,
+    addPolygons(data = regions_data,
+                layerId = ~gid,
                 smoothFactor = 2,
                 fillColor = "black",
-                fillOpacity = 0.01,
+                fillOpacity = ~opacity,
                 weight = 2,
                 color = "black",
-                opacity = 0.20,
-                group = params_map_group()[["region"]],
-                options = pathOptions(interactive = FALSE)
-    ) %>%
-    # restyle selected region
-    addPolygons(data = selected_region_feature,
-                smoothFactor = 2,
-                fillColor = "black",
-                fillOpacity = 0.01,
-                weight = 2,
-                color = "black",
-                group = params_map_group()[["select_region"]],
-                options = pathOptions(interactive = FALSE)
+                highlightOptions = highlightOptions(
+                  fillColor = "#a8d1ff",
+                  fillOpacity = 0.5),
+                label = ~htmlEscape(lbregionhy),
+                options = pathOptions(clickable = ~click),
+                group = params_map_group()[["region"]]
     ) %>%
     # add ROE overlayers from PostgreSQL
     addCircleMarkers(data = data_get_roe_in_region(region_click$id),
@@ -210,6 +228,8 @@ map_region_clicked <- function(map,
                      popup = ~nomprincip,
                      group = params_map_group()[["roe"]]
     ) %>%
+    # ROE layer hidden by default
+    hideGroup(params_map_group()[["roe"]]) %>%
     addCircleMarkers(data = data_get_station_hubeau(selected_region_feature),
                      radius = 3,
                      weight = 0.5,
@@ -220,8 +240,6 @@ map_region_clicked <- function(map,
                      popup = ~libelle_station,
                      group = params_map_group()[["hydro_station"]]
     ) %>%
-    # ROE layer hidden by default
-    hideGroup(params_map_group()[["roe"]]) %>%
     # Hydrometric station layer hidden by default
     hideGroup(params_map_group()[["hydro_station"]]) %>%
     # add WMS overlayers
@@ -338,6 +356,7 @@ map_axis <- function(map, data_axis) {
 #'
 #' # map region
 #' map_region <- map_add_regions_in_bassin(map = map_bassin,
+#'                                         bassins_data = bassin_hydrographique,
 #'                                         bassin_click = centre_coord,
 #'                                         regions_data = region_hydrographique)
 #'

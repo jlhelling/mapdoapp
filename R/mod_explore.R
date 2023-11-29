@@ -86,7 +86,7 @@ mod_explore_ui <- function(id){
 #' @import shiny
 #' @importFrom leaflet leafletProxy clearGroup leafletOutput renderLeaflet
 #' @importFrom htmltools HTML div img
-#' @importFrom dplyr filter mutate
+#' @importFrom dplyr filter mutate if_else
 #' @importFrom plotly event_register event_data plotlyProxy plotlyProxyInvoke renderPlotly plotlyOutput
 #' @importFrom bslib popover update_popover
 #' @importFrom bsicons bs_icon
@@ -116,6 +116,9 @@ mod_explore_server <- function(id){
 
     ### R_VAL ####
     r_val <- reactiveValues(
+      opacity = list(clickable = 0.01,
+                     not_clickable = 0.10), # opacity value to inform the user about available data
+      bassins = NULL,
       regions_in_bassin = NULL, # all the regions in selected bassin
       network_region_axis = NULL, # all the axis in the selected region
       selected_region_feature = NULL,
@@ -155,7 +158,8 @@ mod_explore_server <- function(id){
     ### INIT MAP & PROFILE ####
 
     output$exploremap <- renderLeaflet({
-      map_init_bassins(bassins_data = data_get_bassins(),
+      r_val$bassins = data_get_bassins(opacity = r_val$opacity)
+      map_init_bassins(bassins_data = r_val$bassins,
                        id_logo_ign_remonterletemps = ns("logo_ign_remonterletemps"))
     })
 
@@ -290,26 +294,46 @@ mod_explore_server <- function(id){
     ### EVENT MAP CLICK ####
 
     observeEvent(input$exploremap_shape_click,{
+
       #### bassin clicked ####
       if (input$exploremap_shape_click$group == params_map_group()[["bassin"]]){
+        # disable the click interactivity for the bassin selected
+        r_val$bassins = r_val$bassins %>%
+          mutate(click = if_else(display == TRUE,
+                                 TRUE,
+                                 click)) %>%
+          mutate(click = if_else(display == TRUE & cdbh == input$exploremap_shape_click$id,
+                                 FALSE,
+                                 click))
         # get the regions data in selected bassin
-        r_val$regions_in_bassin = data_get_regions_in_bassin(selected_bassin_id = input$exploremap_shape_click$id)
+        r_val$regions_in_bassin = data_get_regions_in_bassin(selected_bassin_id = input$exploremap_shape_click$id,
+                                                             opacity = r_val$opacity)
         # update map : zoom in clicked bassin, clear bassin data, display region in bassin
         leafletProxy("exploremap") %>%
           map_add_regions_in_bassin(bassin_click = input$exploremap_shape_click,
-                                    regions_data = r_val$regions_in_bassin)
+                                    regions_data = r_val$regions_in_bassin,
+                                    bassins_data = r_val$bassins)
       }
 
       ### region clicked ####
       if (input$exploremap_shape_click$group == params_map_group()$region){
         # store the region click values
         r_val$region_click = input$exploremap_shape_click
+        # disable the click interactivity for the bassin selected
+        r_val$regions_in_bassin = r_val$regions_in_bassin %>%
+          mutate(click = if_else(display == TRUE,
+                                 TRUE,
+                                 click)) %>%
+          mutate(click = if_else(display == TRUE & gid == r_val$region_click$id,
+                                 FALSE,
+                                 click))
+
         # save the selected region feature for mapping
         r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id)
         # set region name to download
         r_val$region_name = utile_normalize_string(r_val$selected_region_feature$lbregionhy)
         # get the axis in the region
-        r_val$network_region_axis = data_get_axis(selected_region_id = input$exploremap_shape_click$id)
+        r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id)
         # get strahler data
         r_val$strahler = isolate(data_get_min_max_strahler(selected_region_id = r_val$region_click$id))
         # build strahler slider
@@ -325,19 +349,19 @@ mod_explore_server <- function(id){
         leafletProxy("exploremap") %>%
           map_region_clicked(region_click = input$exploremap_shape_click,
                              selected_region_feature = r_val$selected_region_feature,
-                             regions = r_val$regions_in_bassin)
+                             regions_data = r_val$regions_in_bassin)
 
-        # build metric selectInput
-        r_val$ui_metric_type =
+          # build metric selectInput
+          r_val$ui_metric_type =
             selectInput(ns("metric_type"), "Sélectionnez une métrique :",
                         choices = utile_get_metric_type(params_metrics_choice()),
                         selected  = utile_get_metric_type(params_metrics_choice())[1])
 
-        # create download button
-        r_val$ui_download = downloadButton(
-          ns("download"),
-          label = "Téléchager les données"
-        )
+          # create download button
+          r_val$ui_download = downloadButton(
+            ns("download"),
+            label = "Téléchager les données"
+          )
 
       }
       ### axis clicked ####
@@ -568,7 +592,7 @@ mod_explore_server <- function(id){
 
     ### EVENT FILTER ####
 
-    observeEvent(c(input$strahler, input$metricfilter), {
+    observeEvent(c(input$strahler, input$metricfilter, r_val$ui_strahler_filter), {
       if (is.null(input$metricfilter)){
         # build WMS cql_filter
         r_val$cql_filter = paste0("gid_region=", r_val$selected_region_feature[["gid"]],
@@ -605,7 +629,7 @@ mod_explore_server <- function(id){
       }
       # update map with basic style
       leafletProxy("exploremap") %>%
-        map_metric(wms_params = params_wms()$metric, # metric_basic to have blue network
+        map_metric(wms_params = params_wms()$metric,
                    cql_filter = r_val$cql_filter, sld_body = r_val$sld_body,
                    data_axis = r_val$network_region_axis)
     })
