@@ -116,6 +116,7 @@ mod_explore_server <- function(id){
 
     ### R_VAL ####
     r_val <- reactiveValues(
+      region_already_clicked = FALSE,
       opacity = list(clickable = 0.01,
                      not_clickable = 0.10), # opacity value to inform the user about available data
       bassins = NULL,
@@ -351,6 +352,8 @@ mod_explore_server <- function(id){
                              selected_region_feature = r_val$selected_region_feature,
                              regions_data = r_val$regions_in_bassin)
 
+        # run only once, control with region_already_clicked
+        if (r_val$region_already_clicked == FALSE){
           # build metric selectInput
           r_val$ui_metric_type =
             selectInput(ns("metric_type"), "Sélectionnez une métrique :",
@@ -362,7 +365,8 @@ mod_explore_server <- function(id){
             ns("download"),
             label = "Téléchager les données"
           )
-
+          r_val$region_already_clicked = TRUE
+        }
       }
       ### axis clicked ####
 
