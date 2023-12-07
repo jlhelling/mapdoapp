@@ -363,7 +363,7 @@ mod_explore_server <- function(id){
           # create download button
           r_val$ui_download = downloadButton(
             ns("download"),
-            label = "Téléchager les données"
+            label = "Télécharger les données"
           )
           r_val$region_already_clicked = TRUE
         }
