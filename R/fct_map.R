@@ -28,7 +28,6 @@ map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
     setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
     addPolygons(data = bassins_data,
                 layerId = ~cdbh,
-                smoothFactor = 2,
                 fillColor = "black",
                 fillOpacity = ~opacity,
                 weight = 2,
@@ -109,7 +108,6 @@ map_add_regions_in_bassin <- function(map, bassins_data,
     clearGroup(params_map_group()[["bassin"]]) %>%
     addPolygons(data = bassins_data,
                 layerId = ~cdbh,
-                smoothFactor = 2,
                 fillColor = "black",
                 fillOpacity = ~opacity,
                 weight = 2,
@@ -205,7 +203,6 @@ map_region_clicked <- function(map,
     # restyle the regions
     addPolygons(data = regions_data,
                 layerId = ~gid,
-                smoothFactor = 2,
                 fillColor = "black",
                 fillOpacity = ~opacity,
                 weight = 2,
@@ -230,7 +227,7 @@ map_region_clicked <- function(map,
     ) %>%
     # ROE layer hidden by default
     hideGroup(params_map_group()[["roe"]]) %>%
-    addCircleMarkers(data = data_get_station_hubeau(selected_region_feature),
+    addCircleMarkers(data = data_get_station_hubeau(region_click$id),
                      radius = 3,
                      weight = 0.5,
                      opacity = 0.9,
