@@ -2,16 +2,20 @@
 % Please edit documentation in R/fct_data.R
 \name{data_get_station_hubeau}
 \alias{data_get_station_hubeau}
-\title{get hydrometric station from Hubeau API}
+\title{Get hydrometric stations}
 \usage{
-data_get_station_hubeau(region_hydro)
+data_get_station_hubeau(selected_region_id)
 }
 \arguments{
-\item{region_hydro}{sf polygon object.}
+\item{selected_region_id}{The ID of the selected region.}
 }
 \value{
-sf object
+A sf data frame containing information about the hydrometric stations within the specified region.
 }
 \description{
-Extract hydrometric station from Hubeau API https://hubeau.eaufrance.fr/page/api-ecoulement#/ecoulement
+This function retrieves data about the hydrometric stations from Hubeau within a specified region based on its ID.
+}
+\examples{
+hydro_stations <- data_get_station_hubeau(selected_region_id = 11)
+
 }
