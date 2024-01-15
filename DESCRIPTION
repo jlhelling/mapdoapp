@@ -5,7 +5,7 @@ Authors@R:
     person("Louis", "Manière", , "louis.maniere@ens-lyon.fr", role = c("cre", "aut"))
 Description: Application de description des caractéristiques
     morphologiques des réseaux hydrographiques.
-License: MIT + file LICENSE
+License: GPL (>= 3)
 URL: https://evs-gis.github.io/mapdoapp/
 Depends: 
     R (>= 2.10)
