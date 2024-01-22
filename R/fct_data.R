@@ -183,7 +183,7 @@ data_get_roe_in_region <- function(selected_region_id) {
 data_get_axis <- function(selected_region_id) {
   query <- glue::glue("
       SELECT
-      network_axis.fid, axis, gid_region, network_axis.geom
+      network_axis.fid, axis, toponyme, gid_region, network_axis.geom
       FROM network_axis
       WHERE gid_region = {selected_region_id}")
 
