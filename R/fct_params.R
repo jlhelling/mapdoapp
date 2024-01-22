@@ -277,7 +277,7 @@ params_metrics_choice <- function() {
           metric_info = "Le corridor naturel avec les prairies permanentes connectées."
         ),
         reversible = list(
-          metric_title = "Corridor semi-naturel",
+          metric_title = "Espace de réversibilité",
           metric_info = "Le corridor Corridor semi-naturel avec les cultures connectées."
         ),
         disconnected = list(
