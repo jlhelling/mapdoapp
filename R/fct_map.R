@@ -40,7 +40,7 @@ map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
                 options = pathOptions(clickable = ~click),
                 group = params_map_group()[["bassin"]]
     ) %>%
-    addScaleBar(pos = "bottomleft",
+    addScaleBar(position = "bottomleft",
                 scaleBarOptions(metric = TRUE, imperial = FALSE)) %>%
     addProviderTiles(providers$CartoDB.Positron) %>%
     map_add_basemaps() %>%
@@ -280,7 +280,7 @@ map_wms_metric <-function(map, wms_params = params_wms()$metric,
         format = wms_params$format,
         request = "GetMap",
         transparent = TRUE,
-        style = wms_params$style,
+        styles = wms_params$style,
         cql_filter = cql_filter,
         sld_body = sld_body,
         zIndex = 90
@@ -461,7 +461,7 @@ map_dgo_axis <- function(map, selected_axis, region_axis) {
       weight = 5,
       color = "#ffffff00",
       opacity = 1,
-      highlight = highlightOptions(
+      highlightOptions = highlightOptions(
         opacity = 1,
         color = "red"
       ),
@@ -567,7 +567,7 @@ map_add_basemaps <- function(map) {
             format = i$format,
             transparent = TRUE,
             opacity = 0.7,
-            style = i$style,
+            styles = i$style,
           ),
           group = i$name
         )

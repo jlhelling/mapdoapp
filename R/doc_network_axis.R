@@ -2,10 +2,11 @@
 #'
 #' Description.
 #'
-#' @format A data frame with 3 rows and 4 variables:
+#' @format A data frame with 69 rows and 5 variables:
 #' \describe{
-#'   \item{ fid }{  integer }
-#'   \item{ axis }{  numeric }
+#'   \item{ fid }{  integer64 }
+#'   \item{ axis }{  integer64 }
+#'   \item{ toponyme }{  character }
 #'   \item{ gid_region }{  integer }
 #'   \item{ geom }{  sfc_MULTILINESTRING,sfc }
 #' }
