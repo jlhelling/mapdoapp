@@ -313,6 +313,7 @@ map_axis <- function(map, data_axis) {
                  weight = 5,
                  color = "#ffffff00",
                  opacity = 1,
+                 label = ~toponyme,
                  highlightOptions = highlightOptions(
                    color = "red",
                    bringToFront = TRUE

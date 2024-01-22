@@ -89,6 +89,21 @@ lg_profile_main <- function(data, y, y_label, y_label_category) {
         title = paste0(y_label_category, " - ", y_label),
         side = 'left'
       ),
+      # river name
+      annotations = list(
+        text = unique(data$toponyme),
+        x = 1,  # x-coordinate (0 to 1, where 0 is left and 1 is right)
+        y = -0.18,  # y-coordinate (0 to 1, where 0 is bottom and 1 is top)
+        xref = "paper",  # Use "paper" to specify coordinates relative to the entire plot
+        yref = "paper",
+        showarrow = FALSE,  # Don't show the arrow
+        font = list(
+          # family = "Open Sans",
+          size = 14,
+          # color = "black"
+          weight = "bold"
+        )
+      ),
       showlegend=TRUE,
       legend = list(orientation = 'h'),
       hovermode = "x unified",
@@ -163,6 +178,20 @@ lg_profile_update_main <- function(data, y, y_label, y_label_category){
     yaxis = list(
       title = paste0(y_label_category, " - ", y_label),
       side = 'left'
+    ),
+    # put all the annotation options to replace the river name
+    annotations = list(list(
+      text = unique(data$toponyme),
+      x = 1,  # x-coordinate (0 to 1, where 0 is left and 1 is right)
+      y = -0.18,  # y-coordinate (0 to 1, where 0 is bottom and 1 is top)
+      xref = "paper",  # Use "paper" to specify coordinates relative to the entire plot
+      yref = "paper",
+      showarrow = FALSE,  # Don't show the arrow
+      font = list(
+        size = 14,
+        weight = "bold"
+      )
+    )
     )
   )
   proxy <- list("trace" = proxy_trace,
@@ -208,6 +237,7 @@ lg_profile_second <- function(data, y, y_label, y_label_category){
       overlaying = 'y',
       side = 'right',
       showgrid = FALSE,  # Hide the gridlines for the second y-axis
+      zeroline = FALSE,
       showline = FALSE  # Hide the axis line for the second y-axis
     )
   )
