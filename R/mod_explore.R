@@ -22,7 +22,7 @@ mod_explore_ui <- function(id){
       useShinyjs(),
       tags$head(
         tags$style(
-            HTML(".form-group{margin-bottom: 0px}") # less space below selectInput metric_type
+            HTML(".form-group{margin-bottom: 10px}") # less space below selectInput metric_type
         )
       ),
       fluidRow(
@@ -375,7 +375,7 @@ mod_explore_server <- function(id){
         r_val$axis_click = input$exploremap_shape_click
         # reget the axis in the region without the selected axis
         r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id) %>%
-          filter(fid != r_val$axis_click$id)
+          filter(axis != r_val$axis_click$id)
         # get the DGO axis data
         r_val$dgo_axis = data_get_network_axis(selected_axis_id = r_val$axis_click$id) %>%
           mutate(measure = measure/1000)

@@ -309,7 +309,7 @@ map_wms_metric <-function(map, wms_params = params_wms()$metric,
 map_axis <- function(map, data_axis) {
   map %>%
     addPolylines(data = data_axis,
-                 layerId = ~fid,
+                 layerId = ~axis,
                  weight = 5,
                  color = "#ffffff00",
                  opacity = 1,
@@ -432,7 +432,7 @@ map_metric <- function(map, wms_params = params_wms()$metric,
 #' @importFrom leaflet clearGroup addPolylines highlightOptions pathOptions
 #'
 #' @examples
-# Create a basic Leaflet map
+#' # Create a basic Leaflet map
 #' library(leaflet)
 #' library(dplyr)
 #'
@@ -441,7 +441,7 @@ map_metric <- function(map, wms_params = params_wms()$metric,
 #'   addProviderTiles(providers$CartoDB.Positron)
 #'
 #' # Define selected and region-specific axes data frames
-#' selected_axes <- network_axis %>% filter(fid == 5)
+#' selected_axes <- network_axis %>% filter(axis == 5)
 #' region_axes <- network_axis
 #'
 #' # Add DGO axes to the map
@@ -527,7 +527,7 @@ map_axis_start_end <- function(map, axis_start_end, region_axis) {
       group = params_map_group()$axis_start_end
     ) %>%
     addPolylines(data = region_axis,
-                 layerId = ~fid,
+                 layerId = ~axis,
                  weight = 5,
                  color = "white",
                  opacity = 0.4,
