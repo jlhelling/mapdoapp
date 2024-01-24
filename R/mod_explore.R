@@ -45,7 +45,8 @@ mod_explore_ui <- function(id){
           uiOutput(ns("strahlerfilterUI")),
           uiOutput(ns("metricsfilterUI")),
           uiOutput(ns("legendUI")),
-          uiOutput(ns("downloadUI")),
+          # uncomment line below to add the download button
+          # uiOutput(ns("downloadUI")),
           verbatimTextOutput(ns("printcheck"))
         ) # column
       ), # fluidRow
@@ -240,20 +241,21 @@ mod_explore_server <- function(id){
 
     #### download ####
 
-    output$downloadUI <- renderUI({
-      r_val$ui_download
-    })
-
-    output$download <- downloadHandler(
-      filename = function() {
-        paste0(Sys.Date(), "_", r_val$region_name, ".gpkg")
-      },
-      content = function(file) {
-        data = data_get_dgo_in_region(r_val$region_click$id)
-        st_write(obj = data, dsn = file, layer = r_val$region_name,
-                 driver = "GPKG", delete_dsn = TRUE)
-      }
-    )
+    # Uncomment below to create add the download button
+    # output$downloadUI <- renderUI({
+    #   r_val$ui_download
+    # })
+    #
+    # output$download <- downloadHandler(
+    #   filename = function() {
+    #     paste0(Sys.Date(), "_", r_val$region_name, ".gpkg")
+    #   },
+    #   content = function(file) {
+    #     data = data_get_dgo_in_region(r_val$region_click$id)
+    #     st_write(obj = data, dsn = file, layer = r_val$region_name,
+    #              driver = "GPKG", delete_dsn = TRUE)
+    #   }
+    # )
 
     #### filter ####
 
