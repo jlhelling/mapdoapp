@@ -283,6 +283,14 @@ mod_explore_server <- function(id){
           style = "display: flex; align-items: center;",
           metric_legend(),
         ),
+        # landuse map
+        if (any(input$exploremap_groups %in% params_map_group()$landuse)) {
+          map_legend_wms_overlayer(wms_params = params_wms()$landuse)
+        },
+        # continuity map
+        if (any(input$exploremap_groups %in% params_map_group()$continuity)) {
+          map_legend_wms_overlayer(wms_params = params_wms()$continuity)
+        },
         # zone inondable
         if (any(input$exploremap_groups %in% params_map_group()$inondation)) {
           map_legend_wms_overlayer(wms_params = params_wms()$inondation)
