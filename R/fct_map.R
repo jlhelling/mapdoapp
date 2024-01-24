@@ -735,20 +735,22 @@ map_legend_wms_overlayer <- function(wms_params){
 #' legend_entry <- map_legend_vector_overlayer(layer_label = "ROE")
 #' print(legend_entry)
 #'
-#' @importFrom htmltools div
-#' @importFrom htmltools span
+#' @importFrom htmltools div span
+#' @importFrom glue glue
 #'
 #' @export
-map_legend_vector_overlayer <- function(layer_label){
+map_legend_vector_overlayer <- function(layer_label, color){
 
   div(
     style = "display: flex; align-items: center;",
     div(
-      style = "background-color: orange; border-radius: 50%; width: 10px; height: 10px; margin-top: 3px;",
+      style = glue::glue("background-color: {color};
+                         border-radius: 50%; width: 10px;
+                         height: 10px; margin-top: 3px;"),
       ""
     ),
     span(
-      style = "margin-left: 5px;",
+      style = "margin-left: 5px; font-size: 0.8rem;",
       layer_label
     ) # span
   ) # div

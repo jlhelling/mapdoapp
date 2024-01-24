@@ -291,6 +291,10 @@ mod_explore_server <- function(id){
         if (any(input$exploremap_groups %in% params_map_group()$continuity)) {
           map_legend_wms_overlayer(wms_params = params_wms()$continuity)
         },
+        # valley bottom map
+        if (any(input$exploremap_groups %in% params_map_group()$valley_bottom)) {
+          map_legend_wms_overlayer(wms_params = params_wms()$valley_bottom)
+        },
         # zone inondable
         if (any(input$exploremap_groups %in% params_map_group()$inondation)) {
           map_legend_wms_overlayer(wms_params = params_wms()$inondation)
@@ -301,7 +305,13 @@ mod_explore_server <- function(id){
         },
         # ROE
         if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
-          map_legend_vector_overlayer(layer_label = "ROE")
+          map_legend_vector_overlayer(layer_label = "Référentiel des Obstacles à l'Ecoulement",
+                                      color = "orange")
+        },
+        # Station hydrométrique
+        if (any(input$exploremap_groups %in% params_map_group()[["hydro_station"]])) {
+          map_legend_vector_overlayer(layer_label = "Station hydrométrique",
+                                      color = "blue")
         },
         style = "margin-bottom: 10px;"
       ) # div
