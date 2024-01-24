@@ -4,7 +4,7 @@
 \alias{map_legend_vector_overlayer}
 \title{Generate a legend entry for a vector overlay layer.}
 \usage{
-map_legend_vector_overlayer(layer_label)
+map_legend_vector_overlayer(layer_label, color)
 }
 \arguments{
 \item{layer_label}{A character string representing the label or name of the vector overlay layer.}
