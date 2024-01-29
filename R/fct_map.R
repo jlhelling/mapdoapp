@@ -427,10 +427,11 @@ map_metric <- function(map, wms_params = params_wms()$metric,
 #' @param map A Leaflet map object.
 #' @param selected_axis A data frame containing selected axe to be displayed.
 #' @param region_axis A data frame containing region-specific axes to be displayed.
+#' @param tooltip_metric text with the selected metric name.
 #'
 #' @return A modified Leaflet map object with DGO axes added.
 #'
-#' @importFrom leaflet clearGroup addPolylines highlightOptions pathOptions
+#' @importFrom leaflet clearGroup addPolylines highlightOptions pathOptions labelOptions
 #'
 #' @examples
 #' # Create a basic Leaflet map
@@ -446,11 +447,17 @@ map_metric <- function(map, wms_params = params_wms()$metric,
 #' region_axes <- network_axis
 #'
 #' # Add DGO axes to the map
-#' my_map <- map_dgo_axis(my_map, selected_axes, region_axes)
+#' my_map <- map_dgo_axis(my_map, selected_axes, region_axes, tooltip_metric = "active_channel_width")
 #' my_map
 #'
 #' @export
-map_dgo_axis <- function(map, selected_axis, region_axis) {
+map_dgo_axis <- function(map, selected_axis, region_axis, tooltip_metric) {
+
+  tooltip_label <- NULL
+  if (!is.null(tooltip_metric)){
+    tooltip_label <- selected_axis[[tooltip_metric]]
+  }
+
   map %>%
     clearGroup(params_map_group()$dgo_axis) %>%
     clearGroup(params_map_group()$axis) %>%
@@ -460,6 +467,8 @@ map_dgo_axis <- function(map, selected_axis, region_axis) {
       layerId = ~fid,
       weight = 5,
       color = "#ffffff00",
+      label = tooltip_label,
+      labelOptions = labelOptions(style = list("color" = "blue")),
       opacity = 1,
       highlightOptions = highlightOptions(
         opacity = 1,

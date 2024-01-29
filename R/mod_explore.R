@@ -406,10 +406,12 @@ mod_explore_server <- function(id){
           mutate(measure = measure/1000)
         # extract axis start end point
         r_val$axis_start_end = data_get_axis_start_end(dgo_axis = r_val$dgo_axis)
+        # browser()
 
         # map dgo axis when axis clicked and metric selected
         leafletProxy("exploremap") %>%
-          map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis) %>%
+          map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
+                       tooltip_metric = r_val$selected_metric) %>%
           map_axis_start_end(axis_start_end = r_val$axis_start_end, region_axis = r_val$network_region_axis)
 
         # create or update profile dataset with new axis
@@ -508,6 +510,12 @@ mod_explore_server <- function(id){
 
         # update profile with new metric selected
         if (r_val$profile_display == TRUE){
+
+          # update dgo on axis to reset tooltip
+          leafletProxy("exploremap") %>%
+            map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
+                         tooltip_metric = r_val$selected_metric)
+
           proxy_main_axe <-
             lg_profile_update_main(
               data = r_val$selected_axis_df,
