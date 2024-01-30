@@ -8,6 +8,8 @@ map_legend_vector_overlayer(layer_label, color)
 }
 \arguments{
 \item{layer_label}{A character string representing the label or name of the vector overlay layer.}
+
+\item{color}{text the legend marker color.}
 }
 \value{
 An HTML div element representing the legend entry for the vector overlay layer.
@@ -17,7 +19,7 @@ This function generates an HTML representation of a legend entry for a vector ov
 }
 \examples{
 # Create a legend entry for a vector overlay layer
-legend_entry <- map_legend_vector_overlayer(layer_label = "ROE")
+legend_entry <- map_legend_vector_overlayer(layer_label = "ROE", color = "blue")
 print(legend_entry)
 
 }

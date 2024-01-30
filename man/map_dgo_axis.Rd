@@ -4,7 +4,7 @@
 \alias{map_dgo_axis}
 \title{Add DGO axis to a Leaflet map}
 \usage{
-map_dgo_axis(map, selected_axis, region_axis, tooltip_metric)
+map_dgo_axis(map, selected_axis, region_axis, main_metric, second_metric)
 }
 \arguments{
 \item{map}{A Leaflet map object.}
@@ -13,7 +13,9 @@ map_dgo_axis(map, selected_axis, region_axis, tooltip_metric)
 
 \item{region_axis}{A data frame containing region-specific axes to be displayed.}
 
-\item{tooltip_metric}{text with the selected metric name.}
+\item{main_metric}{text with the main selected metric name.}
+
+\item{second_metric}{text with the second axis selected metric name.}
 }
 \value{
 A modified Leaflet map object with DGO axes added.
@@ -35,7 +37,8 @@ selected_axes <- network_axis \%>\% filter(axis == 5)
 region_axes <- network_axis
 
 # Add DGO axes to the map
-my_map <- map_dgo_axis(my_map, selected_axes, region_axes, tooltip_metric = "active_channel_width")
+my_map <- map_dgo_axis(my_map, selected_axes, region_axes,
+                        main_metric = "active_channel_width", second_metric = "talweg_slope")
 my_map
 
 }

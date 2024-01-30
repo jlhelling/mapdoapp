@@ -427,11 +427,13 @@ map_metric <- function(map, wms_params = params_wms()$metric,
 #' @param map A Leaflet map object.
 #' @param selected_axis A data frame containing selected axe to be displayed.
 #' @param region_axis A data frame containing region-specific axes to be displayed.
-#' @param tooltip_metric text with the selected metric name.
+#' @param main_metric text with the main selected metric name.
+#' @param second_metric text with the second axis selected metric name.
 #'
 #' @return A modified Leaflet map object with DGO axes added.
 #'
-#' @importFrom leaflet clearGroup addPolylines highlightOptions pathOptions labelOptions
+#' @importFrom leaflet clearGroup addPolylines highlightOptions pathOptions
+#' @importFrom htmltools HTML
 #'
 #' @examples
 #' # Create a basic Leaflet map
@@ -447,15 +449,19 @@ map_metric <- function(map, wms_params = params_wms()$metric,
 #' region_axes <- network_axis
 #'
 #' # Add DGO axes to the map
-#' my_map <- map_dgo_axis(my_map, selected_axes, region_axes, tooltip_metric = "active_channel_width")
+#' my_map <- map_dgo_axis(my_map, selected_axes, region_axes,
+#'                         main_metric = "active_channel_width", second_metric = "talweg_slope")
 #' my_map
 #'
 #' @export
-map_dgo_axis <- function(map, selected_axis, region_axis, tooltip_metric) {
+map_dgo_axis <- function(map, selected_axis, region_axis, main_metric, second_metric) {
 
   tooltip_label <- NULL
-  if (!is.null(tooltip_metric)){
-    tooltip_label <- selected_axis[[tooltip_metric]]
+  if (!is.null(main_metric) && is.null(second_metric)){
+    tooltip_label <- paste0('<span style="color:blue;"> <b>', selected_axis[[main_metric]], '</b> </span>')
+  } else if (!is.null(main_metric) && !is.null(second_metric)){
+    tooltip_label <- paste0('<span style="color:blue;"> <b>', selected_axis[[main_metric]], '</b> </span> <br/>',
+                            '<span style="color:#FC9D5A;"> <b>', selected_axis[[second_metric]], '</b> </span>')
   }
 
   map %>%
@@ -467,8 +473,7 @@ map_dgo_axis <- function(map, selected_axis, region_axis, tooltip_metric) {
       layerId = ~fid,
       weight = 5,
       color = "#ffffff00",
-      label = tooltip_label,
-      labelOptions = labelOptions(style = list("color" = "blue")),
+      label = lapply(tooltip_label, htmltools::HTML),
       opacity = 1,
       highlightOptions = highlightOptions(
         opacity = 1,
@@ -736,12 +741,13 @@ map_legend_wms_overlayer <- function(wms_params){
 #' This function generates an HTML representation of a legend entry for a vector overlay layer. The legend entry consists of a colored circle with a label indicating the layer's name.
 #'
 #' @param layer_label A character string representing the label or name of the vector overlay layer.
+#' @param color text the legend marker color.
 #'
 #' @return An HTML div element representing the legend entry for the vector overlay layer.
 #'
 #' @examples
 #' # Create a legend entry for a vector overlay layer
-#' legend_entry <- map_legend_vector_overlayer(layer_label = "ROE")
+#' legend_entry <- map_legend_vector_overlayer(layer_label = "ROE", color = "blue")
 #' print(legend_entry)
 #'
 #' @importFrom htmltools div span
