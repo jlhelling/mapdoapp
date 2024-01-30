@@ -20,7 +20,7 @@ mod_documentation_ui <- function(id){
             <p>L&#39;application dispose aujourd&#39;hui d&#39;un module d&#39;exploration des donn&eacute;es permettant de visualiser les diff&eacute;rentes m&eacute;triques mises &agrave; disposition pour l&#39;analyse de bassin versant.</p>
            "),
       HTML("
-            <p><strong>Contact</strong> : Louis Mani&egrave;re (CNRS UMR 5600, Environnement Ville Soci&eacute;t&eacute;) - <a href='mailto:louis.maniere@ens-lyon.fr?subject=Application%20MAPDO'>louis.maniere@ens-lyon.fr</a></p>
+            <p><strong>Contact</strong> : Lise Vaudor (CNRS UMR 5600, Environnement Ville Soci&eacute;t&eacute;) - <a href='mailto:louis.maniere@ens-lyon.fr?subject=Application%20MAPDO'>lise.vaudor@ens-lyon.fr</a></p>
          "),
       tags$a(
         href = "https://evs-gis.github.io/mapdowebsite/",

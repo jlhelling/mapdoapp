@@ -306,12 +306,12 @@ mod_explore_server <- function(id){
         # ROE
         if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
           map_legend_vector_overlayer(layer_label = "Référentiel des Obstacles à l'Ecoulement",
-                                      color = "orange")
+                                      color = "#323232")
         },
         # Station hydrométrique
         if (any(input$exploremap_groups %in% params_map_group()[["hydro_station"]])) {
           map_legend_vector_overlayer(layer_label = "Station hydrométrique",
-                                      color = "blue")
+                                      color = "#33B1FF")
         },
         style = "margin-bottom: 10px;"
       ) # div
@@ -409,7 +409,8 @@ mod_explore_server <- function(id){
 
         # map dgo axis when axis clicked and metric selected
         leafletProxy("exploremap") %>%
-          map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis) %>%
+          map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
+                       main_metric = r_val$selected_metric, second_metric = r_val$selected_profile_metric) %>%
           map_axis_start_end(axis_start_end = r_val$axis_start_end, region_axis = r_val$network_region_axis)
 
         # create or update profile dataset with new axis
@@ -508,6 +509,7 @@ mod_explore_server <- function(id){
 
         # update profile with new metric selected
         if (r_val$profile_display == TRUE){
+
           proxy_main_axe <-
             lg_profile_update_main(
               data = r_val$selected_axis_df,
@@ -536,6 +538,11 @@ mod_explore_server <- function(id){
           r_val$ui_profile_metric_type = selectInput(ns("profile_metric_type"), "Ajoutez une métrique :",
                                                      choices = utile_get_metric_type(params_metrics_choice()),
                                                      selected  = utile_get_metric_type(params_metrics_choice())[1])
+
+          # update dgo on axis to reset tooltip
+          leafletProxy("exploremap") %>%
+            map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
+                         main_metric = r_val$selected_metric, second_metric = r_val$selected_profile_metric)
 
           # plot single axe with metric selected
           r_val$plot = lg_profile_main(data = r_val$selected_axis_df,
@@ -596,6 +603,11 @@ mod_explore_server <- function(id){
         r_val$selected_profile_metric_name = params_metrics_choice()[[input$profile_metric_type]]$metric_type_values[[input$profile_metric]]$metric_title
         r_val$selected_profile_metric_type = params_metrics_choice()[[input$profile_metric_type]]$metric_type_title
 
+        # update map to change tooltip labels
+        leafletProxy("exploremap") %>%
+          map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
+                       main_metric = r_val$selected_metric, second_metric = r_val$selected_profile_metric)
+
         # create the list to add trace and layout to change second axe plot
         proxy_second_axe <- lg_profile_second(data = r_val$selected_axis_df,
                                               y = r_val$selected_axis_df[[r_val$selected_profile_metric]],
@@ -616,6 +628,12 @@ mod_explore_server <- function(id){
         plotlyProxyInvoke("deleteTraces", 1)
 
       updateRadioButtons(session, "profile_metric", selected = character(0))
+
+      r_val$selected_profile_metric = NULL
+      # update dgo on axis to reset tooltip
+      leafletProxy("exploremap") %>%
+        map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
+                     main_metric = r_val$selected_metric, second_metric = r_val$selected_profile_metric)
 
     })
 

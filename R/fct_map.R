@@ -219,20 +219,20 @@ map_region_clicked <- function(map,
                      radius = 3,
                      weight = 0.5,
                      opacity = 0.9,
-                     color = "orange",
-                     fillColor = "orange",
+                     color = "#D0D0D0",
+                     fillColor = "#323232",
                      fillOpacity = 0.9,
                      popup = ~nomprincip,
                      group = params_map_group()[["roe"]]
     ) %>%
-    # ROE layer hidden by default
+    # hydrometric stations layer hidden by default
     hideGroup(params_map_group()[["roe"]]) %>%
     addCircleMarkers(data = data_get_station_hubeau(region_click$id),
                      radius = 3,
                      weight = 0.5,
                      opacity = 0.9,
-                     color = "blue",
-                     fillColor = "blue",
+                     color = "#E5F6FF",
+                     fillColor = "#33B1FF",
                      fillOpacity = 0.9,
                      popup = ~libelle_station,
                      group = params_map_group()[["hydro_station"]]
@@ -427,10 +427,13 @@ map_metric <- function(map, wms_params = params_wms()$metric,
 #' @param map A Leaflet map object.
 #' @param selected_axis A data frame containing selected axe to be displayed.
 #' @param region_axis A data frame containing region-specific axes to be displayed.
+#' @param main_metric text with the main selected metric name.
+#' @param second_metric text with the second axis selected metric name.
 #'
 #' @return A modified Leaflet map object with DGO axes added.
 #'
 #' @importFrom leaflet clearGroup addPolylines highlightOptions pathOptions
+#' @importFrom htmltools HTML
 #'
 #' @examples
 #' # Create a basic Leaflet map
@@ -446,11 +449,24 @@ map_metric <- function(map, wms_params = params_wms()$metric,
 #' region_axes <- network_axis
 #'
 #' # Add DGO axes to the map
-#' my_map <- map_dgo_axis(my_map, selected_axes, region_axes)
+#' my_map <- map_dgo_axis(my_map, selected_axes, region_axes,
+#'                         main_metric = "active_channel_width", second_metric = "talweg_slope")
 #' my_map
 #'
 #' @export
-map_dgo_axis <- function(map, selected_axis, region_axis) {
+map_dgo_axis <- function(map, selected_axis, region_axis, main_metric, second_metric) {
+
+  # create HTML conditional tooltip labels
+  tooltip_label <- NULL
+  if (!is.null(main_metric) && is.null(second_metric)){
+    tooltip_label <- lapply(paste0('<span style="color:blue;"> <b>', selected_axis[[main_metric]], '</b> </span>'),
+                            htmltools::HTML)
+  } else if (!is.null(main_metric) && !is.null(second_metric)){
+    tooltip_label <- lapply(paste0('<span style="color:blue;"> <b>', selected_axis[[main_metric]], '</b> </span> <br/>',
+                                   '<span style="color:#FC9D5A;"> <b>', selected_axis[[second_metric]], '</b> </span>'),
+                            htmltools::HTML)
+  }
+
   map %>%
     clearGroup(params_map_group()$dgo_axis) %>%
     clearGroup(params_map_group()$axis) %>%
@@ -460,6 +476,7 @@ map_dgo_axis <- function(map, selected_axis, region_axis) {
       layerId = ~fid,
       weight = 5,
       color = "#ffffff00",
+      label = tooltip_label,
       opacity = 1,
       highlightOptions = highlightOptions(
         opacity = 1,
@@ -727,12 +744,13 @@ map_legend_wms_overlayer <- function(wms_params){
 #' This function generates an HTML representation of a legend entry for a vector overlay layer. The legend entry consists of a colored circle with a label indicating the layer's name.
 #'
 #' @param layer_label A character string representing the label or name of the vector overlay layer.
+#' @param color text the legend marker color.
 #'
 #' @return An HTML div element representing the legend entry for the vector overlay layer.
 #'
 #' @examples
 #' # Create a legend entry for a vector overlay layer
-#' legend_entry <- map_legend_vector_overlayer(layer_label = "ROE")
+#' legend_entry <- map_legend_vector_overlayer(layer_label = "ROE", color = "blue")
 #' print(legend_entry)
 #'
 #' @importFrom htmltools div span
