@@ -90,7 +90,7 @@ mod_explore_ui <- function(id){
 #' @import shiny
 #' @importFrom leaflet leafletProxy clearGroup leafletOutput renderLeaflet
 #' @importFrom htmltools HTML div img
-#' @importFrom dplyr filter mutate if_else
+#' @importFrom dplyr filter mutate if_else pull
 #' @importFrom plotly event_register event_data plotlyProxy plotlyProxyInvoke renderPlotly plotlyOutput
 #' @importFrom bslib popover update_popover
 #' @importFrom bsicons bs_icon
@@ -162,6 +162,8 @@ mod_explore_server <- function(id){
       selected_axis_df = NULL, # dgo_axis dataframe to plot graph
       profile_display = FALSE, # controle if metric and axis is selected = display the profile
       plot = lg_profile_empty(),
+      leaflet_hover_measure = 2.5, # measure field from mesure to add vertical line on longitudinal profile
+      leaflet_hover_shapes = list(shapes = list(lg_vertical_line(2.5))), # list to store vertical lines to display on longitudinal profile
       plotly_hover = NULL,
       region_name = NULL,
       roe_region = NULL,
@@ -572,8 +574,7 @@ mod_explore_server <- function(id){
           r_val$plot = lg_profile_main(data = r_val$selected_axis_df,
                                        y = r_val$selected_axis_df[[r_val$selected_metric]],
                                        y_label = r_val$selected_metric_name,
-                                       y_label_category = r_val$selected_metric_type,
-                                       roe_axis = r_val$roe_axis) %>%
+                                       y_label_category = r_val$selected_metric_type) %>%
             event_register("plotly_hover")
         }
       }
@@ -662,6 +663,21 @@ mod_explore_server <- function(id){
 
     })
 
+    #### profile metric add ROE ####
+
+    observeEvent(input$roe_profile, {
+      if (input$roe_profile == TRUE){
+        # create the vertical line from ROE distance_axis
+        roe_vertical_line <- lg_roe_vertical_line(r_val$roe_axis$distance_axis)
+        # increment the vertical list shape to keep the hover map vertical line
+        r_val$leaflet_hover_shapes$shapes <- c(r_val$leaflet_hover_shapes$shapes,
+                                               roe_vertical_line)
+        # update profile
+        plotlyProxy("long_profile") %>%
+          plotlyProxyInvoke("relayout",  r_val$leaflet_hover_shapes)
+      }
+    })
+
     ### EVENT FILTER ####
 
     observeEvent(c(input$strahler, input$metricfilter, r_val$ui_strahler_filter), {
@@ -735,11 +751,16 @@ mod_explore_server <- function(id){
     observeEvent(input$exploremap_shape_mouseover, {
       if (input$exploremap_shape_mouseover$group == params_map_group()$dgo_axis && !is.null(input$exploremap_shape_mouseover)){
         # extract dgo axis fid from map
-        select_measure <- r_val$dgo_axis %>%
-          filter(fid == input$exploremap_shape_mouseover$id)
-        # change profile layout with vertial line
+        r_val$leaflet_hover_measure <- r_val$dgo_axis %>%
+          filter(fid == input$exploremap_shape_mouseover$id) %>%
+          pull(measure)
+        # remove the first element (hover dgo vertical line)
+        r_val$leaflet_hover_shapes <- list(shapes = r_val$leaflet_hover_shapes$shapes[-1])
+        # add the new hover dgo vertical line
+        r_val$leaflet_hover_shapes$shapes <- c(list(lg_vertical_line(r_val$leaflet_hover_measure)), r_val$leaflet_hover_shapes$shapes)
+        # change profile layout with vertical line
         plotlyProxy("long_profile") %>%
-          plotlyProxyInvoke("relayout", list(shapes = list(lg_vertical_line(select_measure$measure))))
+          plotlyProxyInvoke("relayout", r_val$leaflet_hover_shapes)
       }
     })
   })

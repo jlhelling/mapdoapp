@@ -54,6 +54,19 @@ lg_vertical_line <- function(x = 0, color = "green") {
   )
 }
 
+#' Create the ROE vertical lines for plotly shapes
+#'
+#' @param roe_distance_axis vector ROE distance on axis.
+#'
+#' @return list of each vertical lines
+#' @export
+lg_roe_vertical_line <- function(roe_distance_axis){
+  shapes_list <- lapply(roe_distance_axis, function(x) {
+    lg_vertical_line(x = x/1000, color = "#323232")
+  })
+  return (shapes_list)
+}
+
 #' Create a longitudinal profile plot for selected axis data
 #'
 #' This function generates a longitudinal profile plot using the 'plot_ly'
@@ -78,15 +91,7 @@ lg_vertical_line <- function(x = 0, color = "green") {
 # profile_plot
 #'
 #' @export
-lg_profile_main <- function(data, y, y_label, y_label_category, roe_axis) {
-
-  # vertical dashed lines
-  shapes_list <- list(lg_vertical_line(2.5))  # First vertical dashed line
-
-  # with ROE dashed lines
-  for (i in seq_along(roe_axis$distance_axis)) {
-    shapes_list <- c(shapes_list, list(lg_vertical_line(x = roe_axis$distance_axis[i]/1000, color = "#323232")))
-  }
+lg_profile_main <- function(data, y, y_label, y_label_category) {
 
   plot <- plot_ly(x = data$measure, y = y, yaxis = 'y1',
                   key = data$fid,  # the "id" column for hover text
@@ -115,7 +120,7 @@ lg_profile_main <- function(data, y, y_label, y_label_category, roe_axis) {
       showlegend=TRUE,
       legend = list(orientation = 'h'),
       hovermode = "x unified",
-      shapes = shapes_list,
+      shapes = list(lg_vertical_line(2.5)),
       margin = list(
         t = 20,
         b = 10,
