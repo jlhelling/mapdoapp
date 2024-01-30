@@ -62,11 +62,18 @@ centre_region_coord <- as.data.frame(st_coordinates(centre_region)) \%>\%
          "lat" = Y)
 centre_region_coord$id <- 11
 
+# get ROE in region
+roe_region <- data_get_roe_in_region(centre_region_coord$id)
+# get hydro stations in region
+hydro_station_region <- data_get_station_hubeau(centre_region_coord$id)
+
 # map the element in the region clicked
 map <- map_region_clicked(map = map_region,
                           region_click = centre_region_coord,
                           selected_region_feature = selected_region,
-                          regions = region_hydrographique)
+                          regions_data = region_hydrographique,
+                          roe_region = roe_region,
+                          hydro_station_region = hydro_station_region)
 map
 
 # build geoserver WMS filter

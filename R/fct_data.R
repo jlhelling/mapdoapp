@@ -153,7 +153,7 @@ data_get_min_max_metric <- function(selected_region_id, selected_metric) {
 data_get_roe_in_region <- function(selected_region_id) {
   query <- glue::glue("
       SELECT
-      roe.gid, nomprincip, lbtypeouvr, lbhautchut, gid_region, roe.geom
+      roe.gid, axis, distance_axis, nomprincip, lbtypeouvr, lbhautchut, gid_region, roe.geom
       FROM roe
       WHERE gid_region = {selected_region_id}
           AND (roe.cdetouvrag LIKE '2')

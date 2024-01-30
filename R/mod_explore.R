@@ -159,7 +159,9 @@ mod_explore_server <- function(id){
       profile_display = FALSE, # controle if metric and axis is selected = display the profile
       plot = lg_profile_empty(),
       plotly_hover = NULL,
-      region_name = NULL
+      region_name = NULL,
+      roe_region = NULL,
+      hydro_station_region = NULL
     )
 
     ### INIT MAP & PROFILE ####
@@ -360,6 +362,10 @@ mod_explore_server <- function(id){
         r_val$region_name = utile_normalize_string(r_val$selected_region_feature$lbregionhy)
         # get the axis in the region
         r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id)
+        # get ROE in region
+        r_val$roe_region = data_get_roe_in_region(r_val$region_click$id)
+        # get hydro stations in region
+        r_val$hydro_station_region = data_get_station_hubeau(r_val$region_click$id)
         # get strahler data
         r_val$strahler = isolate(data_get_min_max_strahler(selected_region_id = r_val$region_click$id))
         # build strahler slider
@@ -375,7 +381,9 @@ mod_explore_server <- function(id){
         leafletProxy("exploremap") %>%
           map_region_clicked(region_click = input$exploremap_shape_click,
                              selected_region_feature = r_val$selected_region_feature,
-                             regions_data = r_val$regions_in_bassin)
+                             regions_data = r_val$regions_in_bassin,
+                             roe_region = r_val$roe_region,
+                             hydro_station_region = r_val$hydro_station_region)
 
         # run only once, control with region_already_clicked
         if (r_val$region_already_clicked == FALSE){
