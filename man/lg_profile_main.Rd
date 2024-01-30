@@ -7,13 +7,13 @@
 lg_profile_main(data, y, y_label, y_label_category)
 }
 \arguments{
-\item{data}{A data frame containing the selected axis data.}
+\item{data}{data frame containing the selected axis data.}
 
-\item{y}{The metric to be plotted on the y-axis.}
+\item{y}{text metric to be plotted on the y-axis.}
 
-\item{y_label}{The name of the metric plotted.}
+\item{y_label}{text name of the metric plotted.}
 
-\item{y_label_category}{The metric category name.}
+\item{y_label_category}{text metric category name.}
 }
 \value{
 A longitudinal profile plot with the specified metric.

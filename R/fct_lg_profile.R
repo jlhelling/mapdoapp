@@ -16,12 +16,19 @@
 lg_profile_empty <- function() {
   temp <- data.frame()
   plot <- plot_ly(data = temp, source = "plot_pg") %>%
-    layout(title = list(
-      text = "Sélectionnez un cours d'eau sur la carte et une métrique pour afficher le graphique",
-      y = 0.80,  # y title position
-      x = 0.3,   # x title position
-      font = list(size = 15)
-    ))
+    layout(
+      title = list(
+        text = "Sélectionnez un cours d'eau sur la carte et une métrique pour afficher le graphique",
+        y = 0.80,  # y title position
+        x = 0.3,   # x title position
+        font = list(size = 15)
+      ),
+      xaxis = list(
+        zeroline = FALSE
+      ),
+      yaxis = list(
+        zeroline = FALSE
+      ))
   return(plot)
 }
 
@@ -67,16 +74,92 @@ lg_roe_vertical_line <- function(roe_distance_axis){
   return (shapes_list)
 }
 
+#' plotly xaxis layout.
+#'
+#' @param data data.frame dgo from axis.
+#'
+#' @return list
+#' @export
+lg_xaxis_layout <- function(data){
+  xaxis <- list(
+    title = 'Distance depuis l\'exutoire (km)',
+    range = c(0, max(data$measure)),
+    zeroline = FALSE)
+  return(xaxis)
+}
+
+#' plotly yaxis layout.
+#'
+#' @param y_label text name of the metric plotted.
+#' @param y_label_category text metric category name.
+#'
+#' @return list
+#' @export
+lg_yaxis_layout <- function(y_label_category, y_label){
+  yaxis <- list(
+    title = paste0(y_label_category, " - ", y_label),
+    side = 'left',
+    zeroline = FALSE
+  )
+  return(yaxis)
+}
+
+#' plotly annotations layout.
+#'
+#' @param data data.frame dgo from axis.
+#'
+#' @return list
+#' @export
+lg_annotations_layout <- function(data){
+  annotations = list(
+    text = unique(data$toponyme),
+    x = 1,  # x-coordinate (0 to 1, where 0 is left and 1 is right)
+    y = -0.18,  # y-coordinate (0 to 1, where 0 is bottom and 1 is top)
+    xref = "paper",  # "paper" to specify coordinates relative to the entire plot
+    yref = "paper",
+    showarrow = FALSE,  # Don't show the arrow
+    font = list(
+      # family = "Open Sans",
+      size = 14,
+      # color = "black"
+      weight = "bold"
+    )
+  )
+  return(annotations)
+}
+
+#' plotly add trace.
+#'
+#' @param data data frame containing the selected axis data.
+#' @param y text metric to be plotted on the y-axis.
+#' @param y_label text name of the metric plotted.
+#' @param yaxis text axis id.
+#'
+#' @return list
+#' @export
+lg_add_trace <- function(data, y, y_label, yaxis = 'y1'){
+  trace <- list(
+    x = data$measure,
+    y = y,
+    key = data$fid,  # the "id" column for hover text
+    type = 'scatter',
+    mode = 'lines',
+    name = y_label,
+    yaxis = yaxis
+  )
+  return(trace)
+}
+
 #' Create a longitudinal profile plot for selected axis data
 #'
 #' This function generates a longitudinal profile plot using the 'plot_ly'
 #' function from the 'plotly' package. It allows you to visualize a specific
 #' metric along the selected axis.
 #'
-#' @param data A data frame containing the selected axis data.
-#' @param y The metric to be plotted on the y-axis.
-#' @param y_label The name of the metric plotted.
-#' @param y_label_category The metric category name.
+#' @param data data frame containing the selected axis data.
+#' @param y text metric to be plotted on the y-axis.
+#' @param y_label text name of the metric plotted.
+#' @param y_label_category text metric category name.
 #'
 #' @return A longitudinal profile plot with the specified metric.
 #'
@@ -97,28 +180,10 @@ lg_profile_main <- function(data, y, y_label, y_label_category) {
                   key = data$fid,  # the "id" column for hover text
                   type = 'scatter', mode = 'lines', name = y_label) %>%
     layout(
-      xaxis = list(
-        title = 'Distance depuis l\'exutoire (km)',
-        range = c(0, max(data$measure))),
-      yaxis = list(
-        title = paste0(y_label_category, " - ", y_label),
-        side = 'left'
-      ),
+      xaxis = lg_xaxis_layout(data),
+      yaxis = lg_yaxis_layout(y_label_category, y_label),
       # river name
-      annotations = list(
-        text = unique(data$toponyme),
-        x = 1,  # x-coordinate (0 to 1, where 0 is left and 1 is right)
-        y = -0.18,  # y-coordinate (0 to 1, where 0 is bottom and 1 is top)
-        xref = "paper",  # "paper" to specify coordinates relative to the entire plot
-        yref = "paper",
-        showarrow = FALSE,  # Don't show the arrow
-        font = list(
-          # family = "Open Sans",
-          size = 14,
-          # color = "black"
-          weight = "bold"
-        )
-      ),
+      annotations = lg_annotations_layout(data),
       showlegend=TRUE,
       legend = list(orientation = 'h'),
       hovermode = "x unified",
@@ -179,38 +244,14 @@ lg_profile_main <- function(data, y, y_label, y_label_category) {
 #'
 #' @export
 lg_profile_update_main <- function(data, y, y_label, y_label_category){
-  proxy_trace <- list(
-    x = data$measure,
-    y = y,
-    key = data$fid,  # the "id" column for hover text
-    type = 'scatter',
-    mode = 'lines',
-    name = y_label,
-    yaxis = 'y1'
-  )
+
+  proxy_trace <- lg_add_trace(data, y, y_label, yaxis = 'y1')
 
   proxy_layout <- list(
-    xaxis = list(
-      title = 'Distance depuis l\'exutoire (km)',
-      range = c(0, max(data$measure))),
-    yaxis = list(
-      title = paste0(y_label_category, " - ", y_label),
-      side = 'left'
-    ),
+    xaxis = lg_xaxis_layout(data),
+    yaxis = lg_yaxis_layout(y_label_category, y_label),
     # put all the annotation options to replace the river name
-    annotations = list(list(
-      text = unique(data$toponyme),
-      x = 1,  # x-coordinate (0 to 1, where 0 is left and 1 is right)
-      y = -0.18,  # y-coordinate (0 to 1, where 0 is bottom and 1 is top)
-      xref = "paper",  # Use "paper" to specify coordinates relative to the entire plot
-      yref = "paper",
-      showarrow = FALSE,  # Don't show the arrow
-      font = list(
-        size = 14,
-        weight = "bold"
-      )
-    )
-    )
+    annotations = lg_annotations_layout(data)
   )
   proxy <- list("trace" = proxy_trace,
                 "layout" = proxy_layout)
@@ -237,15 +278,8 @@ lg_profile_update_main <- function(data, y, y_label, y_label_category){
 #'
 #' @export
 lg_profile_second <- function(data, y, y_label, y_label_category){
-  proxy_trace <- list(
-    x = data$measure,
-    y = y,
-    key = data$fid,  # the "id" column for hover text
-    type = 'scatter',
-    mode = 'lines',
-    name = y_label,
-    yaxis = 'y2'
-  )
+
+  proxy_trace <- lg_add_trace(data, y, y_label, yaxis = 'y2')
 
   proxy_layout <- list(
     yaxis2 = list(
