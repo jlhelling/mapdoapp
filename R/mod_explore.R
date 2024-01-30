@@ -306,12 +306,12 @@ mod_explore_server <- function(id){
         # ROE
         if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
           map_legend_vector_overlayer(layer_label = "Référentiel des Obstacles à l'Ecoulement",
-                                      color = "orange")
+                                      color = "#323232")
         },
         # Station hydrométrique
         if (any(input$exploremap_groups %in% params_map_group()[["hydro_station"]])) {
           map_legend_vector_overlayer(layer_label = "Station hydrométrique",
-                                      color = "blue")
+                                      color = "#33B1FF")
         },
         style = "margin-bottom: 10px;"
       ) # div
