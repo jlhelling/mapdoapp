@@ -4,7 +4,7 @@
 \alias{lg_profile_main}
 \title{Create a longitudinal profile plot for selected axis data}
 \usage{
-lg_profile_main(data, y, y_label, y_label_category)
+lg_profile_main(data, y, y_label, y_label_category, roe_axis)
 }
 \arguments{
 \item{data}{A data frame containing the selected axis data.}

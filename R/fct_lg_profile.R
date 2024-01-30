@@ -78,7 +78,15 @@ lg_vertical_line <- function(x = 0, color = "green") {
 # profile_plot
 #'
 #' @export
-lg_profile_main <- function(data, y, y_label, y_label_category) {
+lg_profile_main <- function(data, y, y_label, y_label_category, roe_axis) {
+
+  # vertical dashed lines
+  shapes_list <- list(lg_vertical_line(2.5))  # First vertical dashed line
+
+  # with ROE dashed lines
+  for (i in seq_along(roe_axis$distance_axis)) {
+    shapes_list <- c(shapes_list, list(lg_vertical_line(x = roe_axis$distance_axis[i]/1000, color = "#323232")))
+  }
 
   plot <- plot_ly(x = data$measure, y = y, yaxis = 'y1',
                   key = data$fid,  # the "id" column for hover text
@@ -94,7 +102,7 @@ lg_profile_main <- function(data, y, y_label, y_label_category) {
         text = unique(data$toponyme),
         x = 1,  # x-coordinate (0 to 1, where 0 is left and 1 is right)
         y = -0.18,  # y-coordinate (0 to 1, where 0 is bottom and 1 is top)
-        xref = "paper",  # Use "paper" to specify coordinates relative to the entire plot
+        xref = "paper",  # "paper" to specify coordinates relative to the entire plot
         yref = "paper",
         showarrow = FALSE,  # Don't show the arrow
         font = list(
@@ -107,7 +115,7 @@ lg_profile_main <- function(data, y, y_label, y_label_category) {
       showlegend=TRUE,
       legend = list(orientation = 'h'),
       hovermode = "x unified",
-      shapes = list(lg_vertical_line(2.5)),
+      shapes = shapes_list,
       margin = list(
         t = 20,
         b = 10,

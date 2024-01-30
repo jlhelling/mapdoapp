@@ -66,7 +66,9 @@ mod_explore_ui <- function(id){
                     uiOutput(ns("profileareaUI")),
                     uiOutput(ns("profileradiobuttonUI")),
                     uiOutput(ns("removeprofileaxeUI"),
-                             style = "margin-top: 10px;") # more space above button
+                             style = "margin-top: 10px;"), # more space above button
+                    uiOutput(ns("profileroeUI"),
+                             style = "margin-top: 10px;")
                   )
                 )
               )
@@ -142,16 +144,18 @@ mod_explore_server <- function(id){
       selected_profile_metric_name = NULL,
       selected_profile_metric_type = NULL,
       strahler = NULL,
+      min_max_metric = NULL,
+      # UI generator
       ui_strahler_filter = NULL,
       ui_metric_type = NULL,
       ui_metric = NULL,
       ui_unit_area = NULL,
-      min_max_metric = NULL,
       ui_metric_filter = NULL,
       ui_profile_metric_type = NULL,
       ui_profile_metric = NULL,
       ui_profile_unit_area = NULL,
       ui_remove_profile_axe = NULL,
+      ui_roe_profile = NULL,
       ui_download = NULL,
       cql_filter = NULL, # WMS filter
       sld_body = NULL, # WMS SLD symbology
@@ -161,6 +165,7 @@ mod_explore_server <- function(id){
       plotly_hover = NULL,
       region_name = NULL,
       roe_region = NULL,
+      roe_axis = NULL,
       hydro_station_region = NULL
     )
 
@@ -205,6 +210,11 @@ mod_explore_server <- function(id){
     # button to remove second axe
     output$removeprofileaxeUI <- renderUI({
       r_val$ui_remove_profile_axe
+    })
+
+    # checkbox display ROE
+    output$profileroeUI <- renderUI({
+      r_val$ui_roe_profile
     })
 
     #### metric ####
@@ -414,6 +424,9 @@ mod_explore_server <- function(id){
           mutate(measure = measure/1000)
         # extract axis start end point
         r_val$axis_start_end = data_get_axis_start_end(dgo_axis = r_val$dgo_axis)
+        # get ROE in axis clicked
+        r_val$roe_axis = r_val$roe_region %>%
+          filter(axis == r_val$axis_click$id)
 
         # map dgo axis when axis clicked and metric selected
         leafletProxy("exploremap") %>%
@@ -547,6 +560,9 @@ mod_explore_server <- function(id){
                                                      choices = utile_get_metric_type(params_metrics_choice()),
                                                      selected  = utile_get_metric_type(params_metrics_choice())[1])
 
+          # built ROE checkboxInput and input
+          r_val$ui_roe_profile = checkboxInput(ns("roe_profile"), label = "ROE", value = FALSE)
+
           # update dgo on axis to reset tooltip
           leafletProxy("exploremap") %>%
             map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
@@ -556,7 +572,8 @@ mod_explore_server <- function(id){
           r_val$plot = lg_profile_main(data = r_val$selected_axis_df,
                                        y = r_val$selected_axis_df[[r_val$selected_metric]],
                                        y_label = r_val$selected_metric_name,
-                                       y_label_category = r_val$selected_metric_type) %>%
+                                       y_label_category = r_val$selected_metric_type,
+                                       roe_axis = r_val$roe_axis) %>%
             event_register("plotly_hover")
         }
       }
