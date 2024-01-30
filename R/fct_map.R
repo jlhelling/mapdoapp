@@ -145,6 +145,8 @@ map_add_regions_in_bassin <- function(map, bassins_data,
 #' @param region_click A vector containing information about the clicked region.
 #' @param selected_region_feature A sf data frame containing information about the selected region feature.
 #' @param regions_data A sf data.frame with the hydrographic regions of the bassin selected.
+#' @param roe_region sf data.frame ROE in selected region.
+#' @param hydro_station_region sf data.frame Hubeau hydrometric stations in selected region.
 #'
 #' @return An updated Leaflet map with relevant layers and information displayed.
 #'
@@ -182,18 +184,27 @@ map_add_regions_in_bassin <- function(map, bassins_data,
 #'          "lat" = Y)
 #' centre_region_coord$id <- 11
 #'
+#' # get ROE in region
+#' roe_region <- data_get_roe_in_region(centre_region_coord$id)
+#' # get hydro stations in region
+#' hydro_station_region <- data_get_station_hubeau(centre_region_coord$id)
+#'
 #' # map the element in the region clicked
 #' map <- map_region_clicked(map = map_region,
 #'                           region_click = centre_region_coord,
 #'                           selected_region_feature = selected_region,
-#'                           regions_data = region_hydrographique)
+#'                           regions_data = region_hydrographique,
+#'                           roe_region = roe_region,
+#'                           hydro_station_region = hydro_station_region)
 #' map
 #'
 #' @export
 map_region_clicked <- function(map,
                                region_click,
                                selected_region_feature,
-                               regions_data) {
+                               regions_data,
+                               roe_region,
+                               hydro_station_region) {
   map %>%
     setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
     clearGroup(c(params_map_group()[["region"]],
@@ -215,7 +226,7 @@ map_region_clicked <- function(map,
                 group = params_map_group()[["region"]]
     ) %>%
     # add ROE overlayers from PostgreSQL
-    addCircleMarkers(data = data_get_roe_in_region(region_click$id),
+    addCircleMarkers(data = roe_region,
                      radius = 3,
                      weight = 0.5,
                      opacity = 0.9,
@@ -227,7 +238,7 @@ map_region_clicked <- function(map,
     ) %>%
     # hydrometric stations layer hidden by default
     hideGroup(params_map_group()[["roe"]]) %>%
-    addCircleMarkers(data = data_get_station_hubeau(region_click$id),
+    addCircleMarkers(data = hydro_station_region,
                      radius = 3,
                      weight = 0.5,
                      opacity = 0.9,
@@ -368,11 +379,18 @@ map_axis <- function(map, data_axis) {
 #'          "lat" = Y)
 #' centre_region_coord$id <- 11
 #'
+#' # get ROE in region
+#' roe_region <- data_get_roe_in_region(centre_region_coord$id)
+#' # get hydro stations in region
+#' hydro_station_region <- data_get_station_hubeau(centre_region_coord$id)
+#'
 #' # map the element in the region clicked
 #' map <- map_region_clicked(map = map_region,
 #'                           region_click = centre_region_coord,
 #'                           selected_region_feature = selected_region,
-#'                           regions = region_hydrographique)
+#'                           regions_data = region_hydrographique,
+#'                           roe_region = roe_region,
+#'                           hydro_station_region = hydro_station_region)
 #' map
 #'
 #' # build geoserver WMS filter

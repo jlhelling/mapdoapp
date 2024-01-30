@@ -4,7 +4,14 @@
 \alias{map_region_clicked}
 \title{Update Leaflet Map for a Clicked Region}
 \usage{
-map_region_clicked(map, region_click, selected_region_feature, regions_data)
+map_region_clicked(
+  map,
+  region_click,
+  selected_region_feature,
+  regions_data,
+  roe_region,
+  hydro_station_region
+)
 }
 \arguments{
 \item{map}{An existing Leaflet map to be updated.}
@@ -14,6 +21,10 @@ map_region_clicked(map, region_click, selected_region_feature, regions_data)
 \item{selected_region_feature}{A sf data frame containing information about the selected region feature.}
 
 \item{regions_data}{A sf data.frame with the hydrographic regions of the bassin selected.}
+
+\item{roe_region}{sf data.frame ROE in selected region.}
+
+\item{hydro_station_region}{sf data.frame Hubeau hydrometric stations in selected region.}
 }
 \value{
 An updated Leaflet map with relevant layers and information displayed.
@@ -53,11 +64,18 @@ centre_region_coord <- as.data.frame(st_coordinates(centre_region)) \%>\%
          "lat" = Y)
 centre_region_coord$id <- 11
 
+# get ROE in region
+roe_region <- data_get_roe_in_region(centre_region_coord$id)
+# get hydro stations in region
+hydro_station_region <- data_get_station_hubeau(centre_region_coord$id)
+
 # map the element in the region clicked
 map <- map_region_clicked(map = map_region,
                           region_click = centre_region_coord,
                           selected_region_feature = selected_region,
-                          regions_data = region_hydrographique)
+                          regions_data = region_hydrographique,
+                          roe_region = roe_region,
+                          hydro_station_region = hydro_station_region)
 map
 
 }
