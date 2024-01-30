@@ -97,7 +97,9 @@ lg_profile_main <- function(data, y, y_label, y_label_category) {
                   key = data$fid,  # the "id" column for hover text
                   type = 'scatter', mode = 'lines', name = y_label) %>%
     layout(
-      xaxis = list(title = 'Distance depuis l\'exutoire (km)'),
+      xaxis = list(
+        title = 'Distance depuis l\'exutoire (km)',
+        range = c(0, max(data$measure))),
       yaxis = list(
         title = paste0(y_label_category, " - ", y_label),
         side = 'left'
@@ -188,6 +190,9 @@ lg_profile_update_main <- function(data, y, y_label, y_label_category){
   )
 
   proxy_layout <- list(
+    xaxis = list(
+      title = 'Distance depuis l\'exutoire (km)',
+      range = c(0, max(data$measure))),
     yaxis = list(
       title = paste0(y_label_category, " - ", y_label),
       side = 'left'

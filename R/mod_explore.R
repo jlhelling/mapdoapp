@@ -164,6 +164,7 @@ mod_explore_server <- function(id){
       plot = lg_profile_empty(),
       leaflet_hover_measure = 2.5, # measure field from mesure to add vertical line on longitudinal profile
       leaflet_hover_shapes = list(shapes = list(lg_vertical_line(2.5))), # list to store vertical lines to display on longitudinal profile
+      roe_vertical_line = NULL, # list with verticale line to plot on longitudinal profile
       plotly_hover = NULL,
       region_name = NULL,
       roe_region = NULL,
@@ -455,6 +456,29 @@ mod_explore_server <- function(id){
             plotlyProxyInvoke("addTraces", proxy_main_axe$trace, 0) %>%
             plotlyProxyInvoke("relayout", proxy_main_axe$layout)
 
+          # update ROE vertical lines
+          if (input$roe_profile == TRUE){
+            if (!is.null(r_val$roe_vertical_line)){
+              # remove the previous ROE vertical lines if exist
+              r_val$leaflet_hover_shapes$shapes <- list(r_val$leaflet_hover_shapes$shapes[[1]])
+            }
+            # create the vertical line from ROE distance_axis
+            r_val$roe_vertical_line <- lg_roe_vertical_line(r_val$roe_axis$distance_axis)
+            # increment the vertical list shape to keep the hover map vertical line
+            r_val$leaflet_hover_shapes$shapes <- c(r_val$leaflet_hover_shapes$shapes,
+                                                   r_val$roe_vertical_line)
+            # update profile
+            plotlyProxy("long_profile") %>%
+              plotlyProxyInvoke("relayout",  r_val$leaflet_hover_shapes)
+          }else{
+            # remove the previous ROE vertical lines if exist
+            r_val$leaflet_hover_shapes$shapes <- list(r_val$leaflet_hover_shapes$shapes[[1]])
+            # update profile
+            plotlyProxy("long_profile") %>%
+              plotlyProxyInvoke("relayout",  r_val$leaflet_hover_shapes)
+          }
+
+
           if(!is.null(input$profile_metric)){ # second metric selected = update second metric profile
             # create the list to add trace and layout to change second axe plot
             proxy_second_axe <- lg_profile_second(data = r_val$selected_axis_df,
@@ -667,11 +691,21 @@ mod_explore_server <- function(id){
 
     observeEvent(input$roe_profile, {
       if (input$roe_profile == TRUE){
+        if (!is.null(r_val$roe_vertical_line)){
+          # remove the previous ROE vertical lines if exist
+          r_val$leaflet_hover_shapes$shapes <- list(r_val$leaflet_hover_shapes$shapes[[1]])
+        }
         # create the vertical line from ROE distance_axis
-        roe_vertical_line <- lg_roe_vertical_line(r_val$roe_axis$distance_axis)
+        r_val$roe_vertical_line <- lg_roe_vertical_line(r_val$roe_axis$distance_axis)
         # increment the vertical list shape to keep the hover map vertical line
         r_val$leaflet_hover_shapes$shapes <- c(r_val$leaflet_hover_shapes$shapes,
-                                               roe_vertical_line)
+                                               r_val$roe_vertical_line)
+        # update profile
+        plotlyProxy("long_profile") %>%
+          plotlyProxyInvoke("relayout",  r_val$leaflet_hover_shapes)
+      }else{
+        # remove the previous ROE vertical lines if exist
+        r_val$leaflet_hover_shapes$shapes <- list(r_val$leaflet_hover_shapes$shapes[[1]])
         # update profile
         plotlyProxy("long_profile") %>%
           plotlyProxyInvoke("relayout",  r_val$leaflet_hover_shapes)
