@@ -510,11 +510,6 @@ mod_explore_server <- function(id){
         # update profile with new metric selected
         if (r_val$profile_display == TRUE){
 
-          # update dgo on axis to reset tooltip
-          leafletProxy("exploremap") %>%
-            map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
-                         main_metric = r_val$selected_metric, second_metric = r_val$selected_profile_metric)
-
           proxy_main_axe <-
             lg_profile_update_main(
               data = r_val$selected_axis_df,
@@ -543,6 +538,11 @@ mod_explore_server <- function(id){
           r_val$ui_profile_metric_type = selectInput(ns("profile_metric_type"), "Ajoutez une métrique :",
                                                      choices = utile_get_metric_type(params_metrics_choice()),
                                                      selected  = utile_get_metric_type(params_metrics_choice())[1])
+
+          # update dgo on axis to reset tooltip
+          leafletProxy("exploremap") %>%
+            map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
+                         main_metric = r_val$selected_metric, second_metric = r_val$selected_profile_metric)
 
           # plot single axe with metric selected
           r_val$plot = lg_profile_main(data = r_val$selected_axis_df,
@@ -628,6 +628,12 @@ mod_explore_server <- function(id){
         plotlyProxyInvoke("deleteTraces", 1)
 
       updateRadioButtons(session, "profile_metric", selected = character(0))
+
+      r_val$selected_profile_metric = NULL
+      # update dgo on axis to reset tooltip
+      leafletProxy("exploremap") %>%
+        map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
+                     main_metric = r_val$selected_metric, second_metric = r_val$selected_profile_metric)
 
     })
 

@@ -219,20 +219,20 @@ map_region_clicked <- function(map,
                      radius = 3,
                      weight = 0.5,
                      opacity = 0.9,
-                     color = "orange",
-                     fillColor = "orange",
+                     color = "#D0D0D0",
+                     fillColor = "#323232",
                      fillOpacity = 0.9,
                      popup = ~nomprincip,
                      group = params_map_group()[["roe"]]
     ) %>%
-    # ROE layer hidden by default
+    # hydrometric stations layer hidden by default
     hideGroup(params_map_group()[["roe"]]) %>%
     addCircleMarkers(data = data_get_station_hubeau(region_click$id),
                      radius = 3,
                      weight = 0.5,
                      opacity = 0.9,
-                     color = "blue",
-                     fillColor = "blue",
+                     color = "#E5F6FF",
+                     fillColor = "#33B1FF",
                      fillOpacity = 0.9,
                      popup = ~libelle_station,
                      group = params_map_group()[["hydro_station"]]
@@ -456,12 +456,15 @@ map_metric <- function(map, wms_params = params_wms()$metric,
 #' @export
 map_dgo_axis <- function(map, selected_axis, region_axis, main_metric, second_metric) {
 
+  # create HTML conditional tooltip labels
   tooltip_label <- NULL
   if (!is.null(main_metric) && is.null(second_metric)){
-    tooltip_label <- paste0('<span style="color:blue;"> <b>', selected_axis[[main_metric]], '</b> </span>')
+    tooltip_label <- lapply(paste0('<span style="color:blue;"> <b>', selected_axis[[main_metric]], '</b> </span>'),
+                            htmltools::HTML)
   } else if (!is.null(main_metric) && !is.null(second_metric)){
-    tooltip_label <- paste0('<span style="color:blue;"> <b>', selected_axis[[main_metric]], '</b> </span> <br/>',
-                            '<span style="color:#FC9D5A;"> <b>', selected_axis[[second_metric]], '</b> </span>')
+    tooltip_label <- lapply(paste0('<span style="color:blue;"> <b>', selected_axis[[main_metric]], '</b> </span> <br/>',
+                                   '<span style="color:#FC9D5A;"> <b>', selected_axis[[second_metric]], '</b> </span>'),
+                            htmltools::HTML)
   }
 
   map %>%
@@ -473,7 +476,7 @@ map_dgo_axis <- function(map, selected_axis, region_axis, main_metric, second_me
       layerId = ~fid,
       weight = 5,
       color = "#ffffff00",
-      label = lapply(tooltip_label, htmltools::HTML),
+      label = tooltip_label,
       opacity = 1,
       highlightOptions = highlightOptions(
         opacity = 1,
