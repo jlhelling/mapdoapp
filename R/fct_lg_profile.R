@@ -1,4 +1,4 @@
-#' Create an empty longitudinal profile plot
+#' Create an empty longitudinal profile plot.
 #'
 #' This function generates an empty longitudinal profile plot using the 'plot_ly'
 #' function from the 'plotly' package.

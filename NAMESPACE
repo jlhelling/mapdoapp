@@ -2,6 +2,7 @@
 
 export("%>%")
 export(button_label_with_popover)
+export(cr_profile_empty)
 export(data_get_axis)
 export(data_get_axis_start_end)
 export(data_get_bassins)

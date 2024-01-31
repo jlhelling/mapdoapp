@@ -73,7 +73,15 @@ mod_explore_ui <- function(id){
                 )
               )
           ), # tabPanel
-          tabPanel(title = "Profil en travers"
+          tabPanel(
+            title = "Profil en travers",
+            div(
+              fluidRow(
+                column(width = 12,
+                       plotlyOutput(ns("cross_section"))
+                )
+              )
+            )
           ) # tabPanel
         )# tabsetPanel
       )# fluidRow
@@ -161,7 +169,7 @@ mod_explore_server <- function(id){
       sld_body = NULL, # WMS SLD symbology
       selected_axis_df = NULL, # dgo_axis dataframe to plot graph
       profile_display = FALSE, # controle if metric and axis is selected = display the profile
-      plot = lg_profile_empty(),
+      plot = lg_profile_empty(), # plotly render longitudinal profile output (default empty)
       leaflet_hover_measure = 2.5, # measure field from mesure to add vertical line on longitudinal profile
       leaflet_hover_shapes = list(shapes = list(lg_vertical_line(2.5))), # list to store vertical lines to display on longitudinal profile
       roe_vertical_line = NULL, # list with verticale line to plot on longitudinal profile
@@ -169,7 +177,8 @@ mod_explore_server <- function(id){
       region_name = NULL,
       roe_region = NULL,
       roe_axis = NULL,
-      hydro_station_region = NULL
+      hydro_station_region = NULL,
+      section = cr_profile_empty() # plotly render cross section output (default empty)
     )
 
     ### INIT MAP & PROFILE ####
@@ -189,6 +198,10 @@ mod_explore_server <- function(id){
 
     output$long_profile <- renderPlotly({
       return(r_val$plot)
+    })
+
+    output$cross_section <- renderPlotly({
+      return(r_val$section)
     })
 
     ### RENDER UI ####
