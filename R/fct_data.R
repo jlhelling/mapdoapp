@@ -339,7 +339,7 @@ data_get_station_hubeau <- function(selected_region_id){
 #'
 #' @importFrom glue glue
 #' @importFrom DBI dbGetQuery
-#' @importFrom dplyr arrange
+#' @importFrom dplyr arrange mutate
 #'
 #' @return data.frame
 #' @export
@@ -360,6 +360,7 @@ data_get_elevation_profiles <- function(selected_dgo_fid){
                       WHERE hydro_swaths_gid = {selected_dgo_fid}")
 
   data <- DBI::dbGetQuery(conn = db_con(), statement = query) %>%
-    arrange(distance)
+    arrange(distance) %>%
+    mutate(profile = round(profile, digits = 2))
   return(data)
 }

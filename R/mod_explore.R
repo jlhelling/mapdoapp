@@ -523,7 +523,6 @@ mod_explore_server <- function(id){
         leafletProxy("exploremap") %>%
           map_dgo_cross_section(selected_dgo = r_val$data_dgo_clicked)
       }
-
     })
 
     ### EVENT METRIC ####
