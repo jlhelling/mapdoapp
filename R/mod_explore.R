@@ -32,7 +32,7 @@ mod_explore_ui <- function(id){
           uiOutput(ns("metricUI")),
           uiOutput(ns("areaUI")),
           uiOutput(ns("radioButtonsUI")) # uiOutput radios buttons metrics
-          , actionButton(ns("browser"), "browser")
+          # , actionButton(ns("browser"), "browser")
         ), # column
         column(
           width = 7,
@@ -126,9 +126,9 @@ mod_explore_server <- function(id){
     #   )
     # })
 
-    observeEvent(input$browser, {
-      browser()
-    })
+    # observeEvent(input$browser, {
+    #   browser()
+    # })
 
     ### R_VAL ####
     r_val <- reactiveValues(
