@@ -332,3 +332,32 @@ data_get_station_hubeau <- function(selected_region_id){
 
   return(data)
 }
+
+#' Get elevation profiles data from selected dgo gid.
+#'
+#' @param selected_dgo_gid integer selected dgo gid
+#'
+#' @importFrom glue glue
+#' @importFrom DBI dbGetQuery
+#'
+#' @return data.frame
+#' @export
+#'
+#' @examples
+#' data_get_elevation_profiles(selected_dgo_gid = 29567)
+data_get_elevation_profiles <- function(selected_dgo_gid){
+
+  query <- glue::glue("
+                      SELECT
+                      	id,
+                      	hydro_swaths_gid,
+                      	axis,
+                      	measure_medial_axis,
+                      	distance,
+                      	profile
+                      FROM elevation_profiles
+                      WHERE hydro_swaths_gid = {selected_dgo_gid}")
+
+  data <- DBI::dbGetQuery(conn = db_con(), statement = query)
+  return(data)
+}
