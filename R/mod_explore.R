@@ -73,7 +73,15 @@ mod_explore_ui <- function(id){
                 )
               )
           ), # tabPanel
-          tabPanel(title = "Profil en travers"
+          tabPanel(
+            title = "Profil en travers",
+            div(
+              fluidRow(
+                column(width = 12,
+                       plotlyOutput(ns("cross_section"))
+                )
+              )
+            )
           ) # tabPanel
         )# tabsetPanel
       )# fluidRow
@@ -161,7 +169,7 @@ mod_explore_server <- function(id){
       sld_body = NULL, # WMS SLD symbology
       selected_axis_df = NULL, # dgo_axis dataframe to plot graph
       profile_display = FALSE, # controle if metric and axis is selected = display the profile
-      plot = lg_profile_empty(),
+      plot = lg_profile_empty(), # plotly render longitudinal profile output (default empty)
       leaflet_hover_measure = 2.5, # measure field from mesure to add vertical line on longitudinal profile
       leaflet_hover_shapes = list(shapes = list(lg_vertical_line(2.5))), # list to store vertical lines to display on longitudinal profile
       roe_vertical_line = NULL, # list with verticale line to plot on longitudinal profile
@@ -169,7 +177,10 @@ mod_explore_server <- function(id){
       region_name = NULL,
       roe_region = NULL,
       roe_axis = NULL,
-      hydro_station_region = NULL
+      hydro_station_region = NULL,
+      section = cr_profile_empty(), # plotly render cross section output (default empty)
+      data_section = NULL,
+      data_dgo_clicked = NULL
     )
 
     ### INIT MAP & PROFILE ####
@@ -189,6 +200,10 @@ mod_explore_server <- function(id){
 
     output$long_profile <- renderPlotly({
       return(r_val$plot)
+    })
+
+    output$cross_section <- renderPlotly({
+      return(r_val$section)
     })
 
     ### RENDER UI ####
@@ -493,6 +508,22 @@ mod_explore_server <- function(id){
           }
         }
       }
+
+      ### dgo clicked ####
+
+      if (input$exploremap_shape_click$group == params_map_group()$dgo_axis) {
+        # get data with dgo id
+        r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$exploremap_shape_click$id)
+        # plot cross section
+        r_val$section = cr_section_main(data = r_val$data_section)
+        # get dgo clicked feature
+        r_val$data_dgo_clicked = r_val$dgo_axis %>%
+          filter(fid == input$exploremap_shape_click$id)
+        # Highlight clicked DGO
+        leafletProxy("exploremap") %>%
+          map_dgo_cross_section(selected_dgo = r_val$data_dgo_clicked)
+      }
+
     })
 
     ### EVENT METRIC ####

@@ -1,4 +1,4 @@
-#' Create an empty longitudinal profile plot
+#' Create an empty longitudinal profile plot.
 #'
 #' This function generates an empty longitudinal profile plot using the 'plot_ly'
 #' function from the 'plotly' package.
@@ -150,7 +150,7 @@ lg_add_trace <- function(data, y, y_label, yaxis = 'y1'){
   return(trace)
 }
 
-#' Create a longitudinal profile plot for selected axis data
+#' Create a longitudinal profile plot for selected axis data.
 #'
 #' This function generates a longitudinal profile plot using the 'plot_ly'
 #' function from the 'plotly' package. It allows you to visualize a specific
@@ -161,7 +161,7 @@ lg_add_trace <- function(data, y, y_label, yaxis = 'y1'){
 #' @param y_label text name of the metric plotted.
 #' @param y_label_category text metric category name.
 #'
-#' @return A longitudinal profile plot with the specified metric.
+#' @return plotly A longitudinal profile plot with the specified metric.
 #'
 #' @importFrom plotly plot_ly layout
 #'

@@ -16,5 +16,7 @@ globalVariables(unique(c(
   # data_get_station_hubeau:
   "etat_station",
   # mod_explore_server : <anonymous>:
-  "fid", "measure", "axis", "cdbh", "click", "gid"
+  "fid", "measure", "axis", "cdbh", "click", "gid",
+  # data_get_elevation_profiles:
+  "distance"
 )))
