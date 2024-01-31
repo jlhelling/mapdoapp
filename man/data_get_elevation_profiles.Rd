@@ -2,19 +2,19 @@
 % Please edit documentation in R/fct_data.R
 \name{data_get_elevation_profiles}
 \alias{data_get_elevation_profiles}
-\title{Get elevation profiles data from selected dgo gid.}
+\title{Get elevation profiles data from selected dgo fid.}
 \usage{
-data_get_elevation_profiles(selected_dgo_gid)
+data_get_elevation_profiles(selected_dgo_fid)
 }
 \arguments{
-\item{selected_dgo_gid}{integer selected dgo gid}
+\item{selected_dgo_fid}{integer selected dgo fid}
 }
 \value{
 data.frame
 }
 \description{
-Get elevation profiles data from selected dgo gid.
+Get elevation profiles data from selected dgo fid.
 }
 \examples{
-data_get_elevation_profiles(selected_dgo_gid = 29567)
+data_get_elevation_profiles(selected_dgo_fid = 29567)
 }

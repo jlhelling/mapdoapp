@@ -32,7 +32,7 @@ mod_explore_ui <- function(id){
           uiOutput(ns("metricUI")),
           uiOutput(ns("areaUI")),
           uiOutput(ns("radioButtonsUI")) # uiOutput radios buttons metrics
-          # , actionButton(ns("browser"), "browser")
+          , actionButton(ns("browser"), "browser")
         ), # column
         column(
           width = 7,
@@ -126,9 +126,9 @@ mod_explore_server <- function(id){
     #   )
     # })
 
-    # observeEvent(input$browser, {
-    #   browser()
-    # })
+    observeEvent(input$browser, {
+      browser()
+    })
 
     ### R_VAL ####
     r_val <- reactiveValues(
@@ -178,7 +178,8 @@ mod_explore_server <- function(id){
       roe_region = NULL,
       roe_axis = NULL,
       hydro_station_region = NULL,
-      section = cr_profile_empty() # plotly render cross section output (default empty)
+      section = cr_profile_empty(), # plotly render cross section output (default empty)
+      data_section = NULL
     )
 
     ### INIT MAP & PROFILE ####
@@ -506,7 +507,22 @@ mod_explore_server <- function(id){
           }
         }
       }
+
+      ### dgo clicked ####
+
+      if (input$exploremap_shape_click$group == params_map_group()$dgo_axis) {
+        # get data with dgo id
+        r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$exploremap_shape_click$id)
+
+        r_val$section = cr_section_main(data = r_val$data_section)
+
+      }
+
     })
+
+
+
+
 
     ### EVENT METRIC ####
 

@@ -196,6 +196,7 @@ params_map_group <- function(){
     landuse = params_wms()$landuse$name,
     continuity = params_wms()$continuity$name,
     valley_bottom = params_wms()$valley_bottom$name,
+    detrend_dem = params_wms()$detrend_dem$name,
     carteign = params_wms()$carteign$name,
     ortho = params_wms()$ortho$name,
     elevation = params_wms()$elevation$name,

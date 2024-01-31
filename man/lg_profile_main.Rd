@@ -2,7 +2,7 @@
 % Please edit documentation in R/fct_lg_profile.R
 \name{lg_profile_main}
 \alias{lg_profile_main}
-\title{Create a longitudinal profile plot for selected axis data}
+\title{Create a longitudinal profile plot for selected axis data.}
 \usage{
 lg_profile_main(data, y, y_label, y_label_category)
 }
@@ -16,7 +16,7 @@ lg_profile_main(data, y, y_label, y_label_category)
 \item{y_label_category}{text metric category name.}
 }
 \value{
-A longitudinal profile plot with the specified metric.
+plotly A longitudinal profile plot with the specified metric.
 }
 \description{
 This function generates a longitudinal profile plot using the 'plot_ly'
