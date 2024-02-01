@@ -18,5 +18,5 @@ globalVariables(unique(c(
   # mod_explore_server : <anonymous>:
   "fid", "measure", "axis", "cdbh", "click", "gid",
   # data_get_elevation_profiles:
-  "distance"
+  "distance", "profile"
 )))

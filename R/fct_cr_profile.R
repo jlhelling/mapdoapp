@@ -42,14 +42,16 @@ cr_profile_empty <- function() {
 #' @export
 cr_section_main <- function(data){
   section <- plot_ly(data = data, x = ~distance, y = ~profile, type = 'scatter',
-                     yaxis = 'y1', key = data$fid, # the "id" column for hover text
-                     mode = 'line', fill = 'tozeroy', fillcolor = '#B0B0B0',
-                     line = list(color = '#2C2C2C'), name = "elevation") %>%
+                     yaxis = 'y1', key = data$id, # the "id" column for hover text
+                     mode = 'lines+markers', fill = 'tozeroy', fillcolor = '#B0B0B0',
+                     line = list(color = '#2C2C2C'), marker = list(opacity=0),
+                     name = "elevation") %>%
     layout(yaxis = list(title = "Elévation (m)",
                         range = c(min(data$profile, na.rm = TRUE), max(data$profile, na.rm = TRUE))),
            xaxis = list(title = "Distance au talweg (m)"),
            margin = list(l = 50, r = 30, t = 70, b = 70),
            title= "Profil transversal médian",
+           hovermode = "x unified",
            annotations = list(
              list(
                text = "Rive gauche", x = 0, y = 1.1,

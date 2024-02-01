@@ -12,6 +12,8 @@
 #' @import shiny
 #' @importFrom shinyjs useShinyjs
 #' @importFrom shinycssloaders withSpinner
+#' @importFrom bslib popover
+#' @importFrom bsicons bs_icon
 #'
 mod_explore_ui <- function(id){
   ns <- NS(id)
@@ -74,7 +76,18 @@ mod_explore_ui <- function(id){
               )
           ), # tabPanel
           tabPanel(
-            title = "Profil en travers",
+            title = div("Profil en travers",
+                        span(
+                          style = "display: inline; align-items: center",
+                          popover(
+                            trigger = bs_icon("info-circle"),
+                            "Profil transversal médian correspondant à la
+                            médiane des valeurs des transects réalisées tout les
+                            10m sur le fond de vallée du tronçon sélectionné",
+                            placement = "right",
+                            id = "popover_cross_section"
+                          )
+                        )),
             div(
               fluidRow(
                 column(width = 12,
@@ -523,7 +536,6 @@ mod_explore_server <- function(id){
         leafletProxy("exploremap") %>%
           map_dgo_cross_section(selected_dgo = r_val$data_dgo_clicked)
       }
-
     })
 
     ### EVENT METRIC ####
