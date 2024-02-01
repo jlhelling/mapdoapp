@@ -7,10 +7,10 @@
 data_get_bassins(opacity)
 }
 \arguments{
-\item{opacity}{A list that contain numeric values clickable and not_clickable to inform the user the non available features.}
+\item{opacity}{list that contain numeric values clickable and not_clickable to inform the user the non available features.}
 }
 \value{
-A sf data frame containing information about hydrographic basins.
+sf data frame containing information about hydrographic basins.
 }
 \description{
 This function retrieves hydrographic basins.

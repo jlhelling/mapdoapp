@@ -2,9 +2,9 @@
 #'
 #' This function retrieves hydrographic basins.
 #'
-#' @param opacity A list that contain numeric values clickable and not_clickable to inform the user the non available features.
+#' @param opacity list that contain numeric values clickable and not_clickable to inform the user the non available features.
 #'
-#' @return A sf data frame containing information about hydrographic basins.
+#' @return sf data frame containing information about hydrographic basins.
 #'
 #' @examples
 #' opacity = list(clickable = 0.01,
@@ -29,8 +29,8 @@ data_get_bassins <- function(opacity) {
 #'
 #' This function retrieves regions within a specified hydrographic basin based on its ID.
 #'
-#' @param selected_bassin_id The ID of the selected hydrographic basin.
-#' @param opacity A list that contain numeric values clickable and not_clickable to inform the user the non available features.
+#' @param selected_bassin_id text ID of the selected hydrographic basin.
+#' @param opacity list that contain numeric values clickable and not_clickable to inform the user the non available features.
 #'
 #' @return A df data frame containing regions within the specified hydrographic basin.
 #'
@@ -201,7 +201,7 @@ data_get_axis <- function(selected_region_id) {
 #' @return A sf data frame containing information about network metrics for the specified network axis.
 #'
 #' @examples
-#' network_metrics_data <- data_get_network_axis(selected_axis_id = 11)
+#' network_metrics_data <- data_get_network_axis(selected_axis_id = 2000796122)
 #'
 #' @importFrom glue glue
 #' @importFrom sf st_read
@@ -296,6 +296,7 @@ data_get_dgo_in_region <- function(selected_region_id){
       WHERE  gid_region = {selected_region_id}")
 
   data <- sf::st_read(dsn = db_con(), query = query)
+  return(data)
 }
 
 #' Get hydrometric stations

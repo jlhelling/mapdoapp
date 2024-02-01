@@ -16,6 +16,6 @@ A sf data frame containing information about network metrics for the specified n
 This function retrieves data about network metrics for a specific network axis based on its ID.
 }
 \examples{
-network_metrics_data <- data_get_network_axis(selected_axis_id = 11)
+network_metrics_data <- data_get_network_axis(selected_axis_id = 2000796122)
 
 }

@@ -451,6 +451,7 @@ mod_explore_server <- function(id){
         r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id) %>%
           filter(axis != r_val$axis_click$id)
         # get the DGO axis data
+        browser()
         r_val$dgo_axis = data_get_network_axis(selected_axis_id = r_val$axis_click$id) %>%
           mutate(measure = measure/1000)
         # extract axis start end point
