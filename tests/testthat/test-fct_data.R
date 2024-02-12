@@ -90,7 +90,7 @@ test_that("data_get_dgo_in_region works", {
               info = "Data is not empty")
 })
 
-test_that("data_get_dgo_in_region works", {
+test_that("data_get_station_hubeau works", {
   data <- data_get_station_hubeau(selected_region_id = 11)
   expect_true(inherits(data, "sf"),
               "sf data loaded")
@@ -98,7 +98,7 @@ test_that("data_get_dgo_in_region works", {
               info = "Data is not empty")
 })
 
-test_that("data_get_dgo_in_region works", {
+test_that("data_get_elevation_profiles works", {
   data <- data_get_elevation_profiles(selected_dgo_fid = 29567)
   expect_true(inherits(data, "data.frame"),
               "df data loaded")
