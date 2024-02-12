@@ -7,9 +7,9 @@
 data_get_regions_in_bassin(selected_bassin_id, opacity)
 }
 \arguments{
-\item{selected_bassin_id}{The ID of the selected hydrographic basin.}
+\item{selected_bassin_id}{text ID of the selected hydrographic basin.}
 
-\item{opacity}{A list that contain numeric values clickable and not_clickable to inform the user the non available features.}
+\item{opacity}{list that contain numeric values clickable and not_clickable to inform the user the non available features.}
 }
 \value{
 A df data frame containing regions within the specified hydrographic basin.

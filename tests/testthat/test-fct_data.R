@@ -1,0 +1,107 @@
+test_that("data_get_bassins works", {
+  opacity <-  list(clickable = 0.01,
+                 not_clickable = 0.10)
+  data <- data_get_bassins(opacity = opacity)
+  expect_true(inherits(data, "sf"),
+              "sf data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+})
+
+test_that("data_get_regions_in_bassin works", {
+  opacity <-  list(clickable = 0.01,
+                   not_clickable = 0.10)
+  data <- data_get_regions_in_bassin(selected_bassin_id = "06",
+                                     opacity = opacity)
+  expect_true(inherits(data, "sf"),
+              "sf data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+})
+
+test_that("data_get_region works", {
+  data <- data_get_region(region_click_id = 11)
+  expect_true(inherits(data, "sf"),
+              "sf data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+})
+
+test_that("data_get_min_max_strahler works", {
+  data <- data_get_min_max_strahler(selected_region_id = 11)
+  expect_true(inherits(data, "data.frame"),
+              "sf data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+  expect_named(data, c("min", "max"),
+               info = "Data frame has columns named 'min' and 'max'")
+})
+
+test_that("data_get_min_max_metric works", {
+  data <- data_get_min_max_metric(selected_region_id = 11,
+                                  selected_metric = "active_channel_width")
+  expect_true(inherits(data, "data.frame"),
+              "sf data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+  expect_named(data, c("min", "max"),
+               info = "Data frame has columns named 'min' and 'max'")
+})
+
+test_that("data_get_roe_in_region works", {
+  data <- data_get_roe_in_region(selected_region_id = 11)
+  expect_true(inherits(data, "sf"),
+              "sf data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+})
+
+test_that("data_get_axis works", {
+  data <- data_get_axis(selected_region_id = 11)
+  expect_true(inherits(data, "sf"),
+              "sf data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+})
+
+test_that("data_get_network_axis works", {
+  data <- data_get_network_axis(selected_axis_id = 2000796122)
+  expect_true(inherits(data, "sf"),
+              "sf data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+})
+
+test_that("data_get_axis_start_end works", {
+  line_coords <- matrix(c(0, 0, 1, 1), ncol = 2)
+  line_sf <- sf::st_sf(geometry = sf::st_sfc(sf::st_linestring(line_coords)))
+  data <- data_get_axis_start_end(line_sf)
+  expect_true(inherits(data, "data.frame"),
+              "df data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+})
+
+test_that("data_get_dgo_in_region works", {
+  data <- data_get_dgo_in_region(selected_region_id = 11)
+  expect_true(inherits(data, "sf"),
+              "sf data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+})
+
+test_that("data_get_station_hubeau works", {
+  data <- data_get_station_hubeau(selected_region_id = 11)
+  expect_true(inherits(data, "sf"),
+              "sf data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+})
+
+test_that("data_get_elevation_profiles works", {
+  data <- data_get_elevation_profiles(selected_dgo_fid = 29567)
+  expect_true(inherits(data, "data.frame"),
+              "df data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+})
