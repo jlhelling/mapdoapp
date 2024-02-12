@@ -72,11 +72,36 @@ test_that("data_get_network_axis works", {
               info = "Data is not empty")
 })
 
-# test_that("data_get_axis_start_end works", {
-#   dgo_axis <- data_get_network_axis(selected_axis_id = 2000796122)
-#   data <- data_get_axis_start_end(dgo_axis = dgo_axis)
-#   expect_true(inherits(data, "sf"),
-#               "sf data loaded")
-#   expect_true(nrow(data) > 0,
-#               info = "Data is not empty")
-# })
+test_that("data_get_axis_start_end works", {
+  line_coords <- matrix(c(0, 0, 1, 1), ncol = 2)
+  line_sf <- sf::st_sf(geometry = sf::st_sfc(sf::st_linestring(line_coords)))
+  data <- data_get_axis_start_end(line_sf)
+  expect_true(inherits(data, "data.frame"),
+              "df data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+})
+
+test_that("data_get_dgo_in_region works", {
+  data <- data_get_dgo_in_region(selected_region_id = 11)
+  expect_true(inherits(data, "sf"),
+              "sf data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+})
+
+test_that("data_get_dgo_in_region works", {
+  data <- data_get_station_hubeau(selected_region_id = 11)
+  expect_true(inherits(data, "sf"),
+              "sf data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+})
+
+test_that("data_get_dgo_in_region works", {
+  data <- data_get_elevation_profiles(selected_dgo_fid = 29567)
+  expect_true(inherits(data, "data.frame"),
+              "df data loaded")
+  expect_true(nrow(data) > 0,
+              info = "Data is not empty")
+})
