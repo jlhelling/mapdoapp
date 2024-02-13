@@ -17,23 +17,25 @@
 #' quantile_metrics
 #' DBI::dbDisconnect(con)
 #'
-#' @importFrom glue glue
-#' @importFrom DBI dbGetQuery
+#' @importFrom DBI dbGetQuery sqlInterpolate dbQuoteIdentifier SQL
 #'
 #' @export
 sld_get_quantile_metric <- function(selected_region_id, selected_metric, con) {
-  query <- glue::glue("
+  sql <- "
       SELECT
-        ROUND(percentile_cont(0) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q1,
-        ROUND(percentile_cont(0.25) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q2,
-        ROUND(percentile_cont(0.50) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q3,
-        ROUND(percentile_cont(0.75) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q4,
-        ROUND(percentile_cont(1) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q5
+        ROUND(percentile_cont(0) WITHIN GROUP (ORDER BY ?selected_metric ASC)::numeric, 1) AS q1,
+        ROUND(percentile_cont(0.25) WITHIN GROUP (ORDER BY ?selected_metric ASC)::numeric, 1) AS q2,
+        ROUND(percentile_cont(0.50) WITHIN GROUP (ORDER BY ?selected_metric ASC)::numeric, 1) AS q3,
+        ROUND(percentile_cont(0.75) WITHIN GROUP (ORDER BY ?selected_metric ASC)::numeric, 1) AS q4,
+        ROUND(percentile_cont(1) WITHIN GROUP (ORDER BY ?selected_metric ASC)::numeric, 1) AS q5
     FROM public.network_metrics
-    WHERE gid_region = {selected_region_id}")
+    WHERE gid_region = ?selected_region_id"
+
+  query <- sqlInterpolate(con, sql,
+                          selected_metric = DBI::dbQuoteIdentifier(con, selected_metric),
+                          selected_region_id = DBI::SQL(selected_region_id))
 
   data <- DBI::dbGetQuery(conn = con, statement = query)
-
   vector <- c(data$q1, data$q2, data$q3, data$q3, data$q4, data$q5)
 
   return(vector)

@@ -632,6 +632,7 @@ mod_explore_server <- function(id, con){
     observeEvent(c(r_val$selected_metric, r_val$axis_click), {
       if (r_val$profile_display == FALSE){
         if (!is.null(r_val$selected_metric) && !is.null(r_val$axis_click)){
+          browser()
 
           r_val$profile_display = TRUE # this event run only one time controlled with profile_display
 
