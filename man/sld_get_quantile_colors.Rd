@@ -16,9 +16,12 @@ A character vector of colors generated based on quantile breaks.
 This function generates a color palette based on quantile breaks for data mapping.
 }
 \examples{
+con <- db_con()
 # get quantiles from active_channel_width metric
 quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11,
-                                            selected_metric = "active_channel_width")
+                                            selected_metric = "active_channel_width",
+                                            con = con)
+DBI::dbDisconnect(con)
 # get color from quantile
 quantile_colors <- sld_get_quantile_colors(quantile_breaks = quantile_metrics)
 quantile_colors

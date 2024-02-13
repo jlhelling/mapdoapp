@@ -62,10 +62,12 @@ centre_region_coord <- as.data.frame(st_coordinates(centre_region)) \%>\%
          "lat" = Y)
 centre_region_coord$id <- 11
 
+con = db_con()
 # get ROE in region
-roe_region <- data_get_roe_in_region(centre_region_coord$id)
+roe_region <- data_get_roe_in_region(centre_region_coord$id, con = con)
 # get hydro stations in region
-hydro_station_region <- data_get_station_hubeau(centre_region_coord$id)
+hydro_station_region <- data_get_station_hubeau(centre_region_coord$id, con = con)
+
 
 # map the element in the region clicked
 map <- map_region_clicked(map = map_region,
@@ -82,12 +84,15 @@ cql_filter=paste0("gid_region=", selected_region[["gid"]])
 # build geoserver SLD symbology
 sld_body <- sld_get_style(breaks = sld_get_quantile_metric(
                                     selected_region_id = selected_region[["gid"]],
-                                    selected_metric = "active_channel_width"),
+                                    selected_metric = "active_channel_width",
+                                    con = con),
                           colors = sld_get_quantile_colors(
                                     quantile_breaks = sld_get_quantile_metric(
                                        selected_region_id = selected_region[["gid"]],
-                                       selected_metric = "active_channel_width")),
+                                       selected_metric = "active_channel_width",
+                                       con = con)),
                           metric = "active_channel_width")
+DBI::dbDisconnect(con)
 
 # Network axis by region
 network_region_axis <- network_axis \%>\%

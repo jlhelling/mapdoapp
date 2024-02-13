@@ -4,10 +4,12 @@
 \alias{data_get_min_max_strahler}
 \title{Get Minimum and Maximum Strahler Values for a Selected Region}
 \usage{
-data_get_min_max_strahler(selected_region_id)
+data_get_min_max_strahler(selected_region_id, con)
 }
 \arguments{
 \item{selected_region_id}{The ID of the selected region.}
+
+\item{con}{PqConnection to Postgresql database.}
 }
 \value{
 A data frame containing two columns: 'min' and 'max', representing the minimum and maximum Strahler values for the specified region.
@@ -16,6 +18,8 @@ A data frame containing two columns: 'min' and 'max', representing the minimum a
 This function retrieves the minimum and maximum values of the Strahler metric for a specified region.
 }
 \examples{
-data <- data_get_min_max_strahler(selected_region_id = 11)
+con <- db_con()
+data <- data_get_min_max_strahler(selected_region_id = 11, con = con)
+DBI::dbDisconnect(con)
 
 }

@@ -4,10 +4,12 @@
 \alias{data_get_station_hubeau}
 \title{Get hydrometric stations}
 \usage{
-data_get_station_hubeau(selected_region_id)
+data_get_station_hubeau(selected_region_id, con)
 }
 \arguments{
 \item{selected_region_id}{The ID of the selected region.}
+
+\item{con}{PqConnection to Postgresql database.}
 }
 \value{
 A sf data frame containing information about the hydrometric stations within the specified region.
@@ -16,6 +18,8 @@ A sf data frame containing information about the hydrometric stations within the
 This function retrieves data about the hydrometric stations from Hubeau within a specified region based on its ID.
 }
 \examples{
-hydro_stations <- data_get_station_hubeau(selected_region_id = 11)
+con <- db_con()
+hydro_stations <- data_get_station_hubeau(selected_region_id = 11, con = con)
+DBI::dbDisconnect(con)
 
 }

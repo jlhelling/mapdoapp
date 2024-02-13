@@ -4,10 +4,12 @@
 \alias{data_get_bassins}
 \title{Get Hydrographic Basins}
 \usage{
-data_get_bassins(opacity)
+data_get_bassins(opacity, con)
 }
 \arguments{
 \item{opacity}{list that contain numeric values clickable and not_clickable to inform the user the non available features.}
+
+\item{con}{PqConnection to Postgresql database.}
 }
 \value{
 sf data frame containing information about hydrographic basins.
@@ -16,9 +18,11 @@ sf data frame containing information about hydrographic basins.
 This function retrieves hydrographic basins.
 }
 \examples{
+con <- db_con()
 opacity = list(clickable = 0.01,
                not_clickable = 0.10)
 
-data <- data_get_bassins(opacity = opacity)
+data <- data_get_bassins(opacity = opacity, con = con)
+DBI::dbDisconnect(con)
 
 }

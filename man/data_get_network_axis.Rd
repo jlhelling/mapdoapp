@@ -4,10 +4,12 @@
 \alias{data_get_network_axis}
 \title{Get Network Metrics Data for a Specific Network Axis}
 \usage{
-data_get_network_axis(selected_axis_id)
+data_get_network_axis(selected_axis_id, con)
 }
 \arguments{
 \item{selected_axis_id}{The ID of the selected network axis.}
+
+\item{con}{PqConnection to Postgresql database.}
 }
 \value{
 A sf data frame containing information about network metrics for the specified network axis.
@@ -16,6 +18,8 @@ A sf data frame containing information about network metrics for the specified n
 This function retrieves data about network metrics for a specific network axis based on its ID.
 }
 \examples{
-network_metrics_data <- data_get_network_axis(selected_axis_id = 2000796122)
+con <- db_con()
+network_metrics_data <- data_get_network_axis(selected_axis_id = 2000796122, con = con)
+DBI::dbDisconnect(con)
 
 }
