@@ -4,12 +4,14 @@
 \alias{sld_get_quantile_metric}
 \title{Get Quantile Metrics for a Selected Region}
 \usage{
-sld_get_quantile_metric(selected_region_id, selected_metric)
+sld_get_quantile_metric(selected_region_id, selected_metric, con)
 }
 \arguments{
 \item{selected_region_id}{The ID of the selected region.}
 
 \item{selected_metric}{The name of the selected metric.}
+
+\item{con}{PqConnection to Postgresql database.}
 }
 \value{
 A numeric vector containing quantile metrics (Q1, Q2, Q3, Q4, Q5) for the selected metric within the specified region.
@@ -18,9 +20,12 @@ A numeric vector containing quantile metrics (Q1, Q2, Q3, Q4, Q5) for the select
 This function calculates quantile metrics (Q1, Q2, Q3, Q4, Q5) for a selected metric within a specified region.
 }
 \examples{
+con <- db_con()
 # get quantiles from active_channel_width metric
 quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11,
-                                            selected_metric = "active_channel_width")
+                                            selected_metric = "active_channel_width",
+                                            con = con)
 quantile_metrics
+DBI::dbDisconnect(con)
 
 }

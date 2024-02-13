@@ -4,10 +4,12 @@
 \alias{data_get_dgo_in_region}
 \title{Get Network DGO Data in a Region}
 \usage{
-data_get_dgo_in_region(selected_region_id)
+data_get_dgo_in_region(selected_region_id, con)
 }
 \arguments{
 \item{selected_region_id}{The ID of the selected region.}
+
+\item{con}{PqConnection to Postgresql database.}
 }
 \value{
 A sf data frame containing information about the network axis within the specified region.
@@ -16,6 +18,8 @@ A sf data frame containing information about the network axis within the specifi
 This function retrieves data about the network DGO with the metrics within a specified region based on its ID.
 }
 \examples{
-axis_data <- data_get_dgo_in_region(selected_region_id = 11)
+con <- db_con()
+axis_data <- data_get_dgo_in_region(selected_region_id = 11, con = con)
+DBI::dbDisconnect(con)
 
 }

@@ -4,10 +4,12 @@
 \alias{data_get_elevation_profiles}
 \title{Get elevation profiles data from selected dgo fid.}
 \usage{
-data_get_elevation_profiles(selected_dgo_fid)
+data_get_elevation_profiles(selected_dgo_fid, con)
 }
 \arguments{
-\item{selected_dgo_fid}{integer selected dgo fid}
+\item{selected_dgo_fid}{integer selected dgo fid.}
+
+\item{con}{PqConnection to Postgresql database.}
 }
 \value{
 data.frame
@@ -16,5 +18,7 @@ data.frame
 Get elevation profiles data from selected dgo fid.
 }
 \examples{
-data_get_elevation_profiles(selected_dgo_fid = 29567)
+con <- db_con()
+data_get_elevation_profiles(selected_dgo_fid = 95, con = con)
+DBI::dbDisconnect(con)
 }

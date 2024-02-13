@@ -4,10 +4,12 @@
 \alias{data_get_region}
 \title{Get hydrological region selected by user}
 \usage{
-data_get_region(region_click_id)
+data_get_region(region_click_id, con)
 }
 \arguments{
 \item{region_click_id}{The ID of the selected region.}
+
+\item{con}{PqConnection to Postgresql database.}
 }
 \value{
 A sf data frame containing hydrographical data for the specified region.
@@ -16,6 +18,8 @@ A sf data frame containing hydrographical data for the specified region.
 This function retrieves hydrographical data for a specified region based on its ID.
 }
 \examples{
-data <- data_get_region(region_click_id = 11)
+con <- db_con()
+data <- data_get_region(region_click_id = 11, con = con)
+DBI::dbDisconnect(con)
 
 }

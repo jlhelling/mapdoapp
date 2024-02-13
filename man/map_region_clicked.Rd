@@ -64,10 +64,12 @@ centre_region_coord <- as.data.frame(st_coordinates(centre_region)) \%>\%
          "lat" = Y)
 centre_region_coord$id <- 11
 
+con <- db_con()
 # get ROE in region
-roe_region <- data_get_roe_in_region(centre_region_coord$id)
+roe_region <- data_get_roe_in_region(centre_region_coord$id, con = con)
 # get hydro stations in region
-hydro_station_region <- data_get_station_hubeau(centre_region_coord$id)
+hydro_station_region <- data_get_station_hubeau(centre_region_coord$id, con = con)
+DBI::dbDisconnect(con)
 
 # map the element in the region clicked
 map <- map_region_clicked(map = map_region,

@@ -3,22 +3,25 @@
 #' This function retrieves hydrographic basins.
 #'
 #' @param opacity list that contain numeric values clickable and not_clickable to inform the user the non available features.
+#' @param con PqConnection to Postgresql database.
 #'
 #' @return sf data frame containing information about hydrographic basins.
 #'
 #' @examples
+#' con <- db_con()
 #' opacity = list(clickable = 0.01,
 #'                not_clickable = 0.10)
 #'
-#' data <- data_get_bassins(opacity = opacity)
+#' data <- data_get_bassins(opacity = opacity, con = con)
+#' DBI::dbDisconnect(con)
 #'
 #' @importFrom sf st_read
 #' @importFrom dplyr mutate if_else
 #'
 #' @export
-data_get_bassins <- function(opacity) {
+data_get_bassins <- function(opacity, con) {
   query <- "SELECT * FROM bassin_hydrographique"
-  data <- sf::st_read(dsn = db_con(), query = query) %>%
+  data <- sf::st_read(dsn = con, query = query) %>%
     mutate(click = if_else(display == TRUE, TRUE, FALSE)) %>%
     mutate(opacity = if_else(display == TRUE, opacity$clickable, opacity$not_clickable))
   return(data)
@@ -31,24 +34,28 @@ data_get_bassins <- function(opacity) {
 #'
 #' @param selected_bassin_id text ID of the selected hydrographic basin.
 #' @param opacity list that contain numeric values clickable and not_clickable to inform the user the non available features.
+#' @param con PqConnection to Postgresql database.
 #'
 #' @return A df data frame containing regions within the specified hydrographic basin.
 #'
 #' @examples
+#' con <- db_con()
 #' opacity = list(clickable = 0.01,
 #'                not_clickable = 0.10)
 #' data <- data_get_regions_in_bassin(selected_bassin_id = "06",
-#'                                    opacity = opacity)
+#'                                    opacity = opacity,
+#'                                    con = con)
+#' DBI::dbDisconnect(con)
 #'
 #' @importFrom sf st_read
 #' @importFrom dplyr mutate if_else
+#' @importFrom DBI sqlInterpolate
 #'
 #' @export
-data_get_regions_in_bassin <- function(selected_bassin_id, opacity) {
-  query <-
-    sprintf("SELECT * FROM region_hydrographique WHERE cdbh LIKE '%s'",
-            selected_bassin_id)
-  data <- sf::st_read(dsn = db_con(), query = query) %>%
+data_get_regions_in_bassin <- function(selected_bassin_id, opacity, con) {
+  sql <- "SELECT * FROM region_hydrographique WHERE cdbh LIKE ?selected_bassin_id"
+  query <- sqlInterpolate(con, sql, selected_bassin_id = selected_bassin_id)
+  data <- sf::st_read(dsn = con, query = query) %>%
     mutate(click = if_else(display == TRUE, TRUE, FALSE)) %>%
     mutate(opacity = if_else(display == TRUE, opacity$clickable, opacity$not_clickable))
   return(data)
@@ -60,19 +67,24 @@ data_get_regions_in_bassin <- function(selected_bassin_id, opacity) {
 #' This function retrieves hydrographical data for a specified region based on its ID.
 #'
 #' @param region_click_id The ID of the selected region.
+#' @param con PqConnection to Postgresql database.
 #'
 #' @return A sf data frame containing hydrographical data for the specified region.
 #'
 #' @examples
-#' data <- data_get_region(region_click_id = 11)
+#' con <- db_con()
+#' data <- data_get_region(region_click_id = 11, con = con)
+#' DBI::dbDisconnect(con)
 #'
 #' @importFrom sf st_read
+#' @importFrom DBI sqlInterpolate
 #'
 #' @export
-data_get_region <- function(region_click_id) {
-  query <- sprintf("SELECT * FROM region_hydrographique
-                   WHERE gid = '%s'", region_click_id)
-  data <- sf::st_read(dsn = db_con(), query = query)
+data_get_region <- function(region_click_id, con) {
+  sql <- "SELECT * FROM region_hydrographique
+           WHERE gid = ?region_click_id"
+  query <- sqlInterpolate(con, sql, region_click_id = region_click_id)
+  data <- sf::st_read(dsn = con, query = query)
   return(data)
 }
 
@@ -82,25 +94,28 @@ data_get_region <- function(region_click_id) {
 #' This function retrieves the minimum and maximum values of the Strahler metric for a specified region.
 #'
 #' @param selected_region_id The ID of the selected region.
+#' @param con PqConnection to Postgresql database.
 #'
 #' @return A data frame containing two columns: 'min' and 'max', representing the minimum and maximum Strahler values for the specified region.
 #'
 #' @examples
-#' data <- data_get_min_max_strahler(selected_region_id = 11)
+#' con <- db_con()
+#' data <- data_get_min_max_strahler(selected_region_id = 11, con = con)
+#' DBI::dbDisconnect(con)
 #'
-#' @importFrom glue glue
 #' @importFrom DBI dbGetQuery
+#' @importFrom DBI sqlInterpolate
 #'
 #' @export
-data_get_min_max_strahler <- function(selected_region_id) {
-  query <- glue::glue("
-      SELECT
+data_get_min_max_strahler <- function(selected_region_id, con) {
+  sql <- "SELECT
         MIN(strahler) AS min,
         MAX(strahler) AS max
       FROM network_metrics
-      WHERE gid_region = {selected_region_id}")
+      WHERE gid_region = ?selected_region_id"
+  query <- sqlInterpolate(con, sql, selected_region_id = selected_region_id)
 
-  data <- DBI::dbGetQuery(conn = db_con(), statement = query)
+  data <- DBI::dbGetQuery(conn = con, statement = query)
 
   return(data)
 }
@@ -112,25 +127,34 @@ data_get_min_max_strahler <- function(selected_region_id) {
 #'
 #' @param selected_region_id The ID of the selected region.
 #' @param selected_metric The name of the selected metric.
+#' @param con PqConnection to Postgresql database.
 #'
 #' @return A data frame containing two columns: 'min' and 'max', representing the minimum and maximum values of the selected metric for the specified region.
 #'
 #' @examples
-#' data <- data_get_min_max_metric(selected_region_id = 11, selected_metric = "active_channel_width")
+#' con <- db_con()
+#' data <- data_get_min_max_metric(selected_region_id = 11,
+#'                                 selected_metric = "active_channel_width",
+#'                                 con = con)
+#' DBI::dbDisconnect(con)
 #'
-#' @importFrom glue glue
-#' @importFrom DBI dbGetQuery
+#' @importFrom DBI dbGetQuery sqlInterpolate dbQuoteIdentifier SQL
 #'
 #' @export
-data_get_min_max_metric <- function(selected_region_id, selected_metric) {
-  query <- glue::glue("
+data_get_min_max_metric <- function(selected_region_id, selected_metric, con) {
+  sql <- "
       SELECT
-        ROUND(MIN({selected_metric})::numeric, 1) AS min,
-        ROUND(MAX({selected_metric})::numeric, 1) AS max
+        ROUND(MIN(?selected_metric)::numeric, 1) AS min,
+        ROUND(MAX(?selected_metric)::numeric, 1) AS max
       FROM network_metrics
-      WHERE gid_region = {selected_region_id}")
+      WHERE gid_region = ?selected_region_id"
 
-  data <- DBI::dbGetQuery(conn = db_con(), statement = query)
+  query <- sqlInterpolate(conn = con, sql,
+                 selected_metric = DBI::dbQuoteIdentifier(con, selected_metric),
+                 selected_region_id = DBI::SQL(selected_region_id)
+  )
+
+  data <- DBI::dbGetQuery(conn = con, statement = query)
 
   return(data)
 }
@@ -140,27 +164,30 @@ data_get_min_max_metric <- function(selected_region_id, selected_metric) {
 #' This function retrieves data about Referentiel des Obstacles aux Ecoulement (ROE) within a specified region based on its ID.
 #'
 #' @param selected_region_id The ID of the selected region.
+#' @param con PqConnection to Postgresql database.
 #'
 #' @return A sf data frame containing information about ROE within the specified region.
 #'
 #' @examples
-#' roe_data <- data_get_roe_in_region(selected_region_id = 11)
+#' con <- db_con()
+#' roe_data <- data_get_roe_in_region(selected_region_id = 11, con = con)
+#' DBI::dbDisconnect(con)
 #'
-#' @importFrom glue glue
 #' @importFrom sf st_read
+#' @importFrom DBI sqlInterpolate
 #'
 #' @export
-data_get_roe_in_region <- function(selected_region_id) {
-  query <- glue::glue("
+data_get_roe_in_region <- function(selected_region_id, con) {
+  sql <- "
       SELECT
       roe.gid, axis, distance_axis, nomprincip, lbtypeouvr, lbhautchut, gid_region, roe.geom
       FROM roe
-      WHERE gid_region = {selected_region_id}
+      WHERE gid_region = ?selected_region_id
           AND (roe.cdetouvrag LIKE '2')
-          AND (roe.stobstecou LIKE 'Validé')
-                      ")
+          AND (roe.stobstecou LIKE 'Validé')"
+  query <- sqlInterpolate(con, sql, selected_region_id = selected_region_id)
 
-  data <- sf::st_read(dsn = db_con(), query = query)
+  data <- sf::st_read(dsn = con, query = query)
   return(data)
 }
 
@@ -170,24 +197,28 @@ data_get_roe_in_region <- function(selected_region_id) {
 #' This function retrieves data about the network axis within a specified region based on its ID.
 #'
 #' @param selected_region_id The ID of the selected region.
+#' @param con PqConnection to Postgresql database.
 #'
 #' @return A sf data frame containing information about the network axis within the specified region.
 #'
 #' @examples
-#' axis_data <- data_get_axis(selected_region_id = 11)
+#' con <- db_con()
+#' axis_data <- data_get_axis(selected_region_id = 11, con = con)
+#' DBI::dbDisconnect(con)
 #'
-#' @importFrom glue glue
 #' @importFrom sf st_read
+#' @importFrom DBI sqlInterpolate
 #'
 #' @export
-data_get_axis <- function(selected_region_id) {
-  query <- glue::glue("
+data_get_axis <- function(selected_region_id, con) {
+  sql <- "
       SELECT
       network_axis.fid, axis, toponyme, gid_region, network_axis.geom
       FROM network_axis
-      WHERE gid_region = {selected_region_id}")
+      WHERE gid_region = ?selected_region_id"
+  query <- sqlInterpolate(con, sql, selected_region_id = selected_region_id)
 
-  data <- sf::st_read(dsn = db_con(), query = query)
+  data <- sf::st_read(dsn = con, query = query)
   return(data)
 }
 
@@ -197,20 +228,23 @@ data_get_axis <- function(selected_region_id) {
 #' This function retrieves data about network metrics for a specific network axis based on its ID.
 #'
 #' @param selected_axis_id The ID of the selected network axis.
+#' @param con PqConnection to Postgresql database.
 #'
 #' @return A sf data frame containing information about network metrics for the specified network axis.
 #'
 #' @examples
-#' network_metrics_data <- data_get_network_axis(selected_axis_id = 2000796122)
+#' con <- db_con()
+#' network_metrics_data <- data_get_network_axis(selected_axis_id = 2000796122, con = con)
+#' DBI::dbDisconnect(con)
 #'
-#' @importFrom glue glue
 #' @importFrom sf st_read
 #' @importFrom dplyr arrange
+#' @importFrom DBI sqlInterpolate
 #'
 #' @export
-data_get_network_axis <- function(selected_axis_id) {
+data_get_network_axis <- function(selected_axis_id, con) {
 
-  query <- glue::glue("
+  sql <- "
       SELECT
         network_metrics.fid, axis, measure, toponyme, strahler, talweg_elevation_min,
         active_channel_width, natural_corridor_width,
@@ -223,9 +257,10 @@ data_get_network_axis <- function(selected_axis_id) {
         riparian_corridor_pc, semi_natural_pc, reversible_pc, disconnected_pc,
         built_environment_pc, sum_area, idx_confinement, gid_region, network_metrics.geom
       FROM network_metrics
-      WHERE  axis = {selected_axis_id}")
+      WHERE  axis = ?selected_axis_id"
+  query <- sqlInterpolate(con, sql, selected_axis_id = selected_axis_id)
 
-  data <- sf::st_read(dsn = db_con(), query = query) %>%
+  data <- sf::st_read(dsn = con, query = query) %>%
     dplyr::arrange(measure)
 
   return(data)
@@ -238,6 +273,7 @@ data_get_network_axis <- function(selected_axis_id) {
 #' a data frame containing the start and end coordinates of the axis.
 #'
 #' @param dgo_axis A spatial sf object with a LINESTRING geometry representing an axis.
+#'
 #' @return A data frame with two rows, where the first row contains the start
 #'         coordinates (x and y) and the second row contains the end coordinates (x and y).
 #'
@@ -269,18 +305,21 @@ data_get_axis_start_end <- function(dgo_axis) {
 #' This function retrieves data about the network DGO with the metrics within a specified region based on its ID.
 #'
 #' @param selected_region_id The ID of the selected region.
+#' @param con PqConnection to Postgresql database.
 #'
 #' @return A sf data frame containing information about the network axis within the specified region.
 #'
 #' @examples
-#' axis_data <- data_get_dgo_in_region(selected_region_id = 11)
+#' con <- db_con()
+#' axis_data <- data_get_dgo_in_region(selected_region_id = 11, con = con)
+#' DBI::dbDisconnect(con)
 #'
-#' @importFrom glue glue
 #' @importFrom sf st_read
+#' @importFrom DBI sqlInterpolate
 #'
 #' @export
-data_get_dgo_in_region <- function(selected_region_id){
-  query <- glue::glue("
+data_get_dgo_in_region <- function(selected_region_id, con){
+  sql <- "
       SELECT
         network_metrics.fid, axis, measure, toponyme, strahler, talweg_elevation_min,
         active_channel_width, natural_corridor_width,
@@ -293,9 +332,10 @@ data_get_dgo_in_region <- function(selected_region_id){
         riparian_corridor_pc, semi_natural_pc, reversible_pc, disconnected_pc,
         built_environment_pc, sum_area, idx_confinement, gid_region, network_metrics.geom
       FROM network_metrics
-      WHERE  gid_region = {selected_region_id}")
+      WHERE  gid_region = ?selected_region_id"
+  query <- sqlInterpolate(con, sql, selected_region_id = selected_region_id)
 
-  data <- sf::st_read(dsn = db_con(), query = query)
+  data <- sf::st_read(dsn = con, query = query)
   return(data)
 }
 
@@ -304,63 +344,70 @@ data_get_dgo_in_region <- function(selected_region_id){
 #' This function retrieves data about the hydrometric stations from Hubeau within a specified region based on its ID.
 #'
 #' @param selected_region_id The ID of the selected region.
+#' @param con PqConnection to Postgresql database.
 #'
 #' @return A sf data frame containing information about the hydrometric stations within the specified region.
 #'
 #' @examples
-#' hydro_stations <- data_get_station_hubeau(selected_region_id = 11)
+#' con <- db_con()
+#' hydro_stations <- data_get_station_hubeau(selected_region_id = 11, con = con)
+#' DBI::dbDisconnect(con)
 #'
-#' @importFrom glue glue
 #' @importFrom sf st_read
+#' @importFrom DBI sqlInterpolate
 #'
 #' @export
-data_get_station_hubeau <- function(selected_region_id){
+data_get_station_hubeau <- function(selected_region_id, con){
 
-  query <- glue::glue("
-                      SELECT
-                      code_station,
-                      libelle_station,
-                      uri_station,
-                      code_cours_eau,
-                      uri_cours_eau,
-                      etat_station,
-                      geom
-                      FROM hydro_stations
-                      WHERE
-                      gid_region = {selected_region_id}")
+  sql <- "
+          SELECT
+          code_station,
+          libelle_station,
+          uri_station,
+          code_cours_eau,
+          uri_cours_eau,
+          etat_station,
+          geom
+          FROM hydro_stations
+          WHERE
+          gid_region = ?selected_region_id"
+  query <- sqlInterpolate(con, sql, selected_region_id = selected_region_id)
 
-  data <- sf::st_read(dsn = db_con(), query = query)
+  data <- sf::st_read(dsn = con, query = query)
 
   return(data)
 }
 
 #' Get elevation profiles data from selected dgo fid.
 #'
-#' @param selected_dgo_fid integer selected dgo fid
+#' @param selected_dgo_fid integer selected dgo fid.
+#' @param con PqConnection to Postgresql database.
 #'
-#' @importFrom glue glue
-#' @importFrom DBI dbGetQuery
+#' @importFrom DBI dbGetQuery sqlInterpolate
 #' @importFrom dplyr arrange mutate
 #'
 #' @return data.frame
 #' @export
 #'
 #' @examples
-#' data_get_elevation_profiles(selected_dgo_fid = 29567)
-data_get_elevation_profiles <- function(selected_dgo_fid){
+#' con <- db_con()
+#' data_get_elevation_profiles(selected_dgo_fid = 95, con = con)
+#' DBI::dbDisconnect(con)
+data_get_elevation_profiles <- function(selected_dgo_fid, con){
 
-  query <- glue::glue("
-                      SELECT
-                      	id,
-                      	hydro_swaths_gid,
-                      	axis,
-                      	measure_medial_axis,
-                      	distance,
-                      	profile
-                      FROM elevation_profiles
-                      WHERE hydro_swaths_gid = {selected_dgo_fid}")
+  sql <- "
+          SELECT
+          	id,
+          	hydro_swaths_gid,
+          	axis,
+          	measure_medial_axis,
+          	distance,
+          	profile
+          FROM elevation_profiles
+          WHERE hydro_swaths_gid = ?selected_dgo_fid"
+  query <- sqlInterpolate(con, sql, selected_dgo_fid = selected_dgo_fid)
 
-  data <- DBI::dbGetQuery(conn = db_con(), statement = query) %>%
+  data <- DBI::dbGetQuery(conn = con, statement = query) %>%
     arrange(distance) %>%
     mutate(profile = round(profile, digits = 2))
   return(data)

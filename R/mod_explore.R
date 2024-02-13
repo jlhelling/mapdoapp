@@ -118,7 +118,7 @@ mod_explore_ui <- function(id){
 #' @importFrom sf st_write
 #' @importFrom shinyjs onclick runjs
 #'
-mod_explore_server <- function(id){
+mod_explore_server <- function(id, con){
   moduleServer(id, function(input, output, session){
 
     ns <- session$ns
@@ -199,7 +199,7 @@ mod_explore_server <- function(id){
     ### INIT MAP & PROFILE ####
 
     output$exploremap <- renderLeaflet({
-      r_val$bassins = data_get_bassins(opacity = r_val$opacity)
+      r_val$bassins = data_get_bassins(opacity = r_val$opacity, con = con)
       map_init_bassins(bassins_data = r_val$bassins,
                        id_logo_ign_remonterletemps = ns("logo_ign_remonterletemps"))
     })
@@ -294,7 +294,7 @@ mod_explore_server <- function(id){
     #     paste0(Sys.Date(), "_", r_val$region_name, ".gpkg")
     #   },
     #   content = function(file) {
-    #     data = data_get_dgo_in_region(r_val$region_click$id)
+    #     data = data_get_dgo_in_region(r_val$region_click$id, con = con)
     #     st_write(obj = data, dsn = file, layer = r_val$region_name,
     #              driver = "GPKG", delete_dsn = TRUE)
     #   }
@@ -376,7 +376,8 @@ mod_explore_server <- function(id){
                                  click))
         # get the regions data in selected bassin
         r_val$regions_in_bassin = data_get_regions_in_bassin(selected_bassin_id = input$exploremap_shape_click$id,
-                                                             opacity = r_val$opacity)
+                                                             opacity = r_val$opacity,
+                                                             con = con)
         # update map : zoom in clicked bassin, clear bassin data, display region in bassin
         leafletProxy("exploremap") %>%
           map_add_regions_in_bassin(bassin_click = input$exploremap_shape_click,
@@ -398,17 +399,22 @@ mod_explore_server <- function(id){
                                  click))
 
         # save the selected region feature for mapping
-        r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id)
+        r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id,
+                                                        con = con)
         # set region name to download
         r_val$region_name = utile_normalize_string(r_val$selected_region_feature$lbregionhy)
         # get the axis in the region
-        r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id)
+        r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id,
+                                                  con = con)
         # get ROE in region
-        r_val$roe_region = data_get_roe_in_region(r_val$region_click$id)
+        r_val$roe_region = data_get_roe_in_region(r_val$region_click$id,
+                                                  con = con)
         # get hydro stations in region
-        r_val$hydro_station_region = data_get_station_hubeau(r_val$region_click$id)
+        r_val$hydro_station_region = data_get_station_hubeau(r_val$region_click$id,
+                                                             con = con)
         # get strahler data
-        r_val$strahler = isolate(data_get_min_max_strahler(selected_region_id = r_val$region_click$id))
+        r_val$strahler = isolate(data_get_min_max_strahler(selected_region_id = r_val$region_click$id,
+                                                           con = con))
         # build strahler slider
         r_val$ui_strahler_filter = sliderInput(ns("strahler"),
                                        label="Ordre de strahler",
@@ -448,10 +454,12 @@ mod_explore_server <- function(id){
         # save the clicked axis values
         r_val$axis_click = input$exploremap_shape_click
         # reget the axis in the region without the selected axis
-        r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id) %>%
+        r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id,
+                                                  con = con) %>%
           filter(axis != r_val$axis_click$id)
         # get the DGO axis data
-        r_val$dgo_axis = data_get_network_axis(selected_axis_id = r_val$axis_click$id) %>%
+        r_val$dgo_axis = data_get_network_axis(selected_axis_id = r_val$axis_click$id,
+                                               con = con) %>%
           mutate(measure = measure/1000)
         # extract axis start end point
         r_val$axis_start_end = data_get_axis_start_end(dgo_axis = r_val$dgo_axis)
@@ -526,7 +534,8 @@ mod_explore_server <- function(id){
 
       if (input$exploremap_shape_click$group == params_map_group()$dgo_axis) {
         # get data with dgo id
-        r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$exploremap_shape_click$id)
+        r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$exploremap_shape_click$id,
+                                                         con = con)
         # plot cross section
         r_val$section = cr_section_main(data = r_val$data_section)
         # get dgo clicked feature
@@ -585,7 +594,9 @@ mod_explore_server <- function(id){
         r_val$selected_metric_type = params_metrics_choice()[[input$metric_type]]$metric_type_title
 
         # build metric filter slider
-        r_val$min_max_metric <- data_get_min_max_metric(selected_region_id = r_val$region_click$id, selected_metric = r_val$selected_metric)
+        r_val$min_max_metric <- data_get_min_max_metric(selected_region_id = r_val$region_click$id,
+                                                        selected_metric = r_val$selected_metric,
+                                                        con = con)
 
         r_val$ui_metric_filter = sliderInput(ns("metricfilter"),
                                              label = r_val$selected_metric_name,
@@ -621,6 +632,7 @@ mod_explore_server <- function(id){
     observeEvent(c(r_val$selected_metric, r_val$axis_click), {
       if (r_val$profile_display == FALSE){
         if (!is.null(r_val$selected_metric) && !is.null(r_val$axis_click)){
+          browser()
 
           r_val$profile_display = TRUE # this event run only one time controlled with profile_display
 
@@ -778,12 +790,14 @@ mod_explore_server <- function(id){
         r_val$sld_body = sld_get_style(
           breaks = sld_get_quantile_metric(
             selected_region_id = r_val$region_click$id,
-            selected_metric = r_val$selected_metric
+            selected_metric = r_val$selected_metric,
+            con = con
           ),
           colors = sld_get_quantile_colors(
             quantile_breaks = sld_get_quantile_metric(
               selected_region_id = r_val$region_click$id,
-              selected_metric = r_val$selected_metric
+              selected_metric = r_val$selected_metric,
+              con = con
             )
           ),
           metric = r_val$selected_metric

@@ -16,14 +16,19 @@ An HTML img tag representing the legend for the specified map layer.
 This function constructs a legend for a map layer by sending a GetLegendGraphic request to a WMS (Web Map Service) server.
 }
 \examples{
+con <- db_con()
+# Define an SLD body for a map layer
 sld_body <- sld_get_style(breaks = sld_get_quantile_metric(
                                      selected_region_id = 11,
-                                     selected_metric = "active_channel_width"),
+                                     selected_metric = "active_channel_width",
+                                     con = con),
                           colors = sld_get_quantile_colors(
                                      quantile_breaks = sld_get_quantile_metric(
                                                          selected_region_id = 11,
-                                                         selected_metric = "active_channel_width")),
+                                                         selected_metric = "active_channel_width",
+                                                         con = con)),
                           metric = "active_channel_width")
+DBI::dbDisconnect(con)
 
 # Generate and display the legend for the map layer
 legend <- map_legend_metric(sld_body)

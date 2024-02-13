@@ -4,32 +4,38 @@
 #'
 #' @param selected_region_id The ID of the selected region.
 #' @param selected_metric The name of the selected metric.
+#' @param con PqConnection to Postgresql database.
 #'
 #' @return A numeric vector containing quantile metrics (Q1, Q2, Q3, Q4, Q5) for the selected metric within the specified region.
 #'
 #' @examples
+#' con <- db_con()
 #' # get quantiles from active_channel_width metric
 #' quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11,
-#'                                             selected_metric = "active_channel_width")
+#'                                             selected_metric = "active_channel_width",
+#'                                             con = con)
 #' quantile_metrics
+#' DBI::dbDisconnect(con)
 #'
-#' @importFrom glue glue
-#' @importFrom DBI dbGetQuery
+#' @importFrom DBI dbGetQuery sqlInterpolate dbQuoteIdentifier SQL
 #'
 #' @export
-sld_get_quantile_metric <- function(selected_region_id, selected_metric) {
-  query <- glue::glue("
+sld_get_quantile_metric <- function(selected_region_id, selected_metric, con) {
+  sql <- "
       SELECT
-        ROUND(percentile_cont(0) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q1,
-        ROUND(percentile_cont(0.25) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q2,
-        ROUND(percentile_cont(0.50) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q3,
-        ROUND(percentile_cont(0.75) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q4,
-        ROUND(percentile_cont(1) WITHIN GROUP (ORDER BY {selected_metric} ASC)::numeric, 1) AS q5
+        ROUND(percentile_cont(0) WITHIN GROUP (ORDER BY ?selected_metric ASC)::numeric, 1) AS q1,
+        ROUND(percentile_cont(0.25) WITHIN GROUP (ORDER BY ?selected_metric ASC)::numeric, 1) AS q2,
+        ROUND(percentile_cont(0.50) WITHIN GROUP (ORDER BY ?selected_metric ASC)::numeric, 1) AS q3,
+        ROUND(percentile_cont(0.75) WITHIN GROUP (ORDER BY ?selected_metric ASC)::numeric, 1) AS q4,
+        ROUND(percentile_cont(1) WITHIN GROUP (ORDER BY ?selected_metric ASC)::numeric, 1) AS q5
     FROM public.network_metrics
-    WHERE gid_region = {selected_region_id}")
+    WHERE gid_region = ?selected_region_id"
 
-  data <- DBI::dbGetQuery(conn = db_con(), statement = query)
+  query <- sqlInterpolate(con, sql,
+                          selected_metric = DBI::dbQuoteIdentifier(con, selected_metric),
+                          selected_region_id = DBI::SQL(selected_region_id))
 
+  data <- DBI::dbGetQuery(conn = con, statement = query)
   vector <- c(data$q1, data$q2, data$q3, data$q3, data$q4, data$q5)
 
   return(vector)
@@ -47,9 +53,12 @@ sld_get_quantile_metric <- function(selected_region_id, selected_metric) {
 #' @importFrom grDevices colorRampPalette
 #'
 #' @examples
+#' con <- db_con()
 #' # get quantiles from active_channel_width metric
 #' quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11,
-#'                                             selected_metric = "active_channel_width")
+#'                                             selected_metric = "active_channel_width",
+#'                                             con = con)
+#' DBI::dbDisconnect(con)
 #' # get color from quantile
 #' quantile_colors <- sld_get_quantile_colors(quantile_breaks = quantile_metrics)
 #' quantile_colors
@@ -72,9 +81,13 @@ sld_get_quantile_colors <- function(quantile_breaks) {
 #' @return A character string containing the SLD XML for styling data visualization.
 #'
 #' @examples
+#' con <- db_con()
 #' # get quantiles from active_channel_width metric
 #' quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11,
-#'                                             selected_metric = "active_channel_width")
+#'                                             selected_metric = "active_channel_width",
+#'                                             con = con)
+#' DBI::dbDisconnect(con)
+#'
 #' # get color from quantile
 #' quantile_colors <- sld_get_quantile_colors(quantile_breaks = quantile_metrics)
 #' # create sld style

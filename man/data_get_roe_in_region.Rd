@@ -4,10 +4,12 @@
 \alias{data_get_roe_in_region}
 \title{Get Referentiel des Obstacles aux Ecoulement Data for a Region}
 \usage{
-data_get_roe_in_region(selected_region_id)
+data_get_roe_in_region(selected_region_id, con)
 }
 \arguments{
 \item{selected_region_id}{The ID of the selected region.}
+
+\item{con}{PqConnection to Postgresql database.}
 }
 \value{
 A sf data frame containing information about ROE within the specified region.
@@ -16,6 +18,8 @@ A sf data frame containing information about ROE within the specified region.
 This function retrieves data about Referentiel des Obstacles aux Ecoulement (ROE) within a specified region based on its ID.
 }
 \examples{
-roe_data <- data_get_roe_in_region(selected_region_id = 11)
+con <- db_con()
+roe_data <- data_get_roe_in_region(selected_region_id = 11, con = con)
+DBI::dbDisconnect(con)
 
 }

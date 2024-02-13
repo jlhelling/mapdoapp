@@ -4,12 +4,14 @@
 \alias{data_get_min_max_metric}
 \title{Get Minimum and Maximum Metric Values for a Selected Region}
 \usage{
-data_get_min_max_metric(selected_region_id, selected_metric)
+data_get_min_max_metric(selected_region_id, selected_metric, con)
 }
 \arguments{
 \item{selected_region_id}{The ID of the selected region.}
 
 \item{selected_metric}{The name of the selected metric.}
+
+\item{con}{PqConnection to Postgresql database.}
 }
 \value{
 A data frame containing two columns: 'min' and 'max', representing the minimum and maximum values of the selected metric for the specified region.
@@ -18,6 +20,10 @@ A data frame containing two columns: 'min' and 'max', representing the minimum a
 This function retrieves the minimum and maximum values of a selected metric for a specified region
 }
 \examples{
-data <- data_get_min_max_metric(selected_region_id = 11, selected_metric = "active_channel_width")
+con <- db_con()
+data <- data_get_min_max_metric(selected_region_id = 11,
+                                selected_metric = "active_channel_width",
+                                con = con)
+DBI::dbDisconnect(con)
 
 }

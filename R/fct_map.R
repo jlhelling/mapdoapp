@@ -184,10 +184,12 @@ map_add_regions_in_bassin <- function(map, bassins_data,
 #'          "lat" = Y)
 #' centre_region_coord$id <- 11
 #'
+#'con <- db_con()
 #' # get ROE in region
-#' roe_region <- data_get_roe_in_region(centre_region_coord$id)
+#' roe_region <- data_get_roe_in_region(centre_region_coord$id, con = con)
 #' # get hydro stations in region
-#' hydro_station_region <- data_get_station_hubeau(centre_region_coord$id)
+#' hydro_station_region <- data_get_station_hubeau(centre_region_coord$id, con = con)
+#' DBI::dbDisconnect(con)
 #'
 #' # map the element in the region clicked
 #' map <- map_region_clicked(map = map_region,
@@ -379,10 +381,12 @@ map_axis <- function(map, data_axis) {
 #'          "lat" = Y)
 #' centre_region_coord$id <- 11
 #'
+#' con = db_con()
 #' # get ROE in region
-#' roe_region <- data_get_roe_in_region(centre_region_coord$id)
+#' roe_region <- data_get_roe_in_region(centre_region_coord$id, con = con)
 #' # get hydro stations in region
-#' hydro_station_region <- data_get_station_hubeau(centre_region_coord$id)
+#' hydro_station_region <- data_get_station_hubeau(centre_region_coord$id, con = con)
+#'
 #'
 #' # map the element in the region clicked
 #' map <- map_region_clicked(map = map_region,
@@ -399,12 +403,15 @@ map_axis <- function(map, data_axis) {
 #' # build geoserver SLD symbology
 #' sld_body <- sld_get_style(breaks = sld_get_quantile_metric(
 #'                                     selected_region_id = selected_region[["gid"]],
-#'                                     selected_metric = "active_channel_width"),
+#'                                     selected_metric = "active_channel_width",
+#'                                     con = con),
 #'                           colors = sld_get_quantile_colors(
 #'                                     quantile_breaks = sld_get_quantile_metric(
 #'                                        selected_region_id = selected_region[["gid"]],
-#'                                        selected_metric = "active_channel_width")),
+#'                                        selected_metric = "active_channel_width",
+#'                                        con = con)),
 #'                           metric = "active_channel_width")
+#'DBI::dbDisconnect(con)
 #'
 #' # Network axis by region
 #' network_region_axis <- network_axis %>%
@@ -685,15 +692,19 @@ map_add_wms_overlayers <- function(map) {
 #' @importFrom htmltools tags
 #'
 #' @examples
-# Define an SLD body for a map layer
+#' con <- db_con()
+#' # Define an SLD body for a map layer
 #' sld_body <- sld_get_style(breaks = sld_get_quantile_metric(
 #'                                      selected_region_id = 11,
-#'                                      selected_metric = "active_channel_width"),
+#'                                      selected_metric = "active_channel_width",
+#'                                      con = con),
 #'                           colors = sld_get_quantile_colors(
 #'                                      quantile_breaks = sld_get_quantile_metric(
 #'                                                          selected_region_id = 11,
-#'                                                          selected_metric = "active_channel_width")),
+#'                                                          selected_metric = "active_channel_width",
+#'                                                          con = con)),
 #'                           metric = "active_channel_width")
+#' DBI::dbDisconnect(con)
 #'
 #' # Generate and display the legend for the map layer
 #' legend <- map_legend_metric(sld_body)
