@@ -365,7 +365,8 @@ mod_explore_server <- function(id, con){
 
     observeEvent(input$exploremap_shape_click,{
 
-      shinylogs::track_usage(storage_mode = shinylogs::store_null(console = TRUE))
+      # track input
+      tracks(input = input)
 
       #### bassin clicked ####
       if (input$exploremap_shape_click$group == params_map_group()[["bassin"]]){
@@ -556,6 +557,9 @@ mod_explore_server <- function(id, con){
 
     observeEvent(input$metric_type, {
 
+      # track input
+      tracks(input = input)
+
       if (!is.null(input$metric_type)){
         update_popover("popover_metric_type",
                        HTML(params_metrics_choice()[[input$metric_type]]$metric_type_info))
@@ -584,6 +588,10 @@ mod_explore_server <- function(id, con){
     #### metric select ####
 
     observeEvent(c(input$metric, input$unit_area), ignoreInit = TRUE, {
+
+      # track input
+      tracks(input = input)
+
       # change field if unit_area in percentage
       if (!is.null(input$metric) && input$unit_area == "percent"
           && (input$metric_type %in% c("landuse", "continuity"))){
@@ -633,9 +641,13 @@ mod_explore_server <- function(id, con){
     ### EVENT METRIC & AXIS RESULTS ####
 
     observeEvent(c(r_val$selected_metric, r_val$axis_click), {
+
       if (r_val$profile_display == FALSE){
+
+        # track input
+        tracks(input = input)
+
         if (!is.null(r_val$selected_metric) && !is.null(r_val$axis_click)){
-          browser()
 
           r_val$profile_display = TRUE # this event run only one time controlled with profile_display
 
@@ -668,6 +680,9 @@ mod_explore_server <- function(id, con){
 
     observeEvent(input$profile_metric_type, {
 
+      # track input
+      tracks(input = input)
+
       # build profile metric radio button
       r_val$ui_profile_metric = radioButtons(
         inputId = ns("profile_metric"),
@@ -699,6 +714,10 @@ mod_explore_server <- function(id, con){
     #### profile metric select ####
 
     observeEvent(c(input$profile_metric, input$profile_unit_area), ignoreInit = TRUE, {
+
+      # track input
+      tracks(input = input)
+
       # change field if unit_area in percentage
       if (!is.null(input$profile_metric) && input$profile_unit_area == "percent"
           && (input$profile_metric_type %in% c("landuse", "continuity"))){
@@ -732,6 +751,10 @@ mod_explore_server <- function(id, con){
     #### profile metric remove axe ####
 
     observeEvent(input$remove_profile_axe, {
+
+      # track input
+      tracks(input = input)
+
       plotlyProxy("long_profile") %>%
         plotlyProxyInvoke("deleteTraces", 1)
 
@@ -748,6 +771,10 @@ mod_explore_server <- function(id, con){
     #### profile metric add ROE ####
 
     observeEvent(input$roe_profile, {
+
+      # track input
+      tracks(input = input)
+
       if (input$roe_profile == TRUE){
         if (!is.null(r_val$roe_vertical_line)){
           # remove the previous ROE vertical lines if exist
@@ -773,6 +800,10 @@ mod_explore_server <- function(id, con){
     ### EVENT FILTER ####
 
     observeEvent(c(input$strahler, input$metricfilter, r_val$ui_strahler_filter), {
+
+      # track input
+      tracks(input = input)
+
       if (is.null(input$metricfilter)){
         # build WMS cql_filter
         r_val$cql_filter = paste0("gid_region=", r_val$selected_region_feature[["gid"]],
