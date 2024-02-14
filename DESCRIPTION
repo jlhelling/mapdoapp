@@ -28,7 +28,6 @@ Imports:
     shiny (>= 1.7.4.1),
     shinycssloaders,
     shinyjs,
-    shinylogs,
     stats,
     utils
 Suggests: 

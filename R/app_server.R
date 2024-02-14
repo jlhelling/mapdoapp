@@ -4,17 +4,16 @@
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @importFrom DBI dbDisconnect
-#' @importFrom shinylogs track_usage store_null
 #'
 #' @noRd
 app_server <- function(input, output, session) {
 
-  shinylogs::track_usage(storage_mode = shinylogs::store_null(),
-                         what = "session")
-
-  # observe({
-  #   tracks(input = input)
-  # })
+  # track session
+  session_tracks <- list(
+    session_id = session$token,
+    session_time = format(Sys.time(), "%Y-%m-%d %H:%M:%OS3%z")
+  )
+  message(list(session_tracks))
 
   # set database connection
   con <- db_con()
