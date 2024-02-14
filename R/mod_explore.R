@@ -1,3 +1,4 @@
+# for dev, create reactivity graph
 # library(reactlog)
 # reactlog_enable()
 
@@ -363,6 +364,8 @@ mod_explore_server <- function(id, con){
     ### EVENT MAP CLICK ####
 
     observeEvent(input$exploremap_shape_click,{
+
+      shinylogs::track_usage(storage_mode = shinylogs::store_null(console = TRUE))
 
       #### bassin clicked ####
       if (input$exploremap_shape_click$group == params_map_group()[["bassin"]]){
