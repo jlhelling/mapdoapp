@@ -34,7 +34,6 @@ mod_explore_ui <- function(id){
           uiOutput(ns("metricUI")),
           uiOutput(ns("areaUI")),
           uiOutput(ns("radioButtonsUI")) # uiOutput radios buttons metrics
-          # , actionButton(ns("browser"), "browser")
         ), # column
         column(
           width = 7,
@@ -46,8 +45,7 @@ mod_explore_ui <- function(id){
           uiOutput(ns("metricsfilterUI")),
           uiOutput(ns("legendUI")),
           # uncomment line below to add the download button
-          # uiOutput(ns("downloadUI")),
-          verbatimTextOutput(ns("printcheck"))
+          # uiOutput(ns("downloadUI"))
         ) # column
       ), # fluidRow
       fluidRow(
@@ -95,7 +93,19 @@ mod_explore_ui <- function(id){
             )
           ) # tabPanel
         )# tabsetPanel
-      )# fluidRow
+      ),# fluidRow
+      ### UI DEV TOOLS ####
+      # dev tools : uncomment to use it
+      # fluidRow(
+      #   column(
+      #     width = 4,
+      #     actionButton(ns("browser"), "browser")
+      #   ),
+      #   column(
+      #     width = 8,
+      #     verbatimTextOutput(ns("printcheck"))
+      #   )
+      # ) # fluidRow DEV TOOLS
     ) # fluidPage
   ) # tagList
 }
@@ -121,25 +131,22 @@ mod_explore_server <- function(id, con){
 
     ns <- session$ns
 
-    # suppress warnings
-    # options(warn = -1)
+    ### DEV TOOLS ####
+    output$printcheck = renderPrint({
+      tryCatch({
+        # event_data("plotly_hover")
+        print(input$exploremap_center)
+        print("exists")
+      },
+      shiny.silent.error = function(e) {
+        print("doesn't exist")
+      }
+      )
+    })
 
-    # dev print to debug value
-    # output$printcheck = renderPrint({
-    #   tryCatch({
-    #     # event_data("plotly_hover")
-    #     print(input$exploremap_center)
-    #     print("exists")
-    #   },
-    #   shiny.silent.error = function(e) {
-    #     print("doesn't exist")
-    #   }
-    #   )
-    # })
-
-    # observeEvent(input$browser, {
-    #   browser()
-    # })
+    observeEvent(input$browser, {
+      browser()
+    })
 
     ### R_VAL ####
     r_val <- reactiveValues(
