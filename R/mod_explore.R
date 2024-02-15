@@ -1,3 +1,4 @@
+# for dev, create reactivity graph
 # library(reactlog)
 # reactlog_enable()
 
@@ -206,7 +207,7 @@ mod_explore_server <- function(id, con){
 
     onclick(id = "logo_ign_remonterletemps", expr =
               runjs(sprintf("window.open('%s', '_blank')",
-                            params_url_remonterletemps(lng = input$exploremap_center$lng,
+                            utils_url_remonterletemps(lng = input$exploremap_center$lng,
                                                        lat = input$exploremap_center$lat,
                                                        zoom = input$exploremap_zoom)))
     )
@@ -364,6 +365,9 @@ mod_explore_server <- function(id, con){
 
     observeEvent(input$exploremap_shape_click,{
 
+      # track input
+      track_inputs(input = input)
+
       #### bassin clicked ####
       if (input$exploremap_shape_click$group == params_map_group()[["bassin"]]){
         # disable the click interactivity for the bassin selected
@@ -402,7 +406,7 @@ mod_explore_server <- function(id, con){
         r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id,
                                                         con = con)
         # set region name to download
-        r_val$region_name = utile_normalize_string(r_val$selected_region_feature$lbregionhy)
+        r_val$region_name = utils_normalize_string(r_val$selected_region_feature$lbregionhy)
         # get the axis in the region
         r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id,
                                                   con = con)
@@ -437,8 +441,8 @@ mod_explore_server <- function(id, con){
           # build metric selectInput
           r_val$ui_metric_type =
             selectInput(ns("metric_type"), "Sélectionnez une métrique :",
-                        choices = utile_get_metric_type(params_metrics_choice()),
-                        selected  = utile_get_metric_type(params_metrics_choice())[1])
+                        choices = utils_get_metric_type(params_metrics_choice()),
+                        selected  = utils_get_metric_type(params_metrics_choice())[1])
 
           # create download button
           r_val$ui_download = downloadButton(
@@ -553,6 +557,9 @@ mod_explore_server <- function(id, con){
 
     observeEvent(input$metric_type, {
 
+      # track input
+      track_inputs(input = input)
+
       if (!is.null(input$metric_type)){
         update_popover("popover_metric_type",
                        HTML(params_metrics_choice()[[input$metric_type]]$metric_type_info))
@@ -563,8 +570,8 @@ mod_explore_server <- function(id, con){
         r_val$ui_metric = radioButtons(
         inputId = ns("metric"),
         label = NULL,
-        choiceNames = button_label_with_popover(input$metric_type),
-        choiceValues = as.list(names(utile_get_metric_name_value(input$metric_type))),
+        choiceNames = utils_button_label_with_popover(input$metric_type),
+        choiceValues = as.list(names(utils_get_metric_name_value(input$metric_type))),
         selected = character(0)
       )
 
@@ -581,6 +588,10 @@ mod_explore_server <- function(id, con){
     #### metric select ####
 
     observeEvent(c(input$metric, input$unit_area), ignoreInit = TRUE, {
+
+      # track input
+      track_inputs(input = input)
+
       # change field if unit_area in percentage
       if (!is.null(input$metric) && input$unit_area == "percent"
           && (input$metric_type %in% c("landuse", "continuity"))){
@@ -630,16 +641,20 @@ mod_explore_server <- function(id, con){
     ### EVENT METRIC & AXIS RESULTS ####
 
     observeEvent(c(r_val$selected_metric, r_val$axis_click), {
+
       if (r_val$profile_display == FALSE){
+
+        # track input
+        track_inputs(input = input)
+
         if (!is.null(r_val$selected_metric) && !is.null(r_val$axis_click)){
-          browser()
 
           r_val$profile_display = TRUE # this event run only one time controlled with profile_display
 
           # build input for profile metric type
           r_val$ui_profile_metric_type = selectInput(ns("profile_metric_type"), "Ajoutez une métrique :",
-                                                     choices = utile_get_metric_type(params_metrics_choice()),
-                                                     selected  = utile_get_metric_type(params_metrics_choice())[1])
+                                                     choices = utils_get_metric_type(params_metrics_choice()),
+                                                     selected  = utils_get_metric_type(params_metrics_choice())[1])
 
           # built ROE checkboxInput and input
           r_val$ui_roe_profile = checkboxInput(ns("roe_profile"), label = "ROE", value = FALSE)
@@ -665,12 +680,15 @@ mod_explore_server <- function(id, con){
 
     observeEvent(input$profile_metric_type, {
 
+      # track input
+      track_inputs(input = input)
+
       # build profile metric radio button
       r_val$ui_profile_metric = radioButtons(
         inputId = ns("profile_metric"),
         label = NULL,
-        choiceNames = unname(utile_get_metric_name_value(input$profile_metric_type)),
-        choiceValues = names(utile_get_metric_name_value(input$profile_metric_type)),
+        choiceNames = unname(utils_get_metric_name_value(input$profile_metric_type)),
+        choiceValues = names(utils_get_metric_name_value(input$profile_metric_type)),
         selected = character(0)
       )
 
@@ -696,6 +714,10 @@ mod_explore_server <- function(id, con){
     #### profile metric select ####
 
     observeEvent(c(input$profile_metric, input$profile_unit_area), ignoreInit = TRUE, {
+
+      # track input
+      track_inputs(input = input)
+
       # change field if unit_area in percentage
       if (!is.null(input$profile_metric) && input$profile_unit_area == "percent"
           && (input$profile_metric_type %in% c("landuse", "continuity"))){
@@ -729,6 +751,10 @@ mod_explore_server <- function(id, con){
     #### profile metric remove axe ####
 
     observeEvent(input$remove_profile_axe, {
+
+      # track input
+      track_inputs(input = input)
+
       plotlyProxy("long_profile") %>%
         plotlyProxyInvoke("deleteTraces", 1)
 
@@ -745,6 +771,10 @@ mod_explore_server <- function(id, con){
     #### profile metric add ROE ####
 
     observeEvent(input$roe_profile, {
+
+      # track input
+      track_inputs(input = input)
+
       if (input$roe_profile == TRUE){
         if (!is.null(r_val$roe_vertical_line)){
           # remove the previous ROE vertical lines if exist
@@ -770,6 +800,10 @@ mod_explore_server <- function(id, con){
     ### EVENT FILTER ####
 
     observeEvent(c(input$strahler, input$metricfilter, r_val$ui_strahler_filter), {
+
+      # track input
+      track_inputs(input = input)
+
       if (is.null(input$metricfilter)){
         # build WMS cql_filter
         r_val$cql_filter = paste0("gid_region=", r_val$selected_region_feature[["gid"]],

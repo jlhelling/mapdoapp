@@ -9,11 +9,11 @@
 #'
 #' @examples
 #' original_string <- "Thïs is à sâmplè strîng with spèciál chàracters!"
-#' normalized_string <- utile_normalize_string(original_string)
+#' normalized_string <- utils_normalize_string(original_string)
 #' cat(normalized_string)  # "thisisasamplestringwithspecialcharacters"
 #'
 #' @export
-utile_normalize_string <- function(input_string) {
+utils_normalize_string <- function(input_string) {
   # Remove accents and diacritics
   input_string <- chartr("ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÌÍÎÏìíîïÙÚÛÜùúûüÝýÑñÇç",
                          "AAAAAAaaaaaaOOOOOOooooooEEEEeeeeIIIIiiiiUUUUuuuuYyNnCc",
@@ -40,10 +40,10 @@ utile_normalize_string <- function(input_string) {
 #' @return A named character vector with metric type titles as names and metric type values as values.
 #'
 #' @examples
-#' metric_types <- utile_get_metric_type(params_metrics_choice())
+#' metric_types <- utils_get_metric_type(params_metrics_choice())
 #'
 #' @export
-utile_get_metric_type <- function(input_list) {
+utils_get_metric_type <- function(input_list) {
   metric_type <- setNames(names(sapply(input_list, function(x) x$metric_type_title)), sapply(input_list, function(x) x$metric_type_title))
   return(metric_type)
 }
@@ -57,10 +57,10 @@ utile_get_metric_type <- function(input_list) {
 #' @return A named character vector with all the metric names and values.
 #'
 #' @examples
-#' metrics <- utile_get_metric_name_value("largeur")
+#' metrics <- utils_get_metric_name_value("largeur")
 #'
 #' @export
-utile_get_metric_name_value <- function(metric_type){
+utils_get_metric_name_value <- function(metric_type){
   metric_name <- sapply(params_metrics_choice()[[metric_type]]$metric_type_value, function(x) x$metric_title)
   return(metric_name)
 }
@@ -82,10 +82,10 @@ utile_get_metric_name_value <- function(metric_type){
 #' metric type.
 #'
 #' @examples
-#' metric_buttons <- button_label_with_popover("largeur")
+#' metric_buttons <- utils_button_label_with_popover("largeur")
 #'
 #' @export
-button_label_with_popover <- function(metric_type) {
+utils_button_label_with_popover <- function(metric_type) {
   metrics <-
     names(params_metrics_choice()[[metric_type]]$metric_type_value)
   buttons <- list()
@@ -133,8 +133,8 @@ button_label_with_popover <- function(metric_type) {
 #' @export
 #'
 #' @examples
-#' params_url_remonterletemps(lng=6.869433, lat=45.923690, zoom = 12)
-params_url_remonterletemps <- function(lng=6.869433,
+#' utils_url_remonterletemps(lng=6.869433, lat=45.923690, zoom = 12)
+utils_url_remonterletemps <- function(lng=6.869433,
                                        lat=45.923690,
                                        zoom = 12){
   url <- glue::glue("https://remonterletemps.ign.fr/comparer/basic?x={lng}&y={lat}&z={zoom}&layer1=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&layer2=ORTHOIMAGERY.ORTHOPHOTOS&mode=vSlider")
