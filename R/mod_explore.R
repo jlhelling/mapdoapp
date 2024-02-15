@@ -95,7 +95,7 @@ mod_explore_ui <- function(id){
         )# tabsetPanel
       ),# fluidRow
       ### UI DEV TOOLS ####
-      # dev tools : uncomment to use it
+
       # fluidRow(
       #   column(
       #     width = 4,
@@ -106,6 +106,8 @@ mod_explore_ui <- function(id){
       #     verbatimTextOutput(ns("printcheck"))
       #   )
       # ) # fluidRow DEV TOOLS
+
+      ### END DEV TOOLS
     ) # fluidPage
   ) # tagList
 }
@@ -160,7 +162,7 @@ mod_explore_server <- function(id, con){
       network_region_axis = NULL, # all the axis in the selected region
       selected_region_feature = NULL, # region data clicked
       region_click = NULL, # region clicked information list
-      axis_click = NULL, # axis data clicked
+      axis_click = NULL, # axis clicked information list
       dgo_axis = NULL, # all DGO in selected axis
       axis_start_end = NULL, # start / end df coordinates to add pin on map
       strahler = NULL, # min and max strahler values to set strahler filter UI
@@ -553,7 +555,8 @@ mod_explore_server <- function(id, con){
         r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$exploremap_shape_click$id,
                                                          con = con)
         # plot cross section
-        r_val$section = cr_profile_main(data = r_val$data_section)
+        r_val$section = cr_profile_main(data = r_val$data_section,
+                                        axis_toponyme = unique(r_val$selected_axis_df$toponyme))
         # get dgo clicked feature
         r_val$data_dgo_clicked = r_val$dgo_axis %>%
           filter(fid == input$exploremap_shape_click$id)

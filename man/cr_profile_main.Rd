@@ -4,10 +4,12 @@
 \alias{cr_profile_main}
 \title{Create a cross section plot for selected DGO data.}
 \usage{
-cr_profile_main(data)
+cr_profile_main(data, axis_toponyme)
 }
 \arguments{
 \item{data}{data.frame elevation profiles from selected dgo.}
+
+\item{axis_toponyme}{text axis toponyme name.}
 }
 \value{
 plotly cross section plot.

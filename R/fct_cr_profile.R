@@ -35,12 +35,13 @@ cr_profile_empty <- function() {
 #' Create a cross section plot for selected DGO data.
 #'
 #' @param data data.frame elevation profiles from selected dgo.
+#' @param axis_toponyme text axis toponyme name.
 #'
 #' @importFrom plotly plot_ly layout
 #'
 #' @return plotly cross section plot.
 #' @export
-cr_profile_main <- function(data){
+cr_profile_main <- function(data, axis_toponyme){
   section <- plot_ly(data = data, x = ~distance, y = ~profile, type = 'scatter',
                      yaxis = 'y1', key = data$id, # the "id" column for hover text
                      mode = 'lines+markers', fill = 'tozeroy', fillcolor = '#B0B0B0',
@@ -60,6 +61,11 @@ cr_profile_main <- function(data){
              ),
              list(
                text = "Rive droite", x = 1, y = 1.1,
+               xref = "paper", yref = "paper", showarrow = FALSE,
+               font = list(size = 14, weight = "bold")
+             ),
+             list(
+               text = axis_toponyme, x = 1, y = -0.18,
                xref = "paper", yref = "paper", showarrow = FALSE,
                font = list(size = 14, weight = "bold")
              )
