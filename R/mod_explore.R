@@ -541,7 +541,7 @@ mod_explore_server <- function(id, con){
         r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$exploremap_shape_click$id,
                                                          con = con)
         # plot cross section
-        r_val$section = cr_section_main(data = r_val$data_section)
+        r_val$section = cr_profile_main(data = r_val$data_section)
         # get dgo clicked feature
         r_val$data_dgo_clicked = r_val$dgo_axis %>%
           filter(fid == input$exploremap_shape_click$id)

@@ -40,7 +40,7 @@ cr_profile_empty <- function() {
 #'
 #' @return plotly cross section plot.
 #' @export
-cr_section_main <- function(data){
+cr_profile_main <- function(data){
   section <- plot_ly(data = data, x = ~distance, y = ~profile, type = 'scatter',
                      yaxis = 'y1', key = data$id, # the "id" column for hover text
                      mode = 'lines+markers', fill = 'tozeroy', fillcolor = '#B0B0B0',
