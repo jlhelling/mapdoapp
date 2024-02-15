@@ -150,28 +150,41 @@ mod_explore_server <- function(id, con){
 
     ### R_VAL ####
     r_val <- reactiveValues(
+      ### reactivity controler
       region_already_clicked = FALSE,
-      opacity = list(clickable = 0.01,
-                     not_clickable = 0.10), # opacity value to inform the user about available data
-      bassins = NULL,
+      profile_display = FALSE, # controle if metric and axis is selected = display the profile
+
+      ### data
+      bassins = NULL, # bassins data
       regions_in_bassin = NULL, # all the regions in selected bassin
       network_region_axis = NULL, # all the axis in the selected region
-      selected_region_feature = NULL,
-      region_click = NULL,
-      axis_click = NULL,
-      dgo_axis = NULL, # all selected axis DGO
+      selected_region_feature = NULL, # region data clicked
+      region_click = NULL, # region clicked information list
+      axis_click = NULL, # axis data clicked
+      dgo_axis = NULL, # all DGO in selected axis
       axis_start_end = NULL, # start / end df coordinates to add pin on map
-      # metric selected by user
-      selected_metric = NULL,
-      selected_metric_name = NULL,
-      selected_metric_type = NULL,
-      # profile metric selected by user
-      selected_profile_metric = NULL,
-      selected_profile_metric_name = NULL,
-      selected_profile_metric_type = NULL,
-      strahler = NULL,
-      min_max_metric = NULL,
-      # UI generator
+      strahler = NULL, # min and max strahler values to set strahler filter UI
+      min_max_metric = NULL, # min and max metric values to set metric filter UI
+      selected_axis_df = NULL, # DGO in axis dataframe to plot longitudinal profile
+      data_section = NULL, # DGO elevation data for section profile
+      roe_region = NULL, # ROE data in selected region
+      roe_axis = NULL, # ROE data in selected axis
+      hydro_station_region = NULL, # hydro stations data in selected region
+      data_dgo_clicked = NULL, # DGO clicked by user for cross section profile
+
+      ### metric selected by user
+      selected_metric = NULL, # select main metric column name
+      selected_metric_name = NULL, # select main metric name to display for user
+      selected_metric_type = NULL, # select main metric type name to display for user
+
+      ### profile metric selected by user
+      selected_profile_metric = NULL, # select second metric column name
+      selected_profile_metric_name = NULL, # select second metric name to display for user
+      selected_profile_metric_type = NULL, # select second metric type name to display for user
+
+      ### render UI generator
+      plot = lg_profile_empty(), # plotly render longitudinal profile output (default empty)
+      section = cr_profile_empty(), # plotly render cross section output (default empty)
       ui_strahler_filter = NULL,
       ui_metric_type = NULL,
       ui_metric = NULL,
@@ -183,22 +196,17 @@ mod_explore_server <- function(id, con){
       ui_remove_profile_axe = NULL,
       ui_roe_profile = NULL,
       ui_download = NULL,
+
+      ### geoserver controler
       cql_filter = NULL, # WMS filter
       sld_body = NULL, # WMS SLD symbology
-      selected_axis_df = NULL, # dgo_axis dataframe to plot graph
-      profile_display = FALSE, # controle if metric and axis is selected = display the profile
-      plot = lg_profile_empty(), # plotly render longitudinal profile output (default empty)
+
+      ### others variables
+      opacity = list(clickable = 0.01, not_clickable = 0.10), # opacity value to inform the user about available bassins and regions
       leaflet_hover_measure = 2.5, # measure field from mesure to add vertical line on longitudinal profile
       leaflet_hover_shapes = list(shapes = list(lg_vertical_line(2.5))), # list to store vertical lines to display on longitudinal profile
       roe_vertical_line = NULL, # list with verticale line to plot on longitudinal profile
-      plotly_hover = NULL,
-      region_name = NULL,
-      roe_region = NULL,
-      roe_axis = NULL,
-      hydro_station_region = NULL,
-      section = cr_profile_empty(), # plotly render cross section output (default empty)
-      data_section = NULL,
-      data_dgo_clicked = NULL
+      region_name = NULL # region name file formatted to be download
     )
 
     ### INIT MAP & PROFILE ####
