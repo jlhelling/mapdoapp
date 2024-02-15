@@ -19,6 +19,7 @@ app_server <- function(input, output, session) {
   mod_explore_server("explore_1", con)
   mod_documentation_server("documentation_1")
 
+  # disconnect database when closing session
   onStop(function() {
     if (!is.null(con)) {
       DBI::dbDisconnect(con)

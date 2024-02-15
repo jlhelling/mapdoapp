@@ -207,7 +207,7 @@ mod_explore_server <- function(id, con){
 
     onclick(id = "logo_ign_remonterletemps", expr =
               runjs(sprintf("window.open('%s', '_blank')",
-                            params_url_remonterletemps(lng = input$exploremap_center$lng,
+                            utils_url_remonterletemps(lng = input$exploremap_center$lng,
                                                        lat = input$exploremap_center$lat,
                                                        zoom = input$exploremap_zoom)))
     )
@@ -406,7 +406,7 @@ mod_explore_server <- function(id, con){
         r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id,
                                                         con = con)
         # set region name to download
-        r_val$region_name = utile_normalize_string(r_val$selected_region_feature$lbregionhy)
+        r_val$region_name = utils_normalize_string(r_val$selected_region_feature$lbregionhy)
         # get the axis in the region
         r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id,
                                                   con = con)
@@ -441,8 +441,8 @@ mod_explore_server <- function(id, con){
           # build metric selectInput
           r_val$ui_metric_type =
             selectInput(ns("metric_type"), "Sélectionnez une métrique :",
-                        choices = utile_get_metric_type(params_metrics_choice()),
-                        selected  = utile_get_metric_type(params_metrics_choice())[1])
+                        choices = utils_get_metric_type(params_metrics_choice()),
+                        selected  = utils_get_metric_type(params_metrics_choice())[1])
 
           # create download button
           r_val$ui_download = downloadButton(
@@ -570,8 +570,8 @@ mod_explore_server <- function(id, con){
         r_val$ui_metric = radioButtons(
         inputId = ns("metric"),
         label = NULL,
-        choiceNames = button_label_with_popover(input$metric_type),
-        choiceValues = as.list(names(utile_get_metric_name_value(input$metric_type))),
+        choiceNames = utils_button_label_with_popover(input$metric_type),
+        choiceValues = as.list(names(utils_get_metric_name_value(input$metric_type))),
         selected = character(0)
       )
 
@@ -653,8 +653,8 @@ mod_explore_server <- function(id, con){
 
           # build input for profile metric type
           r_val$ui_profile_metric_type = selectInput(ns("profile_metric_type"), "Ajoutez une métrique :",
-                                                     choices = utile_get_metric_type(params_metrics_choice()),
-                                                     selected  = utile_get_metric_type(params_metrics_choice())[1])
+                                                     choices = utils_get_metric_type(params_metrics_choice()),
+                                                     selected  = utils_get_metric_type(params_metrics_choice())[1])
 
           # built ROE checkboxInput and input
           r_val$ui_roe_profile = checkboxInput(ns("roe_profile"), label = "ROE", value = FALSE)
@@ -687,8 +687,8 @@ mod_explore_server <- function(id, con){
       r_val$ui_profile_metric = radioButtons(
         inputId = ns("profile_metric"),
         label = NULL,
-        choiceNames = unname(utile_get_metric_name_value(input$profile_metric_type)),
-        choiceValues = names(utile_get_metric_name_value(input$profile_metric_type)),
+        choiceNames = unname(utils_get_metric_name_value(input$profile_metric_type)),
+        choiceValues = names(utils_get_metric_name_value(input$profile_metric_type)),
         selected = character(0)
       )
 
