@@ -366,7 +366,7 @@ mod_explore_server <- function(id, con){
     observeEvent(input$exploremap_shape_click,{
 
       # track input
-      tracks(input = input)
+      track_inputs(input = input)
 
       #### bassin clicked ####
       if (input$exploremap_shape_click$group == params_map_group()[["bassin"]]){
@@ -558,7 +558,7 @@ mod_explore_server <- function(id, con){
     observeEvent(input$metric_type, {
 
       # track input
-      tracks(input = input)
+      track_inputs(input = input)
 
       if (!is.null(input$metric_type)){
         update_popover("popover_metric_type",
@@ -590,7 +590,7 @@ mod_explore_server <- function(id, con){
     observeEvent(c(input$metric, input$unit_area), ignoreInit = TRUE, {
 
       # track input
-      tracks(input = input)
+      track_inputs(input = input)
 
       # change field if unit_area in percentage
       if (!is.null(input$metric) && input$unit_area == "percent"
@@ -645,7 +645,7 @@ mod_explore_server <- function(id, con){
       if (r_val$profile_display == FALSE){
 
         # track input
-        tracks(input = input)
+        track_inputs(input = input)
 
         if (!is.null(r_val$selected_metric) && !is.null(r_val$axis_click)){
 
@@ -681,7 +681,7 @@ mod_explore_server <- function(id, con){
     observeEvent(input$profile_metric_type, {
 
       # track input
-      tracks(input = input)
+      track_inputs(input = input)
 
       # build profile metric radio button
       r_val$ui_profile_metric = radioButtons(
@@ -716,7 +716,7 @@ mod_explore_server <- function(id, con){
     observeEvent(c(input$profile_metric, input$profile_unit_area), ignoreInit = TRUE, {
 
       # track input
-      tracks(input = input)
+      track_inputs(input = input)
 
       # change field if unit_area in percentage
       if (!is.null(input$profile_metric) && input$profile_unit_area == "percent"
@@ -753,7 +753,7 @@ mod_explore_server <- function(id, con){
     observeEvent(input$remove_profile_axe, {
 
       # track input
-      tracks(input = input)
+      track_inputs(input = input)
 
       plotlyProxy("long_profile") %>%
         plotlyProxyInvoke("deleteTraces", 1)
@@ -773,7 +773,7 @@ mod_explore_server <- function(id, con){
     observeEvent(input$roe_profile, {
 
       # track input
-      tracks(input = input)
+      track_inputs(input = input)
 
       if (input$roe_profile == TRUE){
         if (!is.null(r_val$roe_vertical_line)){
@@ -802,7 +802,7 @@ mod_explore_server <- function(id, con){
     observeEvent(c(input$strahler, input$metricfilter, r_val$ui_strahler_filter), {
 
       # track input
-      tracks(input = input)
+      track_inputs(input = input)
 
       if (is.null(input$metricfilter)){
         # build WMS cql_filter
