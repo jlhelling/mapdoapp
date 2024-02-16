@@ -1,6 +1,6 @@
 Package: mapdoapp
 Title: Application MAPDO
-Version: 0.0.0.9000
+Version: 1.0.0
 Authors@R: 
     person("Louis", "Manière", , "louis.maniere@ens-lyon.fr", role = c("cre", "aut"))
 Description: Application de description des caractéristiques
