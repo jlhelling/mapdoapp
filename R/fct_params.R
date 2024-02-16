@@ -190,7 +190,7 @@ params_map_group <- function(){
     axis_opacity = "AXIS_OPACITY",
     legend = "LEGEND",
     roe = "ROE",
-    hydro_station = "Station hydrométrique",
+    hydro_sites = "Site hydrométrique",
     light = "LIGHT",
     inondation = params_wms()$inondation$name,
     ouvrage_protection = params_wms()$ouvrage_protection$name,

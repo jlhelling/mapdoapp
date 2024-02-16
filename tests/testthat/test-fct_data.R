@@ -118,10 +118,10 @@ test_that("data_get_dgo_in_region works", {
               info = "Data is not empty")
 })
 
-test_that("data_get_station_hubeau works", {
+test_that("data_get_hydro_sites works", {
   con <- db_con()
-  data <- data_get_station_hubeau(selected_region_id = 11,
-                                  con = con)
+  data <- data_get_hydro_sites(selected_region_id = 11,
+                               con = con)
   DBI::dbDisconnect(con)
   expect_true(inherits(data, "sf"),
               "sf data loaded")
