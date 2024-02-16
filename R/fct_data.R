@@ -339,38 +339,31 @@ data_get_dgo_in_region <- function(selected_region_id, con){
   return(data)
 }
 
-#' Get hydrometric stations
+#' Get hydrometric sites.
 #'
-#' This function retrieves data about the hydrometric stations from Hubeau within a specified region based on its ID.
+#' This function retrieves data about the hydrometric sites from Hubeau.
 #'
 #' @param selected_region_id The ID of the selected region.
 #' @param con PqConnection to Postgresql database.
 #'
-#' @return A sf data frame containing information about the hydrometric stations within the specified region.
+#' @return sf data frame containing information about the hydrometric sites within the specified region.
 #'
 #' @examples
 #' con <- db_con()
-#' hydro_stations <- data_get_station_hubeau(selected_region_id = 11, con = con)
+#' hydro_sites <- data_get_hydro_sites(selected_region_id = 11, con = con)
 #' DBI::dbDisconnect(con)
 #'
 #' @importFrom sf st_read
 #' @importFrom DBI sqlInterpolate
 #'
 #' @export
-data_get_station_hubeau <- function(selected_region_id, con){
+data_get_hydro_sites <- function(selected_region_id, con){
 
   sql <- "
           SELECT
-          code_station,
-          libelle_station,
-          uri_station,
-          code_cours_eau,
-          uri_cours_eau,
-          etat_station,
-          geom
-          FROM hydro_stations
-          WHERE
-          gid_region = ?selected_region_id"
+            code_site, libelle_site, url_site, geom
+          FROM hydro_sites
+          WHERE gid_region = ?selected_region_id"
   query <- sqlInterpolate(con, sql, selected_region_id = selected_region_id)
 
   data <- sf::st_read(dsn = con, query = query)
@@ -397,12 +390,7 @@ data_get_elevation_profiles <- function(selected_dgo_fid, con){
 
   sql <- "
           SELECT
-          	id,
-          	hydro_swaths_gid,
-          	axis,
-          	measure_medial_axis,
-          	distance,
-          	profile
+          	id, hydro_swaths_gid, axis, measure_medial_axis, distance, profile
           FROM elevation_profiles
           WHERE hydro_swaths_gid = ?selected_dgo_fid"
   query <- sqlInterpolate(con, sql, selected_dgo_fid = selected_dgo_fid)

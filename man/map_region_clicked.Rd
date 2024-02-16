@@ -10,7 +10,7 @@ map_region_clicked(
   selected_region_feature,
   regions_data,
   roe_region,
-  hydro_station_region
+  hydro_sites_region
 )
 }
 \arguments{
@@ -24,7 +24,7 @@ map_region_clicked(
 
 \item{roe_region}{sf data.frame ROE in selected region.}
 
-\item{hydro_station_region}{sf data.frame Hubeau hydrometric stations in selected region.}
+\item{hydro_sites_region}{sf data.frame hydrometric sites in selected region.}
 }
 \value{
 An updated Leaflet map with relevant layers and information displayed.
@@ -67,8 +67,8 @@ centre_region_coord$id <- 11
 con <- db_con()
 # get ROE in region
 roe_region <- data_get_roe_in_region(centre_region_coord$id, con = con)
-# get hydro stations in region
-hydro_station_region <- data_get_station_hubeau(centre_region_coord$id, con = con)
+# get hydro sites in region
+hydro_sites_region <- data_get_hydro_sites(centre_region_coord$id, con = con)
 DBI::dbDisconnect(con)
 
 # map the element in the region clicked
@@ -77,7 +77,7 @@ map <- map_region_clicked(map = map_region,
                           selected_region_feature = selected_region,
                           regions_data = region_hydrographique,
                           roe_region = roe_region,
-                          hydro_station_region = hydro_station_region)
+                          hydro_sites_region = hydro_sites_region)
 map
 
 }

@@ -20,8 +20,7 @@
 #' @export
 map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
 
-
-  # Build the legend URL
+  # Build the BRGM legend URL
   # legend_url <- modify_url("http://mapsref.brgm.fr/legendes/geoservices/Geologie1000_legende.jpg")
 
   leaflet() %>%
@@ -146,11 +145,12 @@ map_add_regions_in_bassin <- function(map, bassins_data,
 #' @param selected_region_feature A sf data frame containing information about the selected region feature.
 #' @param regions_data A sf data.frame with the hydrographic regions of the bassin selected.
 #' @param roe_region sf data.frame ROE in selected region.
-#' @param hydro_station_region sf data.frame Hubeau hydrometric stations in selected region.
+#' @param hydro_sites_region sf data.frame hydrometric sites in selected region.
 #'
 #' @return An updated Leaflet map with relevant layers and information displayed.
 #'
 #' @importFrom leaflet setView layersControlOptions addPolygons addCircleMarkers addLayersControl hideGroup
+#' @importFrom htmltools tags
 #'
 #' @examples
 #' library(leaflet)
@@ -187,8 +187,8 @@ map_add_regions_in_bassin <- function(map, bassins_data,
 #'con <- db_con()
 #' # get ROE in region
 #' roe_region <- data_get_roe_in_region(centre_region_coord$id, con = con)
-#' # get hydro stations in region
-#' hydro_station_region <- data_get_station_hubeau(centre_region_coord$id, con = con)
+#' # get hydro sites in region
+#' hydro_sites_region <- data_get_hydro_sites(centre_region_coord$id, con = con)
 #' DBI::dbDisconnect(con)
 #'
 #' # map the element in the region clicked
@@ -197,7 +197,7 @@ map_add_regions_in_bassin <- function(map, bassins_data,
 #'                           selected_region_feature = selected_region,
 #'                           regions_data = region_hydrographique,
 #'                           roe_region = roe_region,
-#'                           hydro_station_region = hydro_station_region)
+#'                           hydro_sites_region = hydro_sites_region)
 #' map
 #'
 #' @export
@@ -206,12 +206,12 @@ map_region_clicked <- function(map,
                                selected_region_feature,
                                regions_data,
                                roe_region,
-                               hydro_station_region) {
+                               hydro_sites_region) {
   map %>%
     setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
     clearGroup(c(params_map_group()[["region"]],
                  params_map_group()[["roe"]],
-                 params_map_group()[["hydro_station"]],
+                 params_map_group()[["hydro_sites"]],
                  unlist(sapply(params_wms(), function(x) if (x$overlayer) x$name else NULL), use.names = FALSE))) %>%
     # restyle the regions
     addPolygons(data = regions_data,
@@ -229,7 +229,7 @@ map_region_clicked <- function(map,
     ) %>%
     # add ROE overlayers from PostgreSQL
     addCircleMarkers(data = roe_region,
-                     radius = 3,
+                     radius = 4.5,
                      weight = 0.5,
                      opacity = 0.9,
                      color = "#D0D0D0",
@@ -238,27 +238,27 @@ map_region_clicked <- function(map,
                      popup = ~nomprincip,
                      group = params_map_group()[["roe"]]
     ) %>%
-    # hydrometric stations layer hidden by default
+    # hydrometric sites layer hidden by default
     hideGroup(params_map_group()[["roe"]]) %>%
-    addCircleMarkers(data = hydro_station_region,
-                     radius = 3,
+    addCircleMarkers(data = hydro_sites_region,
+                     radius = 4.5,
                      weight = 0.5,
                      opacity = 0.9,
                      color = "#E5F6FF",
                      fillColor = "#33B1FF",
                      fillOpacity = 0.9,
-                     popup = ~libelle_station,
-                     group = params_map_group()[["hydro_station"]]
+                     popup = ~paste0("<a href=\"", url_site, "\",  target = \'_blank\'>", libelle_site, "</a>"),
+                     group = params_map_group()[["hydro_sites"]]
     ) %>%
-    # Hydrometric station layer hidden by default
-    hideGroup(params_map_group()[["hydro_station"]]) %>%
+    # Hydrometric sites layer hidden by default
+    hideGroup(params_map_group()[["hydro_sites"]]) %>%
     # add WMS overlayers
     map_add_wms_overlayers() %>%
     addLayersControl(
       baseGroups = c("CartoDB Positron", unlist(sapply(params_wms(), function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),
       options = layersControlOptions(collapsed = TRUE),
       overlayGroups = c(params_map_group()[["roe"]],
-                        params_map_group()[["hydro_station"]],
+                        params_map_group()[["hydro_sites"]],
                         unlist(sapply(params_wms(), function(x) if (x$overlayer) x$name else NULL), use.names = FALSE))
     )
 }
@@ -384,8 +384,8 @@ map_axis <- function(map, data_axis) {
 #' con = db_con()
 #' # get ROE in region
 #' roe_region <- data_get_roe_in_region(centre_region_coord$id, con = con)
-#' # get hydro stations in region
-#' hydro_station_region <- data_get_station_hubeau(centre_region_coord$id, con = con)
+#' # get hydro sites in region
+#' hydro_sites_region <- data_get_hydro_sites(centre_region_coord$id, con = con)
 #'
 #'
 #' # map the element in the region clicked
@@ -394,7 +394,7 @@ map_axis <- function(map, data_axis) {
 #'                           selected_region_feature = selected_region,
 #'                           regions_data = region_hydrographique,
 #'                           roe_region = roe_region,
-#'                           hydro_station_region = hydro_station_region)
+#'                           hydro_sites_region = hydro_sites_region)
 #' map
 #'
 #' # build geoserver WMS filter

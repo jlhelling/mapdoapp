@@ -96,16 +96,16 @@ mod_explore_ui <- function(id){
       ),# fluidRow
       ### UI DEV TOOLS ####
 
-      # fluidRow(
-      #   column(
-      #     width = 4,
-      #     actionButton(ns("browser"), "browser")
-      #   ),
-      #   column(
-      #     width = 8,
-      #     verbatimTextOutput(ns("printcheck"))
-      #   )
-      # ) # fluidRow DEV TOOLS
+      fluidRow(
+        column(
+          width = 4,
+          actionButton(ns("browser"), "browser")
+        ),
+        column(
+          width = 8,
+          verbatimTextOutput(ns("printcheck"))
+        )
+      ) # fluidRow DEV TOOLS
 
       ### END DEV TOOLS
     ) # fluidPage
@@ -171,7 +171,7 @@ mod_explore_server <- function(id, con){
       data_section = NULL, # DGO elevation data for section profile
       roe_region = NULL, # ROE data in selected region
       roe_axis = NULL, # ROE data in selected axis
-      hydro_station_region = NULL, # hydro stations data in selected region
+      hydro_sites_region = NULL, # hydro sites data in selected region
       data_dgo_clicked = NULL, # DGO clicked by user for cross section profile
 
       ### metric selected by user
@@ -366,9 +366,9 @@ mod_explore_server <- function(id, con){
           map_legend_vector_overlayer(layer_label = "Référentiel des Obstacles à l'Ecoulement",
                                       color = "#323232")
         },
-        # Station hydrométrique
-        if (any(input$exploremap_groups %in% params_map_group()[["hydro_station"]])) {
-          map_legend_vector_overlayer(layer_label = "Station hydrométrique",
+        # Site hydrométrique
+        if (any(input$exploremap_groups %in% params_map_group()[["hydro_sites"]])) {
+          map_legend_vector_overlayer(layer_label = "Site hydrométrique",
                                       color = "#33B1FF")
         },
         style = "margin-bottom: 10px;"
@@ -427,9 +427,9 @@ mod_explore_server <- function(id, con){
         # get ROE in region
         r_val$roe_region = data_get_roe_in_region(r_val$region_click$id,
                                                   con = con)
-        # get hydro stations in region
-        r_val$hydro_station_region = data_get_station_hubeau(r_val$region_click$id,
-                                                             con = con)
+        # get hydro sites in region
+        r_val$hydro_sites_region = data_get_hydro_sites(r_val$region_click$id,
+                                                        con = con)
         # get strahler data
         r_val$strahler = isolate(data_get_min_max_strahler(selected_region_id = r_val$region_click$id,
                                                            con = con))
@@ -448,7 +448,7 @@ mod_explore_server <- function(id, con){
                              selected_region_feature = r_val$selected_region_feature,
                              regions_data = r_val$regions_in_bassin,
                              roe_region = r_val$roe_region,
-                             hydro_station_region = r_val$hydro_station_region)
+                             hydro_sites_region = r_val$hydro_sites_region)
 
         # run only once, control with region_already_clicked
         if (r_val$region_already_clicked == FALSE){

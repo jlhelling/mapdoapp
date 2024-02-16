@@ -65,8 +65,8 @@ centre_region_coord$id <- 11
 con = db_con()
 # get ROE in region
 roe_region <- data_get_roe_in_region(centre_region_coord$id, con = con)
-# get hydro stations in region
-hydro_station_region <- data_get_station_hubeau(centre_region_coord$id, con = con)
+# get hydro sites in region
+hydro_sites_region <- data_get_hydro_sites(centre_region_coord$id, con = con)
 
 
 # map the element in the region clicked
@@ -75,7 +75,7 @@ map <- map_region_clicked(map = map_region,
                           selected_region_feature = selected_region,
                           regions_data = region_hydrographique,
                           roe_region = roe_region,
-                          hydro_station_region = hydro_station_region)
+                          hydro_sites_region = hydro_sites_region)
 map
 
 # build geoserver WMS filter
