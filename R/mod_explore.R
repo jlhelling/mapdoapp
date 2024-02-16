@@ -96,16 +96,16 @@ mod_explore_ui <- function(id){
       ),# fluidRow
       ### UI DEV TOOLS ####
 
-      fluidRow(
-        column(
-          width = 4,
-          actionButton(ns("browser"), "browser")
-        ),
-        column(
-          width = 8,
-          verbatimTextOutput(ns("printcheck"))
-        )
-      ) # fluidRow DEV TOOLS
+      # fluidRow(
+      #   column(
+      #     width = 4,
+      #     actionButton(ns("browser"), "browser")
+      #   ),
+      #   column(
+      #     width = 8,
+      #     verbatimTextOutput(ns("printcheck"))
+      #   )
+      # ) # fluidRow DEV TOOLS
 
       ### END DEV TOOLS
     ) # fluidPage
@@ -145,7 +145,6 @@ mod_explore_server <- function(id, con){
       }
       )
     })
-
     observeEvent(input$browser, {
       browser()
     })
