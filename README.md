@@ -18,3 +18,13 @@ hydrographiques à l’échelle du bassin versant.
 ``` r
 remotes::install_github("https://github.com/EVS-GIS/mapdoapp.git")
 ```
+
+## How to cite
+
+Manière, L. (2024). mapdoapp (Version 1.0.0) \[Computer software\].
+<https://github.com/EVS-GIS/mapdoapp>
+
+## Licence
+
+This program is released under the [GNU Public License
+v3](https://github.com/EVS-GIS/mapdoapp/blob/main/LICENSE).
