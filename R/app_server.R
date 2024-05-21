@@ -17,6 +17,7 @@ app_server <- function(input, output, session) {
 
   # Your application server logic
   mod_explore_server("explore_1", con)
+  mod_analysis_server("analysis_1", con)
   mod_documentation_server("documentation_1")
 
   # disconnect database when closing session
