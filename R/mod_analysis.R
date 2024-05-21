@@ -1,3 +1,36 @@
+# Define UI for the main application
+#' Title
+#'
+#' @param id
+#'
+#' @import shiny
+#' @importFrom rhandsontable rHandsontableOutput
+#'
+#' @return
+#' @export
+#'
+#' @examples
+manual_grouping_ui <- function(id) {
+  ns <- NS(id)
+
+  tagList(
+    p("Sélectionnez une variable et son quantile pour la définition des classes :"),
+    selectInput("variable", "Variable",
+                choices = c("",names(network_dgo)[6:44]),
+                selected = "built_environment_pc"),
+
+    fluidRow(
+      column(width = 6, numericInput("quantile", "Quantile [%]", value = 95, min = 0, max = 100)),
+      column(width = 4, numericInput("no_classes", "Nbre classes", value = 4, min = 2, max = 10, step = 1))
+    ),
+
+    rHandsontableOutput("hot"),
+    actionButton("do", "Appliquer")
+  )
+}
+
+
+
 #' analysis UI Function
 #'
 #' @description A shiny Module.
@@ -210,7 +243,7 @@ mod_analysis_server <- function(id, con){
           # build grouping selectInput
           r_val$ui_grouping =
             selectInput(
-              ns("grouping"),
+              inputId = ns("grouping"),
               "Sélectionnez une méthode de classification :",
               choices = c("manuel", "automatique"),
               selected  = NULL
@@ -249,6 +282,24 @@ mod_analysis_server <- function(id, con){
         r_val$selected_axis_df = r_val$dgo_axis %>%
           as.data.frame()
 
+
+        # if(r_val$ui_grouping == "manuel") {
+        #   print(r_val$ui_grouping)
+        # }
+
+        observeEvent(input$grouping, {
+
+          track_inputs(input = input)
+
+
+          print(paste("print:", input$grouping))
+
+          if (input$grouping == "manuel") {
+            output$manual_groupingUI <- renderUI({manual_grouping_ui("man_grouping1")})
+          } else if (input$grouping == "automatique") {
+            output$manual_groupingUI <- NULL
+          }
+        })
       }
 
       ### dgo clicked ####
