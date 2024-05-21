@@ -37,6 +37,7 @@ shiny::reactlogShow()
 ## Create a module infrastructure in R/
 golem::add_module(name = "explore", with_test = TRUE) # Name of the module
 golem::add_module(name = "documentation", with_test = TRUE) # Name of the module
+golem::add_module(name = "analysis", with_test = TRUE)
 
 ## Add dependencies
 
