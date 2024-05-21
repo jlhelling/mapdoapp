@@ -291,8 +291,8 @@ data_get_network_axis <- function(selected_axis_id, con) {
 data_get_axis_start_end <- function(dgo_axis) {
 
   # Extract the start and end points of the axis
-  axis_point_start <- st_coordinates(head(st_cast(tail(dgo_axis, n = 1), "POINT")$geom, n = 1))
-  axis_point_end <- st_coordinates(tail(st_cast(head(dgo_axis, n = 1), "POINT")$geom, n = 1))
+  axis_point_start <- st_coordinates(head(st_cast(tail(dgo_axis, n = 1) %>% dplyr::select(), "POINT"), n = 1))
+  axis_point_end <- st_coordinates(tail(st_cast(head(dgo_axis, n = 1) %>% dplyr::select(), "POINT"), n = 1))
 
   # Combine the coordinates into a data frame
   axis_start_end <- data.frame(rbind(axis_point_start, axis_point_end))
