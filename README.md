@@ -20,9 +20,9 @@ remotes::install_github("https://github.com/EVS-GIS/mapdoapp.git")
 ```
 
 ## How to cite
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11235928.svg)](https://doi.org/10.5281/zenodo.11235928)
 
-Manière, L. (2024). mapdoapp (Version 1.0.0) \[Computer software\].
-<https://github.com/EVS-GIS/mapdoapp>
+MANIERE, L., Dunesme, S., & Vaudor, L. (2024). EVS-GIS/mapdoapp. UMR5600 Environnement, Ville, Société. https://doi.org/10.5281/zenodo.11235929
 
 ## Licence
 
