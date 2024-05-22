@@ -4,7 +4,7 @@
 \alias{assign_classes}
 \title{Assign classes to network dgos}
 \usage{
-assign_classes(data, variables, greater_thans, class_names)
+assign_classes(data, classes)
 }
 \arguments{
 \item{data}{dataframe or sf object to which classes}

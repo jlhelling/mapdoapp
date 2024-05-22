@@ -41,7 +41,7 @@ create_df_input <- function(axis_data, variable_name, no_classes, quantile = 95)
   df <- data.frame(class = LETTERS[1:no_classes],
                    variable = variable_name,
                    greaterthan = classes,
-                   color = brewer.pal(no_classes, "RdBu"),
+                   color = {if (no_classes == 2) {c("#B2182B", "#2166AC")} else {brewer.pal(no_classes, "RdBu")}},
                    stringsAsFactors = FALSE)
 
   return(df)
@@ -56,19 +56,27 @@ create_df_input <- function(axis_data, variable_name, no_classes, quantile = 95)
 #'
 #' @return classified dataframe/sf object with additional variable: class
 #' @importFrom rlang parse_exprs
-#'
+#' @importFrom dplyr mutate case_when left_join join_by
 #' @examples
 #' classified_network <- network_dgo %>%
 #'     assign_classes(variables = as.character(r_val$grouping_table_data$variable),
 #'     greater_thans = r_val$grouping_table_data$greaterthan,
 #'     class_names = r_val$grouping_table_data$class)
 #'
-assign_classes <- function(data, variables, greater_thans, class_names){
+assign_classes <- function(data, classes) {
+
+  variables <- as.character(classes$variable)
+  greater_thans <- classes$greaterthan
+  class_names <- classes$class
+  colors <- classes %>% select(class, color)
+
   data %>%
     mutate(
       class_name = case_when(
-        !!!parse_exprs(
-          paste0(variables, ' >= ', greater_thans, ' ~ "', class_names, '"')
+        !!!parse_exprs(paste0(variables, ' >= ', greater_thans, ' ~ "', class_names, '"')
         )
       )
-    )}
+    ) %>%
+    left_join(colors, by = join_by(class_name == class))
+
+  }
