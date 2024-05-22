@@ -1,91 +1,4 @@
 
-# move this from module into main module ----------------------------------
-
-# Define server logic for the main application
-#' Title
-#'
-#' @param id
-#'
-#' @import shiny
-#' @importFrom rhandsontable rhandsontable hot_context_menu
-#'
-#' @return
-#' @export
-#'
-#' @examples
-# manual_grouping_server <- function(id) {
-#
-#   moduleServer(id, function(input, output, session) {
-#
-#     require(r_val$grouping_table_data)
-#     require(r_val$dgo_axis)
-#
-#     # check when classes can be defined
-#     observeEvent(list(input$variable, input$quantile, input$no_classes),{
-#
-#       # create classes-table
-#       r_val$grouping_table_data <- create_df_input(
-#         axis_data = r_val$dgo_axis,
-#         variable_name = input$variable,
-#         no_classes = input$no_classes,
-#         quantile = input$quantile
-#       )
-#
-#       print(r_val$grouping_table_data)
-#     })
-#
-#
-#     # update table when values are edited (either via editing the table or setting the variables in the UI)
-#     observeEvent(r_val$grouping_table_data, {
-#
-#       output$hot <- renderRHandsontable({
-#         tmp <- isolate(r_val$grouping_table_data %>% select(!variable))# Gotta isolate it or it'll cause infinite loop, see https://github.com/jrowen/rhandsontable/issues/166
-#         rownames(tmp) <- NULL
-#         rhandsontable(
-#           tmp,
-#           rowHeaders = NULL
-#         ) %>%
-#           # hot_col("variable", readOnly = TRUE, copyable = TRUE) %>%
-#           hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
-#       })
-#     })
-#
-#     # Update the reactive values when user edits table in the UI
-#     observeEvent(input$hot, {
-#       r_val$grouping_table_data <- hot_to_r(input$hot) %>% bind_cols(r_val$grouping_table_data %>% select(variable))
-#     })
-#
-#
-#     # # when click apply groups to map
-#     # observeEvent(input$do,{
-#     #   req(r_val$grouping_table_data)
-#     #
-#     #   # Create classified network by adding the classes and colors
-#     #   classified_network <- r_val$dgo_axis %>%
-#     #     assign_classes(variables = as.character(r_val$grouping_table_data$variable),
-#     #                    greater_thans = r_val$grouping_table_data$greaterthan,
-#     #                    class_names = r_val$grouping_table_data$class) %>%
-#     #     rowwise() %>%
-#     #     mutate(color = r_val$grouping_table_data %>% filter(class == class_name) %>% pull(color))
-#     #
-#     #   # add classified network to map
-#     #   leafletProxy("analysemap") %>%
-#     #     addPolylines(data = classified_network,
-#     #                  # layerId = ~class,
-#     #                  weight = 5,
-#     #                  color = ~color,
-#     #                  opacity = 1,
-#     #                  label = ~classified_network[[input$variable]] %>%
-#     #                    sf::st_drop_geometry() %>%
-#     #                    round(2),
-#     #                  highlightOptions = highlightOptions(
-#     #                    color = "red",
-#     #                    bringToFront = TRUE
-#     #                  ))
-#     # })
-#   })
-# }
-
 
 #   ------------------------------------------------------------------------
 
@@ -119,14 +32,14 @@ mod_analysis_ui <- function(id){
         column(
           width = 3,
           uiOutput(ns("groupingUI")),
-          uiOutput(ns("man_grouping_description")),
-          uiOutput(ns("man_grouping_var_select")),
+          uiOutput(ns("man_grouping_descriptionUI")),
+          uiOutput(ns("man_grouping_var_selectUI")),
           fluidRow(
-            column(width = 6, uiOutput(ns("man_grouping_quantile"))),
-            column(width = 4, uiOutput(ns("man_grouping_no_classes")))
+            column(width = 6, uiOutput(ns("man_grouping_quantileUI"))),
+            column(width = 4, uiOutput(ns("man_grouping_no_classesUI")))
           ),
-          uiOutput(ns("man_grouping_editable_table")),
-          uiOutput(ns("man_grouping_apply_changes")),
+          uiOutput(ns("man_grouping_editable_tableUI")),
+          uiOutput(ns("man_grouping_apply_changesUI")),
         ),
 
         # column
@@ -157,13 +70,12 @@ mod_analysis_ui <- function(id){
 #' @importFrom htmltools HTML div img
 #' @importFrom dplyr filter mutate if_else pull
 #' @importFrom shinyjs onclick runjs
-#' @importFrom rhandsontable rHandsontableOutput
+#' @importFrom rhandsontable rHandsontableOutput rhandsontable hot_context_menu renderRHandsontable
 #'
 mod_analysis_server <- function(id, con){
   moduleServer( id, function(input, output, session){
+
     ns <- session$ns
-
-
 
     ### REACTIVE VALUES ####
     r_val <- reactiveValues(
@@ -216,12 +128,29 @@ mod_analysis_server <- function(id, con){
 
     ### RENDER UI ####
 
-    output$man_grouping_description <- renderUI({r_val$man_grouping_description})
-    output$man_grouping_var_select <- renderUI({r_val$man_grouping_var_select})
-    output$man_grouping_quantile <- renderUI({r_val$man_grouping_quantile})
-    output$man_grouping_no_classes <- renderUI({r_val$man_grouping_no_classes})
-    output$man_grouping_editable_table <- renderUI({r_val$man_grouping_editable_table})
-    output$man_grouping_apply_changes <- renderUI({r_val$man_grouping_apply_changes})
+    output$man_grouping_descriptionUI <- renderUI({
+      r_val$man_grouping_description
+      })
+
+    output$man_grouping_var_selectUI <- renderUI({
+      r_val$man_grouping_var_select
+      })
+
+    output$man_grouping_quantileUI <- renderUI({
+      r_val$man_grouping_quantile
+      })
+
+    output$man_grouping_no_classesUI <- renderUI({
+      r_val$man_grouping_no_classes
+      })
+
+    output$man_grouping_editable_tableUI <- renderUI({
+      r_val$man_grouping_editable_table
+      })
+
+    output$man_grouping_apply_changesUI <- renderUI({
+      r_val$man_grouping_apply_changes
+      })
 
 
     ### INIT MAP ####
@@ -370,14 +299,10 @@ mod_analysis_server <- function(id, con){
           as.data.frame()
 
 
-        # if(r_val$ui_grouping == "manuel") {
-        #   print(r_val$ui_grouping)
-        # }
-
+        # create manual grouping ui
         observeEvent(input$grouping, {
 
           track_inputs(input = input)
-
 
           print(paste("print:", input$grouping))
 
@@ -385,13 +310,13 @@ mod_analysis_server <- function(id, con){
 
             # create elements of manual grouping pane
             r_val$man_grouping_description <- p("Sélectionnez une variable et son quantile pour la définition des classes :")
-            r_val$man_grouping_var_select <- selectInput("variable", "Variable",
-                                                          choices = c("",names(network_dgo)[6:44]),
-                                                          selected = "built_environment_pc")
-            r_val$man_grouping_quantile <- numericInput("quantile", "Quantile [%]", value = 95, min = 0, max = 100)
-            r_val$man_grouping_no_classes <- numericInput("no_classes", "Nbre classes", value = 4, min = 2, max = 10, step = 1)
-            r_val$man_grouping_editable_table <- rHandsontableOutput("hot")
-            r_val$man_grouping_apply_changes <- actionButton("do", "Appliquer")
+            r_val$man_grouping_var_select <- selectInput(inputId = ns("man_grouping_var_select"), "Variable",
+                                                         choices = c("",names(r_val$dgo_axis)[6:44]),
+                                                         selected = "built_environment_pc")
+            r_val$man_grouping_quantile <- numericInput(inputId = ns("man_grouping_quantile"), "Quantile [%]", value = 95, min = 0, max = 100)
+            r_val$man_grouping_no_classes <- numericInput(inputId = ns("man_grouping_no_classes"), "Nbre classes", value = 4, min = 2, max = 10, step = 1)
+            r_val$man_grouping_editable_table <- rHandsontableOutput(ns("man_grouping_editable_table"))
+            r_val$man_grouping_apply_changes <- actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
 
           } else if (input$grouping == "automatique") {
             r_val$man_grouping_description <- NULL
@@ -420,6 +345,74 @@ mod_analysis_server <- function(id, con){
       }
 
     })
+
+    ### EVENT MANUAL GROUPING RUN ####
+
+      #### classification variables changed ####
+    observeEvent(list(input$man_grouping_var_select, input$man_grouping_quantile, input$man_grouping_no_classes),{
+
+      # track input
+      track_inputs(input = input)
+
+      # # create classes-table
+      # r_val$grouping_table_data <- create_df_input(
+      #   axis_data = r_val$dgo_axis,
+      #   variable_name = r_val$man_grouping_var_select,
+      #   no_classes = r_val$man_grouping_no_classes,
+      #   quantile = r_val$man_grouping_quantile
+      # )
+
+      print("changed input variables") # r_val$grouping_table_data)
+    })
+    #
+    #
+    # # update table when values are edited (either via editing the table or setting the variables in the UI)
+    # observeEvent(r_val$grouping_table_data, {
+    #
+    #   r_val$man_grouping_editable_table <- renderRHandsontable({
+    #     tmp <- isolate(r_val$grouping_table_data %>% select(!variable))# Gotta isolate it or it'll cause infinite loop, see https://github.com/jrowen/rhandsontable/issues/166
+    #     rownames(tmp) <- NULL
+    #     rhandsontable(
+    #       tmp,
+    #       rowHeaders = NULL
+    #     ) %>%
+    #       # hot_col("variable", readOnly = TRUE, copyable = TRUE) %>%
+    #       hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
+    #   })
+    # })
+    #
+    # # Update the reactive values when user edits table in the UI
+    # observeEvent(r_val$man_grouping_editable_table, {
+    #   r_val$grouping_table_data <- hot_to_r(r_val$man_grouping_editable_table) %>% bind_cols(r_val$grouping_table_data %>% select(variable))
+    # })
+
+    # # when click apply groups to map
+    # observeEvent(input$do,{
+    #   req(r_val$grouping_table_data)
+    #
+    #   # Create classified network by adding the classes and colors
+    #   classified_network <- r_val$dgo_axis %>%
+    #     assign_classes(variables = as.character(r_val$grouping_table_data$variable),
+    #                    greater_thans = r_val$grouping_table_data$greaterthan,
+    #                    class_names = r_val$grouping_table_data$class) %>%
+    #     rowwise() %>%
+    #     mutate(color = r_val$grouping_table_data %>% filter(class == class_name) %>% pull(color))
+    #
+    #   # add classified network to map
+    #   leafletProxy("analysemap") %>%
+    #     addPolylines(data = classified_network,
+    #                  # layerId = ~class,
+    #                  weight = 5,
+    #                  color = ~color,
+    #                  opacity = 1,
+    #                  label = ~classified_network[[input$variable]] %>%
+    #                    sf::st_drop_geometry() %>%
+    #                    round(2),
+    #                  highlightOptions = highlightOptions(
+    #                    color = "red",
+    #                    bringToFront = TRUE
+    #                  ))
+    # })
 
   })
 }
