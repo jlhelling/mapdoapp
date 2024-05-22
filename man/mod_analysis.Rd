@@ -2,7 +2,7 @@
 % Please edit documentation in R/mod_analysis.R
 \name{mod_analysis_ui}
 \alias{mod_analysis_ui}
-\title{analysis UI Function}
+\title{Title}
 \usage{
 mod_analysis_ui(id)
 }
@@ -11,4 +11,8 @@ mod_analysis_ui(id)
 }
 \description{
 A shiny Module.
+}
+\examples{
+analysis UI Function
+
 }
