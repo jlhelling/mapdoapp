@@ -58,12 +58,7 @@ mod_analysis_ui <- function(id){
             tabPanel("Manuelle",
                      # uiOutput(ns("man_grouping_var_selectUI")),
                      uiOutput(ns("man_grouping_metric_selectUI")),
-                     fluidRow(
-                       column(width = 6, uiOutput(ns("man_grouping_quantileUI"))),
-                       column(width = 4, uiOutput(ns("man_grouping_no_classesUI")))
-                     ),
-                     uiOutput(ns("man_grouping_editable_tableUI")),
-                     uiOutput(ns("man_grouping_apply_changesUI"))
+                     uiOutput(ns("classification_tabsetpanels")),
             ),
             , well = FALSE, widths = c(1,11)
           )
@@ -158,6 +153,22 @@ mod_analysis_server <- function(id, con){
 
     output$man_grouping_descriptionUI <- renderUI({
       r_val$man_grouping_description
+    })
+
+    output$classification_tabsetpanels <- renderUI({
+      tabsetPanel(
+        tabPanel("Bassin", "Placeholder" ),
+        tabPanel("Region", "Placeholder" ),
+        tabPanel("Axis",
+                 fluidRow(
+                   column(width = 8,
+                          uiOutput(ns("man_grouping_editable_tableUI")),
+                          uiOutput(ns("man_grouping_apply_changesUI"))),
+                   column(width = 4,
+                          uiOutput(ns("man_grouping_no_classesUI")),
+                          uiOutput(ns("man_grouping_quantileUI")))
+                 ))
+      )
     })
 
     output$man_grouping_metric_selectUI <- renderUI({
