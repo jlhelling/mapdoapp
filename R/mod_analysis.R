@@ -30,7 +30,7 @@ mod_analysis_ui <- function(id){
 
       fluidRow(
         column(
-          width = 3,
+          width = 6,
           uiOutput(ns("groupingUI")),
           uiOutput(ns("man_grouping_descriptionUI")),
           uiOutput(ns("man_grouping_var_selectUI")),
@@ -44,17 +44,17 @@ mod_analysis_ui <- function(id){
 
         # column
         column(
-          width = 7,
+          width = 6,
           withSpinner(
             leafletOutput(ns(
               "analysemap"
-            )),
-            type = 6)),
+            ), height = 800),
+            type = 6))
 
         # column
-        column(width = 2, uiOutput(ns(
-          "groupOverviewUI"
-        ))) # column
+        # column(width = 2, uiOutput(ns(
+        #   "groupOverviewUI"
+        # ))) # column
       ) # fluidRow
 
     ) # fluidPage)
@@ -413,8 +413,8 @@ mod_analysis_server <- function(id, con){
       classified_axis <- r_val$dgo_axis %>%
         assign_classes(classes = r_val$grouping_table_data)
 
-      classified_network <- r_val$network_region_axis %>%
-        assign_classes(classes = r_val$grouping_table_data)
+      # classified_network <- r_val$network_region_axis %>%
+        # assign_classes(classes = r_val$grouping_table_data)
 
       # print(classified_network)
 
