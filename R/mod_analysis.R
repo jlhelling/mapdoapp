@@ -15,6 +15,7 @@
 #' @importFrom shiny NS tagList
 #' @importFrom shinyjs useShinyjs
 #' @importFrom shinycssloaders withSpinner
+#' @importFrom bsicons bs_icon
 #'
 mod_analysis_ui <- function(id){
   ns <- NS(id)
@@ -55,8 +56,8 @@ mod_analysis_ui <- function(id){
             tabPanel("Automatique", "Placeholder"
             ),
             tabPanel("Manuelle",
-                     uiOutput(ns("man_grouping_descriptionUI")),
-                     uiOutput(ns("man_grouping_var_selectUI")),
+                     # uiOutput(ns("man_grouping_var_selectUI")),
+                     uiOutput(ns("man_grouping_metric_selectUI")),
                      fluidRow(
                        column(width = 6, uiOutput(ns("man_grouping_quantileUI"))),
                        column(width = 4, uiOutput(ns("man_grouping_no_classesUI")))
@@ -112,7 +113,7 @@ mod_analysis_server <- function(id, con){
       profile_display = FALSE, # controle if metric and axis is selected = display the profile
 
       # manual grouping ui
-      man_grouping_description = NULL,
+      ui_metric = NULL,
       man_grouping_var_select = NULL,
       man_grouping_quantile = NULL,
       man_grouping_no_classes = NULL,
@@ -159,8 +160,14 @@ mod_analysis_server <- function(id, con){
       r_val$man_grouping_description
     })
 
-    output$man_grouping_var_selectUI <- renderUI({
-      r_val$man_grouping_var_select
+    output$man_grouping_metric_selectUI <- renderUI({
+      fluidRow(
+        if (!is.null(r_val$ui_metric)) {
+          r_val$ui_metric
+        } else {
+          HTML('<label class="control-label" id="wait-metric-label">
+             Cliquez sur une bassin hydrographique pour afficher la sélection des métriques</label>')
+        })
     })
 
     output$man_grouping_quantileUI <- renderUI({
@@ -216,7 +223,15 @@ mod_analysis_server <- function(id, con){
 
       #### bassin clicked ####
 
-      if (input$analysemap_shape_click$group == params_map_group()[["bassin"]]){
+      if (input$analysemap_shape_click$group == params_map_group()[["bassin"]]) {
+
+        # enable selection of variable
+        r_val$ui_metric =
+          selectInput(ns("metric"), "Métrique :",
+                      choices = params_get_metric_choices(),
+                      selected  = params_get_metric_choices()[1])
+
+
         # disable the click interactivity for the bassin selected
         r_val$bassins = r_val$bassins %>%
           mutate(click = if_else(display == TRUE,
@@ -239,7 +254,9 @@ mod_analysis_server <- function(id, con){
 
       ### region clicked ####
 
-      if (input$analysemap_shape_click$group == params_map_group()$region){
+      if (input$analysemap_shape_click$group == params_map_group()$region) {
+
+
         # store the region click values
         r_val$region_click = input$analysemap_shape_click
         # disable the click interactivity for the bassin selected
@@ -311,10 +328,7 @@ mod_analysis_server <- function(id, con){
 
 
         # create elements of manual grouping pane
-        r_val$man_grouping_description <- p("Sélectionnez une variable et son quantile pour la définition des classes :")
-        r_val$man_grouping_var_select <- selectInput(inputId = ns("man_grouping_var_select"), "Variable",
-                                                     choices = c("",names(r_val$dgo_axis)[6:44]),
-                                                     selected = "built_environment_pc")
+
         r_val$man_grouping_quantile <- numericInput(inputId = ns("man_grouping_quantile"), "Quantile [%]", value = 95, min = 0, max = 100)
         r_val$man_grouping_no_classes <- numericInput(inputId = ns("man_grouping_no_classes"), "Nbre classes", value = 4, min = 2, max = 10, step = 1)
         r_val$man_grouping_editable_table <- rHandsontableOutput(ns("man_grouping_editable_table"))
@@ -341,7 +355,7 @@ mod_analysis_server <- function(id, con){
     ### EVENT MANUAL GROUPING RUN ####
 
     #### classification variables changed ####
-    observeEvent(list(input$man_grouping_var_select, input$man_grouping_quantile, input$man_grouping_no_classes), {
+    observeEvent(list(input$metric, input$man_grouping_quantile, input$man_grouping_no_classes), {
 
       # track input
       track_inputs(input = input)
@@ -356,7 +370,7 @@ mod_analysis_server <- function(id, con){
       #   )
       # )
       # check for valid values
-      if (!is.null(input$man_grouping_var_select) &
+      if (!is.null(input$metric) &
           !is.null(input$man_grouping_quantile) &
           !is.null(input$man_grouping_no_classes) &
           !is.null(r_val$dgo_axis)){
@@ -364,7 +378,7 @@ mod_analysis_server <- function(id, con){
         # create classes-table
         r_val$grouping_table_data = create_df_input(
           axis_data = r_val$dgo_axis,
-          variable_name = input$man_grouping_var_select,
+          variable_name = input$metric,
           no_classes = input$man_grouping_no_classes,
           quantile = input$man_grouping_quantile
         )
@@ -415,7 +429,7 @@ mod_analysis_server <- function(id, con){
                      weight = 5,
                      color = ~color,
                      opacity = 1,
-                     label = ~classified_axis[[input$man_grouping_var_select]] %>%
+                     label = ~classified_axis[[input$metric]] %>%
                        st_drop_geometry() %>%
                        round(2),
                      highlightOptions = highlightOptions(
@@ -433,6 +447,27 @@ mod_analysis_server <- function(id, con){
       #                  round(2))
     })
 
+
+
+    # observeEvent(c(input$metric, input$unit_area), ignoreInit = TRUE, {
+    #
+    #   # track input
+    #   track_inputs(input = input)
+    #
+    #   # change field if unit_area in percentage
+    #   if (!is.null(input$metric) && input$unit_area == "percent"
+    #       && (input$metric_type %in% c("landuse", "continuity"))){
+    #     r_val$selected_metric = paste0(input$metric,"_pc")
+    #   } else if (!is.null(input$metric)) {
+    #     r_val$selected_metric = input$metric
+    #   }
+    #
+    #   if (!is.null(input$metric)){
+    #     r_val$selected_metric_name = params_metrics_choice()[[input$metric_type]]$metric_type_values[[input$metric]]$metric_title
+    #     r_val$selected_metric_type = params_metrics_choice()[[input$metric_type]]$metric_type_title
+    #
+    #   }
+    # })
   })
 }
 
