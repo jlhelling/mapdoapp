@@ -24,22 +24,48 @@ mod_analysis_ui <- function(id){
     fluidPage(
       useShinyjs(),
 
-      tags$head(tags$style(
-        HTML(".form-group{margin-bottom: 10px}") # less space below selectInput metric_type
-      )),
+      # Custom CSS to rotate the tab titles
+      tags$style(
+        HTML(
+          "
+      /* Target the tab titles in the navlistPanel */
+      .nav-pills > li > a {
+        writing-mode: vertical-rl; /* Set text orientation to vertical right-to-left */
+        transform: rotate(180deg); /* Rotate the text to make it readable */
+        padding-left: 5px;
+        padding-right: 5px;
+        background-color: white; /* Change background color */
+        color: black; /* Change text color */
+      }
+
+      .nav-stacked > li > a {
+        margin-right: 5px; /* Reduce bottom margin */
+      }
+
+      .form-group{margin-bottom: 10px}
+      "
+        )
+      ),
 
       fluidRow(
         column(
           width = 6,
-          uiOutput(ns("groupingUI")),
-          uiOutput(ns("man_grouping_descriptionUI")),
-          uiOutput(ns("man_grouping_var_selectUI")),
-          fluidRow(
-            column(width = 6, uiOutput(ns("man_grouping_quantileUI"))),
-            column(width = 4, uiOutput(ns("man_grouping_no_classesUI")))
-          ),
-          uiOutput(ns("man_grouping_editable_tableUI")),
-          uiOutput(ns("man_grouping_apply_changesUI")),
+
+          navlistPanel(
+            tabPanel("Automatique", "Placeholder"
+            ),
+            tabPanel("Manuelle",
+                     uiOutput(ns("man_grouping_descriptionUI")),
+                     uiOutput(ns("man_grouping_var_selectUI")),
+                     fluidRow(
+                       column(width = 6, uiOutput(ns("man_grouping_quantileUI"))),
+                       column(width = 4, uiOutput(ns("man_grouping_no_classesUI")))
+                     ),
+                     uiOutput(ns("man_grouping_editable_tableUI")),
+                     uiOutput(ns("man_grouping_apply_changesUI"))
+            ),
+            , well = FALSE, widths = c(1,11)
+          )
         ),
 
         # column
@@ -48,7 +74,7 @@ mod_analysis_ui <- function(id){
           withSpinner(
             leafletOutput(ns(
               "analysemap"
-            ), height = 800),
+            ), height = 700),
             type = 6))
 
         # column
@@ -81,7 +107,6 @@ mod_analysis_server <- function(id, con){
 
     ### REACTIVE VALUES ####
     r_val <- reactiveValues(
-      ui_grouping = NULL, # selectInput of grouping
 
       region_already_clicked = FALSE, # check if region already clicked to show grouping selection
       profile_display = FALSE, # controle if metric and axis is selected = display the profile
@@ -173,17 +198,17 @@ mod_analysis_server <- function(id, con){
 
     ### INIT Grouping class ####
 
-    # UI create choose group
-    output$groupingUI <- renderUI({
-      if (!is.null(r_val$ui_grouping)) {
-        div(style = "display: flex; align-items: center; margin-bottom: 0px", r_val$ui_grouping, )
-      } else {
-        HTML(
-          '<label class="control-label" id="wait-metric-label">
-             Cliquez sur une région hydrographique pour afficher la sélection des groupages </label>'
-        )
-      }
-    })
+    # # UI create choose group
+    # output$groupingUI <- renderUI({
+    #   if (!is.null(r_val$ui_grouping)) {
+    #     div(style = "display: flex; align-items: center; margin-bottom: 0px", r_val$ui_grouping, )
+    #   } else {
+    #     HTML(
+    #       '<label class="control-label" id="wait-metric-label">
+    #          Cliquez sur une région hydrographique pour afficher la sélection des groupages </label>'
+    #     )
+    #   }
+    # })
 
     ### EVENT MAP CLICK ####
 
@@ -253,22 +278,6 @@ mod_analysis_server <- function(id, con){
                              roe_region = r_val$roe_region,
                              hydro_sites_region = r_val$hydro_sites_region) %>%
           map_axis(data_axis = r_val$network_region_axis)
-
-
-        # run only once, control with region_already_clicked
-        if (r_val$region_already_clicked == FALSE) {
-
-          # build grouping selectInput
-          r_val$ui_grouping =
-            selectInput(
-              inputId = ns("grouping"),
-              "Méthode de classification :",
-              choices = c("manuel", "automatique"),
-              selected  = NULL
-            )
-
-          r_val$region_already_clicked = TRUE
-        }
       }
 
       ### axis clicked ####
@@ -301,34 +310,15 @@ mod_analysis_server <- function(id, con){
           as.data.frame()
 
 
-        # create manual grouping ui
-        observeEvent(input$grouping, {
-
-          track_inputs(input = input)
-
-          print(paste("print:", input$grouping))
-
-          if (input$grouping == "manuel") {
-
-            # create elements of manual grouping pane
-            r_val$man_grouping_description <- p("Sélectionnez une variable et son quantile pour la définition des classes :")
-            r_val$man_grouping_var_select <- selectInput(inputId = ns("man_grouping_var_select"), "Variable",
-                                                         choices = c("",names(r_val$dgo_axis)[6:44]),
-                                                         selected = "built_environment_pc")
-            r_val$man_grouping_quantile <- numericInput(inputId = ns("man_grouping_quantile"), "Quantile [%]", value = 95, min = 0, max = 100)
-            r_val$man_grouping_no_classes <- numericInput(inputId = ns("man_grouping_no_classes"), "Nbre classes", value = 4, min = 2, max = 10, step = 1)
-            r_val$man_grouping_editable_table <- rHandsontableOutput(ns("man_grouping_editable_table"))
-            r_val$man_grouping_apply_changes <- actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
-
-          } else if (input$grouping == "automatique") {
-            r_val$man_grouping_description <- NULL
-            r_val$man_grouping_var_select <- NULL
-            r_val$man_grouping_quantile <- NULL
-            r_val$man_grouping_no_classes <- NULL
-            r_val$man_grouping_editable_table <- NULL
-            r_val$man_grouping_apply_changes <- NULL
-          }
-        })
+        # create elements of manual grouping pane
+        r_val$man_grouping_description <- p("Sélectionnez une variable et son quantile pour la définition des classes :")
+        r_val$man_grouping_var_select <- selectInput(inputId = ns("man_grouping_var_select"), "Variable",
+                                                     choices = c("",names(r_val$dgo_axis)[6:44]),
+                                                     selected = "built_environment_pc")
+        r_val$man_grouping_quantile <- numericInput(inputId = ns("man_grouping_quantile"), "Quantile [%]", value = 95, min = 0, max = 100)
+        r_val$man_grouping_no_classes <- numericInput(inputId = ns("man_grouping_no_classes"), "Nbre classes", value = 4, min = 2, max = 10, step = 1)
+        r_val$man_grouping_editable_table <- rHandsontableOutput(ns("man_grouping_editable_table"))
+        r_val$man_grouping_apply_changes <- actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
       }
 
       ### dgo clicked ####
@@ -399,11 +389,11 @@ mod_analysis_server <- function(id, con){
     # Update the reactive values when user edits table in the UI
     observeEvent(input$man_grouping_editable_table, {
 
-        r_val$grouping_table_data <- hot_to_r(input$man_grouping_editable_table) %>%
-          bind_cols(
-            r_val$grouping_table_data %>%
-              select(variable)
-          )
+      r_val$grouping_table_data <- hot_to_r(input$man_grouping_editable_table) %>%
+        bind_cols(
+          r_val$grouping_table_data %>%
+            select(variable)
+        )
     })
 
     # when click apply groups to map
@@ -414,7 +404,7 @@ mod_analysis_server <- function(id, con){
         assign_classes(classes = r_val$grouping_table_data)
 
       # classified_network <- r_val$network_region_axis %>%
-        # assign_classes(classes = r_val$grouping_table_data)
+      # assign_classes(classes = r_val$grouping_table_data)
 
       # print(classified_network)
 
