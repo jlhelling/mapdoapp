@@ -207,6 +207,7 @@ params_map_group <- function(){
   return(params)
 }
 
+
 #' Get Choices for Metric Selection
 #'
 #' This function returns a list of choices for selecting metrics organized into categories.
@@ -364,25 +365,4 @@ params_unit_area <- function(){
     "% du fond de vallée" = "percent"
   )
   return(unit_area)
-}
-
-#' get nested list-object with all variables for Metric-selection in selectInput()-Elements
-#'
-#' @return list-object with first level the names of metric types and second levels the corresponding metrics for each type
-#'
-#' @examples
-#' params_get_metric_choices()
-params_get_metric_choices <- function(){
-  y <- list()
-  types <- utils_get_metric_type(params_metrics_choice())
-
-  for (i in c(1:length(types))) {
-    y[names(types[i])] <-
-      list(
-        # swap names and values
-        setNames(names(utils_get_metric_name_value(types[i])),
-                 utils_get_metric_name_value(types[i]))
-      )
-  }
-  return(y)
 }

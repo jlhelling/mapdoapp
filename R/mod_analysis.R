@@ -334,7 +334,7 @@ mod_analysis_server <- function(id, con){
         r_val$auto_grouping_select <-
           radioButtons(ns("auto_grouping_select"),
                        "Selectionnez un indicateur :",
-                       c("type d'utilisation du sol dominant",
+                       c("Type d'utilisation du sol dominant",
                          "Urban pressure",
                          "Agricultural pressure",
                          "Confinement"))

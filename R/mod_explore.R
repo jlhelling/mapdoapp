@@ -740,7 +740,7 @@ mod_explore_server <- function(id, con){
         r_val$selected_profile_metric = input$profile_metric
       }
 
-      if (!is.null(input$profile_metric)){
+      if (!is.null(input$profile_metric)) {
         r_val$selected_profile_metric_name = params_metrics_choice()[[input$profile_metric_type]]$metric_type_values[[input$profile_metric]]$metric_title
         r_val$selected_profile_metric_type = params_metrics_choice()[[input$profile_metric_type]]$metric_type_title
 
