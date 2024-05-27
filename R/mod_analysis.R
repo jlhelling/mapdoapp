@@ -43,7 +43,9 @@ mod_analysis_ui <- function(id){
         margin-right: 5px; /* Reduce bottom margin */
       }
 
-      .form-group{margin-bottom: 10px}
+      .form-group{
+      margin-bottom: 10px;
+      }
       "
         )
       ),
@@ -53,12 +55,13 @@ mod_analysis_ui <- function(id){
           width = 6,
 
           navlistPanel(
-            tabPanel("Automatique", "Placeholder"
+            tabPanel("Automatique",
+                     uiOutput(ns("auto_grouping_class_selectUI")),
+                     uiOutput(ns("visualization_auto_grouping"))
             ),
             tabPanel("Manuelle",
-                     # uiOutput(ns("man_grouping_var_selectUI")),
-                     uiOutput(ns("man_grouping_metric_selectUI")),
-                     uiOutput(ns("classification_tabsetpanels")),
+                     uiOutput(ns("man_grouping_inputUI")),
+                     uiOutput(ns("visualization_man_grouping"))
             ),
             , well = FALSE, widths = c(1,11)
           )
@@ -107,7 +110,11 @@ mod_analysis_server <- function(id, con){
       region_already_clicked = FALSE, # check if region already clicked to show grouping selection
       profile_display = FALSE, # controle if metric and axis is selected = display the profile
 
+      # automatic grouping ui
+      auto_grouping_select = NULL,
+
       # manual grouping ui
+      man_grouping_scale_select = NULL,
       ui_metric = NULL,
       man_grouping_var_select = NULL,
       man_grouping_quantile = NULL,
@@ -131,6 +138,7 @@ mod_analysis_server <- function(id, con){
       bassins = NULL, # bassins data
       regions_in_bassin = NULL, # all the regions in selected bassin
       network_region_axis = NULL, # all the axis in the selected region
+      network_region = NULL, # all DGOs in selected region
       selected_region_feature = NULL, # region data clicked
       region_click = NULL, # region clicked information list
       axis_click = NULL, # axis clicked information list
@@ -151,23 +159,35 @@ mod_analysis_server <- function(id, con){
 
     ### RENDER UI ####
 
-    output$man_grouping_descriptionUI <- renderUI({
-      r_val$man_grouping_description
+    #### automatic grouping ####
+
+    output$auto_grouping_class_selectUI <- renderUI({
+      if (!is.null(r_val$auto_grouping_select)) {
+        r_val$auto_grouping_select
+      } else {
+        HTML('<label class="control-label" id="wait-metric-label">
+             Cliquez sur une bassin hydrographique pour afficher la classification automatique du reseau hydrographique </label>')
+      }
     })
 
-    output$classification_tabsetpanels <- renderUI({
-      tabsetPanel(
-        tabPanel("Bassin", "Placeholder" ),
-        tabPanel("Region", "Placeholder" ),
-        tabPanel("Axis",
-                 fluidRow(
-                   column(width = 8,
-                          uiOutput(ns("man_grouping_editable_tableUI")),
-                          uiOutput(ns("man_grouping_apply_changesUI"))),
-                   column(width = 4,
-                          uiOutput(ns("man_grouping_no_classesUI")),
-                          uiOutput(ns("man_grouping_quantileUI")))
-                 ))
+    #### manual grouping ####
+
+    output$man_grouping_inputUI <- renderUI({
+      div(
+        fluidRow(uiOutput(ns("man_grouping_metric_selectUI"))), # selectinput metric
+        fluidRow(
+          column(width = 4,
+                 uiOutput(ns("man_grouping_scale_selectUI"))),
+          column(width = 4,
+                 uiOutput(ns("man_grouping_quantileUI"))),
+          column(width = 4,
+                 uiOutput(ns("man_grouping_no_classesUI")))
+        ),
+        fluidRow(
+          column(width = 12,
+          uiOutput(ns("man_grouping_editable_tableUI")),
+          uiOutput(ns("man_grouping_apply_changesUI")))
+        )
       )
     })
 
@@ -177,8 +197,12 @@ mod_analysis_server <- function(id, con){
           r_val$ui_metric
         } else {
           HTML('<label class="control-label" id="wait-metric-label">
-             Cliquez sur une bassin hydrographique pour afficher la sélection des métriques</label>')
+             Cliquez sur une region hydrographique pour afficher la creation de classes. </label>')
         })
+    })
+
+    output$man_grouping_scale_selectUI <- renderUI({
+      r_val$man_grouping_scale_select
     })
 
     output$man_grouping_quantileUI <- renderUI({
@@ -236,12 +260,6 @@ mod_analysis_server <- function(id, con){
 
       if (input$analysemap_shape_click$group == params_map_group()[["bassin"]]) {
 
-        # enable selection of variable
-        r_val$ui_metric =
-          selectInput(ns("metric"), "Métrique :",
-                      choices = params_get_metric_choices(),
-                      selected  = params_get_metric_choices()[1])
-
 
         # disable the click interactivity for the bassin selected
         r_val$bassins = r_val$bassins %>%
@@ -284,6 +302,11 @@ mod_analysis_server <- function(id, con){
                                                         con = con)
         # set region name to download
         r_val$region_name = utils_normalize_string(r_val$selected_region_feature$lbregionhy)
+
+        # get network of region
+        r_val$network_region = data_get_network_region(selected_region_id = r_val$region_click$id,
+                                                          con = con)
+
         # get the axis in the region
         r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id,
                                                   con = con)
@@ -306,6 +329,28 @@ mod_analysis_server <- function(id, con){
                              roe_region = r_val$roe_region,
                              hydro_sites_region = r_val$hydro_sites_region) %>%
           map_axis(data_axis = r_val$network_region_axis)
+
+        # create radiobutton-select for automatic classification
+        r_val$auto_grouping_select <-
+          radioButtons(ns("auto_grouping_select"),
+                       "Selectionnez un indicateur :",
+                       c("type d'utilisation du sol dominant",
+                         "Urban pressure",
+                         "Agricultural pressure",
+                         "Confinement"))
+
+
+        # create elements of manual grouping pane
+        r_val$ui_metric = selectInput(ns("metric"), "Pour créer une classification, sélectionnez une métrique et l'échelle correspondante, ainsi que, en option, le quantile et le nombre de classes :",
+                                      choices = params_get_metric_choices(),
+                                      selected  = params_get_metric_choices()[1],
+                                      width = "100%")
+        r_val$man_grouping_scale_select <- radioButtons(ns("man_grouping_scale_select"),
+                                                        "Échelle :",
+                                                        c("Axe fluvial", "Region"),
+                                                        selected = "Axe fluvial")
+        r_val$man_grouping_quantile <- numericInput(inputId = ns("man_grouping_quantile"), "Quantile [%]", value = 95, min = 0, max = 100)
+        r_val$man_grouping_no_classes <- numericInput(inputId = ns("man_grouping_no_classes"), "Classes", value = 4, min = 2, max = 10, step = 1)
       }
 
       ### axis clicked ####
@@ -338,35 +383,38 @@ mod_analysis_server <- function(id, con){
           as.data.frame()
 
 
-        # create elements of manual grouping pane
-
-        r_val$man_grouping_quantile <- numericInput(inputId = ns("man_grouping_quantile"), "Quantile [%]", value = 95, min = 0, max = 100)
-        r_val$man_grouping_no_classes <- numericInput(inputId = ns("man_grouping_no_classes"), "Nbre classes", value = 4, min = 2, max = 10, step = 1)
-        r_val$man_grouping_editable_table <- rHandsontableOutput(ns("man_grouping_editable_table"))
+        r_val$man_grouping_editable_table <- rHandsontableOutput(ns("man_grouping_editable_table"), width = "100%")
         r_val$man_grouping_apply_changes <- actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
       }
 
       ### dgo clicked ####
 
       if (input$analysemap_shape_click$group == params_map_group()$dgo_axis) {
-        # get data with dgo id
-        r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$analysemap_shape_click$id,
-                                                         con = con)
-        # get dgo clicked feature
-        r_val$data_dgo_clicked = r_val$dgo_axis %>%
-          filter(fid == input$analysemap_shape_click$id)
-
-        # Highlight clicked DGO
-        leafletProxy("analysemap") %>%
-          map_dgo_cross_section(selected_dgo = r_val$data_dgo_clicked)
+      #   # get data with dgo id
+      #   r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$analysemap_shape_click$id,
+      #                                                    con = con)
+      #   # get dgo clicked feature
+      #   r_val$data_dgo_clicked = r_val$dgo_axis %>%
+      #     filter(fid == input$analysemap_shape_click$id)
+      #
+      #   # Highlight clicked DGO
+      #   leafletProxy("analysemap") %>%
+      #     map_dgo_cross_section(selected_dgo = r_val$data_dgo_clicked)
       }
 
     })
 
+    ### EVENT AUTOMATIC GROUPING RUN ####
+
+
     ### EVENT MANUAL GROUPING RUN ####
 
     #### classification variables changed ####
-    observeEvent(list(input$metric, input$man_grouping_quantile, input$man_grouping_no_classes), {
+    observeEvent(list(input$metric,
+                      input$man_grouping_scale_select,
+                      input$man_grouping_quantile,
+                      input$man_grouping_no_classes,
+                      input$man_grouping_scale_select), {
 
       # track input
       track_inputs(input = input)
@@ -382,17 +430,31 @@ mod_analysis_server <- function(id, con){
       # )
       # check for valid values
       if (!is.null(input$metric) &
+          !is.null(input$man_grouping_scale_select) &
           !is.null(input$man_grouping_quantile) &
           !is.null(input$man_grouping_no_classes) &
-          !is.null(r_val$dgo_axis)){
+          !is.null(r_val$dgo_axis) &
+          !is.null(r_val$network_region)) {
 
-        # create classes-table
-        r_val$grouping_table_data = create_df_input(
-          axis_data = r_val$dgo_axis,
-          variable_name = input$metric,
-          no_classes = input$man_grouping_no_classes,
-          quantile = input$man_grouping_quantile
-        )
+        if (input$man_grouping_scale_select == "Region") {
+          # create classes-table
+          r_val$grouping_table_data = create_df_input(
+            axis_data = r_val$network_region,
+            variable_name = input$metric,
+            no_classes = input$man_grouping_no_classes,
+            quantile = input$man_grouping_quantile
+          )
+        } else if (input$man_grouping_scale_select == "Axe fluvial") {
+          # create classes-table
+          r_val$grouping_table_data = create_df_input(
+            axis_data = r_val$dgo_axis,
+            variable_name = input$metric,
+            no_classes = input$man_grouping_no_classes,
+            quantile = input$man_grouping_quantile
+          )
+        }
+
+
       }
 
     })
@@ -425,7 +487,7 @@ mod_analysis_server <- function(id, con){
     observeEvent(input$man_grouping_apply_changes,{
 
       # Create classified network by adding the classes and colors
-      classified_axis <- r_val$dgo_axis %>%
+      classified_network <- r_val$network_region %>%
         assign_classes(classes = r_val$grouping_table_data)
 
       # classified_network <- r_val$network_region_axis %>%
@@ -435,12 +497,14 @@ mod_analysis_server <- function(id, con){
 
       # add classified network to map
       leafletProxy("analysemap") %>%
-        addPolylines(data = classified_axis,
+        clearGroup(params_map_group()$dgo_axis) %>%
+        clearGroup(params_map_group()$axis) %>%
+        addPolylines(data = classified_network,
                      # layerId = ~class,
                      weight = 5,
                      color = ~color,
                      opacity = 1,
-                     label = ~classified_axis[[input$metric]] %>%
+                     label = ~classified_network[[input$metric]] %>%
                        st_drop_geometry() %>%
                        round(2),
                      highlightOptions = highlightOptions(

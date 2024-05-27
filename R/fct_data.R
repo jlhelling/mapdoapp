@@ -192,6 +192,50 @@ data_get_roe_in_region <- function(selected_region_id, con) {
 }
 
 
+#' Get all Network Metrics Data for a Specific region
+#'
+#' This function retrieves data about network metrics for a specific region based on its ID.
+#'
+#' @param selected_region_id The ID of the selected region
+#' @param con PqConnection to Postgresql database.
+#'
+#' @return A sf data frame containing information about network metrics for the specified region
+#'
+#' @examples
+#' con <- db_con()
+#' network_metrics_data <- data_get_network_axis(selected_region_id = 11, con = con)
+#' DBI::dbDisconnect(con)
+#'
+#' @importFrom sf st_read
+#' @importFrom dplyr arrange
+#' @importFrom DBI sqlInterpolate
+#'
+#' @export
+data_get_network_region <- function(selected_region_id, con) {
+
+  sql <- "
+      SELECT
+        network_metrics.fid, axis, measure, toponyme, strahler, talweg_elevation_min,
+        active_channel_width, natural_corridor_width,
+        connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
+        water_channel, gravel_bars, natural_open, forest, grassland, crops,
+        diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
+        semi_natural, reversible, disconnected, built_environment,
+        water_channel_pc, gravel_bars_pc, natural_open_pc, forest_pc, grassland_pc, crops_pc,
+        diffuse_urban_pc, dense_urban_pc, infrastructures_pc, active_channel_pc,
+        riparian_corridor_pc, semi_natural_pc, reversible_pc, disconnected_pc,
+        built_environment_pc, sum_area, idx_confinement, gid_region, network_metrics.geom
+      FROM network_metrics
+      WHERE  gid_region = ?selected_region_id"
+  query <- sqlInterpolate(con, sql, selected_region_id = selected_region_id)
+
+  data <- sf::st_read(dsn = con, query = query) %>%
+    dplyr::arrange(measure)
+
+  return(data)
+}
+
+
 #' Get Network Axis Data for a Region
 #'
 #' This function retrieves data about the network axis within a specified region based on its ID.
