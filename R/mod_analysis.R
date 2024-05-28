@@ -54,16 +54,16 @@ mod_analysis_ui <- function(id){
         column(
           width = 6,
 
-          navlistPanel(
-            tabPanel("Automatique",
-                     uiOutput(ns("auto_grouping_class_selectUI")),
-                     uiOutput(ns("visualization_auto_grouping"))
-            ),
-            tabPanel("Manuelle",
-                     uiOutput(ns("man_grouping_inputUI")),
-                     uiOutput(ns("visualization_man_grouping"))
-            ),
-            , well = FALSE, widths = c(1,11)
+          navlistPanel(id = ns("tabSwitch"),
+                       tabPanel("Automatique",
+                                uiOutput(ns("auto_grouping_class_selectUI")),
+                                uiOutput(ns("visualization_auto_grouping"))
+                       ),
+                       tabPanel("Manuelle",
+                                uiOutput(ns("man_grouping_inputUI")),
+                                uiOutput(ns("visualization_man_grouping"))
+                       ),
+                       , well = FALSE, widths = c(1,11)
           )
         ),
 
@@ -119,6 +119,7 @@ mod_analysis_server <- function(id, con){
       man_grouping_var_select = NULL,
       man_grouping_quantile = NULL,
       man_grouping_no_classes = NULL,
+      man_grouping_table_placeholder = NULL,
       man_grouping_editable_table = NULL,
       man_grouping_apply_changes = NULL,
 
@@ -185,8 +186,9 @@ mod_analysis_server <- function(id, con){
         ),
         fluidRow(
           column(width = 12,
-          uiOutput(ns("man_grouping_editable_tableUI")),
-          uiOutput(ns("man_grouping_apply_changesUI")))
+                 uiOutput(ns("man_grouping_table_placeholderUI")),
+                 uiOutput(ns("man_grouping_editable_tableUI")),
+                 uiOutput(ns("man_grouping_apply_changesUI")))
         )
       )
     })
@@ -211,6 +213,10 @@ mod_analysis_server <- function(id, con){
 
     output$man_grouping_no_classesUI <- renderUI({
       r_val$man_grouping_no_classes
+    })
+
+    output$man_grouping_table_placeholderUI <- renderUI({
+      r_val$man_grouping_table_placeholder
     })
 
     output$man_grouping_editable_tableUI <- renderUI({
@@ -305,7 +311,7 @@ mod_analysis_server <- function(id, con){
 
         # get network of region
         r_val$network_region = data_get_network_region(selected_region_id = r_val$region_click$id,
-                                                          con = con)
+                                                       con = con)
 
         # get the axis in the region
         r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id,
@@ -341,16 +347,19 @@ mod_analysis_server <- function(id, con){
 
 
         # create elements of manual grouping pane
-        r_val$ui_metric = selectInput(ns("metric"), "Pour créer une classification, sélectionnez une métrique et l'échelle correspondante, ainsi que, en option, le quantile et le nombre de classes :",
+        r_val$ui_metric = selectInput(ns("metric"), "Sélectionnez une métrique pour créer une classification régionale des segments de rivière. Une pré-classification peut être créée soit sur la base des segments de la région, soit sur la base des segments d'un axe fluvial sélectionné. Vous pouvez modifier directement les valeurs ou, en option, ajuster le quantile et le nombre de classes.",
                                       choices = params_get_metric_choices(),
                                       selected  = params_get_metric_choices()[1],
                                       width = "100%")
         r_val$man_grouping_scale_select <- radioButtons(ns("man_grouping_scale_select"),
-                                                        "Échelle :",
-                                                        c("Axe fluvial", "Region"),
-                                                        selected = "Axe fluvial")
+                                                        "Base de classification :",
+                                                        c("Region", "Axe fluvial"),
+                                                        selected = "Region")
         r_val$man_grouping_quantile <- numericInput(inputId = ns("man_grouping_quantile"), "Quantile [%]", value = 95, min = 0, max = 100)
         r_val$man_grouping_no_classes <- numericInput(inputId = ns("man_grouping_no_classes"), "Classes", value = 4, min = 2, max = 10, step = 1)
+
+        r_val$man_grouping_apply_changes <- actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
+
       }
 
       ### axis clicked ####
@@ -381,25 +390,21 @@ mod_analysis_server <- function(id, con){
         # create or update profile dataset with new axis
         r_val$selected_axis_df = r_val$dgo_axis %>%
           as.data.frame()
-
-
-        r_val$man_grouping_editable_table <- rHandsontableOutput(ns("man_grouping_editable_table"), width = "100%")
-        r_val$man_grouping_apply_changes <- actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
       }
 
       ### dgo clicked ####
 
       if (input$analysemap_shape_click$group == params_map_group()$dgo_axis) {
-      #   # get data with dgo id
-      #   r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$analysemap_shape_click$id,
-      #                                                    con = con)
-      #   # get dgo clicked feature
-      #   r_val$data_dgo_clicked = r_val$dgo_axis %>%
-      #     filter(fid == input$analysemap_shape_click$id)
-      #
-      #   # Highlight clicked DGO
-      #   leafletProxy("analysemap") %>%
-      #     map_dgo_cross_section(selected_dgo = r_val$data_dgo_clicked)
+        #   # get data with dgo id
+        #   r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$analysemap_shape_click$id,
+        #                                                    con = con)
+        #   # get dgo clicked feature
+        #   r_val$data_dgo_clicked = r_val$dgo_axis %>%
+        #     filter(fid == input$analysemap_shape_click$id)
+        #
+        #   # Highlight clicked DGO
+        #   leafletProxy("analysemap") %>%
+        #     map_dgo_cross_section(selected_dgo = r_val$data_dgo_clicked)
       }
 
     })
@@ -409,34 +414,31 @@ mod_analysis_server <- function(id, con){
 
     ### EVENT MANUAL GROUPING RUN ####
 
-    #### classification variables changed ####
+    #### input variables changed ####
+
     observeEvent(list(input$metric,
                       input$man_grouping_scale_select,
                       input$man_grouping_quantile,
                       input$man_grouping_no_classes,
-                      input$man_grouping_scale_select), {
+                      input$man_grouping_scale_select
+    ), {
 
       # track input
       track_inputs(input = input)
 
-
-      # print(
-      #   paste0(
-      #     "variable selected: ", input$man_grouping_var_select, " - ",
-      #     "no classes selected: ", input$man_grouping_no_classes, " - ",
-      #     "quantile selected: ", input$man_grouping_quantile,
-      #     "dgo: ", r_val$dgo_axis
-      #   )
-      # )
       # check for valid values
       if (!is.null(input$metric) &
           !is.null(input$man_grouping_scale_select) &
           !is.null(input$man_grouping_quantile) &
-          !is.null(input$man_grouping_no_classes) &
-          !is.null(r_val$dgo_axis) &
-          !is.null(r_val$network_region)) {
+          !is.null(input$man_grouping_no_classes)) {
 
-        if (input$man_grouping_scale_select == "Region") {
+        if ((input$man_grouping_scale_select == "Region") &
+            !is.null(r_val$network_region)) {
+
+          r_val$man_grouping_table_placeholder <- NULL # Clear placeholder text
+          # create table-output
+          r_val$man_grouping_editable_table <- rHandsontableOutput(ns("man_grouping_editable_table"), width = "100%")
+
           # create classes-table
           r_val$grouping_table_data = create_df_input(
             axis_data = r_val$network_region,
@@ -444,7 +446,24 @@ mod_analysis_server <- function(id, con){
             no_classes = input$man_grouping_no_classes,
             quantile = input$man_grouping_quantile
           )
-        } else if (input$man_grouping_scale_select == "Axe fluvial") {
+        }
+
+        else if (input$man_grouping_scale_select == "Axe fluvial" &
+                 is.null(r_val$dgo_axis) ) {
+          # show text placeholder
+          r_val$man_grouping_table_placeholder = HTML('<label class="control-label" id="wait-metric-label">
+             Cliquez sur une axe fluvial pour afficher la creation de classes. </label>')
+
+          # remove table-output
+          r_val$man_grouping_editable_table <- NULL
+        }
+
+        else if (input$man_grouping_scale_select == "Axe fluvial" &
+                 !is.null(r_val$dgo_axis) ) {
+
+          r_val$man_grouping_table_placeholder <- NULL # Ensure table is shown
+          r_val$man_grouping_editable_table <- rHandsontableOutput(ns("man_grouping_editable_table"), width = "100%")
+
           # create classes-table
           r_val$grouping_table_data = create_df_input(
             axis_data = r_val$dgo_axis,
@@ -458,6 +477,14 @@ mod_analysis_server <- function(id, con){
       }
 
     })
+
+    # observeEvent(list(r_val$dgo_axis, input$tabSwitch), {
+    #
+    #   if (input$tabSwitch == "Manuelle" & !is.null(r_val$dgo_axis)) {
+    #
+    #   }
+    #
+    # })
 
 
     # update table when values are edited (either via editing the table or setting the variables in the UI)
