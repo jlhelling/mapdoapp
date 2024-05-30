@@ -402,7 +402,8 @@ params_get_metric_choices <- function(){
 #'                         data_classified %>% filter(toponyme == "l'Isère"),
 #'                         "forest_pc")
 merge_regional_axis_dfs <- function(data_region, data_axis, var){
-  data_region %>%
+  df <-
+    data_region %>%
     mutate(scale = as.factor("Region")) %>%
     add_row(
       data_axis %>%
@@ -411,6 +412,8 @@ merge_regional_axis_dfs <- function(data_region, data_axis, var){
     sf::st_drop_geometry() %>%
     select(fid, class_name, color, scale, {{var}}) %>%
     na.omit()
+
+  return(df)
 }
 
 
@@ -544,14 +547,17 @@ classification_scales_overview_table <- function(data, var){
     )
 
   # convert df in DT-datatable
-  DT::datatable(
-    summarised_data,
-    rownames = scale,
-    colnames = c('', 'No. segments', 'Moyenne', 'Médian', '25%-Qantile', '75%-Quantile'),
-    # caption = 'Synthèse de la distribution des valeurs',
-    options = list(dom = '',
-                   columnDefs = list(list(orderable = FALSE, targets = "_all"))
+  table <-
+    DT::datatable(
+      summarised_data,
+      rownames = scale,
+      colnames = c('', 'No. segments', 'Moyenne', 'Médian', '25%-Qantile', '75%-Quantile'),
+      # caption = 'Synthèse de la distribution des valeurs',
+      options = list(dom = '',
+                     columnDefs = list(list(orderable = FALSE, targets = "_all"))
+      )
     )
-  )
+
+  return(table)
 }
 
