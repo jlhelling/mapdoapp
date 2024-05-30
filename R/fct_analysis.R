@@ -429,9 +429,12 @@ merge_regional_axis_dfs <- function(data_region, data_axis, var){
 #' @examples
 #' get_colors_char_df(network)
 get_colors_char_df <- function(data){
-  data %>%
+  df <-
+    data %>%
     select(class_name, color) %>% unique() %>%
     deframe()
+
+  return(df)
 }
 
 

@@ -446,11 +446,26 @@ mod_analysis_server <- function(id, con){
         # create or update profile dataset with new axis
         r_val$selected_axis_df = r_val$dgo_axis %>%
           as.data.frame()
+
+        if (input$man_grouping_scale_select == "Axe fluvial" &
+            !is.null(r_val$dgo_axis) ) {
+
+          r_val$man_grouping_table_placeholder <- NULL # Ensure table is shown
+          r_val$man_grouping_editable_table <- rHandsontableOutput(ns("man_grouping_editable_table"), width = "100%")
+
+          # create classes-table
+          r_val$grouping_table_data = create_df_input(
+            axis_data = r_val$dgo_axis,
+            variable_name = input$metric,
+            no_classes = input$man_grouping_no_classes,
+            quantile = input$man_grouping_quantile
+          )
+        }
       }
 
       ### dgo clicked ####
 
-      if (input$analysemap_shape_click$group == params_map_group()$dgo_axis) {
+      # if (input$analysemap_shape_click$group == params_map_group()$dgo_axis) {
         #   # get data with dgo id
         #   r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$analysemap_shape_click$id,
         #                                                    con = con)
@@ -461,7 +476,7 @@ mod_analysis_server <- function(id, con){
         #   # Highlight clicked DGO
         #   leafletProxy("analysemap") %>%
         #     map_dgo_cross_section(selected_dgo = r_val$data_dgo_clicked)
-      }
+      # }
 
     })
 
@@ -576,7 +591,7 @@ mod_analysis_server <- function(id, con){
       # add classified network to map
       leafletProxy("analysemap") %>%
         clearGroup(params_map_group()$dgo_axis) %>%
-        clearGroup(params_map_group()$axis) %>%
+        # clearGroup(params_map_group()$axis) %>%
         addPolylines(data = classified_network,
                      # layerId = ~class,
                      weight = 5,
@@ -599,21 +614,21 @@ mod_analysis_server <- function(id, con){
       # create plots
 
       if (!is.null(r_val$dgo_axis)) {
-        # create classified axis network
+      #   # create classified axis network
         classified_axis <- r_val$dgo_axis %>%
           assign_classes(classes = r_val$grouping_table_data)
-
-        # merge regional and axis network in one df
+      #
+      #   # merge regional and axis network in one df
         merged_network <- merge_regional_axis_dfs(classified_network,
                                                   classified_axis,
                                                   input$metric)
-
-
-        r_val$stacked_barplots = create_plotly_barplot(merged_network)
-        # r_val$table_overview_classes = NULL
-        r_val$violinplots = create_plotly_violinplot(merged_network, input$metric)
-        # r_val$table_overview_var_groups = NULL
-
+      #
+      #
+        # r_val$stacked_barplots = create_plotly_barplot(merged_network)
+      #   # r_val$table_overview_classes = NULL
+      #   r_val$violinplots = create_plotly_violinplot(merged_network, input$metric)
+      #   # r_val$table_overview_var_groups = NULL
+      #
       }
 
 
