@@ -57,6 +57,8 @@ create_df_input <- function(axis_data, variable_name, no_classes, quantile = 95)
 #' @return classified dataframe/sf object with additional variable: class
 #' @importFrom rlang parse_exprs
 #' @importFrom dplyr mutate case_when left_join join_by
+#' @importFrom sf st_as_sf
+#'
 #' @examples
 #' classified_network <- network_dgo %>%
 #'     assign_classes(variables = as.character(r_val$grouping_table_data$variable),
@@ -70,7 +72,8 @@ assign_classes <- function(data, classes) {
   class_names <- classes$class
   colors <- classes %>% select(class, color)
 
-  data %>%
+  df <-
+    data %>%
     mutate(
       class_name = case_when(
         !!!parse_exprs(paste0(variables, ' >= ', greater_thans, ' ~ "', class_names, '"')
@@ -79,6 +82,7 @@ assign_classes <- function(data, classes) {
     ) %>%
     left_join(colors, by = join_by(class_name == class))
 
+  return(df)
 }
 
 
@@ -378,3 +382,176 @@ params_get_metric_choices <- function(){
   }
   return(y)
 }
+
+
+
+#' Combine classified regional network and axis network in one frame
+#'
+#' @param data_region sf-df with all dgos of selected region
+#' @param data_axis sf-df with all dgos of selected axis
+#' @param var variable for which classification was undertaken
+#'
+#' @importFrom dplyr mutate add_row select
+#' @importFrom sf st_drop_geometry
+#' @importFrom stats na.omit
+#'
+#' @return merged df with regional and axis dgos, identifiable by factor-variable "scale"
+#'
+#' @examples
+#' merge_regional_axis_dfs(data_classified,
+#'                         data_classified %>% filter(toponyme == "l'Isère"),
+#'                         "forest_pc")
+merge_regional_axis_dfs <- function(data_region, data_axis, var){
+  data_region %>%
+    mutate(scale = as.factor("Region")) %>%
+    add_row(
+      data_axis %>%
+        mutate(scale = as.factor("Axe fluvial"))
+    ) %>%
+    sf::st_drop_geometry() %>%
+    select(fid, class_name, color, scale, {{var}}) %>%
+    na.omit()
+}
+
+
+#' create dataframe of color-classes and values
+#'
+#' @param data classified network with corresponding colors for each class
+#'
+#' @importFrom dplyr select
+#' @importFrom tibble deframe
+#'
+#' @return color vector
+#'
+#' @examples
+#' get_colors_char_df(network)
+get_colors_char_df <- function(data){
+  data %>%
+    select(class_name, color) %>% unique() %>%
+    deframe()
+}
+
+
+#' Create interactive stacked barplots of class-distribution for region and axis
+#'
+#' @param data classified network data with entries for regional and axis dgos
+#' @param colors color vector
+#'
+#' @importFrom dplyr count group_by mutate ungroup
+#' @importFrom plotly plot_ly layout event_register
+#'
+#' @return interactive stacked barplot with class distribution in % for each scale-group (region and axis)
+#'
+#' @examples
+#' create_plotly_barplot(data_plots)
+create_plotly_barplot <- function(data){
+
+  # create color-vector
+  colors <- get_colors_char_df(data)
+
+  # create summary df
+  data_plots_summarized <- data %>%
+    count(class_name, scale) %>%
+    group_by(scale) %>%
+    mutate(share = round((n / sum(n) * 100), 2)) %>%
+    ungroup()
+
+
+  # Create the stacked bar plot
+  plot <-
+    plotly::plot_ly(data = data_plots_summarized,
+                    x = ~scale,
+                    y = ~share,
+                    color = ~class_name,
+                    colors = colors,
+                    type = 'bar',
+                    text = ~paste0("Classe ", class_name, ": ", share, " % \n (", n, " tronçons)"),
+                    hoverinfo = 'text',
+                    marker = list(line = list(color = 'white', width = 2))
+    ) %>%
+    plotly::layout(
+      barmode = 'stack',
+      bargap = 0.5,
+      title = "Proportion de classes",
+      xaxis = list(title = "", showgrid = F),
+      yaxis = list(title = "Pourcentage", showgrid = T, showticklabels = T),
+      showlegend = FALSE
+    )
+
+  return(plot)
+}
+
+#' Create interactive violinplots for a specific variable for region and axis
+#'
+#' @param data classified network data with entries for regional and axis dgos
+#' @param var variable based on which the violinplots should be created
+#'
+#' @importFrom plotly plot_ly layout event_register
+#' @importFrom stats as.formula
+#'
+#' @return plotly interactive violinplots for each scale-group (region and axis)
+#'
+#' @examples
+#' violinplot_plotly <- create_plotly_violinplot(data_plots, "forest_pc")
+create_plotly_violinplot <- function(data, var){
+
+  plot <- plotly::plot_ly(data = data,
+                          x = ~scale,
+                          y = as.formula(paste0("~`", var, "`")),
+                          type = 'violin',
+                          meanline = list(visible = TRUE),
+                          points = 'all',
+                          jitter = 0.1,
+                          color = I("black"),
+                          alpha = 0.1,
+                          scalemode = 'count',
+                          marker = list(size = 1, color = ~class_name),
+                          spanmode = "hard",
+                          hoverinfo = 'y') %>%
+    plotly::layout(
+      xaxis = list(title = "", showgrid = FALSE),
+      showlegend = FALSE
+    )
+
+  return(plot)
+}
+
+
+#' Create an overview table of the value-distribution of a variable for each scale (region and axis)
+#'
+#' @param data classified network data with entries for regional and axis dgos
+#' @param var variable for which table should be created
+#'
+#' @importFrom rlang sym
+#' @importFrom DT datatable
+#'
+#' @return DT-object with stats calculated for one variable for each scale-group
+#'
+#' @examples
+#' classification_scales_overview_table(data_plots, "forest_pc")
+classification_scales_overview_table <- function(data, var){
+
+  # create overview dataframe
+  summarised_data <-
+    data %>%
+    group_by(scale) %>%
+    summarise(
+      n = n(),
+      mean = round(mean(!!rlang::sym(var)), 2),
+      median = round(median(!!rlang::sym(var)), 2),
+      qs_25 = round(quantile(!!rlang::sym(var), 0.25, na.rm = TRUE), 2),
+      qs_75 = round(quantile(!!rlang::sym(var), 0.75, na.rm = TRUE), 2)
+    )
+
+  # convert df in DT-datatable
+  DT::datatable(
+    summarised_data,
+    rownames = scale,
+    colnames = c('', 'No. segments', 'Moyenne', 'Médian', '25%-Qantile', '75%-Quantile'),
+    # caption = 'Synthèse de la distribution des valeurs',
+    options = list(dom = '',
+                   columnDefs = list(list(orderable = FALSE, targets = "_all"))
+    )
+  )
+}
+

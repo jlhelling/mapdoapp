@@ -61,7 +61,7 @@ mod_analysis_ui <- function(id){
                        ),
                        tabPanel("Manuelle",
                                 uiOutput(ns("man_grouping_inputUI")),
-                                uiOutput(ns("visualization_man_grouping"))
+                                uiOutput(ns("visualization_man_groupingUI"))
                        ),
                        , well = FALSE, widths = c(1,11)
           )
@@ -73,8 +73,9 @@ mod_analysis_ui <- function(id){
           withSpinner(
             leafletOutput(ns(
               "analysemap"
-            ), height = 700),
-            type = 6))
+            ), height = 700)
+          )
+        )
 
         # column
         # column(width = 2, uiOutput(ns(
@@ -97,6 +98,7 @@ mod_analysis_ui <- function(id){
 #' @importFrom shinyjs onclick runjs
 #' @importFrom rhandsontable rHandsontableOutput rhandsontable hot_context_menu renderRHandsontable hot_to_r
 #' @importFrom sf st_drop_geometry
+#' @importFrom plotly renderPlotly plotlyOutput
 #'
 #'
 mod_analysis_server <- function(id, con){
@@ -122,6 +124,10 @@ mod_analysis_server <- function(id, con){
       man_grouping_table_placeholder = NULL,
       man_grouping_editable_table = NULL,
       man_grouping_apply_changes = NULL,
+      stacked_barplots = NULL,
+      table_overview_classes = NULL,
+      violinplots = NULL,
+      table_overview_var_groups = NULL,
 
       # map
       opacity = list(clickable = 0.01, not_clickable = 0.10), # opacity value to inform the user about available bassins and regions
@@ -173,19 +179,35 @@ mod_analysis_server <- function(id, con){
 
     #### manual grouping ####
 
+    # top description
+    output$man_grouping_descriptionUI <- renderUI({
+      fluidRow({
+        if (is.null(r_val$ui_metric)) {
+          HTML('<label class="control-label" id="wait-metric-label">
+             Cliquez sur une region hydrographique pour afficher la creation de classes. </label>')
+        } else {
+          HTML('<label class="control-label" id="wait-metric-label">
+             Sélectionnez une métrique pour créer une classification régionale des segments de rivière. Une pré-classification peut être créée soit sur la base des segments de la région, soit sur la base des segments d\'un axe fluvial sélectionné. Vous pouvez modifier directement les valeurs ou, en option, ajuster le quantile et le nombre de classes. </label>')
+        }
+      })
+    })
+
+    # input elements for classes-creation
     output$man_grouping_inputUI <- renderUI({
       div(
-        fluidRow(uiOutput(ns("man_grouping_metric_selectUI"))), # selectinput metric
         fluidRow(
-          column(width = 4,
-                 uiOutput(ns("man_grouping_scale_selectUI"))),
-          column(width = 4,
-                 uiOutput(ns("man_grouping_quantileUI"))),
-          column(width = 4,
-                 uiOutput(ns("man_grouping_no_classesUI")))
+          uiOutput(ns("man_grouping_descriptionUI"))
         ),
         fluidRow(
-          column(width = 12,
+          column(width = 6,
+                 uiOutput(ns("man_grouping_metric_selectUI")), # selectinput metric
+                 fluidRow(
+                   column(width = 6,
+                          uiOutput(ns("man_grouping_quantileUI"))),
+                   column(width = 6,
+                          uiOutput(ns("man_grouping_no_classesUI"))),
+                   uiOutput(ns("man_grouping_scale_selectUI")))),
+          column(width = 6,
                  uiOutput(ns("man_grouping_table_placeholderUI")),
                  uiOutput(ns("man_grouping_editable_tableUI")),
                  uiOutput(ns("man_grouping_apply_changesUI")))
@@ -193,38 +215,71 @@ mod_analysis_server <- function(id, con){
       )
     })
 
+    # metric selection
     output$man_grouping_metric_selectUI <- renderUI({
-      fluidRow(
-        if (!is.null(r_val$ui_metric)) {
-          r_val$ui_metric
-        } else {
-          HTML('<label class="control-label" id="wait-metric-label">
-             Cliquez sur une region hydrographique pour afficher la creation de classes. </label>')
-        })
+      r_val$ui_metric
     })
 
+    # scale (region vs axis) select
     output$man_grouping_scale_selectUI <- renderUI({
       r_val$man_grouping_scale_select
     })
 
+    # quantile set
     output$man_grouping_quantileUI <- renderUI({
       r_val$man_grouping_quantile
     })
 
+    # no of classes set
     output$man_grouping_no_classesUI <- renderUI({
       r_val$man_grouping_no_classes
     })
 
+    #placeholder when axis not yet selected
     output$man_grouping_table_placeholderUI <- renderUI({
       r_val$man_grouping_table_placeholder
     })
 
+    # editable table
     output$man_grouping_editable_tableUI <- renderUI({
       r_val$man_grouping_editable_table
     })
 
+    # Apply classes button
     output$man_grouping_apply_changesUI <- renderUI({
       r_val$man_grouping_apply_changes
+    })
+
+    # output manual grouping (plots)
+    output$visualization_man_groupingUI <- renderUI({
+      div(
+        fluidRow(
+          column(width = 6,
+                 uiOutput(ns("table_overview_var_groupsUI")),
+                 plotlyOutput(ns("violinplotsUI"))
+          ),
+          column(width = 6,
+                 uiOutput(ns("table_overview_classesUI")),
+                 plotlyOutput(ns("stacked_barplotsUI"))
+          )
+        )
+      )
+    })
+
+    output$stacked_barplotsUI <- renderPlotly({
+      r_val$stacked_barplots
+    })
+
+    output$table_overview_classesUI <- renderUI({
+      r_val$table_overview_classes
+    })
+
+    output$violinplotsUI <- renderPlotly({
+      r_val$violinplots
+    })
+
+    output$table_overview_var_groupsUI <- renderUI({
+      r_val$table_overview_var_groups
     })
 
 
@@ -347,14 +402,15 @@ mod_analysis_server <- function(id, con){
 
 
         # create elements of manual grouping pane
-        r_val$ui_metric = selectInput(ns("metric"), "Sélectionnez une métrique pour créer une classification régionale des segments de rivière. Une pré-classification peut être créée soit sur la base des segments de la région, soit sur la base des segments d'un axe fluvial sélectionné. Vous pouvez modifier directement les valeurs ou, en option, ajuster le quantile et le nombre de classes.",
+        r_val$ui_metric = selectInput(ns("metric"), NULL,
                                       choices = params_get_metric_choices(),
                                       selected  = params_get_metric_choices()[1],
                                       width = "100%")
         r_val$man_grouping_scale_select <- radioButtons(ns("man_grouping_scale_select"),
-                                                        "Base de classification :",
+                                                        "Base de classification",
                                                         c("Region", "Axe fluvial"),
-                                                        selected = "Region")
+                                                        selected = "Region",
+                                                        inline = TRUE)
         r_val$man_grouping_quantile <- numericInput(inputId = ns("man_grouping_quantile"), "Quantile [%]", value = 95, min = 0, max = 100)
         r_val$man_grouping_no_classes <- numericInput(inputId = ns("man_grouping_no_classes"), "Classes", value = 4, min = 2, max = 10, step = 1)
 
@@ -510,17 +566,12 @@ mod_analysis_server <- function(id, con){
         )
     })
 
-    # when click apply groups to map
+    #### apply button clicked ####
     observeEvent(input$man_grouping_apply_changes,{
 
       # Create classified network by adding the classes and colors
       classified_network <- r_val$network_region %>%
         assign_classes(classes = r_val$grouping_table_data)
-
-      # classified_network <- r_val$network_region_axis %>%
-      # assign_classes(classes = r_val$grouping_table_data)
-
-      # print(classified_network)
 
       # add classified network to map
       leafletProxy("analysemap") %>%
@@ -531,9 +582,6 @@ mod_analysis_server <- function(id, con){
                      weight = 5,
                      color = ~color,
                      opacity = 1,
-                     label = ~classified_network[[input$metric]] %>%
-                       st_drop_geometry() %>%
-                       round(2),
                      highlightOptions = highlightOptions(
                        color = "red",
                        bringToFront = TRUE
@@ -547,6 +595,28 @@ mod_analysis_server <- function(id, con){
       #                label = ~classified_network[[input$man_grouping_var_select]] %>%
       #                  st_drop_geometry() %>%
       #                  round(2))
+
+      # create plots
+
+      if (!is.null(r_val$dgo_axis)) {
+        # create classified axis network
+        classified_axis <- r_val$dgo_axis %>%
+          assign_classes(classes = r_val$grouping_table_data)
+
+        # merge regional and axis network in one df
+        merged_network <- merge_regional_axis_dfs(classified_network,
+                                                  classified_axis,
+                                                  input$metric)
+
+
+        r_val$stacked_barplots = create_plotly_barplot(merged_network)
+        # r_val$table_overview_classes = NULL
+        r_val$violinplots = create_plotly_violinplot(merged_network, input$metric)
+        # r_val$table_overview_var_groups = NULL
+
+      }
+
+
     })
 
 
