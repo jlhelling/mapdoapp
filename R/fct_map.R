@@ -324,7 +324,7 @@ map_axis <- function(map, data_axis) {
     addPolylines(data = data_axis,
                  layerId = ~axis,
                  weight = 5,
-                 color = "#0077b6",
+                 color = "#ffffff00",
                  opacity = 1,
                  label = ~toponyme,
                  highlightOptions = highlightOptions(
@@ -500,7 +500,7 @@ map_dgo_axis <- function(map, selected_axis, region_axis, main_metric, second_me
       data = selected_axis,
       layerId = ~fid,
       weight = 5,
-      color = "#0077b6",
+      color = "#ffffff00",
       label = tooltip_label,
       opacity = 1,
       highlightOptions = highlightOptions(
@@ -725,7 +725,7 @@ map_legend_metric <- function(sld_body){
   legend_url <- modify_url(params_wms()$metric$url, query = query_params)
 
   # create an html img tag to display the legend
-  legend <- tags$img(src = legend_url, responsive = "width: 100%; height: auto;", class="responsive")
+  legend <- tags$img(src = legend_url, responsive = "width: 100%; height: auto;", class = "responsive")
 
   return(legend)
 }

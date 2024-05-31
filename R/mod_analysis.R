@@ -293,9 +293,9 @@ mod_analysis_server <- function(id, con){
 
     onclick(id = "logo_ign_remonterletemps", expr =
               runjs(sprintf("window.open('%s', '_blank')",
-                            utils_url_remonterletemps(lng = input$exploremap_center$lng,
-                                                      lat = input$exploremap_center$lat,
-                                                      zoom = input$exploremap_zoom)))
+                            utils_url_remonterletemps(lng = input$analysemap_center$lng,
+                                                      lat = input$analysemap_center$lat,
+                                                      zoom = input$analysemap_zoom)))
     )
 
 
@@ -389,7 +389,15 @@ mod_analysis_server <- function(id, con){
                              regions_data = r_val$regions_in_bassin,
                              roe_region = r_val$roe_region,
                              hydro_sites_region = r_val$hydro_sites_region) %>%
-          map_axis(data_axis = r_val$network_region_axis)
+          map_metric(wms_params = params_wms()$metric,
+                     cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
+                     sld_body = NULL,
+                     data_axis = r_val$network_region_axis)
+
+        # print(paste0("Clicked on: ", input$analysemap_shape_click))
+        # print(paste0("selected region feature: ", r_val$selected_region_feature))
+
+          # map_axis(data_axis = r_val$network_region_axis)
 
         # create radiobutton-select for automatic classification
         r_val$auto_grouping_select <-
@@ -398,7 +406,8 @@ mod_analysis_server <- function(id, con){
                        c("Type d'utilisation du sol dominant",
                          "Urban pressure",
                          "Agricultural pressure",
-                         "Confinement"))
+                         "Confinement",
+                         "Stream Power Index"))
 
 
         # create elements of manual grouping pane
@@ -624,9 +633,9 @@ mod_analysis_server <- function(id, con){
                                                   input$metric)
       #
       #
-        # r_val$stacked_barplots = create_plotly_barplot(merged_network)
-      #   # r_val$table_overview_classes = NULL
-      #   r_val$violinplots = create_plotly_violinplot(merged_network, input$metric)
+        r_val$stacked_barplots = create_plotly_barplot(merged_network)
+        # r_val$table_overview_classes = NULL
+        # r_val$violinplots = create_plotly_violinplot(merged_network, input$metric)
       #   # r_val$table_overview_var_groups = NULL
       #
       }

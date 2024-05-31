@@ -408,12 +408,8 @@ mod_explore_server <- function(id, con){
         r_val$region_click = input$exploremap_shape_click
         # disable the click interactivity for the bassin selected
         r_val$regions_in_bassin = r_val$regions_in_bassin %>%
-          mutate(click = if_else(display == TRUE,
-                                 TRUE,
-                                 click)) %>%
-          mutate(click = if_else(display == TRUE & gid == r_val$region_click$id,
-                                 FALSE,
-                                 click))
+          mutate(click = if_else(display == TRUE, TRUE, click)) %>%
+          mutate(click = if_else(display == TRUE & gid == r_val$region_click$id, FALSE, click))
 
         # save the selected region feature for mapping
         r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id,
