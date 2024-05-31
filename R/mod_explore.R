@@ -861,10 +861,14 @@ mod_explore_server <- function(id, con){
 
     #### plotly profile ####
 
-    # Define an observeEvent to capture hover events
-    observeEvent(event_data("plotly_hover"), {
-      if (!is.null(event_data("plotly_hover"))) {
-        hover_fid <- event_data("plotly_hover")$key[1]
+    # capture hover events on map to display dgo on profile-plot
+    observeEvent(event_data("plotly_hover", source = 'A'), {
+      # event data
+      hover_event <- event_data("plotly_hover", source = 'A')
+
+      # add line to profile-plot
+      if (!is.null(hover_event)) {
+        hover_fid <- hover_event$key[1]
         highlighted_feature <- r_val$dgo_axis[r_val$dgo_axis$fid == hover_fid, ]
         leafletProxy("exploremap") %>%
           addPolylines(data = highlighted_feature, color = "red", weight = 10,

@@ -15,7 +15,7 @@
 #' @export
 lg_profile_empty <- function() {
   temp <- data.frame()
-  plot <- plot_ly(data = temp, source = "plot_pg") %>%
+  plot <- plot_ly(data = temp, source = "plot_lg") %>%
     layout(
       title = list(
         text = "Sélectionnez un cours d'eau sur la carte et une métrique pour afficher le graphique",
@@ -178,7 +178,8 @@ lg_profile_main <- function(data, y, y_label, y_label_category) {
 
   plot <- plot_ly(x = data$measure, y = y, yaxis = 'y1',
                   key = data$fid,  # the "id" column for hover text
-                  type = 'scatter', mode = 'lines', name = y_label) %>%
+                  type = 'scatter', mode = 'lines', name = y_label,
+                  source = 'A') %>%
     layout(
       xaxis = lg_xaxis_layout(data),
       yaxis = lg_yaxis_layout(y_label_category, y_label),

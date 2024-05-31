@@ -473,7 +473,8 @@ create_plotly_barplot <- function(data){
                     type = 'bar',
                     text = ~paste0("Classe ", class_name, ": ", share, " % \n (", n, " tronçons)"),
                     hoverinfo = 'text',
-                    marker = list(line = list(color = 'white', width = 2))
+                    marker = list(line = list(color = 'white', width = 2)),
+                    source = 'B'
     ) %>%
     plotly::layout(
       barmode = 'stack',
@@ -510,10 +511,11 @@ create_plotly_violinplot <- function(data, var){
                           jitter = 0.1,
                           color = I("black"),
                           alpha = 0.1,
-                          scalemode = 'count',
+                          scalemode = 'width',
                           marker = list(size = 1, color = ~class_name),
                           spanmode = "hard",
-                          hoverinfo = 'y') %>%
+                          hoverinfo = 'y',
+                          source = 'V') %>%
     plotly::layout(
       xaxis = list(title = "", showgrid = FALSE),
       showlegend = FALSE

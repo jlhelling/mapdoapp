@@ -397,7 +397,7 @@ mod_analysis_server <- function(id, con){
         # print(paste0("Clicked on: ", input$analysemap_shape_click))
         # print(paste0("selected region feature: ", r_val$selected_region_feature))
 
-          # map_axis(data_axis = r_val$network_region_axis)
+        # map_axis(data_axis = r_val$network_region_axis)
 
         # create radiobutton-select for automatic classification
         r_val$auto_grouping_select <-
@@ -475,16 +475,16 @@ mod_analysis_server <- function(id, con){
       ### dgo clicked ####
 
       # if (input$analysemap_shape_click$group == params_map_group()$dgo_axis) {
-        #   # get data with dgo id
-        #   r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$analysemap_shape_click$id,
-        #                                                    con = con)
-        #   # get dgo clicked feature
-        #   r_val$data_dgo_clicked = r_val$dgo_axis %>%
-        #     filter(fid == input$analysemap_shape_click$id)
-        #
-        #   # Highlight clicked DGO
-        #   leafletProxy("analysemap") %>%
-        #     map_dgo_cross_section(selected_dgo = r_val$data_dgo_clicked)
+      #   # get data with dgo id
+      #   r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$analysemap_shape_click$id,
+      #                                                    con = con)
+      #   # get dgo clicked feature
+      #   r_val$data_dgo_clicked = r_val$dgo_axis %>%
+      #     filter(fid == input$analysemap_shape_click$id)
+      #
+      #   # Highlight clicked DGO
+      #   leafletProxy("analysemap") %>%
+      #     map_dgo_cross_section(selected_dgo = r_val$data_dgo_clicked)
       # }
 
     })
@@ -623,27 +623,27 @@ mod_analysis_server <- function(id, con){
       # create plots
 
       if (!is.null(r_val$dgo_axis)) {
-      #   # create classified axis network
+        #   # create classified axis network
         classified_axis <- r_val$dgo_axis %>%
           assign_classes(classes = r_val$grouping_table_data)
-      #
-      #   # merge regional and axis network in one df
+        #
+        #   # merge regional and axis network in one df
         merged_network <- merge_regional_axis_dfs(classified_network,
                                                   classified_axis,
                                                   input$metric)
-      #
-      #
+        #
+        #
         r_val$stacked_barplots = create_plotly_barplot(merged_network)
         # r_val$table_overview_classes = NULL
-        # r_val$violinplots = create_plotly_violinplot(merged_network, input$metric)
-      #   # r_val$table_overview_var_groups = NULL
-      #
+        r_val$violinplots = create_plotly_violinplot(merged_network, input$metric)
+        #   # r_val$table_overview_var_groups = NULL
+        #
       }
 
 
     })
 
-
+    ### EVENT MOUSEOVER ####
 
     # observeEvent(c(input$metric, input$unit_area), ignoreInit = TRUE, {
     #
