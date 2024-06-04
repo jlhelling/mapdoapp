@@ -57,7 +57,7 @@ mod_analysis_ui <- function(id){
           navlistPanel(id = ns("tabSwitch"),
                        tabPanel("Automatique",
                                 uiOutput(ns("auto_grouping_class_selectUI")),
-                                uiOutput(ns("visualization_auto_grouping"))
+                                uiOutput(ns("visualization_auto_groupingUI"))
                        ),
                        tabPanel("Manuelle",
                                 uiOutput(ns("man_grouping_inputUI")),
@@ -81,8 +81,11 @@ mod_analysis_ui <- function(id){
         # column(width = 2, uiOutput(ns(
         #   "groupOverviewUI"
         # ))) # column
-      ) # fluidRow
+      ), # fluidRow
 
+      fluidRow(
+        uiOutput(ns("longitudinal_seriesUI"))
+      )
     ) # fluidPage)
   )# taglist
 } # function mod_analysis_ui
@@ -128,6 +131,9 @@ mod_analysis_server <- function(id, con){
       table_overview_classes = NULL,
       violinplots = NULL,
       table_overview_var_groups = NULL,
+
+      # longitudinal series
+      longitudinal_plot = NULL,
 
       # map
       opacity = list(clickable = 0.01, not_clickable = 0.10), # opacity value to inform the user about available bassins and regions
@@ -280,6 +286,13 @@ mod_analysis_server <- function(id, con){
 
     output$table_overview_var_groupsUI <- renderUI({
       r_val$table_overview_var_groups
+    })
+
+
+    #### LONGITUDINAL PLOT ####
+
+    output$longitudinal_seriesUI <- renderPlotly({
+      r_val$longitudinal_plot
     })
 
 
@@ -600,15 +613,15 @@ mod_analysis_server <- function(id, con){
       # add classified network to map
       leafletProxy("analysemap") %>%
         clearGroup(params_map_group()$dgo_axis) %>%
-        # clearGroup(params_map_group()$axis) %>%
+        # clearGroup("classified_dgos") %>%
         addPolylines(data = classified_network,
-                     # layerId = ~class,
+                     # layerId = ~classified_dgos,
                      weight = 5,
                      color = ~color,
                      opacity = 1,
                      highlightOptions = highlightOptions(
                        color = "red",
-                       bringToFront = TRUE
+                       sendToBack = TRUE
                      ))
       # %>%
       #   addPolylines(data = classified_network,
@@ -637,8 +650,17 @@ mod_analysis_server <- function(id, con){
         # r_val$table_overview_classes = NULL
         r_val$violinplots = create_plotly_violinplot(merged_network, input$metric)
         #   # r_val$table_overview_var_groups = NULL
-        #
+
+        # create plotly longitudinal series plot
+        # r_val$longitudinal_plot <-
+        #   plot_class_series_plotly(classified_axis,
+        #                            x = "measure",
+        #                            y = input$metric,
+        #                            cat = "class_name",
+        #                            colors = get_colors_char_df(classified_axis))
       }
+
+
 
 
     })

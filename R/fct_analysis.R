@@ -566,3 +566,49 @@ classification_scales_overview_table <- function(data, var){
   return(table)
 }
 
+
+#' Plot variable series with categorical variable in background
+#'
+#' @param data input data table
+#' @param x longitudinal variable
+#' @param y var used for geom_line()-function
+#' @param var_cat categorical var to be plotted in background
+#' @param colors vector of colors used for printing category
+#'
+#' @importFrom ggplot2 ggplot geom_rect geom_line scale_fill_manual theme_minimal labs aes
+#' @importFrom dplyr arrange if_else lead
+#' @importFrom rlang sym
+#' @importFrom plotly ggplotly
+#'
+#' @return ggplot()-graph of dataseries plotted as continuous line and categorical variable in background
+#' @export
+#'
+#' @examples
+#' plot_class_series_plotly(isere, "measure", "PC1", "cluster",
+#'                 c("1" = "#bc4749", "2" = "#ffc300", "3" = "#a7c957", "4" = "#1a535c", "5" = "#a9def9"))
+plot_class_series_plotly <- function(data, x, y, cat, colors){
+
+  # limit the x-axis to value range
+  lims <- c(min(data[[x]]), max(data[[x]]) )
+
+  data_arranged <- data %>% dplyr::arrange(!!rlang::sym(x))
+
+  # create plot with limits and y-variable
+  plot <- ggplot2::ggplot(data_arranged, # sort acc. to x-variable
+                         mapping = ggplot2::aes(x = !!rlang::sym(x), y = !!rlang::sym(y))) +
+    ggplot2::geom_rect(mapping = ggplot2::aes(xmin = !!rlang::sym(x),
+                                    xmax = if_else(!is.na(dplyr::lead(!!rlang::sym(x))),
+                                                   dplyr::lead(!!rlang::sym(x)),
+                                                   !!rlang::sym(x) + 200), # set length of last segment to 200 if no next boundary is available
+                                    ymin = min(!!rlang::sym(y)), ymax = max(!!rlang::sym(y)), fill = !!rlang::sym(cat)),
+                      alpha = 0.6, stat = "identity") + # background-coloring according to cluster
+    ggplot2::geom_line() + # actual graph
+    ggplot2::scale_fill_manual(values = colors) + # manual coloring
+    ggplot2::theme_minimal() +
+    ggplot2::labs(x = "length [m]")
+
+  # convert into plotly-graph
+  plot <- plotly::ggplotly(plot, tooltip = c("label", "text"), source = 'L')
+
+  return(plot)
+}
