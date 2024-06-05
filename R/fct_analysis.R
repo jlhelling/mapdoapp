@@ -423,6 +423,7 @@ merge_regional_axis_dfs <- function(data_region, data_axis, var){
 #'
 #' @importFrom dplyr select
 #' @importFrom tibble deframe
+#' @importFrom sf st_drop_geometry
 #'
 #' @return color vector
 #'
@@ -431,8 +432,10 @@ merge_regional_axis_dfs <- function(data_region, data_axis, var){
 get_colors_char_df <- function(data){
   df <-
     data %>%
-    select(class_name, color) %>% unique() %>%
-    deframe()
+    sf::st_drop_geometry() %>% # remove geometry if sf-object
+    dplyr::select(class_name, color) %>%
+    unique() %>%
+    tibble::deframe()
 
   return(df)
 }
@@ -570,7 +573,6 @@ classification_scales_overview_table <- function(data, var){
 #' Plot variable series with categorical variable in background
 #'
 #' @param data input data table
-#' @param x longitudinal variable
 #' @param y var used for geom_line()-function
 #' @param var_cat categorical var to be plotted in background
 #' @param colors vector of colors used for printing category
@@ -586,7 +588,9 @@ classification_scales_overview_table <- function(data, var){
 #' @examples
 #' plot_class_series_plotly(isere, "measure", "PC1", "cluster",
 #'                 c("1" = "#bc4749", "2" = "#ffc300", "3" = "#a7c957", "4" = "#1a535c", "5" = "#a9def9"))
-plot_class_series_plotly <- function(data, x, y, cat, colors){
+plot_class_series_plotly <- function(data, y, cat, colors){
+
+  x <- "measure"
 
   # limit the x-axis to value range
   lims <- c(min(data[[x]]), max(data[[x]]) )
@@ -605,10 +609,12 @@ plot_class_series_plotly <- function(data, x, y, cat, colors){
     ggplot2::geom_line() + # actual graph
     ggplot2::scale_fill_manual(values = colors) + # manual coloring
     ggplot2::theme_minimal() +
-    ggplot2::labs(x = "length [m]")
+    ggplot2::labs(x = "length [m]") +
+    ggplot2::xlim(lims[1], lims[2])
 
   # convert into plotly-graph
-  plot <- plotly::ggplotly(plot, tooltip = c("label", "text"), source = 'L')
+  plot <- plotly::ggplotly(plot, tooltip = c("label", "text"), source = 'L') %>%
+    plotly::layout(xaxis = list(range = c(lims[1], lims[2])))
 
   return(plot)
 }

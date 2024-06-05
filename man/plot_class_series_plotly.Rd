@@ -4,12 +4,10 @@
 \alias{plot_class_series_plotly}
 \title{Plot variable series with categorical variable in background}
 \usage{
-plot_class_series_plotly(data, x, y, cat, colors)
+plot_class_series_plotly(data, y, cat, colors)
 }
 \arguments{
 \item{data}{input data table}
-
-\item{x}{longitudinal variable}
 
 \item{y}{var used for geom_line()-function}
 

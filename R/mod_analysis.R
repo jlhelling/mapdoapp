@@ -16,6 +16,7 @@
 #' @importFrom shinyjs useShinyjs
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom bsicons bs_icon
+#' @importFrom plotly plotlyOutput
 #'
 mod_analysis_ui <- function(id){
   ns <- NS(id)
@@ -84,7 +85,7 @@ mod_analysis_ui <- function(id){
       ), # fluidRow
 
       fluidRow(
-        uiOutput(ns("longitudinal_seriesUI"))
+        plotlyOutput(ns("longitudinal_seriesUI"))
       )
     ) # fluidPage)
   )# taglist
@@ -101,6 +102,7 @@ mod_analysis_ui <- function(id){
 #' @importFrom shinyjs onclick runjs
 #' @importFrom rhandsontable rHandsontableOutput rhandsontable hot_context_menu renderRHandsontable hot_to_r
 #' @importFrom sf st_drop_geometry
+#' @importFrom stats na.omit
 #' @importFrom plotly renderPlotly plotlyOutput
 #'
 #'
@@ -292,7 +294,7 @@ mod_analysis_server <- function(id, con){
     #### LONGITUDINAL PLOT ####
 
     output$longitudinal_seriesUI <- renderPlotly({
-      r_val$longitudinal_plot
+      return(r_val$longitudinal_plot)
     })
 
 
@@ -638,6 +640,7 @@ mod_analysis_server <- function(id, con){
       if (!is.null(r_val$dgo_axis)) {
         #   # create classified axis network
         classified_axis <- r_val$dgo_axis %>%
+          na.omit() %>%
           assign_classes(classes = r_val$grouping_table_data)
         #
         #   # merge regional and axis network in one df
@@ -652,12 +655,11 @@ mod_analysis_server <- function(id, con){
         #   # r_val$table_overview_var_groups = NULL
 
         # create plotly longitudinal series plot
-        # r_val$longitudinal_plot <-
-        #   plot_class_series_plotly(classified_axis,
-        #                            x = "measure",
-        #                            y = input$metric,
-        #                            cat = "class_name",
-        #                            colors = get_colors_char_df(classified_axis))
+        r_val$longitudinal_plot <-
+          plot_class_series_plotly(classified_axis,
+                                   y = input$metric,
+                                   cat = "class_name",
+                                   colors = get_colors_char_df(classified_axis))
       }
 
 
