@@ -1,8 +1,7 @@
 
 
-#   ------------------------------------------------------------------------
 
-
+# UI ----------------------------------------------------------------------
 
 #' analysis UI Function
 #'
@@ -90,6 +89,10 @@ mod_analysis_ui <- function(id){
     ) # fluidPage)
   )# taglist
 } # function mod_analysis_ui
+
+
+
+# Server ------------------------------------------------------------------
 
 #' analysis Server Functions
 #'
@@ -445,18 +448,23 @@ mod_analysis_server <- function(id, con){
       ### axis clicked ####
 
       if (input$analysemap_shape_click$group == params_map_group()$axis) {
+
         # save the clicked axis values
         r_val$axis_click = input$analysemap_shape_click
+
         # reget the axis in the region without the selected axis
         r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id,
                                                   con = con) %>%
           filter(axis != r_val$axis_click$id)
+
         # get the DGO axis data
         r_val$dgo_axis = data_get_network_axis(selected_axis_id = r_val$axis_click$id,
                                                con = con) %>%
           mutate(measure = measure/1000)
+
         # extract axis start end point
         r_val$axis_start_end = data_get_axis_start_end(dgo_axis = r_val$dgo_axis)
+
         # get ROE in axis clicked
         r_val$roe_axis = r_val$roe_region %>%
           filter(axis == r_val$axis_click$id)
@@ -471,19 +479,22 @@ mod_analysis_server <- function(id, con){
         r_val$selected_axis_df = r_val$dgo_axis %>%
           as.data.frame()
 
-        if (input$man_grouping_scale_select == "Axe fluvial" &
-            !is.null(r_val$dgo_axis) ) {
 
-          r_val$man_grouping_table_placeholder <- NULL # Ensure table is shown
-          r_val$man_grouping_editable_table <- rHandsontableOutput(ns("man_grouping_editable_table"), width = "100%")
+        if (input$tabSwitch == "Manuelle" ) {
+          if (input$man_grouping_scale_select == "Axe fluvial" &
+              !is.null(r_val$dgo_axis) ) {
 
-          # create classes-table
-          r_val$grouping_table_data = create_df_input(
-            axis_data = r_val$dgo_axis,
-            variable_name = input$metric,
-            no_classes = input$man_grouping_no_classes,
-            quantile = input$man_grouping_quantile
-          )
+            r_val$man_grouping_table_placeholder <- NULL # Ensure table is shown
+            r_val$man_grouping_editable_table <- rHandsontableOutput(ns("man_grouping_editable_table"), width = "100%")
+
+            # create classes-table
+            r_val$grouping_table_data = create_df_input(
+              axis_data = r_val$dgo_axis,
+              variable_name = input$metric,
+              no_classes = input$man_grouping_no_classes,
+              quantile = input$man_grouping_quantile
+            )
+          }
         }
       }
 
