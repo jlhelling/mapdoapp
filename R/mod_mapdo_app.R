@@ -36,7 +36,7 @@ mod_mapdo_app_ui <- function(id){
         column(
           width = 6,
           withSpinner(leafletOutput(ns("map"), height = 700)),
-          textOutput(ns("selection_text"))
+          textOutput(ns("selection_textUI"))
         ),
         column(
           width = 6,
@@ -81,6 +81,9 @@ mod_mapdo_app_server <- function(id, con){
     ### R_VAL ####
     r_val <- reactiveValues(
 
+      # UI
+      selection_text = "", # description text indicating basin, region, axis
+
       # data
       bassins = NULL,
 
@@ -106,6 +109,12 @@ mod_mapdo_app_server <- function(id, con){
                                                       lat = input$map_center$lat,
                                                       zoom = input$map_zoom)))
     )
+
+    #### Description Text ####
+
+    output$selection_textUI <- renderText({
+      r_val$selection_text
+    })
 
   })
 }

@@ -14,6 +14,7 @@
 #'
 #' @importFrom leaflet leaflet setView addPolygons addScaleBar addLayersControl addControl
 #' @importFrom leaflet layersControlOptions addProviderTiles scaleBarOptions providers
+#' @importFrom leaflet.extras addSearchOSM searchOptions
 #' @importFrom htmltools htmlEscape
 #' @importFrom shiny tags
 #'
@@ -42,6 +43,7 @@ map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
     addScaleBar(position = "bottomleft",
                 scaleBarOptions(metric = TRUE, imperial = FALSE)) %>%
     addProviderTiles(providers$CartoDB.Positron) %>%
+    addSearchOSM(options = leaflet.extras::searchOptions(hideMarkerOnCollapse = TRUE)) %>%
     map_add_basemaps() %>%
     addLayersControl(
       baseGroups = c("CartoDB Positron", unlist(sapply(params_wms(), function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),
