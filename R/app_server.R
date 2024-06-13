@@ -16,6 +16,7 @@ app_server <- function(input, output, session) {
   con <- db_con()
 
   # Your application server logic
+  mod_mapdo_app_server("mapdo_app_1", con)
   mod_explore_server("explore_1", con)
   mod_documentation_server("documentation_1")
 
