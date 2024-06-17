@@ -83,10 +83,27 @@ mod_mapdo_app_server <- function(id, con){
 
       # UI
       selection_text = "", # description text indicating basin, region, axis
+      selected_region_feature = NULL,
+      region_click = NULL,
+      axis_click = NULL,
 
-      # data
+      selected_metric = "talweg_elevation_min", # select main metric column name
+
+      # data hydrography
       bassins = NULL,
       bassin_name = NULL,
+      regions_in_bassin = NULL,
+      region_name = NULL,
+      selected_region_feature = NULL,
+      network_region_axis = NULL,
+      axis_name = NULL,
+      dgo_axis = NULL,
+      axis_start_end = NULL,
+
+      # data external
+      roe_region = NULL,
+      hydro_sites_region = NULL,
+      roe_axis = NULL,
 
       # others variables
       opacity = list(clickable = 0.01, not_clickable = 0.10) # opacity value to inform the user about available bassins and regions
@@ -126,10 +143,12 @@ mod_mapdo_app_server <- function(id, con){
 
       #### bassin clicked ####
       if (input$map_shape_click$group == params_map_group()[["bassin"]]){
+
         # get bassin name
         r_val$bassin_name = r_val$bassins %>%
           filter(cdbh == input$map_shape_click$id) %>%
           pull(lbbh)
+
         # disable the click interactivity for the bassin selected
         r_val$bassins = r_val$bassins %>%
           mutate(click = if_else(display == TRUE, TRUE, click)) %>%
@@ -161,8 +180,13 @@ mod_mapdo_app_server <- function(id, con){
         # save the selected region feature for mapping
         r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id,
                                                         con = con)
+
+        # print(r_val$selected_region_feature)
+        # print(input$map_shape_click)
+
         # set region name to download
         r_val$region_name = utils_normalize_string(r_val$selected_region_feature$lbregionhy)
+
         # get the axis in the region
         r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id,
                                                   con = con)
@@ -179,93 +203,111 @@ mod_mapdo_app_server <- function(id, con){
                              selected_region_feature = r_val$selected_region_feature,
                              regions_data = r_val$regions_in_bassin,
                              roe_region = r_val$roe_region,
-                             hydro_sites_region = r_val$hydro_sites_region)
+                             hydro_sites_region = r_val$hydro_sites_region) %>%
+          map_metric(wms_params = params_wms()$metric,
+                     cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
+                     sld_body = NULL,
+                     data_axis = r_val$network_region_axis)
 
         # print name of basin and region below map
         r_val$selection_text = paste0("Bassin: ", r_val$bassin_name,
                                       ", région: ", r_val$selected_region_feature$lbregionhy)
       }
+
       ### axis clicked ####
 
-      # if (input$map_shape_click$group == params_map_group()$axis) {
-      #   # save the clicked axis values
-      #   r_val$axis_click = input$map_shape_click
-      #   # reget the axis in the region without the selected axis
-      #   r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id,
-      #                                             con = con) %>%
-      #     filter(axis != r_val$axis_click$id)
-      #   # get the DGO axis data
-      #   r_val$dgo_axis = data_get_network_axis(selected_axis_id = r_val$axis_click$id,
-      #                                          con = con) %>%
-      #     mutate(measure = measure/1000)
-      #   # extract axis start end point
-      #   r_val$axis_start_end = data_get_axis_start_end(dgo_axis = r_val$dgo_axis)
-      #   # get ROE in axis clicked
-      #   r_val$roe_axis = r_val$roe_region %>%
-      #     filter(axis == r_val$axis_click$id)
-      #
-      #   # map dgo axis when axis clicked and metric selected
-      #   leafletProxy("map") %>%
-      #     map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
-      #                  main_metric = r_val$selected_metric, second_metric = r_val$selected_profile_metric) %>%
-      #     map_axis_start_end(axis_start_end = r_val$axis_start_end, region_axis = r_val$network_region_axis)
-      #
-      #   # create or update profile dataset with new axis
-      #   r_val$selected_axis_df = r_val$dgo_axis %>%
-      #     as.data.frame()
-      #
-      #   # update profile with new metric selected
-      #   if (r_val$profile_display == TRUE){
-      #     proxy_main_axe <-
-      #       lg_profile_update_main(
-      #         data = r_val$selected_axis_df,
-      #         y = r_val$selected_axis_df[[r_val$selected_metric]],
-      #         y_label = r_val$selected_metric_name,
-      #         y_label_category = r_val$selected_metric_type
-      #       )
-      #
-      #     plotlyProxy("long_profile") %>%
-      #       plotlyProxyInvoke("deleteTraces", 0) %>%
-      #       plotlyProxyInvoke("addTraces", proxy_main_axe$trace, 0) %>%
-      #       plotlyProxyInvoke("relayout", proxy_main_axe$layout)
-      #
-      #     # update ROE vertical lines
-      #     if (input$roe_profile == TRUE){
-      #       if (!is.null(r_val$roe_vertical_line)){
-      #         # remove the previous ROE vertical lines if exist
-      #         r_val$leaflet_hover_shapes$shapes <- list(r_val$leaflet_hover_shapes$shapes[[1]])
-      #       }
-      #       # create the vertical line from ROE distance_axis
-      #       r_val$roe_vertical_line <- lg_roe_vertical_line(r_val$roe_axis$distance_axis)
-      #       # increment the vertical list shape to keep the hover map vertical line
-      #       r_val$leaflet_hover_shapes$shapes <- c(r_val$leaflet_hover_shapes$shapes,
-      #                                              r_val$roe_vertical_line)
-      #       # update profile
-      #       plotlyProxy("long_profile") %>%
-      #         plotlyProxyInvoke("relayout",  r_val$leaflet_hover_shapes)
-      #     }else{
-      #       # remove the previous ROE vertical lines if exist
-      #       r_val$leaflet_hover_shapes$shapes <- list(r_val$leaflet_hover_shapes$shapes[[1]])
-      #       # update profile
-      #       plotlyProxy("long_profile") %>%
-      #         plotlyProxyInvoke("relayout",  r_val$leaflet_hover_shapes)
-      #     }
-      #
-      #
-      #     if(!is.null(input$profile_metric)){ # second metric selected = update second metric profile
-      #       # create the list to add trace and layout to change second axe plot
-      #       proxy_second_axe <- lg_profile_second(data = r_val$selected_axis_df,
-      #                                             y = r_val$selected_axis_df[[r_val$selected_profile_metric]],
-      #                                             y_label = r_val$selected_profile_metric_name,
-      #                                             y_label_category = r_val$selected_profile_metric_type)
-      #
-      #       plotlyProxy("long_profile") %>%
-      #         plotlyProxyInvoke("deleteTraces", 1) %>%
-      #         plotlyProxyInvoke("addTraces", proxy_second_axe$trace, 1) %>%
-      #         plotlyProxyInvoke("relayout", proxy_second_axe$layout)
-      #     }
-      #   }
-      # }
+      if (input$map_shape_click$group == params_map_group()$axis) {
+
+        # save the clicked axis values
+        r_val$axis_click = input$map_shape_click
+
+        # reget the axis in the region without the selected axis
+        r_val$network_region_axis = data_get_axis(selected_region_id = r_val$region_click$id,
+                                                  con = con) %>%
+          filter(axis != r_val$axis_click$id)
+
+        # get the DGO axis data
+        r_val$dgo_axis = data_get_network_axis(selected_axis_id = r_val$axis_click$id,
+                                               con = con) %>%
+          mutate(measure = measure/1000)
+
+        # get axis name
+        r_val$axis_name = r_val$dgo_axis$toponyme[1]
+
+        # extract axis start end point
+        r_val$axis_start_end = data_get_axis_start_end(dgo_axis = r_val$dgo_axis)
+
+        # get ROE in axis clicked
+        r_val$roe_axis = r_val$roe_region %>%
+          filter(axis == r_val$axis_click$id)
+
+        # map dgo axis when axis clicked and metric selected
+        leafletProxy("map") %>%
+          map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
+                       main_metric = r_val$selected_metric, second_metric = r_val$selected_profile_metric) %>%
+          map_axis_start_end(axis_start_end = r_val$axis_start_end, region_axis = r_val$network_region_axis)
+
+        # print name of basin and region below map
+        r_val$selection_text = paste0("Bassin: ", r_val$bassin_name,
+                                      ", région: ", r_val$selected_region_feature$lbregionhy,
+                                      ", axe: ", r_val$axis_name)
+
+        # # create or update profile dataset with new axis
+        # r_val$selected_axis_df = r_val$dgo_axis %>%
+        #   as.data.frame()
+        #
+        # # update profile with new metric selected
+        # if (r_val$profile_display == TRUE){
+        #   proxy_main_axe <-
+        #     lg_profile_update_main(
+        #       data = r_val$selected_axis_df,
+        #       y = r_val$selected_axis_df[[r_val$selected_metric]],
+        #       y_label = r_val$selected_metric_name,
+        #       y_label_category = r_val$selected_metric_type
+        #     )
+        #
+        #   plotlyProxy("long_profile") %>%
+        #     plotlyProxyInvoke("deleteTraces", 0) %>%
+        #     plotlyProxyInvoke("addTraces", proxy_main_axe$trace, 0) %>%
+        #     plotlyProxyInvoke("relayout", proxy_main_axe$layout)
+        #
+        #   # update ROE vertical lines
+        #   if (input$roe_profile == TRUE){
+        #     if (!is.null(r_val$roe_vertical_line)){
+        #       # remove the previous ROE vertical lines if exist
+        #       r_val$leaflet_hover_shapes$shapes <- list(r_val$leaflet_hover_shapes$shapes[[1]])
+        #     }
+        #     # create the vertical line from ROE distance_axis
+        #     r_val$roe_vertical_line <- lg_roe_vertical_line(r_val$roe_axis$distance_axis)
+        #     # increment the vertical list shape to keep the hover map vertical line
+        #     r_val$leaflet_hover_shapes$shapes <- c(r_val$leaflet_hover_shapes$shapes,
+        #                                            r_val$roe_vertical_line)
+        #     # update profile
+        #     plotlyProxy("long_profile") %>%
+        #       plotlyProxyInvoke("relayout",  r_val$leaflet_hover_shapes)
+        #   }else{
+        #     # remove the previous ROE vertical lines if exist
+        #     r_val$leaflet_hover_shapes$shapes <- list(r_val$leaflet_hover_shapes$shapes[[1]])
+        #     # update profile
+        #     plotlyProxy("long_profile") %>%
+        #       plotlyProxyInvoke("relayout",  r_val$leaflet_hover_shapes)
+        #   }
+        #
+        #
+        #   if(!is.null(input$profile_metric)){ # second metric selected = update second metric profile
+        #     # create the list to add trace and layout to change second axe plot
+        #     proxy_second_axe <- lg_profile_second(data = r_val$selected_axis_df,
+        #                                           y = r_val$selected_axis_df[[r_val$selected_profile_metric]],
+        #                                           y_label = r_val$selected_profile_metric_name,
+        #                                           y_label_category = r_val$selected_profile_metric_type)
+        #
+        #     plotlyProxy("long_profile") %>%
+        #       plotlyProxyInvoke("deleteTraces", 1) %>%
+        #       plotlyProxyInvoke("addTraces", proxy_second_axe$trace, 1) %>%
+        #       plotlyProxyInvoke("relayout", proxy_second_axe$layout)
+          # }
+        # }
+      }
       #
       # ### dgo clicked ####
       #
