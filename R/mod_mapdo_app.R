@@ -77,46 +77,9 @@ mod_mapdo_app_ui <- function(id){
 #' @importFrom sf st_write
 #' @importFrom shinyjs onclick runjs
 #' @noRd
-mod_mapdo_app_server <- function(id, con){
+mod_mapdo_app_server <- function(id, con, r_val){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
-
-    ### R_VAL ####
-    r_val <- reactiveValues(
-
-      # UI
-      selection_text = "", # description text indicating basin, region, axis
-      selected_region_feature = NULL,
-      region_click = NULL,
-      axis_click = NULL,
-
-      selected_metric = "talweg_elevation_min", # select main metric column name
-
-      # data hydrography
-      bassins = NULL,
-      bassin_name = NULL,
-      regions_in_bassin = NULL,
-      region_name = NULL,
-      selected_region_feature = NULL,
-      network_region_axis = NULL,
-      axis_name = NULL,
-      dgo_axis = NULL,
-      axis_start_end = NULL,
-
-      # data external
-      roe_region = NULL,
-      hydro_sites_region = NULL,
-      roe_axis = NULL,
-
-      # others variables
-      opacity = list(clickable = 0.01, not_clickable = 0.10) # opacity value to inform the user about available bassins and regions
-
-    )
-
-    ### server activation ####
-    mod_fluvial_styles_server("fluvial_styles_1", r_val)
-    mod_metric_analysis_server("metric_analysis_1", r_val)
-    mod_profil_transverse_server("profil_transverse_1", r_val)
 
 
     ### INITIALIZATION ####
@@ -188,9 +151,6 @@ mod_mapdo_app_server <- function(id, con){
         # save the selected region feature for mapping
         r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id,
                                                         con = con)
-
-        # print(r_val$selected_region_feature)
-        # print(input$map_shape_click)
 
         # set region name to download
         r_val$region_name = utils_normalize_string(r_val$selected_region_feature$lbregionhy)
