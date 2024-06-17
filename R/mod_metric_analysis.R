@@ -153,7 +153,7 @@ mod_metric_analysis_server <- function(id, r_val){
     })
 
     # apply selection to global reactive values
-    observeEvent(input$m00etric, {
+    observeEvent(input$metric, {
       r_val$selected_metric <- input$metric
     })
   })
