@@ -170,8 +170,7 @@ mod_metric_analysis_server <- function(id, r_val){
     })
 
     #### classification inputs changed ####
-    observeEvent(list(input$metric,
-                      input$man_grouping_quantile,
+    observeEvent(list(input$man_grouping_quantile,
                       input$man_grouping_no_classes,
                       input$man_grouping_scale_select
     ), {
