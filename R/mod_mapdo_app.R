@@ -49,6 +49,7 @@ mod_mapdo_app_ui <- function(id){
                      mod_metric_analysis_ui("metric_analysis_1")
             ),
             tabPanel("Profil transversal",
+                     mod_profil_transverse_ui("profil_transverse_1")
             )
             , type = "pills"
           ) #tabsetpanel
@@ -115,6 +116,7 @@ mod_mapdo_app_server <- function(id, con){
     ### server activation ####
     mod_fluvial_styles_server("fluvial_styles_1", r_val)
     mod_metric_analysis_server("metric_analysis_1", r_val)
+    mod_profil_transverse_server("profil_transverse_1", r_val)
 
 
     ### INITIALIZATION ####

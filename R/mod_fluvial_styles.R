@@ -17,7 +17,7 @@ mod_fluvial_styles_ui <- function(id){
 #' fluvial_styles Server Functions
 #'
 #' @noRd
-mod_fluvial_styles_server <- function(id, r_vals){
+mod_fluvial_styles_server <- function(id, r_val){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
