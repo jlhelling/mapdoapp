@@ -149,16 +149,14 @@ mod_mapdo_app_server <- function(id, con){
 
       ### region clicked ####
       if (input$map_shape_click$group == params_map_group()$region){
+
         # store the region click values
         r_val$region_click = input$map_shape_click
+
         # disable the click interactivity for the bassin selected
         r_val$regions_in_bassin = r_val$regions_in_bassin %>%
-          mutate(click = if_else(display == TRUE,
-                                 TRUE,
-                                 click)) %>%
-          mutate(click = if_else(display == TRUE & gid == r_val$region_click$id,
-                                 FALSE,
-                                 click))
+          mutate(click = if_else(display == TRUE, TRUE, click)) %>%
+          mutate(click = if_else(display == TRUE & gid == r_val$region_click$id, FALSE, click))
 
         # save the selected region feature for mapping
         r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id,
@@ -182,6 +180,10 @@ mod_mapdo_app_server <- function(id, con){
                              regions_data = r_val$regions_in_bassin,
                              roe_region = r_val$roe_region,
                              hydro_sites_region = r_val$hydro_sites_region)
+
+        # print name of basin and region below map
+        r_val$selection_text = paste0("Bassin: ", r_val$bassin_name,
+                                      ", région: ", r_val$selected_region_feature$lbregionhy)
       }
       ### axis clicked ####
 
