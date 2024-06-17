@@ -152,6 +152,10 @@ mod_mapdo_app_server <- function(id, con, r_val){
         r_val$selected_region_feature = data_get_region(region_click_id = r_val$region_click$id,
                                                         con = con)
 
+        # get network of region
+        r_val$network_region = data_get_network_region(selected_region_id = r_val$region_click$id,
+                                                       con = con)
+
         # set region name to download
         r_val$region_name = utils_normalize_string(r_val$selected_region_feature$lbregionhy)
 

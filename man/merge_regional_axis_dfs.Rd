@@ -4,7 +4,7 @@
 \alias{merge_regional_axis_dfs}
 \title{Combine classified regional network and axis network in one frame}
 \usage{
-merge_regional_axis_dfs(data_region, data_axis, var)
+merge_regional_axis_dfs(data_region, data_axis, var, classes = FALSE)
 }
 \arguments{
 \item{data_region}{sf-df with all dgos of selected region}
@@ -12,6 +12,8 @@ merge_regional_axis_dfs(data_region, data_axis, var)
 \item{data_axis}{sf-df with all dgos of selected axis}
 
 \item{var}{variable for which classification was undertaken}
+
+\item{classes}{binary stating whether networks contain classes which should be selected as well}
 }
 \value{
 merged df with regional and axis dgos, identifiable by factor-variable "scale"

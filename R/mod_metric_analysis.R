@@ -105,6 +105,11 @@ mod_metric_analysis_server <- function(id, r_val){
       # create metric description
       r_val_local$metric_description = params_metrics_info()[[input$metric]]
 
+      # combine networks of axis and region for violinplots
+      merged_network <- merge_regional_axis_dfs(r_val$network_region,
+                                                r_val$dgo_axis,
+                                                input$metric)
+
       # create plots
       r_val_local$violinplots_metric <- create_plotly_violinplot(merged_network, input$metric)
 

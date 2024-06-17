@@ -3,6 +3,7 @@
 #' @param data_region sf-df with all dgos of selected region
 #' @param data_axis sf-df with all dgos of selected axis
 #' @param var variable for which classification was undertaken
+#' @param classes binary stating whether networks contain classes which should be selected as well
 #'
 #' @importFrom dplyr mutate add_row select
 #' @importFrom sf st_drop_geometry
@@ -14,7 +15,7 @@
 #' merge_regional_axis_dfs(data_classified,
 #'                         data_classified %>% filter(toponyme == "l'Isère"),
 #'                         "forest_pc")
-merge_regional_axis_dfs <- function(data_region, data_axis, var){
+merge_regional_axis_dfs <- function(data_region, data_axis, var, classes = FALSE){
   df <-
     data_region %>%
     mutate(scale = as.factor("Region")) %>%
@@ -22,9 +23,17 @@ merge_regional_axis_dfs <- function(data_region, data_axis, var){
       data_axis %>%
         mutate(scale = as.factor("Axe fluvial"))
     ) %>%
-    sf::st_drop_geometry() %>%
-    select(fid, class_name, color, scale, {{var}}) %>%
-    na.omit()
+    sf::st_drop_geometry()
+
+  if (classes == TRUE) {
+    df <- df %>%
+      select(fid, class_name, color, scale, {{var}}) %>%
+      na.omit()
+  } else {
+    df <- df %>%
+      select(fid, scale, {{var}}) %>%
+      na.omit()
+  }
 
   return(df)
 }
@@ -128,7 +137,7 @@ create_plotly_violinplot <- function(data, var){
                           color = I("black"),
                           alpha = 0.1,
                           scalemode = 'width',
-                          marker = list(size = 1, color = ~class_name),
+                          marker = list(size = 1, color = "black"),
                           spanmode = "hard",
                           hoverinfo = 'y',
                           source = 'V') %>%

@@ -30,6 +30,7 @@ app_server <- function(input, output, session) {
     region_name = NULL,
     selected_region_feature = NULL,
     network_region_axis = NULL,
+    network_region = NULL,
     axis_name = NULL,
     axis_click = NULL,
     dgo_axis = NULL,
