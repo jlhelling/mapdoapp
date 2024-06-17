@@ -124,14 +124,37 @@ mod_metric_analysis_server <- function(id, r_val){
           )
         ),
         accordion_panel(
-          "Classification"
+          "Classification",
+          fluidRow(
+            column(width = 5,
+                   fluidRow(
+                     column(width = 6,
+                            numericInput(inputId = ns("man_grouping_quantile"),
+                                         "Quantile [%]", value = 95, min = 0, max = 100)
+                     ),
+                     column(width = 6,
+                            numericInput(inputId = ns("man_grouping_no_classes"),
+                                         "Classes", value = 4, min = 2, max = 10, step = 1)
+                     ),
+                     radioButtons(ns("man_grouping_scale_select"),
+                                  "Base de classification",
+                                  c("Région", "Axe fluvial"),
+                                  selected = "Region",
+                                  inline = TRUE)
+                   )
+            ),
+            column(width = 7,
+                   uiOutput(ns("man_grouping_editable_tableUI")),
+                   actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
+            )
+          )
         ), open = FALSE
       )
     })
-    #
-    # # apply selection to global reactive values
-    # observeEvent(input$ui_metric, {
-    #   r_val$selected_metric <- input$metric
-    # })
+
+    # apply selection to global reactive values
+    observeEvent(input$m00etric, {
+      r_val$selected_metric <- input$metric
+    })
   })
 }
