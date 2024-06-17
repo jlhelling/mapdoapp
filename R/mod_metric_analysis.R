@@ -58,6 +58,10 @@ mod_metric_analysis_server <- function(id, r_val){
       metric_description = NULL, # information on selected metric
       accordeon_ui = NULL, # accordeon navigation element
 
+      # plots
+      violinplots_metric = NULL,
+      barplots_classes_metric = NULL
+
     )
 
     ### OUTPUTS ####
@@ -75,6 +79,10 @@ mod_metric_analysis_server <- function(id, r_val){
 
     output$accordeonUI <- renderUI({
       r_val_local$accordeon_ui
+    })
+
+    output$violinplots_metricUI <- renderPlotly({
+      r_val_local$violinplots_metric
     })
 
     observe({
@@ -97,12 +105,18 @@ mod_metric_analysis_server <- function(id, r_val){
       # create metric description
       r_val_local$metric_description = params_metrics_info()[[input$metric]]
 
+      # create plots
+      r_val_local$violinplots_metric <- create_plotly_violinplot(merged_network, input$metric)
+
       r_val_local$accordeon_ui <- accordion(
         accordion_panel(
           "Comparaison regionale",
           fluidRow(
             column(width = 6,
-                   renderText("Hidjsidcjidj")))
+                   plotlyOutput(ns("violinplots_metricUI"))),
+            column(width = 6,
+                   plotlyOutput(ns("barplots_classes_metricUI")))
+          )
         ),
         accordion_panel(
           "Classification"
