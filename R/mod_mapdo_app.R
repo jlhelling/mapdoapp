@@ -43,6 +43,7 @@ mod_mapdo_app_ui <- function(id){
           tabsetPanel(
             id = "tabset",
             tabPanel("Styles fluviaux",
+                     mod_fluvial_styles_ui("fluvial_styles_1")
             ),
             tabPanel("Analyse métrique",
             ),
@@ -109,6 +110,8 @@ mod_mapdo_app_server <- function(id, con){
       opacity = list(clickable = 0.01, not_clickable = 0.10) # opacity value to inform the user about available bassins and regions
 
     )
+
+    mod_fluvial_styles_server("fluvial_styles_1", r_val)
 
 
     ### INITIALIZATION ####
