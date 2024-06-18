@@ -493,3 +493,42 @@ create_df_input <- function(axis_data, variable_name, no_classes, quantile = 95)
 
   return(df)
 }
+
+
+#' Assign classes to network dgos
+#'
+#' @param data dataframe or sf object to which classes
+#' @param variables vector of variable names on which the classification is based
+#' @param greater_thans vector of class-thresholds for classification
+#' @param class_names vector containing the names of all classes to be assigned
+#'
+#' @return classified dataframe/sf object with additional variable: class
+#' @importFrom rlang parse_exprs
+#' @importFrom dplyr mutate case_when left_join join_by
+#' @importFrom sf st_as_sf
+#'
+#' @examples
+#' classified_network <- network_dgo %>%
+#'     assign_classes(variables = as.character(r_val$grouping_table_data$variable),
+#'     greater_thans = r_val$grouping_table_data$greaterthan,
+#'     class_names = r_val$grouping_table_data$class)
+#'
+assign_classes <- function(data, classes) {
+
+  variables <- as.character(classes$variable)
+  greater_thans <- classes$greaterthan
+  class_names <- classes$class
+  colors <- classes %>% select(class, color)
+
+  df <-
+    data %>%
+    mutate(
+      class_name = case_when(
+        !!!parse_exprs(paste0(variables, ' >= ', greater_thans, ' ~ "', class_names, '"')
+        )
+      )
+    ) %>%
+    left_join(colors, by = join_by(class_name == class))
+
+  return(df)
+}

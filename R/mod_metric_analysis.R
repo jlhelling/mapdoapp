@@ -92,6 +92,10 @@ mod_metric_analysis_server <- function(id, con, r_val){
     output$violinplots_metricUI <- renderPlotly({
       r_val_local$violinplots_metric
     })
+    # barplots showing distribution of classes
+    output$barplots_classes_metricUI <- renderPlotly({
+      r_val_local$barplots_classes_metric
+    })
 
     # editable table for classification
     output$man_grouping_editable_tableUI <- renderUI({
@@ -198,6 +202,25 @@ mod_metric_analysis_server <- function(id, con, r_val){
         addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
                      position = "bottomright",
                      layerId = "legend_metric")
+
+      # classify and merge networks
+      # Create classified network by adding the classes and colors
+      classified_network <- r_val$network_region %>%
+        assign_classes(classes = r_val_local$grouping_table_data)
+
+      # create classified axis network
+      classified_axis <- r_val$dgo_axis %>%
+        na.omit() %>%
+        assign_classes(classes = r_val_local$grouping_table_data)
+
+      # merge regional and axis network in one df
+      merged_network_classified <- merge_regional_axis_dfs(classified_network,
+                                                classified_axis,
+                                                r_val$selected_metric,
+                                                classes = TRUE)
+
+      # create barplots of classes distribution
+      r_val_local$barplots_classes_metric <- create_plotly_barplot(merged_network_classified)
 
       # longitudinal plot
       # if (!is.null(r_val$dgo_axis)) {
