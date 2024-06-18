@@ -667,6 +667,7 @@ map_add_wms_overlayers <- function(map) {
       map <- map %>%
         addWMSTiles(
           baseUrl = i$url,
+          layerId = i$name,
           layers = i$layer,
           attribution = i$attribution,
           options = WMSTileOptions(
@@ -674,7 +675,7 @@ map_add_wms_overlayers <- function(map) {
             transparent = TRUE
           ),
           group = i$name
-        )%>%
+        ) %>%
         hideGroup(i$name)
     }
   }
