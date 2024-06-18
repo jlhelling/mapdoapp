@@ -378,6 +378,16 @@ params_unit_area <- function(){
 #' @export
 params_metrics_choice_analysis <- function() {
   choices_map <- list(
+    elevation = list(
+      metric_type_title = "Elévation (m)",
+      metric_type_info = "Elévation par tronçon de 200m.",
+      metric_type_values = list(
+        talweg_elevation_min = list(
+          metric_title = "Talweg min",
+          metric_info = "Elévation minimale du talweg."
+        )
+      )
+    ),
     largeur = list(
       metric_type_title = "Largeurs (m)",
       metric_type_info = "Largeurs moyennes par tronçon de 200m sur le corridor considéré.",
@@ -394,16 +404,6 @@ params_metrics_choice_analysis <- function() {
         valley_bottom_width = list(
           metric_title = "Fond de vallée",
           metric_info = "Fond de vallée déterminé par seuil de pente et d'élévation.")
-      )
-    ),
-    elevation = list(
-      metric_type_title = "Elévations (m)",
-      metric_type_info = "Elévations par tronçon de 200m.",
-      metric_type_values = list(
-        talweg_elevation_min = list(
-          metric_title = "Talweg min",
-          metric_info = "Elévation minimale du talweg."
-        )
       )
     ),
     pente = list(

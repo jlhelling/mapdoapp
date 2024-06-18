@@ -169,6 +169,23 @@ mod_mapdo_app_server <- function(id, con, r_val){
         r_val$hydro_sites_region = data_get_hydro_sites(r_val$region_click$id,
                                                         con = con)
 
+        # build SLD symbology
+        r_val$sld_body = sld_get_style(
+          breaks = sld_get_quantile_metric(
+            selected_region_id = r_val$region_click$id,
+            selected_metric = r_val$selected_metric,
+            con = con
+          ),
+          colors = sld_get_quantile_colors(
+            quantile_breaks = sld_get_quantile_metric(
+              selected_region_id = r_val$region_click$id,
+              selected_metric = r_val$selected_metric,
+              con = con
+            )
+          ),
+          metric = r_val$selected_metric
+        )
+
         # map region clicked with region clicked and overlayers
         leafletProxy("map") %>%
           map_region_clicked(region_click = input$map_shape_click,
@@ -178,8 +195,11 @@ mod_mapdo_app_server <- function(id, con, r_val){
                              hydro_sites_region = r_val$hydro_sites_region) %>%
           map_metric(wms_params = params_wms()$metric,
                      cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
-                     sld_body = NULL,
+                     sld_body = r_val$sld_body,
                      data_axis = r_val$network_region_axis)
+
+
+
 
         # print name of basin and region below map
         r_val$selection_text = paste0("Bassin: ", r_val$bassin_name,

@@ -41,6 +41,9 @@ app_server <- function(input, output, session) {
     hydro_sites_region = NULL,
     roe_axis = NULL,
 
+    # styling of wms-layer
+    sld_body = NULL,
+
     # others variables
     opacity = list(clickable = 0.01, not_clickable = 0.10) # opacity value to inform the user about available bassins and regions
 

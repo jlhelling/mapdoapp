@@ -65,7 +65,7 @@ sld_get_quantile_metric <- function(selected_region_id, selected_metric, con) {
 #'
 #' @export
 sld_get_quantile_colors <- function(quantile_breaks) {
-  colors_palette <- colorRampPalette(c("green", "red"))(length(quantile_breaks))
+  colors_palette <- colorRampPalette(c("#03045e", "#90e0ef"))(length(quantile_breaks))
   return(colors_palette)
 }
 
