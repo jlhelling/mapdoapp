@@ -55,7 +55,7 @@ params_wms <- function(){
                            basemap = TRUE,
                            overlayer = FALSE),
               elevation = list(name = "Elévation IGN",
-                               url = "https://wxs.ign.fr/altimetrie/geoportail/r/wms",
+                               url = "https://data.geopf.fr/annexes/ressources/wms-r",
                                language = "",
                                service = "WMS",
                                version = "",

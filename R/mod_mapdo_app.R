@@ -106,6 +106,10 @@
         r_val$selection_text
       })
 
+      observe({
+        r_val$map_proxy <- leafletProxy("map")
+      })
+
       ### EVENT MAP CLICK ####
 
       observeEvent(input$map_shape_click,{
@@ -188,7 +192,7 @@
           )
 
           # map region clicked with region clicked and overlayers
-          leafletProxy("map") %>%
+          r_val$map_proxy %>%
             map_region_clicked(region_click = input$map_shape_click,
                                selected_region_feature = r_val$selected_region_feature,
                                regions_data = r_val$regions_in_bassin,
@@ -198,7 +202,9 @@
                        cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
                        sld_body = r_val$sld_body,
                        data_axis = r_val$network_region_axis) %>%
-            addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body))
+            addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
+                         position = "bottomright",
+                         layerId = "legend_metric")
 
 
 

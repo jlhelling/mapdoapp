@@ -115,7 +115,10 @@ sld_get_style <- function(breaks, colors, metric) {
 
   sld_rules <- character(0)  # Initialize an empty list to store rules
 
-  for (i in 1:(length(breaks) - 1)) {
+
+
+  for (i in 1:(length(breaks))) {
+    if (i < length(breaks)) {
     sld_rule <- glue::glue('
       <se:Rule>
           <se:Name>{breaks[i]} - {breaks[i+1]}</se:Name>
@@ -128,10 +131,10 @@ sld_get_style <- function(breaks, colors, metric) {
                 <ogc:PropertyName>{metric}</ogc:PropertyName>
                 <ogc:Literal>{breaks[i]}</ogc:Literal>
               </ogc:PropertyIsGreaterThanOrEqualTo>
-              <ogc:PropertyIsLessThanOrEqualTo>
+              <ogc:PropertyIsLessThan>
                 <ogc:PropertyName>{metric}</ogc:PropertyName>
                 <ogc:Literal>{breaks[i+1]}</ogc:Literal>
-              </ogc:PropertyIsLessThanOrEqualTo>
+              </ogc:PropertyIsLessThan>
             </ogc:And>
           </ogc:Filter>
           <se:LineSymbolizer>
@@ -146,6 +149,56 @@ sld_get_style <- function(breaks, colors, metric) {
           </se:LineSymbolizer>
         </se:Rule>
         ')
+    } else {
+      sld_rule <- glue::glue('
+      <se:Rule>
+          <se:Name> >= {breaks[i]}</se:Name>
+          <se:Description>
+            <se:Title> >= {breaks[i]}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>{metric}</ogc:PropertyName>
+                <ogc:Literal>{breaks[i]}</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors[i]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors[i]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        ')
+    }
+    # sld_rule <- glue::glue('
+    #   <se:Rule>
+    #       <se:Name> >= {breaks[i]}</se:Name>
+    #       <se:Description>
+    #         <se:Title> >= {breaks[i]}</se:Title>
+    #       </se:Description>
+    #       <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+    #           <ogc:PropertyIsGreaterThanOrEqualTo>
+    #             <ogc:PropertyName>{metric}</ogc:PropertyName>
+    #             <ogc:Literal>{breaks[i]}</ogc:Literal>
+    #           </ogc:PropertyIsGreaterThanOrEqualTo>
+    #       </ogc:Filter>
+    #       <se:LineSymbolizer>
+    #         <se:Stroke>
+    #           <se:SvgParameter name="stroke">{colors[i]}</se:SvgParameter>
+    #           <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+    #           <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+    #           <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+    #           <CssParameter name="stroke">{colors[i]}</CssParameter>
+    #           <CssParameter name="stroke-width">2</CssParameter>
+    #         </se:Stroke>
+    #       </se:LineSymbolizer>
+    #     </se:Rule>
+    #     ')
 
     sld_rules <- c(sld_rules, sld_rule)
   }

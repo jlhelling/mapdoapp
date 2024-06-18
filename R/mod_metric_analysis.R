@@ -43,11 +43,14 @@ mod_metric_analysis_ui <- function(id){
 #'
 #' @import shiny
 #' @importFrom htmltools HTML div img
-#' @importFrom dplyr filter mutate if_else pull bind_cols
+#' @importFrom dplyr filter mutate if_else pull bind_cols arrange add_row
+#' @importFrom tibble tibble
+#' @importFrom leaflet removeControl clearGroup
+#' @importFrom leaflet.extras addWMSLegend
 #' @importFrom rhandsontable rHandsontableOutput rhandsontable hot_context_menu renderRHandsontable hot_to_r
 #' @importFrom shinyjs onclick runjs
 #' @noRd
-mod_metric_analysis_server <- function(id, r_val){
+mod_metric_analysis_server <- function(id, con, r_val){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -167,6 +170,49 @@ mod_metric_analysis_server <- function(id, r_val){
           )
         ), open = FALSE
       )
+    })
+
+    #### apply button clicked ####
+    observeEvent(input$man_grouping_apply_changes,{
+
+      # sort classes
+      classes <- r_val_local$grouping_table_data %>%
+        dplyr::arrange(greaterthan) %>%
+        dplyr::mutate(greaterthan = round(greaterthan, 2))
+
+      # build SLD symbology
+      r_val$sld_body = sld_get_style(
+        breaks = classes$greaterthan,
+        colors = classes$color,
+        metric = r_val$selected_metric
+      )
+
+      # add classified network to map
+      r_val$map_proxy %>%
+        clearGroup(params_map_group()$dgo_axis) %>%
+        removeControl(layerId = "legend_metric") %>%
+        map_metric(wms_params = params_wms()$metric,
+                   cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
+                   sld_body = r_val$sld_body,
+                   data_axis = r_val$network_region_axis) %>%
+        addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
+                     position = "bottomright",
+                     layerId = "legend_metric")
+
+      # longitudinal plot
+      # if (!is.null(r_val$dgo_axis)) {
+      #   #   # create classified axis network
+      #   classified_axis <- r_val$dgo_axis %>%
+      #     na.omit() %>%
+      #     assign_classes(classes = r_val$grouping_table_data)
+      #
+      #   # create plotly longitudinal series plot
+      #   r_val$longitudinal_plot <-
+      #     plot_class_series_plotly(classified_axis,
+      #                              y = input$metric,
+      #                              cat = "class_name",
+      #                              colors = get_colors_char_df(classified_axis))
+      # }
     })
 
     #### classification inputs changed ####
