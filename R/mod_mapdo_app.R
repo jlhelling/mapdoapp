@@ -69,6 +69,7 @@ mod_mapdo_app_ui <- function(id){
 #'
 #' @import shiny
 #' @importFrom leaflet leafletProxy clearGroup leafletOutput renderLeaflet
+#' @importFrom leaflet.extras addWMSLegend
 #' @importFrom htmltools HTML div img
 #' @importFrom dplyr filter mutate if_else pull
 #' @importFrom plotly event_register event_data plotlyProxy plotlyProxyInvoke renderPlotly plotlyOutput
@@ -196,7 +197,8 @@ mod_mapdo_app_server <- function(id, con, r_val){
           map_metric(wms_params = params_wms()$metric,
                      cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
                      sld_body = r_val$sld_body,
-                     data_axis = r_val$network_region_axis)
+                     data_axis = r_val$network_region_axis) %>%
+          addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body))
 
 
 
@@ -297,7 +299,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
         #       plotlyProxyInvoke("deleteTraces", 1) %>%
         #       plotlyProxyInvoke("addTraces", proxy_second_axe$trace, 1) %>%
         #       plotlyProxyInvoke("relayout", proxy_second_axe$layout)
-          # }
+        # }
         # }
       }
       #
@@ -318,6 +320,46 @@ mod_mapdo_app_server <- function(id, con, r_val){
       #     map_dgo_cross_section(selected_dgo = r_val$data_dgo_clicked)
       # }
     })
+
+    #### EVENT legend update ####
+
+    observeEvent(input$map_groups, {
+
+      # landuse map
+      if (any(input$map_groups %in% params_map_group()$landuse)) {
+
+        leafletProxy("map") %>%
+          addWMSLegend(map_legend_wms_overlayer(wms_params = params_wms()$landuse))
+      }
+
+      # # continuity map
+      # if (any(input$exploremap_groups %in% params_map_group()$continuity)) {
+      #   map_legend_wms_overlayer(wms_params = params_wms()$continuity)
+      # },
+      # # valley bottom map
+      # if (any(input$exploremap_groups %in% params_map_group()$valley_bottom)) {
+      #   map_legend_wms_overlayer(wms_params = params_wms()$valley_bottom)
+      # },
+      # # zone inondable
+      # if (any(input$exploremap_groups %in% params_map_group()$inondation)) {
+      #   map_legend_wms_overlayer(wms_params = params_wms()$inondation)
+      # },
+      # # ouvrage de protection
+      # if (any(input$exploremap_groups %in% params_map_group()[["ouvrage_protection"]])) {
+      #   map_legend_wms_overlayer(wms_params = params_wms()$ouvrage_protection)
+      # },
+      # # ROE
+      # if (any(input$exploremap_groups %in% params_map_group()[["roe"]])) {
+      #   map_legend_vector_overlayer(layer_label = "Référentiel des Obstacles à l'Ecoulement",
+      #                               color = "#323232")
+      # },
+      # # Site hydrométrique
+      # if (any(input$exploremap_groups %in% params_map_group()[["hydro_sites"]])) {
+      #   map_legend_vector_overlayer(layer_label = "Site hydrométrique",
+      #                               color = "#33B1FF")
+      # }
+    })
+
 
   })
 }

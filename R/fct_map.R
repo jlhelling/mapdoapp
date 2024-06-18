@@ -726,10 +726,7 @@ map_legend_metric <- function(sld_body){
   # Build the legend URL
   legend_url <- modify_url(params_wms()$metric$url, query = query_params)
 
-  # create an html img tag to display the legend
-  legend <- tags$img(src = legend_url, responsive = "width: 100%; height: auto;", class="responsive")
-
-  return(legend)
+  return(legend_url)
 }
 
 
@@ -781,16 +778,7 @@ map_legend_wms_overlayer <- function(wms_params){
   # Build the legend URL
   legend_url <- modify_url(wms_params$url, query = query_params)
 
-  # Create a div with centered alignment
-  div(
-    style = "display: flex; align-items: center;",
-    img(
-      src = legend_url,
-      responsive = "width: 100%; height: auto;",
-      class="responsive",
-      ""
-    ) # img
-  ) # div
+  return(legend_url)
 }
 
 
