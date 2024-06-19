@@ -44,6 +44,9 @@ mod_profil_long_ui <- function(id){
 
 #' profil_long Server Functions
 #'
+#' @importFrom plotly event_register plotlyOutput renderPlotly event_data
+#' @importFrom leaflet addPolylines clearGroup
+#'
 #' @noRd
 mod_profil_long_server <- function(id, r_val){
   moduleServer( id, function(input, output, session){
@@ -52,7 +55,7 @@ mod_profil_long_server <- function(id, r_val){
     ### INITIALIZATION ####
 
     r_val_local <- reactiveValues(
-      plot = lg_profile_empty()
+      plot = lg_profile_empty() # plotly render longitudinal profile output (default empty)
     )
 
     output$long_profile <- renderPlotly({
@@ -87,7 +90,7 @@ mod_profil_long_server <- function(id, r_val){
 
     #### metric select ####
 
-    observe({
+    observeEvent(c(r_val$selected_metric, r_val$axis_click), {
 
       # track input
       track_inputs(input = input)
@@ -98,18 +101,14 @@ mod_profil_long_server <- function(id, r_val){
 
 
         # create profile
-        proxy_main_axe <-
-          lg_profile_update_main(
+        r_val_local$plot <-
+          lg_profile_main(
             data = r_val$dgo_axis,
             y = r_val$dgo_axis[[r_val$selected_metric]],
             y_label = r_val$selected_metric,
             y_label_category = "type"
-          )
-
-        plotlyProxy("long_profile") %>%
-          plotlyProxyInvoke("deleteTraces", 0) %>%
-          plotlyProxyInvoke("addTraces", proxy_main_axe$trace, 0) %>%
-          plotlyProxyInvoke("relayout", proxy_main_axe$layout)
+          ) %>%
+          event_register("plotly_hover")
 
         # # update ROE vertical lines
         # if (input$roe_profile == TRUE) {
@@ -215,5 +214,32 @@ mod_profil_long_server <- function(id, r_val){
     #       plotlyProxyInvoke("relayout",  r_val$leaflet_hover_shapes)
     #   }
     # })
+
+    ### EVENT MOUSEOVER ####
+
+    #### plotly profile ####
+
+    # capture hover events on map to display dgo on profile-plot
+    observeEvent(event_data("plotly_hover", source = 'L'), {
+      # event data
+      hover_event <- event_data("plotly_hover", source = 'L')
+
+      # add line to profile-plot
+      if (!is.null(hover_event)) {
+        hover_fid <- hover_event$key[1]
+        highlighted_feature <- r_val$dgo_axis[r_val$dgo_axis$fid == hover_fid, ]
+        r_val$map_proxy %>%
+          addPolylines(data = highlighted_feature, color = "red", weight = 10,
+                       group = params_map_group()$light)
+      }
+    })
+
+    # clear previous point on map when moving along profile to not display all the point move over
+    observe({
+      if (is.null(event_data("plotly_hover", source = 'L'))) {
+        r_val$map_proxy %>%
+          clearGroup(params_map_group()$light)
+      }
+    })
   })
 }

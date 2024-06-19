@@ -21,6 +21,9 @@ app_server <- function(input, output, session) {
     region_click = NULL,
     axis_click = NULL,
 
+    # map
+    map_proxy = NULL,
+
     selected_metric = "talweg_elevation_min", # select main metric column name
 
     # data hydrography

@@ -178,13 +178,14 @@ lg_profile_main <- function(data, y, y_label, y_label_category) {
 
   plot <- plot_ly(x = data$measure, y = y, yaxis = 'y1',
                   key = data$fid,  # the "id" column for hover text
-                  type = 'scatter', mode = 'lines', name = y_label) %>%
+                  type = 'scatter', mode = 'lines', name = y_label,
+                  source = 'L') %>%
     layout(
       xaxis = lg_xaxis_layout(data),
       yaxis = lg_yaxis_layout(y_label_category, y_label),
       # river name
       annotations = lg_annotations_layout(data),
-      showlegend=TRUE,
+      showlegend = TRUE,
       legend = list(orientation = 'h'),
       hovermode = "x unified",
       shapes = list(lg_vertical_line(2.5)),
