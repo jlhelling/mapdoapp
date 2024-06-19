@@ -61,6 +61,7 @@ app_server <- function(input, output, session) {
   mod_fluvial_styles_server("fluvial_styles_1", r_val)
   mod_metric_analysis_server("metric_analysis_1", con, r_val)
   mod_profil_transverse_server("profil_transverse_1", r_val)
+  mod_profil_long_server("profil_long_1", r_val)
 
   # disconnect database when closing session
   onStop(function() {

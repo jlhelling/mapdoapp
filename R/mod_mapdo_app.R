@@ -54,7 +54,16 @@
               , type = "pills"
             ) #tabsetpanel
           ) #column
-        ) #row
+        ), #row
+
+        fluidRow(
+          accordion(
+            accordion_panel(
+              "Profil en long",
+              mod_profil_long_ui("profil_long_1")
+            )
+          )
+        )
       ) #page
 
     )
