@@ -68,7 +68,7 @@
   #' mapdo_app Server Functions
   #'
   #' @import shiny
-  #' @importFrom leaflet leafletProxy clearGroup leafletOutput renderLeaflet removeControl addLegend
+  #' @importFrom leaflet leafletProxy clearGroup leafletOutput renderLeaflet removeControl addLegend addControl
   #' @importFrom leaflet.extras addWMSLegend
   #' @importFrom htmltools HTML div img
   #' @importFrom dplyr filter mutate if_else pull
@@ -205,6 +205,38 @@
             addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
                          position = "bottomright",
                          layerId = "legend_metric")
+            # addControl(
+            #   html = HTML(paste0('<div id="legend-container" style="background: white; padding: 10px; border: 1px solid #ccc;">
+            #                  <h6 id="legend-title" style="cursor: pointer; margin: 0; font-size: 12px;">Legend Title</h6>
+            #                  <div id="legend-content">
+            #                    <img src="', map_legend_metric(sld_body = r_val$sld_body), '" alt="Legend">
+            #                  </div>
+            #                </div>
+            #                <script>
+            #                  document.getElementById("legend-title").onclick = function() {
+            #                    var content = document.getElementById("legend-content");
+            #                    if (content.style.display === "none") {
+            #                      content.style.display = "block";
+            #                    } else {
+            #                      content.style.display = "none";
+            #                    }
+            #                  };
+            #                </script>')),
+            #   position = "bottomright"
+            # )
+
+            # addControl(
+            #   html = paste0('<div style="background: white; padding: 10px;">
+            #             <h4>Legend Title</h4>
+            #             <img src="', map_legend_metric(sld_body = r_val$sld_body), '" alt="Legend">
+            #           </div>'),
+            #   position = "bottomright"
+            # )
+            # addControl(
+            #   html = "<strong>Custom Legend Title</strong>",
+            #   position = "bottomright",
+            #   className = "legend-title"
+            # )
 
 
 
