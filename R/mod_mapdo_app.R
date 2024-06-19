@@ -296,79 +296,40 @@
                                         ", région: ", r_val$selected_region_feature$lbregionhy,
                                         ", axe: ", r_val$axis_name)
 
-          # # create or update profile dataset with new axis
-          # r_val$selected_axis_df = r_val$dgo_axis %>%
-          #   as.data.frame()
-          #
-          # # update profile with new metric selected
-          # if (r_val$profile_display == TRUE){
-          #   proxy_main_axe <-
-          #     lg_profile_update_main(
-          #       data = r_val$selected_axis_df,
-          #       y = r_val$selected_axis_df[[r_val$selected_metric]],
-          #       y_label = r_val$selected_metric_name,
-          #       y_label_category = r_val$selected_metric_type
-          #     )
-          #
-          #   plotlyProxy("long_profile") %>%
-          #     plotlyProxyInvoke("deleteTraces", 0) %>%
-          #     plotlyProxyInvoke("addTraces", proxy_main_axe$trace, 0) %>%
-          #     plotlyProxyInvoke("relayout", proxy_main_axe$layout)
-          #
-          #   # update ROE vertical lines
-          #   if (input$roe_profile == TRUE){
-          #     if (!is.null(r_val$roe_vertical_line)){
-          #       # remove the previous ROE vertical lines if exist
-          #       r_val$leaflet_hover_shapes$shapes <- list(r_val$leaflet_hover_shapes$shapes[[1]])
-          #     }
-          #     # create the vertical line from ROE distance_axis
-          #     r_val$roe_vertical_line <- lg_roe_vertical_line(r_val$roe_axis$distance_axis)
-          #     # increment the vertical list shape to keep the hover map vertical line
-          #     r_val$leaflet_hover_shapes$shapes <- c(r_val$leaflet_hover_shapes$shapes,
-          #                                            r_val$roe_vertical_line)
-          #     # update profile
-          #     plotlyProxy("long_profile") %>%
-          #       plotlyProxyInvoke("relayout",  r_val$leaflet_hover_shapes)
-          #   }else{
-          #     # remove the previous ROE vertical lines if exist
-          #     r_val$leaflet_hover_shapes$shapes <- list(r_val$leaflet_hover_shapes$shapes[[1]])
-          #     # update profile
-          #     plotlyProxy("long_profile") %>%
-          #       plotlyProxyInvoke("relayout",  r_val$leaflet_hover_shapes)
-          #   }
-          #
-          #
-          #   if(!is.null(input$profile_metric)){ # second metric selected = update second metric profile
-          #     # create the list to add trace and layout to change second axe plot
-          #     proxy_second_axe <- lg_profile_second(data = r_val$selected_axis_df,
-          #                                           y = r_val$selected_axis_df[[r_val$selected_profile_metric]],
-          #                                           y_label = r_val$selected_profile_metric_name,
-          #                                           y_label_category = r_val$selected_profile_metric_type)
-          #
-          #     plotlyProxy("long_profile") %>%
-          #       plotlyProxyInvoke("deleteTraces", 1) %>%
-          #       plotlyProxyInvoke("addTraces", proxy_second_axe$trace, 1) %>%
-          #       plotlyProxyInvoke("relayout", proxy_second_axe$layout)
-          # }
-          # }
+          # create or update profile dataset with new axis
+          r_val$selected_axis_df = r_val$dgo_axis %>%
+            as.data.frame()
         }
         #
         # ### dgo clicked ####
         #
-        # if (input$map_shape_click$group == params_map_group()$dgo_axis) {
-        #   # get data with dgo id
-        #   r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$map_shape_click$id,
-        #                                                    con = con)
+        if (input$map_shape_click$group == params_map_group()$dgo_axis) {
+          # get data with dgo id
+          r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$map_shape_click$id,
+                                                           con = con)
         #   # plot cross section
         #   r_val$section = cr_profile_main(data = r_val$data_section,
         #                                   axis_toponyme = unique(r_val$selected_axis_df$toponyme))
-        #   # get dgo clicked feature
-        #   r_val$data_dgo_clicked = r_val$dgo_axis %>%
-        #     filter(fid == input$map_shape_click$id)
-        #   # Highlight clicked DGO
-        #   leafletProxy("map") %>%
-        #     map_dgo_cross_section(selected_dgo = r_val$data_dgo_clicked)
-        # }
+          # get dgo clicked feature
+          r_val$data_dgo_clicked = r_val$dgo_axis %>%
+            filter(fid == input$map_shape_click$id)
+          # Highlight clicked DGO
+          leafletProxy("map") %>%
+            map_dgo_cross_section(selected_dgo = r_val$data_dgo_clicked)
+        }
+      })
+
+      #### EVENT DGO Mouseover ####
+
+      # check for hover over dgo event
+      observeEvent(input$map_shape_mouseover, {
+        if (input$map_shape_mouseover$group == params_map_group()$dgo_axis && !is.null(input$map_shape_mouseover)){
+
+          # extract dgo axis fid from map
+          r_val$leaflet_hover_measure <- r_val$dgo_axis %>%
+            filter(fid == input$map_shape_mouseover$id) %>%
+            pull(measure)
+        }
       })
 
       #### EVENT legend update ####
@@ -478,7 +439,7 @@
         }
 
         # Site hydrométrique
-        # if (any(input$exploremap_groups %in% params_map_group()[["hydro_sites"]])) {
+        # if (any(input$map_groups %in% params_map_group()[["hydro_sites"]])) {
         #   map_legend_vector_overlayer(layer_label = "Site hydrométrique",
         #                               color = "#33B1FF")
         # }

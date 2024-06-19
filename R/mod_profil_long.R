@@ -57,8 +57,7 @@ mod_profil_long_server <- function(id, r_val){
     #### REACTIVES ####
     r_val_local <- reactiveValues(
       plot = lg_profile_empty(), # plotly render longitudinal profile output (default empty)
-      leaflet_hover_measure = 2.5, # measure field from mesure to add vertical line on longitudinal profile
-      leaflet_hover_shapes = list(shapes = list(lg_vertical_line(2.5))), # list to store vertical lines to display on longitudinal profile
+      leaflet_hover_shapes = NULL, # list to store vertical lines to display on longitudinal profile
       ui_roe_profile = NULL, # UI placeholder for ROE checkbox
       roe_vertical_line = NULL, # list with verticale line to plot on longitudinal profile
     )
@@ -231,6 +230,17 @@ mod_profil_long_server <- function(id, r_val){
         r_val$map_proxy %>%
           clearGroup(params_map_group()$light)
       }
+    })
+
+    #### leaflet map dgo mouseover ####
+    observeEvent(r_val$leaflet_hover_measure, {
+      # remove the first element (hover dgo vertical line)
+      r_val_local$leaflet_hover_shapes <- list(shapes = r_val_local$leaflet_hover_shapes$shapes[-1])
+      # add the new hover dgo vertical line
+      r_val_local$leaflet_hover_shapes$shapes <- c(list(lg_vertical_line(r_val$leaflet_hover_measure)), r_val_local$leaflet_hover_shapes$shapes)
+      # change profile layout with vertical line
+      plotlyProxy("long_profile") %>%
+        plotlyProxyInvoke("relayout", r_val_local$leaflet_hover_shapes)
     })
   })
 }
