@@ -42,7 +42,7 @@
             width = 6,
             tabsetPanel(
               id = "tabset",
-              tabPanel("Aperçu caractéristiques",
+              tabPanel("Caractéristiques",
                        mod_characterisation_ui("characterisation_1")
               ),
               tabPanel("Styles fluviaux",

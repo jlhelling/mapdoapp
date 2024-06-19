@@ -40,9 +40,9 @@ app_server <- function(input, output, session) {
     axis_start_end = NULL,
 
     # data external
-    roe_region = NULL,
+    roe_region = NULL, # ROE data in selected region
+    roe_axis = NULL, # ROE data in selected axis
     hydro_sites_region = NULL,
-    roe_axis = NULL,
 
     # styling of wms-layer
     sld_body = NULL,
