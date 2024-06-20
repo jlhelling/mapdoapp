@@ -39,6 +39,8 @@ app_server <- function(input, output, session) {
     axis_click = NULL,
     dgo_axis = NULL,
     axis_start_end = NULL,
+    data_dgo_clicked = NULL,
+    data_section = NULL,
 
     # data external
     roe_region = NULL, # ROE data in selected region

@@ -654,3 +654,251 @@ params_metrics_info <- function() {
   return(metric_info)
 
 }
+
+#' Get Metric parameters
+#'
+#' This function returns a nested list of metrics, their names and titles used for plots as well as their description.
+#' Can for example be used for the creation of a selectInput of metrics.
+#'
+#' @return A list of choices for selecting metric type.
+#'
+#' @examples
+#' metric_choices <- params_metrics()
+#'
+#' @export
+params_metrics <- function(){
+
+  metric_info <- list(
+    talweg_elevation_min = list(
+      metric_name = "talweg_elevation_min",
+      metric_type_title = "Elévation (m)",
+      metric_title = "Elévation talweg min (m)",
+      metric_description = "Elévation minimale du talweg."
+    ),
+    active_channel_width = list(
+      metric_name = "active_channel_width",
+      metric_type_title = "Largeurs (m)",
+      metric_title = "Chenal actif (m)",
+      metric_description = "Surface en eau et bancs sédimentaires."
+    ),
+    natural_corridor_width = list(
+      metric_name = "natural_corridor_width",
+      metric_type_title = "Largeurs (m)",
+      metric_title = "Corridor naturel (m)",
+      metric_description = "Surface en eau, bancs sédimentaires et végétation rivulaire connectée."
+    ),
+    connected_corridor_width = list(
+      metric_name = "connected_corridor_width",
+      metric_type_title = "Largeurs (m)",
+      metric_title = "Corridor connecté (m)",
+      metric_description = "Surface en eau, bancs sédimentaires, végétation rivulaire connectée et surfaces agricoles connectées."
+    ),
+    valley_bottom_width = list(
+      metric_name = "valley_bottom_width",
+      metric_type_title = "Largeurs (m)",
+      metric_title = "Fond de vallée (m)",
+      metric_description = "Fond de vallée déterminé par seuil de pente et d'élévation."
+    ),
+    talweg_slope = list(
+      metric_name = "talweg_slope",
+      metric_type_title = "Pentes (%)",
+      metric_title = "Pente talweg (%)",
+      metric_description = "Pente moyenne du talweg."
+    ),
+    floodplain_slope = list(
+      metric_name = "floodplain_slope",
+      metric_type_title = "Pentes (%)",
+      metric_title = "Pente fond de vallée",
+      metric_description = "Pente moyenne du fond de vallée."
+    ),
+    water_channel_pc = list(
+      metric_name = "water_channel_pc",
+      metric_type_title = "Occupation du sol (%)",
+      metric_title = "Surface en eau (%)",
+      metric_description = "Surface en eau définie par la BD TOPO® de l'IGN. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    gravel_bars_pc = list(
+      metric_name = "gravel_bars_pc",
+      metric_type_title = "Occupation du sol (%)",
+      metric_title = "Banc sédimentaire (%)",
+      metric_description = "Surface des eaux intermittentes de la BD TOPO® de l'IGN. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    natural_open_pc = list(
+      metric_name = "natural_open_pc",
+      metric_type_title = "Occupation du sol (%)",
+      metric_title = "Espace naturel ouvert (%)",
+      metric_description = "Zone de végétation ouverte telles que les forêts ouvertes, les haies ou bandes ligneuses. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    forest_pc = list(
+      metric_name = "forest_pc",
+      metric_type_title = "Occupation du sol (%)",
+      metric_title = "Forêt (%)",
+      metric_description = "Zone de végétation fermée. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    grassland_pc = list(
+      metric_name = "grassland_pc",
+      metric_type_title = "Occupation du sol (%)",
+      metric_title = "Prairie permanente (%)",
+      metric_description = "Parcelle de prairie permanente définie dans le RPG®. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    crops_pc = list(
+      metric_name = "crops_pc",
+      metric_type_title = "Occupation du sol (%)",
+      metric_title = "Culture (%)",
+      metric_description = "Zone de culture rassemblant les grandes cultures, l'arboriculture et les vignes. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    diffuse_urban_pc = list(
+      metric_name = "diffuse_urban_pc",
+      metric_type_title = "Occupation du sol (%)",
+      metric_title = "Périurbain (%)",
+      metric_description = "Zone d'habitation diffus proche de la zone d'habitation de la BD TOPO®. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    dense_urban_pc = list(
+      metric_name = "dense_urban_pc",
+      metric_type_title = "Occupation du sol (%)",
+      metric_title = "Urbain dense (%)",
+      metric_description = "Zone continue de l'espace bâti dense ou artificialisée. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    infrastructures_pc = list(
+      metric_name = "infrastructures_pc",
+      metric_type_title = "Occupation du sol (%)",
+      metric_title = "Infrastructure de transport (%)",
+      metric_description = "Infrastructure routière et ferroviaire. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    water_channel = list(
+      metric_name = "water_channel",
+      metric_type_title = "Occupation du sol (ha)",
+      metric_title = "Surface en eau (ha)",
+      metric_description = "Surface en eau définie par la BD TOPO® de l'IGN. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    gravel_bars = list(
+      metric_name = "gravel_bars",
+      metric_type_title = "Occupation du sol (ha)",
+      metric_title = "Banc sédimentaire (ha)",
+      metric_description = "Surface des eaux intermittentes de la BD TOPO® de l'IGN. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    natural_open = list(
+      metric_name = "natural_open",
+      metric_type_title = "Occupation du sol (ha)",
+      metric_title = "Espace naturel ouvert (ha)",
+      metric_description = "Zone de végétation ouverte telles que les forêts ouvertes, les haies ou bandes ligneuses. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    forest = list(
+      metric_name = "forest",
+      metric_type_title = "Occupation du sol (ha)",
+      metric_title = "Forêt (ha)",
+      metric_description = "Zone de végétation fermée. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    grassland = list(
+      metric_name = "grassland",
+      metric_type_title = "Occupation du sol (ha)",
+      metric_title = "Prairie permanente (ha)",
+      metric_description = "Parcelle de prairie permanente définie dans le RPG®. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    crops = list(
+      metric_name = "crops",
+      metric_type_title = "Occupation du sol (ha)",
+      metric_title = "Culture (ha)",
+      metric_description = "Zone de culture rassemblant les grandes cultures, l'arboriculture et les vignes. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    diffuse_urban = list(
+      metric_name = "diffuse_urban",
+      metric_type_title = "Occupation du sol (ha)",
+      metric_title = "Périurbain (ha)",
+      metric_description = "Zone d'habitation diffus proche de la zone d'habitation de la BD TOPO®. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    dense_urban = list(
+      metric_name = "dense_urban",
+      metric_type_title = "Occupation du sol (ha)",
+      metric_title = "Urbain dense (ha)",
+      metric_description = "Zone continue de l'espace bâti dense ou artificialisée. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    infrastructures = list(
+      metric_name = "infrastructures",
+      metric_type_title = "Occupation du sol (ha)",
+      metric_title = "Infrastructure de transport (ha)",
+      metric_description = "Infrastructure routière et ferroviaire. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    active_channel_pc = list(
+      metric_name = "active_channel_pc",
+      metric_type_title = "Continuité latérale (%)",
+      metric_title = "Bande active (%)",
+      metric_description = "Les surfaces en eau et les bancs sédimentaires connectés. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    riparian_corridor_pc = list(
+      metric_name = "riparian_corridor_pc",
+      metric_type_title = "Continuité latérale (%)",
+      metric_title = "Corridor naturel (%)",
+      metric_description = "Le chenal actif avec la végétation ouverte et fermée connectée. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    semi_natural_pc = list(
+      metric_name = "semi_natural_pc",
+      metric_type_title = "Continuité latérale (%)",
+      metric_title = "Corridor semi-naturel (%)",
+      metric_description = "Le corridor naturel avec les prairies permanentes connectées. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    reversible_pc = list(
+      metric_name = "reversible_pc",
+      metric_type_title = "Continuité latérale (%)",
+      metric_title = "Espace de réversibilité (%)",
+      metric_description = "Le corridor semi-naturel avec les cultures connectées. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    disconnected_pc = list(
+      metric_name = "disconnected_pc",
+      metric_type_title = "Continuité latérale (%)",
+      metric_title = "Espace déconnecté (%)",
+      metric_description = "Espace non urbanisé déconnecté du corridor fluvial par des infrastructures ou du bâti. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    built_environment_pc = list(
+      metric_name = "built_environment_pc",
+      metric_type_title = "Continuité latérale (%)",
+      metric_title = "Espace artificialisé (%)",
+      metric_description = "Zone bâti, dense ou peu dense, et les infrastructures de transport. La surface est exprimée en pourcentage du fond de vallée découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    active_channel = list(
+      metric_name = "active_channel",
+      metric_type_title = "Continuité latérale (ha)",
+      metric_title = "Bande active (ha)",
+      metric_description = "Les surfaces en eau et les bancs sédimentaires connectés. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    riparian_corridor = list(
+      metric_name = "riparian_corridor",
+      metric_type_title = "Continuité latérale (ha)",
+      metric_title = "Corridor naturel (ha)",
+      metric_description = "Le chenal actif avec la végétation ouverte et fermée connectée. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    semi_natural = list(
+      metric_name = "semi_natural",
+      metric_type_title = "Continuité latérale (ha)",
+      metric_title = "Corridor semi-naturel (ha)",
+      metric_description = "Le corridor naturel avec les prairies permanentes connectées. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    reversible = list(
+      metric_name = "reversible",
+      metric_type_title = "Continuité latérale (ha)",
+      metric_title = "Espace de réversibilité (ha)",
+      metric_description = "Le corridor semi-naturel avec les cultures connectées. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    disconnected = list(
+      metric_name = "disconnected",
+      metric_type_title = "Continuité latérale (ha)",
+      metric_title = "Espace déconnecté (ha)",
+      metric_description = "Espace non urbanisé déconnecté du corridor fluvial par des infrastructures ou du bâti. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    built_environment = list(
+      metric_name = "built_environment",
+      metric_type_title = "Continuité latérale (ha)",
+      metric_title = "Espace artificialisé (ha)",
+      metric_description = "Zone bâti, dense ou peu dense, et les infrastructures de transport. La surface est exprimée en hectares découpée à partir des tronçons de 200m du réseau hydrographique."
+    ),
+    idx_confinement = list(
+      metric_name = "idx_confinement",
+      metric_type_title = "Indice",
+      metric_title = "Indice de confinement",
+      metric_description = "Ratio de la largeur de la bande active sur la largeur du fond de vallée. \n Il permet d'estimer si le cours d'eau est contraint par la topographie. Plus l'indice est faible plus le cours d'eau a d'espace potentiel pour s'élargir."
+    )
+  )
+
+
+  return(metric_info)
+}
