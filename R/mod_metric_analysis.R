@@ -112,7 +112,7 @@ mod_metric_analysis_server <- function(id, con, r_val){
         # create elements of manual grouping pane
         r_val_local$ui_metric = selectInput(ns("metric"), NULL,
                                             choices = params_get_metric_choices(),
-                                            selected  = params_get_metric_choices()[5],
+                                            selected  = params_get_metric_choices()[1],
                                             width = "100%")
 
         # remove placeholder text
@@ -123,11 +123,17 @@ mod_metric_analysis_server <- function(id, con, r_val){
     #### metric changed ####
     observeEvent(input$metric, {
 
-      r_val$selected_metric <- input$metric
+      # set metric names and info
+      r_val$selected_metric =input$metric
+      r_val$selected_metric_title =
+        params_metrics() |> filter(metric_name == r_val$selected_metric) |> pull(metric_title)
+      r_val$selected_metric_type =
+        params_metrics() |> filter(metric_name == r_val$selected_metric) |> pull(metric_type_title)
+      r_val$selected_metric_description =
+        params_metrics() |> filter(metric_name == r_val$selected_metric) |> pull(metric_description)
 
-      # print(params_metrics_choice_analysis()$index$metric_type_values[[input$metric]])
       # create metric description
-      r_val_local$metric_description = params_metrics_info()[[input$metric]]
+      r_val_local$metric_description = r_val$selected_metric_description
 
       # combine networks of axis and region for violinplots
       merged_network <- merge_regional_axis_dfs(r_val$network_region,
@@ -135,7 +141,8 @@ mod_metric_analysis_server <- function(id, con, r_val){
                                                 input$metric)
 
       # create plots
-      r_val_local$violinplots_metric <- create_plotly_violinplot(merged_network, input$metric)
+      r_val_local$violinplots_metric <-
+        create_plotly_violinplot(merged_network, input$metric, var_title = r_val$selected_metric_title)
 
       r_val_local$accordeon_ui <- accordion(
         accordion_panel(

@@ -42,6 +42,11 @@ app_server <- function(input, output, session) {
     data_dgo_clicked = NULL,
     data_section = NULL,
 
+    # metric info
+    selected_metric_title = NULL,
+    selected_metric_type = NULL,
+    selected_metric_info = NULL,
+
     # data external
     roe_region = NULL, # ROE data in selected region
     roe_axis = NULL, # ROE data in selected axis

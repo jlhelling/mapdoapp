@@ -4,7 +4,7 @@
 \alias{create_plotly_violinplot}
 \title{Create interactive violinplots for a specific variable for region and axis}
 \usage{
-create_plotly_violinplot(data, var)
+create_plotly_violinplot(data, var, var_title)
 }
 \arguments{
 \item{data}{classified network data with entries for regional and axis dgos}

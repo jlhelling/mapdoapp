@@ -7,7 +7,7 @@
 params_metrics()
 }
 \value{
-A list of choices for selecting metric type.
+A table of all metrics and corresponding info
 }
 \description{
 This function returns a nested list of metrics, their names and titles used for plots as well as their description.

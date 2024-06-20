@@ -65,10 +65,16 @@ mod_profil_long_server <- function(id, r_val){
       ui_roe_profile = NULL, # UI placeholder for ROE checkbox
       roe_vertical_line = NULL, # list with verticale line to plot on longitudinal profile
 
+      selected_profile_metric_title = NULL, # metric title to be displayed instead of pure variable name
+      selected_profile_metric_type = NULL, # metric type title
+
       # second axis
       profile_sec_metric = NULL, # second metric selection
       add_sec_axe = NULL, # add second axis
-      remove_sec_axe = NULL # remove second axis
+      remove_sec_axe = NULL, # remove second axis
+      sec_metric_name = NULL, # title
+      sec_metric_type = NULL # metric type title
+
     )
 
     #### OUTPUTS ####
@@ -105,16 +111,14 @@ mod_profil_long_server <- function(id, r_val){
       track_inputs(input = input)
 
       if (!is.null(r_val$selected_metric) & !is.null(r_val$dgo_axis)) {
-        # r_val$selected_profile_metric_name = params_metrics_choice()[[input$profile_metric_type]]$metric_type_values[[input$profile_metric]]$metric_title
-        # r_val$selected_profile_metric_type = params_metrics_choice()[[input$profile_metric_type]]$metric_type_title
 
         # create longitudinal profile plot
         r_val_local$plot <-
           lg_profile_main(
             data = r_val$dgo_axis,
             y = r_val$dgo_axis[[r_val$selected_metric]],
-            y_label = r_val$selected_metric,
-            y_label_category = "type"
+            y_label = r_val$selected_metric_title,
+            y_label_category = ""
           ) %>%
           event_register("plotly_hover")
 
@@ -122,7 +126,7 @@ mod_profil_long_server <- function(id, r_val){
         # build second axis input and add and remove buttons
         r_val_local$profile_sec_metric = selectInput(ns("profile_sec_metric"), label = "Ajoutez une métrique :",
                                                      choices = params_get_metric_choices(),
-                                                     selected  = params_get_metric_choices()[5],
+                                                     selected  = params_get_metric_choices()[1],
                                                      width = "100%")
         r_val_local$add_sec_axe = actionButton(inputId = ns("add_sec_axe"), "Ajouter", width = "100%")
         r_val_local$remove_sec_axe = actionButton(inputId = ns("remove_sec_axe"), "Retirer", width = "100%")
@@ -173,12 +177,19 @@ mod_profil_long_server <- function(id, r_val){
       # track input
       track_inputs(input = input)
 
+      # get metric title and type
+      r_val_local$sec_metric_name =
+        params_metrics() |> filter(metric_name == input$profile_sec_metric) |> pull(metric_title)
+      r_val_local$sec_metric_type =
+        params_metrics() |> filter(metric_name == input$profile_sec_metric) |> pull(metric_type_title)
+
       # create the list to add trace and layout to change second axe plot
       proxy_second_axe <- lg_profile_second(data = r_val$dgo_axis,
                                             y = r_val$dgo_axis[[input$profile_sec_metric]],
-                                            y_label = input$profile_sec_metric,
-                                            y_label_category = "type")
+                                            y_label = r_val_local$sec_metric_name,
+                                            y_label_category = r_val_local$sec_metric_type)
 
+      # add data to plot
       plotlyProxy("long_profile") %>%
         plotlyProxyInvoke("deleteTraces", 1) %>%
         plotlyProxyInvoke("addTraces", proxy_second_axe$trace, 1) %>%

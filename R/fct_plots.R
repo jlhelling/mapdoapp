@@ -125,7 +125,7 @@ create_plotly_barplot <- function(data){
 #'
 #' @examples
 #' violinplot_plotly <- create_plotly_violinplot(data_plots, "forest_pc")
-create_plotly_violinplot <- function(data, var){
+create_plotly_violinplot <- function(data, var, var_title){
 
   plot <- plotly::plot_ly(data = data,
                           x = ~scale,
@@ -143,6 +143,7 @@ create_plotly_violinplot <- function(data, var){
                           source = 'V') %>%
     plotly::layout(
       xaxis = list(title = "", showgrid = FALSE),
+      yaxis = list(title = var_title, side = 'left'),
       showlegend = FALSE
     )
 

@@ -56,6 +56,7 @@ mod_mapdo_app_ui <- function(id){
       ), #row
 
       fluidRow(
+        style = "margin-top: 10px;",
         tabsetPanel(
           tabPanel(
             "Évolution longitudinale",
