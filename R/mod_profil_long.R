@@ -25,13 +25,17 @@ mod_profil_long_ui <- function(id){
           column(
             width = 3,
             style = "margin-top: 20px;",
-            # uiOutput(ns("profilemetricUI")),
-            # uiOutput(ns("profileareaUI")),
-            # uiOutput(ns("profileradiobuttonUI")),
-            # uiOutput(ns("removeprofileaxeUI"),
-            #          style = "margin-top: 10px;"), # more space above button
+            uiOutput(ns("profile_sec_metricUI")),
+            fluidRow(
+              column(width = 6,
+                     uiOutput(ns("add_sec_axeUI")),
+                     ),
+              column(width = 6,
+                     uiOutput(ns("remove_sec_axeUI")),
+                     )
+            ),
             uiOutput(ns("profileroeUI"),
-                     style = "margin-top: 10px;")
+                     style = "margin-top: 20px;")
           )
         )
       )
@@ -60,6 +64,11 @@ mod_profil_long_server <- function(id, r_val){
       leaflet_hover_shapes = NULL, # list to store vertical lines to display on longitudinal profile
       ui_roe_profile = NULL, # UI placeholder for ROE checkbox
       roe_vertical_line = NULL, # list with verticale line to plot on longitudinal profile
+
+      # second axis
+      profile_sec_metric = NULL, # second metric selection
+      add_sec_axe = NULL, # add second axis
+      remove_sec_axe = NULL # remove second axis
     )
 
     #### OUTPUTS ####
@@ -67,25 +76,20 @@ mod_profil_long_server <- function(id, r_val){
       return(r_val_local$plot)
     })
 
-    # # add input UI for profile additional metric
-    # output$profilemetricUI <- renderUI({
-    #   r_val$ui_profile_metric_type
-    # })
+    # add selectinput for additional metric
+    output$profile_sec_metricUI <- renderUI({
+      r_val_local$profile_sec_metric
+    })
 
-    # # add radiobutton for profile additional metric
-    # output$profileradiobuttonUI <- renderUI({
-    #   r_val$ui_profile_metric
-    # })
+    # button to remove second axe
+    output$add_sec_axeUI <- renderUI({
+      r_val_local$add_sec_axe
+    })
 
-    # # UI switch unit area for profile additional metric
-    # output$profileareaUI <- renderUI({
-    #   r_val$ui_profile_unit_area
-    # })
-
-    # # button to remove second axe
-    # output$removeprofileaxeUI <- renderUI({
-    #   r_val$ui_remove_profile_axe
-    # })
+    # button to remove second axe
+    output$remove_sec_axeUI <- renderUI({
+      r_val_local$remove_sec_axe
+    })
 
     # checkbox display ROE
     output$profileroeUI <- renderUI({
@@ -114,14 +118,24 @@ mod_profil_long_server <- function(id, r_val){
           ) %>%
           event_register("plotly_hover")
 
-        # built ROE checkboxInput
 
+        # build second axis input
+        r_val_local$profile_sec_metric = selectInput(ns("profile_sec_metric"), label = "Ajoutez une métrique :",
+                                                     choices = params_get_metric_choices(),
+                                                     selected  = params_get_metric_choices()[5],
+                                                     width = "100%")
+          r_val_local$add_sec_axe = actionButton(inputId = ns("add_sec_axe"), "Ajouter", width = "100%")
+          r_val_local$remove_sec_axe = actionButton(inputId = ns("remove_sec_axe"), "Retirer", width = "100%")
+
+        # build ROE checkboxInput
         r_val_local$ui_roe_profile = NULL # delete checkbox before creating new one
         r_val_local$ui_roe_profile = checkboxInput(ns("roe_profile"),
                                                    label = "Obstacles à l'Ecoulement",
                                                    value = FALSE)
 
 
+
+        # build second metric select-input and add and remove buttons
 
 
 

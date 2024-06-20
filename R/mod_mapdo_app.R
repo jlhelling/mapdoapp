@@ -62,7 +62,7 @@
         fluidRow(
           accordion(
             accordion_panel(
-              "Profil en long",
+              "Évolution longitudinale",
               mod_profil_long_ui("profil_long_1")
             )
           )
