@@ -19,11 +19,11 @@ mod_profil_long_ui <- function(id){
       useShinyjs(),
       div(
         fluidRow(
-          column(width = 9,
+          column(width = 10,
                  plotlyOutput(ns("long_profile"))
           ),
           column(
-            width = 3,
+            width = 2,
             style = "margin-top: 20px;",
             uiOutput(ns("profile_sec_metricUI")),
             fluidRow(
