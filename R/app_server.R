@@ -69,7 +69,7 @@ app_server <- function(input, output, session) {
   mod_documentation_server("documentation_1")
 
   ### server activation ####
-  mod_characterisation_server("characterisation_1")
+  mod_characterisation_server("characterisation_1", r_val)
   mod_fluvial_styles_server("fluvial_styles_1", r_val)
   mod_metric_analysis_server("metric_analysis_1", con, r_val)
   mod_profil_transverse_server("profil_transverse_1", r_val)
