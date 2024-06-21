@@ -13,6 +13,9 @@ fct_table_create_table_df(region_sf, axis_sf, dgo_sf)
 
 \item{dgo_sf}{sf object of selected dgo}
 }
+\value{
+dataframe with metrics as rows
+}
 \description{
 Merge regional, axis, and dgo dataframes together for reactable table
 }

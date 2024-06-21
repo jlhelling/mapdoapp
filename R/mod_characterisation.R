@@ -18,6 +18,12 @@ mod_characterisation_ui <- function(id){
       useShinyjs(),
       fluidRow(
         style = "margin-top: 20px;",
+        column(width = 6,
+               uiOutput(ns("description"))),
+        column(width = 6,
+               uiOutput(ns("selectinput")))
+      ),
+      fluidRow(
         reactableOutput(ns("table"), width = "100%")
       )
     )
@@ -26,6 +32,7 @@ mod_characterisation_ui <- function(id){
 
 #' characterisation Server Functions
 #'
+#' @import shiny
 #' @importFrom reactable renderReactable
 #'
 #' @noRd
@@ -34,24 +41,51 @@ mod_characterisation_server <- function(id, r_val){
     ns <- session$ns
 
     r_val_local <- reactiveValues(
-      characteristics_table = NULL
+      characteristics_table = NULL,
+      descriptionUI = HTML("<p> CLickez sur une axe hydrographique pour afficher la comparaison des caractéristiques </p>"),
+      selectinputUI = NULL,
+      unit = NULL
     )
 
     output$table <- renderReactable(
       r_val_local$characteristics_table
     )
 
-    observeEvent(c(r_val$network_region, r_val$dgo_axis, r_val$data_dgo_clicked), {
+    output$description <- renderUI(
+      r_val_local$descriptionUI
+    )
 
-      if (!is.null(r_val$network_region) & !is.null(r_val$dgo_axis)) {
+    output$selectinput <- renderUI(
+      r_val_local$selectinputUI
+    )
 
+    observe({
+      if (!is.null(r_val$axis_click)) {
+        # create header
+        r_val_local$descriptionUI = HTML("<p><strong>Comparaison de moyennes </strong></p>")
+        r_val_local$selectinputUI = selectInput(ns("select_unit"), label = NULL,
+                                                 choices = list("surface relative (%)", "surface absolute (ha)"))
+      }
+    })
+
+    observeEvent(c(input$select_unit, r_val$network_region, r_val$dgo_axis, r_val$data_dgo_clicked), {
+
+
+      print(input$select_unit)
+      check <- input$select_unit
+
+      if (!is.null(check) & !is.null(r_val$network_region) & !is.null(r_val$dgo_axis)) {
         # create data for table
         data_df <- fct_table_create_table_df(region_sf = r_val$network_region,
                                              axis_sf = r_val$dgo_axis,
                                              dgo_sf = r_val$data_dgo_clicked)
 
         # create reactable
-        r_val_local$characteristics_table <- fct_table_create_reactable(data_df, "%")
+        if (check == "surface relative (%)") {
+          r_val_local$characteristics_table <- fct_table_create_reactable(data_df, "%")
+        } else {
+          r_val_local$characteristics_table <- fct_table_create_reactable(data_df, "ha")
+        }
 
       }
     })

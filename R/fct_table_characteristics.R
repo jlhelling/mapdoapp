@@ -5,7 +5,7 @@
 #'
 #' @param df_sf sf object with one or several dgos
 #'
-#' @return
+#' @return dataframe with metrics as rows
 #' @export
 #'
 fct_table_pivot_sf <- function(df_sf) {
@@ -33,7 +33,7 @@ fct_table_pivot_sf <- function(df_sf) {
 #' @param axis_sf sf object of dgos from selected axis network
 #' @param dgo_sf sf object of selected dgo
 #'
-#' @return
+#' @return dataframe with metrics as rows
 #' @export
 #'
 #' @examples
@@ -103,7 +103,7 @@ fct_table_create_table_df <- function(region_sf, axis_sf, dgo_sf){
 #' @param df dataframe of merged regional, axis and dgo data
 #' @param unit
 #'
-#' @return
+#' @return reactable table object
 #' @export
 #'
 fct_table_create_reactable <- function(df, unit){

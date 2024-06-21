@@ -11,6 +11,9 @@ fct_table_create_reactable(df, unit)
 
 \item{unit}{}
 }
+\value{
+reactable table object
+}
 \description{
 Create reactable table
 }

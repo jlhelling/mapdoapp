@@ -124,7 +124,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
 
     ### EVENT MAP CLICK ####
 
-    observeEvent(input$map_shape_click,{
+    observeEvent(input$map_shape_click, {
 
       # track input
       track_inputs(input = input)
@@ -261,6 +261,8 @@ mod_mapdo_app_server <- function(id, con, r_val){
       ### axis clicked ####
 
       if (input$map_shape_click$group == params_map_group()$axis) {
+
+        r_val$axis_clicked = TRUE
 
         # save the clicked axis values
         r_val$axis_click = input$map_shape_click

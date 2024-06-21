@@ -9,6 +9,9 @@ fct_table_pivot_sf(df_sf)
 \arguments{
 \item{df_sf}{sf object with one or several dgos}
 }
+\value{
+dataframe with metrics as rows
+}
 \description{
 convert sf to pivoted dataframe with variables as rows
 }

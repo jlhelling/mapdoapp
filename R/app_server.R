@@ -37,6 +37,7 @@ app_server <- function(input, output, session) {
     network_region = NULL,
     axis_name = NULL,
     axis_click = NULL,
+    axis_clicked = FALSE,
     dgo_axis = NULL,
     axis_start_end = NULL,
     data_dgo_clicked = NULL,
