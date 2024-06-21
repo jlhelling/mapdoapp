@@ -124,7 +124,7 @@ mod_metric_analysis_server <- function(id, con, r_val){
     observeEvent(input$metric, {
 
       # set metric names and info
-      r_val$selected_metric =input$metric
+      r_val$selected_metric = input$metric
       r_val$selected_metric_title =
         params_metrics() |> filter(metric_name == r_val$selected_metric) |> pull(metric_title)
       r_val$selected_metric_type =

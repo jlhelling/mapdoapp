@@ -1,76 +1,141 @@
-#' create a table to compare characteristics of region and segment
+#' convert sf to pivoted dataframe with variables as rows
 #'
-#' @description A fct function
+#' @import dplyr
+#' @importFrom sf st_drop_geometry
+#'
+#' @param df_sf sf object with one or several dgos
+#'
+#' @return
+#' @export
+#'
+fct_table_pivot_sf <- function(df_sf) {
+  df <- df_sf |>
+    sf::st_drop_geometry() |>
+    na.omit() |>
+    tidyr::pivot_longer(-c(fid, axis, measure, toponyme, strahler, gid_region), names_to = "metric_name", values_to = "value") |>
+    dplyr::mutate(value = round(value, 2)) |>
+    dplyr::group_by(metric_name) |>
+    dplyr::summarize(
+      mean = round(mean(value), 2),
+      distr = list(value)
+    )
+
+  return(df)
+}
+
+#' Merge regional, axis, and dgo dataframes together for reactable table
+#'
+#' @import dplyr
+#' @importFrom sf st_drop_geometry
+#' @importFrom tidyr pivot_longer
+#'
+#' @param region_sf sf object of dgos from selected regional network
+#' @param axis_sf sf object of dgos from selected axis network
+#' @param dgo_sf sf object of selected dgo
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' fct_table_create_table_df(network_dgo, network_dgo, network_dgo[1,])
+fct_table_create_table_df <- function(region_sf, axis_sf, dgo_sf){
+
+  # regional data
+  region_pivot <- fct_table_pivot_sf(region_sf) |>
+    dplyr::rename(mean_region = mean, distr_region = distr)
+
+  # region and axis selected, but dgo not
+  if (is.null(dgo_sf)) {
+
+    # axis data
+    axis_pivot <- fct_table_pivot_sf(axis_sf) |>
+      dplyr::rename(mean_axis = mean, distr_axis = distr)
+
+    # merge datasets
+    merged <-
+      dplyr::left_join(params_metrics() |> select(metric_name, metric_title), region_pivot,
+                       by = join_by(metric_name)) |>
+      dplyr::left_join(axis_pivot,
+                       by = join_by(metric_name)) |>
+      dplyr::mutate(segment = "") |>
+      dplyr::select(!metric_name) |>
+      dplyr::relocate(metric_title, mean_region, distr_region, mean_axis, distr_axis, segment) |>
+      dplyr::group_by(metric_title)
+  }
+  # region, axis, and dgo selected
+  else {
+
+    # axis data
+    axis_pivot <- fct_table_pivot_sf(axis_sf) |>
+      dplyr::rename(mean_axis = mean, distr_axis = distr)
+
+    # dgo data
+    dgo_pivot <- dgo_sf |>
+      sf::st_drop_geometry() |>
+      dplyr::select(-c(fid, axis, measure, toponyme, strahler, gid_region)) |>
+      tidyr::pivot_longer(-c(), names_to = "metric_name", values_to = "segment") |>
+      dplyr::mutate(segment = round(segment, 2))
+
+    # merge datasets
+    merged <-
+      dplyr::left_join(params_metrics() |> select(metric_name, metric_title), region_pivot,
+                       by = join_by(metric_name)) |>
+      dplyr::left_join(axis_pivot,
+                       by = join_by(metric_name),
+                       suffix = c("_region", "_axis")) |>
+      dplyr::left_join(dgo_pivot,
+                       by = join_by(metric_name)) |>
+      dplyr::select(!metric_name) |>
+      dplyr::relocate(metric_title, mean_region, distr_region, mean_axis, distr_axis, segment) |>
+      dplyr::group_by(metric_title)
+  }
+
+  return(merged)
+}
+
+
+#' Create reactable table
 #'
 #' @import dplyr
 #' @importFrom reactable reactable colDef
 #' @importFrom sparkline sparkline
-#' @importFrom sf st_drop_geometry
-#' @importFrom tidyr pivot_longer
 #'
-#' @return The return value, if any, from executing the function.
+#' @param df dataframe of merged regional, axis and dgo data
+#' @param unit
 #'
-#' @noRd
-create_reactable_characteristics <- function(region_network, dgo){
+#' @return
+#' @export
+#'
+fct_table_create_reactable <- function(df, unit){
 
-  # get data
-  region_df <- region_network %>% sf::st_drop_geometry()
-  # axis_df <- axis_network %>% sf::st_drop_geometry()
-  dgo_df <- dgo %>% sf::st_drop_geometry()
+  # filter for ha or % units
+  if (unit == "ha") {
+    data <- df %>%
+      dplyr::filter(!grepl('(%)', metric_title))
+  } else if (unit == "%") {
+    data <- df %>%
+      dplyr::filter(!grepl('(ha)', metric_title))
+  }
 
-  # convert data
-  network_pivot <- region_df %>%
-    tidyr::pivot_longer(-c(fid, axis, measure, toponyme, strahler, gid_region),
-                        names_to = "variable", values_to = "value") %>%
-    dplyr::mutate(value = round(value, 2)) %>%
-    dplyr::group_by(variable) %>%
-    dplyr::summarize(
-      region_mean = mean(value),
-      region_distr = list(value)
-    )
-
-  dgo_pivot <- dgo_df %>%
-    dplyr::select(-c(fid, axis, measure, toponyme, strahler, gid_region)) %>%
-    tidyr::pivot_longer(-c(), names_to = "variable", values_to = "segment") %>%
-    dplyr::mutate(segment = round(segment, 2))
-
-  # merge datasets
-  merged <- left_join(network_pivot, dgo_pivot, by = join_by(variable)) %>%
-    dplyr::left_join(params_metrics() %>% select(metric_name, metric_title, metric_type_title),
-                     by = dplyr::join_by(variable == metric_name)) %>%
-    dplyr::select(!variable) %>%
-    dplyr::relocate(metric_type_title, metric_title, region_mean, region_distr, segment) %>%
-    # na.omit() %>%
-    dplyr::arrange(factor(metric_type_title, levels = unique(params_metrics()$metric_type_title))) %>%
-    dplyr::group_by(metric_title)
-
-  # create table
+  # create reactable table
   table <- reactable(
-    data = merged,
+    data = data,
     columns = list(
-      metric_type_title = colDef(name = "Groupe"),
       metric_title = colDef(name = "Métrique"),
-      region_mean = colDef(
-        name = "Région (moyenne)",
-        style = function(value, index) {
-          reactable_style_function(value, merged$segment[index])
-        }
-        ),
-      region_distr = colDef(
-        name = "Distribution",
-        cell = function(value, index) {
-          sparkline(merged$region_distr[[index]], type = "box")
-        }),
-      segment = colDef(
-        name = "Tronçon",
-        style = function(value, index) {
-          reactable_style_function(value, merged$region_mean[index])
-        })
+      mean_region = colDef(name = "Région", width = 100),
+      distr_region = colDef(name = "", width = 100,
+                            cell = function(value, index) {
+                              sparkline(data$distr_region[[index]], type = "box")
+                            }),
+      mean_axis = colDef(name = "Axe", width = 100),
+      distr_axis = colDef(name = "", width = 100,
+                          cell = function(value, index) {
+                            sparkline(data$distr_axis[[index]], type = "box")
+                          }),
+      segment = colDef(name = "Tronçon", width = 80)
     ),
-    groupBy = "metric_type_title",
-    paginateSubRows = TRUE,
-    defaultExpanded = TRUE, # categories expanded rather than closed
-    defaultPageSize = 10, # set rows per page
+    height = 600,
+    defaultPageSize = 15,
     highlight = TRUE, # highlight rows on hover
     compact = TRUE
   )
@@ -80,30 +145,125 @@ create_reactable_characteristics <- function(region_network, dgo){
 
 
 
-#' Helper function to style reactable table
+
+
+
+
+
+
+
+
+
+
+
+
+#' #' create a table to compare characteristics of region and segment
+#' #'
+#' #' @description A fct function
+#' #'
+#' #' @import dplyr
+#' #' @importFrom reactable reactable colDef
+#' #' @importFrom sparkline sparkline
+#' #' @importFrom sf st_drop_geometry
+#' #' @importFrom tidyr pivot_longer
+#' #'
+#' #' @return The return value, if any, from executing the function.
+#' #'
+#' #' @noRd
+#' create_reactable_characteristics <- function(region_network, dgo){
 #'
-#' @param value actual value which should be coloured
-#' @param other_value value to which the actual value should be compared
+#'   # get data
+#'   region_df <- region_network %>% sf::st_drop_geometry()
+#'   # axis_df <- axis_network %>% sf::st_drop_geometry()
+#'   dgo_df <- dgo %>% sf::st_drop_geometry()
 #'
-#' @return styling for reactable row
-#' @export
+#'   # convert data
+#'   network_pivot <- region_df %>%
+#'     tidyr::pivot_longer(-c(fid, axis, measure, toponyme, strahler, gid_region),
+#'                         names_to = "variable", values_to = "value") %>%
+#'     dplyr::mutate(value = round(value, 2)) %>%
+#'     dplyr::group_by(variable) %>%
+#'     dplyr::summarize(
+#'       region_mean = mean(value),
+#'       region_distr = list(value)
+#'     )
 #'
-#' @examples
-#' # inside reactable function:
-#' colDef(
-#' name = "Tronçon",
-#' style = function(value, index) {
-#'   reactable_style_function(value, merged$region_mean[index])
-#' })
-reactable_style_function <- function(value, other_value) {
-  if (is.na(value) || is.na(other_value)) {
-    color <- "#212529"  # Default color for NA values
-  } else if (value > other_value) {
-    color <- "#283618"
-  } else if (value < other_value) {
-    color <- "#780000"
-  } else {
-    color <- "#212529"
-  }
-  list(color = color, fontWeight = "bold")
-}
+#'   dgo_pivot <- dgo_df %>%
+#'     dplyr::select(-c(fid, axis, measure, toponyme, strahler, gid_region)) %>%
+#'     tidyr::pivot_longer(-c(), names_to = "variable", values_to = "segment") %>%
+#'     dplyr::mutate(segment = round(segment, 2))
+#'
+#'   # merge datasets
+#'   merged <- left_join(network_pivot, dgo_pivot, by = join_by(variable)) %>%
+#'     dplyr::left_join(params_metrics() %>% select(metric_name, metric_title, metric_type_title),
+#'                      by = dplyr::join_by(variable == metric_name)) %>%
+#'     dplyr::select(!variable) %>%
+#'     dplyr::relocate(metric_type_title, metric_title, region_mean, region_distr, segment) %>%
+#'     # na.omit() %>%
+#'     dplyr::arrange(factor(metric_type_title, levels = unique(params_metrics()$metric_type_title))) %>%
+#'     dplyr::select(!metric_type_title) %>%
+#'     dplyr::group_by(metric_title)
+#'
+#'   # create table
+#'   table <- reactable(
+#'     data = merged,
+#'     columns = list(
+#'       # metric_type_title = colDef(name = "Groupe"),
+#'       metric_title = colDef(name = "Métrique"),
+#'       region_mean = colDef(
+#'         name = "Région (moyenne)",
+#'         style = function(value, index) {
+#'           reactable_style_function(value, merged$segment[index])
+#'         }
+#'         ),
+#'       region_distr = colDef(
+#'         name = "Distribution",
+#'         cell = function(value, index) {
+#'           sparkline(merged$region_distr[[index]], type = "box")
+#'         }),
+#'       segment = colDef(
+#'         name = "Tronçon",
+#'         style = function(value, index) {
+#'           reactable_style_function(value, merged$region_mean[index])
+#'         })
+#'     ),
+#'     # groupBy = "metric_type_title",
+#'     # paginateSubRows = TRUE,
+#'     defaultExpanded = TRUE, # categories expanded rather than closed
+#'     defaultPageSize = 10, # set rows per page
+#'     highlight = TRUE, # highlight rows on hover
+#'     compact = TRUE
+#'   )
+#'
+#'   return(table)
+#' }
+
+
+
+#' #' Helper function to style reactable table
+#' #'
+#' #' @param value actual value which should be coloured
+#' #' @param other_value value to which the actual value should be compared
+#' #'
+#' #' @return styling for reactable row
+#' #' @export
+#' #'
+#' #' @examples
+#' #' # inside reactable function:
+#' #' colDef(
+#' #' name = "Tronçon",
+#' #' style = function(value, index) {
+#' #'   reactable_style_function(value, merged$region_mean[index])
+#' #' })
+#' reactable_style_function <- function(value, other_value) {
+#'   if (is.na(value) || is.na(other_value)) {
+#'     color <- "#212529"  # Default color for NA values
+#'   } else if (value > other_value) {
+#'     color <- "#283618"
+#'   } else if (value < other_value) {
+#'     color <- "#780000"
+#'   } else {
+#'     color <- "#212529"
+#'   }
+#'   list(color = color, fontWeight = "bold")
+#' }
