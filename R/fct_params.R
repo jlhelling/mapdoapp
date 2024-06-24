@@ -28,6 +28,19 @@ params_wms <- function(){
                             attribution = "CNRS - EVS",
                             basemap = FALSE,
                             overlayer = FALSE),
+              class = list(name = "Style Fluvial",
+                           url = Sys.getenv("GEOSERVER"),
+                           language = "",
+                           service = "WMS",
+                           version = "1.0.0",
+                           sld_version = "",
+                           layer = "mapdo:network_metrics",
+                           format = "image/png",
+                           sld = "",
+                           style = "", # no style, sld_body define style and legend
+                           attribution = "CNRS - EVS",
+                           basemap = FALSE,
+                           overlayer = FALSE),
               carteign = list(name = "Plan IGN",
                               url = "https://wxs.ign.fr/cartes/geoportail/r/wms",
                               language = "",
@@ -329,7 +342,7 @@ params_metrics <- function(){
 params_classes <- function() {
 
   df <- tibble(
-    class = c(
+    class_title = c(
       "Nombre de Strahler",
       "Topographie",
       "Utilisation dominante des sols",
@@ -360,7 +373,22 @@ params_classes <- function() {
       - grandissant \n
       - stable \n
       - diminuant \n"
+    ),
+    class_name = c(
+      "class_strahler",
+      "class_topographie",
+      "class_lu_dominante",
+      "class_urban",
+      "class_agriculture",
+      "class_nature",
+      "class_confinement",
+      "class_habitat",
+      "class_gravel",
+      "class_channelevolution"
     )
-  )
+  ) %>%
+    # join sld styles
+    left_join(sld_get_fluvialstyles(), by = join_by(class_name))
+
   return(df)
 }

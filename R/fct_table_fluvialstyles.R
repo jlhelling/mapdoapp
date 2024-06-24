@@ -12,8 +12,10 @@ create_table_fluvialstyles <- function(params_styles) {
 
   table <- reactable(params_styles,
                      columns = list(
-                       class = colDef(name = "Style", sortable = FALSE),
-                       description = colDef(show = FALSE)  # Hide the detail column in the main view
+                       class_title = colDef(name = "Style", sortable = FALSE),
+                       description = colDef(show = FALSE),  # Hide column
+                       class_name = colDef(show = FALSE),  # Hide column
+                       class_sld = colDef(show = FALSE)  # Hide column
                      ),
                      details = function(index) {
                        htmltools::div(
@@ -21,5 +23,6 @@ create_table_fluvialstyles <- function(params_styles) {
                          # htmltools::strong("Details: "),
                          params_styles$description[index]  # Display the detail column for the specific row
                        )
-                     }, selection = "single", defaultSelected = 1, onClick = "select")
+                     }, selection = "single", defaultSelected = 1, onClick = "select",
+                     highlight = TRUE)
 }

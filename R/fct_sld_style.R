@@ -119,7 +119,7 @@ sld_get_style <- function(breaks, colors, metric) {
 
   for (i in 1:(length(breaks))) {
     if (i < length(breaks)) {
-    sld_rule <- glue::glue('
+      sld_rule <- glue::glue('
       <se:Rule>
           <se:Name>{breaks[i]} - {breaks[i+1]}</se:Name>
           <se:Description>
@@ -184,4 +184,128 @@ sld_get_style <- function(breaks, colors, metric) {
 }
 
 
+sld_get_fluvialstyles <- function() {
 
+  # classes_tbl$sld <- ""
+
+  sld_begin <- glue::glue('<?xml version="1.0" encoding="UTF-8"?>
+    <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:se="http://www.opengis.net/se" xmlns:ogc="http://www.opengis.net/ogc">
+      <NamedLayer>
+      <se:Name>network_metrics</se:Name>
+      <UserStyle>
+      <se:Name>network_metrics</se:Name>
+      <se:FeatureTypeStyle>')
+
+  sld_end <- '</se:FeatureTypeStyle>
+        </UserStyle>
+      </NamedLayer>
+    </StyledLayerDescriptor>'
+
+
+# strahler ----------------------------------------------------------------
+
+  colors_strahler <- colorRampPalette(c("#90e0ef", "#03045e"))(5)
+  strahler_sld_rules <- character(0)
+
+  for (i in 1:5) {
+    strahler_sld_rule <- glue::glue('
+      <se:Rule>
+          <se:Name>{i}</se:Name>
+          <se:Description>
+            <se:Title>{i}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:PropertyIsEqualTo>
+                <ogc:PropertyName>strahler</ogc:PropertyName>
+                <ogc:Literal>{i}</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_strahler[i]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_strahler[i]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        ')
+    strahler_sld_rules <- c(strahler_sld_rules, strahler_sld_rule)
+  }
+  sld_strahler <- paste(strahler_sld_rules, collapse = "\n")
+
+# Topographie -------------------------------------------------------------
+
+  sld_topographie <- NULL
+
+
+# Dominant Land use -------------------------------------------------------
+
+
+  sld_lu_dominante  <- NULL
+
+
+# Urban landuse -----------------------------------------------------------
+
+
+  sld_urban  <- NULL
+
+
+# Agricultural landuse ----------------------------------------------------
+
+
+  sld_agriculture  <- NULL
+
+
+# Natural landuse ---------------------------------------------------------
+
+
+  sld_nature  <- NULL
+
+
+# Confinement -------------------------------------------------------------
+
+
+  sld_confinement  <- NULL
+
+
+# Habitat -----------------------------------------------------------------
+
+
+  sld_habitat  <- NULL
+
+
+# Gravel bars -------------------------------------------------------------
+
+
+  sld_gravel  <- NULL
+
+
+# Channel evolution -------------------------------------------------------
+
+
+  sld_channelevolution  <- NULL
+
+
+# join all together -------------------------------------------------------
+
+  sld_final <- tibble(
+    class_name = c("class_strahler", "class_topographie", "class_lu_dominante", "class_urban", "class_agriculture",
+                   "class_nature", "class_confinement", "class_habitat", "class_gravel", "class_channelevolution"),
+    class_sld = c(paste0(sld_begin, sld_strahler, sld_end),
+                  # "", "", "", ""
+                  paste0(sld_begin, sld_topographie, sld_end),
+                  paste0(sld_begin, sld_lu_dominante, sld_end),
+                  paste0(sld_begin, sld_urban, sld_end),
+                  paste0(sld_begin, sld_agriculture, sld_end),
+                  paste0(sld_begin, sld_nature, sld_end),
+                  paste0(sld_begin, sld_confinement, sld_end),
+                  paste0(sld_begin, sld_habitat, sld_end),
+                  paste0(sld_begin, sld_gravel, sld_end),
+                  paste0(sld_begin, sld_channelevolution, sld_end))
+  )
+
+  return(sld_final)
+}

@@ -305,6 +305,45 @@ map_wms_metric <-function(map, wms_params = params_wms()$metric,
     )
 }
 
+#' Map WMS class
+#'
+#' This function adds WMS tiles with fluvial style to an existing Leaflet map, allowing for customization of style and filtering.
+#'
+#' @param map An existing Leaflet map to which WMS tiles will be added.
+#' @param wms_params A list of WMS parameters.
+#' @param cql_filter A CQL filter to apply to the WMS request.
+#' @param sld_body A custom SLD (Styled Layer Descriptor) body for symbology customization.
+#'
+#' @return An updated Leaflet map with WMS tiles containing metric data added.
+#'
+#' @importFrom leaflet addWMSTiles WMSTileOptions
+#'
+#' @examples
+#' \dontrun{
+#'   # Used in map_metric() function, see full example in map_metric() documentation
+#' }
+#'
+#' @export
+map_wms_class <- function(map, wms_params = params_wms()$class,
+                          cql_filter = "", sld_body = "") {
+  map %>%
+    addWMSTiles(
+      baseUrl = wms_params$url,
+      layers = wms_params$layer,
+      attribution = wms_params$attribution,
+      options = WMSTileOptions(
+        format = wms_params$format,
+        request = "GetMap",
+        transparent = TRUE,
+        styles = wms_params$style,
+        cql_filter = cql_filter,
+        sld_body = sld_body,
+        zIndex = 90
+      ),
+      group = params_map_group()[["class"]]
+    )
+}
+
 #' Add Axis Data to an Existing Leaflet Map
 #'
 #' This function adds axis data as polylines to an existing Leaflet map.
@@ -441,8 +480,41 @@ map_metric <- function(map, wms_params = params_wms()$metric,
   map %>%
     clearGroup(params_map_group()[["axis"]]) %>%
     clearGroup(params_map_group()[["metric"]]) %>%
+    clearGroup(params_map_group()[["class"]]) %>%
     # add metric with custom symbology
     map_wms_metric(wms_params = wms_params,
+                   cql_filter = cql_filter, sld_body = sld_body) %>%
+    # add transparent axis
+    map_axis(data_axis = data_axis)
+}
+
+#' Add a metric layer with custom symbology to a map.
+#'
+#' This function adds a metric layer with custom symbology to a leaflet map. It allows you to specify custom parameters for the Web Map Service (WMS) request, apply a CQL (Common Query Language) filter, and provide a custom SLD (Styled Layer Descriptor) body for styling the layer. Additionally, you can specify the data axis to display on the map.
+#'
+#' @param map A leaflet map object to which the metric layer will be added.
+#' @param wms_params A list containing WMS parameters for the metric layer. If not provided, default parameters are retrieved using the \code{\link{params_wms}} function.
+#' @param cql_filter A character string representing a CQL filter to apply to the metric layer.
+#' @param sld_body A character string representing the SLD (Styled Layer Descriptor) body for custom styling of the metric layer.
+#' @param data_axis A data axis to display on the map.
+#'
+#' @return A leaflet map object with the metric layer added.
+#'
+#' @importFrom leaflet leaflet
+#' @importFrom leaflet addTiles
+#' @importFrom leaflet setView
+#' @importFrom leaflet clearGroup
+#' @importFrom leaflet addWMSTiles
+#'
+#' @export
+map_class <- function(map, wms_params = params_wms()$class,
+                       cql_filter = "", sld_body = "", data_axis) {
+  map %>%
+    clearGroup(params_map_group()[["axis"]]) %>%
+    clearGroup(params_map_group()[["metric"]]) %>%
+    clearGroup(params_map_group()[["class"]]) %>%
+    # add metric with custom symbology
+    map_wms_class(wms_params = wms_params,
                    cql_filter = cql_filter, sld_body = sld_body) %>%
     # add transparent axis
     map_axis(data_axis = data_axis)
