@@ -202,7 +202,7 @@ sld_get_fluvialstyles <- function() {
     </StyledLayerDescriptor>'
 
 
-# strahler ----------------------------------------------------------------
+  # strahler ----------------------------------------------------------------
 
   colors_strahler <- colorRampPalette(c("#90e0ef", "#03045e"))(5)
   strahler_sld_rules <- character(0)
@@ -236,60 +236,272 @@ sld_get_fluvialstyles <- function() {
   }
   sld_strahler <- paste(strahler_sld_rules, collapse = "\n")
 
-# Topographie -------------------------------------------------------------
+  # Topographie -------------------------------------------------------------
 
-  sld_topographie <- NULL
+  # vars_topo <- c("plaines de montagne",
+  #                "plaines de moyenne altitude",
+  #                "plaines de basse altitude",
+  #                "pentes de montagne",
+  #                "pentes de moyenne altitude",
+  #                "pentes de basse altitude")
+  colors_topo <- c("#e76f51", "#90e0ef", "#a3b18a",
+                   "#6a040f", "#03045e", "#344e41") |>
+    setNames(
+      c("Plaines de montagne",
+        "Plaines de moyenne altitude",
+        "Plaines de basse altitude",
+        "Pentes de montagne",
+        "Pentes de moyenne altitude",
+        "Pentes de basse altitude")
+    )
 
 
-# Dominant Land use -------------------------------------------------------
+
+  sld_topographie <- glue::glue('
+      <se:Rule>
+          <se:Name>{names(colors_topo[1])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_topo[1])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+            <ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>talweg_elevation_min</ogc:PropertyName>
+                <ogc:Literal>{1000}</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>talweg_slope</ogc:PropertyName>
+                <ogc:Literal>{0.05}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+            </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_topo[1]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_topo[1]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_topo[4])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_topo[4])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+            <ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>talweg_elevation_min</ogc:PropertyName>
+                <ogc:Literal>{1000}</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>talweg_slope</ogc:PropertyName>
+                <ogc:Literal>{0.05}</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+            </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_topo[4]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_topo[4]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_topo[2])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_topo[2])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+            <ogc:And>
+            <ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>talweg_elevation_min</ogc:PropertyName>
+                <ogc:Literal>{300}</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>talweg_elevation_min</ogc:PropertyName>
+                <ogc:Literal>{1000}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              </ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>talweg_slope</ogc:PropertyName>
+                <ogc:Literal>{0.05}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_topo[2]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_topo[2]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_topo[5])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_topo[5])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+            <ogc:And>
+              <ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>talweg_elevation_min</ogc:PropertyName>
+                <ogc:Literal>{300}</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>talweg_elevation_min</ogc:PropertyName>
+                <ogc:Literal>{1000}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              </ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>talweg_slope</ogc:PropertyName>
+                <ogc:Literal>{0.05}</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+            </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_topo[5]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_topo[5]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_topo[3])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_topo[3])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+            <ogc:And>
+              <ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>talweg_elevation_min</ogc:PropertyName>
+                <ogc:Literal>{-50}</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>talweg_elevation_min</ogc:PropertyName>
+                <ogc:Literal>{300}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              </ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>talweg_slope</ogc:PropertyName>
+                <ogc:Literal>{0.05}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+            </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_topo[3]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_topo[3]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_topo[6])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_topo[6])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+            <ogc:And>
+              <ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>talweg_elevation_min</ogc:PropertyName>
+                <ogc:Literal>{-50}</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>talweg_elevation_min</ogc:PropertyName>
+                <ogc:Literal>{300}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              </ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>talweg_slope</ogc:PropertyName>
+                <ogc:Literal>{0.05}</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+            </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_topo[6]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_topo[6]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        ')
+
+
+  # Dominant Land use -------------------------------------------------------
 
 
   sld_lu_dominante  <- NULL
 
 
-# Urban landuse -----------------------------------------------------------
+  # Urban landuse -----------------------------------------------------------
 
 
   sld_urban  <- NULL
 
 
-# Agricultural landuse ----------------------------------------------------
+  # Agricultural landuse ----------------------------------------------------
 
 
   sld_agriculture  <- NULL
 
 
-# Natural landuse ---------------------------------------------------------
+  # Natural landuse ---------------------------------------------------------
 
 
   sld_nature  <- NULL
 
 
-# Confinement -------------------------------------------------------------
+  # Confinement -------------------------------------------------------------
 
 
   sld_confinement  <- NULL
 
 
-# Habitat -----------------------------------------------------------------
+  # Habitat -----------------------------------------------------------------
 
 
   sld_habitat  <- NULL
 
 
-# Gravel bars -------------------------------------------------------------
+  # Gravel bars -------------------------------------------------------------
 
 
   sld_gravel  <- NULL
 
 
-# Channel evolution -------------------------------------------------------
+  # Channel evolution -------------------------------------------------------
 
 
   sld_channelevolution  <- NULL
 
 
-# join all together -------------------------------------------------------
+  # join all together -------------------------------------------------------
 
   sld_final <- tibble(
     class_name = c("class_strahler", "class_topographie", "class_lu_dominante", "class_urban", "class_agriculture",
