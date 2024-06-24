@@ -42,11 +42,11 @@ mod_mapdo_app_ui <- function(id){
           width = 6,
           tabsetPanel(
             id = "tabset",
-            tabPanel("Caractéristiques",
-                     mod_characterisation_ui("characterisation_1")
-            ),
             tabPanel("Styles fluviaux",
                      mod_fluvial_styles_ui("fluvial_styles_1")
+            ),
+            tabPanel("Caractéristiques",
+                     mod_characterisation_ui("characterisation_1")
             ),
             tabPanel("Analyse métrique",
                      mod_metric_analysis_ui("metric_analysis_1")

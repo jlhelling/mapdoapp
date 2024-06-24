@@ -81,44 +81,44 @@ params_wms <- function(){
                              basemap = TRUE,
                              overlayer = FALSE),
               continuity = list(name = "Continuité latérale",
-                             url = Sys.getenv("GEOSERVER"),
-                             language = "",
-                             service = "WMS",
-                             version = "1.0.0",
-                             sld_version = "",
-                             layer = "mapdo:mapdo_continuity_1m",
-                             format = "image/png",
-                             sld = "",
-                             style = "mapdo:MAPDO continuity",
-                             attribution = "CNRS - EVS",
-                             basemap = FALSE,
-                             overlayer = TRUE),
-              valley_bottom = list(name = "Fond de vallée",
                                 url = Sys.getenv("GEOSERVER"),
                                 language = "",
                                 service = "WMS",
                                 version = "1.0.0",
                                 sld_version = "",
-                                layer = "mapdo:mapdo_valley_bottom_1m",
+                                layer = "mapdo:mapdo_continuity_1m",
                                 format = "image/png",
                                 sld = "",
-                                style = "mapdo:MAPDO valley bottom",
+                                style = "mapdo:MAPDO continuity",
                                 attribution = "CNRS - EVS",
                                 basemap = FALSE,
                                 overlayer = TRUE),
-              detrend_dem = list(name = "MNT détendancé",
+              valley_bottom = list(name = "Fond de vallée",
                                    url = Sys.getenv("GEOSERVER"),
                                    language = "",
                                    service = "WMS",
                                    version = "1.0.0",
                                    sld_version = "",
-                                   layer = " 	mapdo:mapdo_nearest_height_hillshade_1m ",
+                                   layer = "mapdo:mapdo_valley_bottom_1m",
                                    format = "image/png",
                                    sld = "",
-                                   style = "",
+                                   style = "mapdo:MAPDO valley bottom",
                                    attribution = "CNRS - EVS",
                                    basemap = FALSE,
                                    overlayer = TRUE),
+              detrend_dem = list(name = "MNT détendancé",
+                                 url = Sys.getenv("GEOSERVER"),
+                                 language = "",
+                                 service = "WMS",
+                                 version = "1.0.0",
+                                 sld_version = "",
+                                 layer = " 	mapdo:mapdo_nearest_height_hillshade_1m ",
+                                 format = "image/png",
+                                 sld = "",
+                                 style = "",
+                                 attribution = "CNRS - EVS",
+                                 basemap = FALSE,
+                                 overlayer = TRUE),
               geologie = list(name = "Géologie",
                               url = "http://geoservices.brgm.fr/geologie",
                               language = "",
@@ -241,6 +241,8 @@ params_get_metric_choices <- function(){
 #' This function returns a nested list of metrics, their names and titles used for plots as well as their description.
 #' Can for example be used for the creation of a selectInput of metrics.
 #'
+#' @importFrom tibble tibble
+#'
 #' @return A table of all metrics and corresponding info
 #'
 #' @examples
@@ -314,4 +316,51 @@ params_metrics <- function(){
                            "Ratio de la largeur de la bande active sur la largeur du fond de vallée. Il permet d'estimer si le cours d'eau est contraint par la topographie. Plus l'indice est faible plus le cours d'eau a d'espace potentiel pour s'élargir.")
   )
   return(metric_info)
+}
+
+
+#' Get classes names and description for fluvial styles
+#'
+#' @importFrom tibble tibble
+#'
+#' @return tibble with names of classes and their descriptions
+#' @export
+#'
+params_classes <- function() {
+
+  df <- tibble(
+    class = c(
+      "Nombre de Strahler",
+      "Topographie",
+      "Utilisation dominante des sols",
+      "Pression urbaine",
+      "Pression agricole",
+      "Utilisation naturelle des sols",
+      "Confinement de la bande active",
+      "Connectivité des habitats riverains",
+      "Présence de bancs de galets",
+      "Évolution de la taille du chenal de l'eau"
+    ),
+    description = c(
+      "Répresent la complexité du réseaux hdrographique. Le nombre de Strahler est de 1 pour tout cours d'eau entre sa source et sa première confluence et mont avec chaque confluence.",
+      "une classification simple basée sur la pente et la hauteur",
+      "indique la classe d'utilisation des sols la plus dominante dans la zone du fond de vallée de chaque segment de cours d'eau",
+      "indique la part de la couverture urbaine dans la zone du fond de vallée de chaque segment de cours d'eau",
+      "indique la part de l'utilisation des terres agricoles dans la zone du fond de vallée de chaque segment de cours d'eau",
+      "indique la part de l'utilisation naturelle des sols dans la zone du fond de vallée de chaque tronçon fluvial",
+      "L'indice de confinement proposé, de 0 à 1, est divisé en 4 classes : \n
+      - espace abondant : > 70 \n
+      - espace : > 40 \n
+      - espace modéré : > 10 \n
+      - confiné : 0 \n
+      basé sur le rapport entre la largeur du canal actif et la largeur du fond de la vallée.",
+      "basé sur la surface du corridor connecté (comprenant le canal actif, le corridor naturel et les corridors semi-naturels) à partir du fond de la vallée OU basé sur la surface du corridor connecté à partir du fond de la vallée, à l'exclusion de la zone du canal actif OU basé sur le rapport entre la largeur du corridor connecté et la largeur du canal actif !",
+      "la présence de bancs de galets : Absent, occasionnel, fréquent",
+      "*indique une réduction de la taille des chenaux sur le réseau de cours d'eau vers le bas* \n
+      - grandissant \n
+      - stable \n
+      - diminuant \n"
+    )
+  )
+  return(df)
 }
