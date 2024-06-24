@@ -42,7 +42,7 @@ mod_characterisation_server <- function(id, r_val){
 
     r_val_local <- reactiveValues(
       characteristics_table = NULL,
-      descriptionUI = HTML("<p> CLickez sur une axe hydrographique pour afficher la comparaison des caractéristiques </p>"),
+      descriptionUI = HTML("<p> Cliquez sur un axe hydrographique pour afficher la comparaison des caractéristiques géomorphologiques. </p>"),
       selectinputUI = NULL,
       unit = NULL
     )
@@ -70,8 +70,6 @@ mod_characterisation_server <- function(id, r_val){
 
     observeEvent(c(input$select_unit, r_val$network_region, r_val$dgo_axis, r_val$data_dgo_clicked), {
 
-
-      print(input$select_unit)
       check <- input$select_unit
 
       if (!is.null(check) & !is.null(r_val$network_region) & !is.null(r_val$dgo_axis)) {

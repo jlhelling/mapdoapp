@@ -157,6 +157,10 @@ mod_mapdo_app_server <- function(id, con, r_val){
       ### region clicked ####
       if (input$map_shape_click$group == params_map_group()$region){
 
+        # set axis values back to NULL
+        r_val$axis_clicked = FALSE
+        r_val$axis_click = NULL
+
         # store the region click values
         r_val$region_click = input$map_shape_click
 
@@ -263,6 +267,10 @@ mod_mapdo_app_server <- function(id, con, r_val){
       if (input$map_shape_click$group == params_map_group()$axis) {
 
         r_val$axis_clicked = TRUE
+
+        # set selected dgo back to NULL
+        r_val$data_dgo_clicked = NULL
+        r_val$data_section = NULL
 
         # save the clicked axis values
         r_val$axis_click = input$map_shape_click
