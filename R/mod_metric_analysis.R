@@ -186,6 +186,8 @@ mod_metric_analysis_server <- function(id, con, r_val){
     #### apply button clicked ####
     observeEvent(input$man_grouping_apply_changes,{
 
+      r_val$visualization = "metric"
+
       # sort classes
       classes <- r_val_local$grouping_table_data %>%
         dplyr::arrange(greaterthan) %>%

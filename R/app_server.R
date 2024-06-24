@@ -24,6 +24,7 @@ app_server <- function(input, output, session) {
     # map
     map_proxy = NULL,
     leaflet_hover_measure = NULL, # metric y-value to add vertical line on longitudinal profile
+    visualization = "classes",
 
     selected_metric = "talweg_elevation_min", # select main metric column name
 
