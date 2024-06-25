@@ -196,6 +196,7 @@ params_map_group <- function(){
     region = "REGION",
     select_region = "SELECT_REGION",
     metric = "METRIC",
+    class = "CLASS",
     axis = "AXIS",
     dgo_axis = "DGOAXIS",
     dgo = "DGO",
