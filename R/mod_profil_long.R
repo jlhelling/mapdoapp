@@ -25,6 +25,7 @@ mod_profil_long_ui <- function(id){
           column(
             width = 2,
             style = "margin-top: 20px;",
+            uiOutput(ns("profile_first_metricUI")),
             uiOutput(ns("profile_sec_metricUI")),
             fluidRow(
               column(width = 6,
@@ -65,10 +66,14 @@ mod_profil_long_server <- function(id, r_val){
       ui_roe_profile = NULL, # UI placeholder for ROE checkbox
       roe_vertical_line = NULL, # list with verticale line to plot on longitudinal profile
 
+      # first metric
+      profile_first_metric = NULL,
+
       selected_profile_metric_title = NULL, # metric title to be displayed instead of pure variable name
       selected_profile_metric_type = NULL, # metric type title
 
-      # second axis
+      # second metric
+      proxy_second_axe = NULL,
       profile_sec_metric = NULL, # second metric selection
       add_sec_axe = NULL, # add second axis
       remove_sec_axe = NULL, # remove second axis
@@ -80,6 +85,11 @@ mod_profil_long_server <- function(id, r_val){
     #### OUTPUTS ####
     output$long_profile <- renderPlotly({
       return(r_val_local$plot)
+    })
+
+    # selectinput for metric
+    output$profile_first_metricUI <- renderUI({
+      r_val_local$profile_first_metric
     })
 
     # add selectinput for additional metric
@@ -103,30 +113,25 @@ mod_profil_long_server <- function(id, r_val){
     })
 
 
-    #### metric select ####
+    #### axis select ####
 
-    observeEvent(c(r_val$selected_metric, r_val$axis_click), {
+    observeEvent(r_val$axis_click, {
 
       # track input
       track_inputs(input = input)
 
-      if (!is.null(r_val$selected_metric) & !is.null(r_val$dgo_axis)) {
-
-        # create longitudinal profile plot
-        r_val_local$plot <-
-          lg_profile_main(
-            data = r_val$dgo_axis,
-            y = r_val$dgo_axis[[r_val$selected_metric]],
-            y_label = r_val$selected_metric_title,
-            y_label_category = ""
-          ) %>%
-          event_register("plotly_hover")
-
+      if (!is.null(r_val$dgo_axis)) {
 
         # build second axis input and add and remove buttons
-        r_val_local$profile_sec_metric = selectInput(ns("profile_sec_metric"), label = "Ajoutez une métrique :",
+        r_val_local$profile_first_metric = selectInput(ns("profile_first_metric"), label = "Métrique :",
                                                      choices = params_get_metric_choices(),
                                                      selected  = params_get_metric_choices()[1],
+                                                     width = "100%")
+
+        # build second axis input and add and remove buttons
+        r_val_local$profile_sec_metric = selectInput(ns("profile_sec_metric"), label = "Ajoutez 2éme métrique :",
+                                                     choices = params_get_metric_choices(),
+                                                     selected  = params_get_metric_choices()[[2]][1],
                                                      width = "100%")
         r_val_local$add_sec_axe = actionButton(inputId = ns("add_sec_axe"), "Ajouter", width = "100%")
         r_val_local$remove_sec_axe = actionButton(inputId = ns("remove_sec_axe"), "Retirer", width = "100%")
@@ -136,39 +141,45 @@ mod_profil_long_server <- function(id, r_val){
         r_val_local$ui_roe_profile = checkboxInput(ns("roe_profile"),
                                                    label = "Obstacles à l'Ecoulement",
                                                    value = FALSE)
-
-
-
-        # if(!is.null(input$profile_metric)){ # second metric selected = update second metric profile
-        #   # create the list to add trace and layout to change second axe plot
-        #   proxy_second_axe <- lg_profile_second(data = r_val$selected_axis_df,
-        #                                         y = r_val$selected_axis_df[[r_val$selected_profile_metric]],
-        #                                         y_label = r_val$selected_profile_metric_name,
-        #                                         y_label_category = r_val$selected_profile_metric_type)
-        #
-        #   plotlyProxy("long_profile") %>%
-        #     plotlyProxyInvoke("deleteTraces", 1) %>%
-        #     plotlyProxyInvoke("addTraces", proxy_second_axe$trace, 1) %>%
-        #     plotlyProxyInvoke("relayout", proxy_second_axe$layout)
-        # }
-        #
-        # # update map to change tooltip labels
-        # r_val$map_proxy %>%
-        #   map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
-        #                main_metric = r_val$selected_metric, second_metric = r_val$selected_profile_metric)
-        #
-        # # create the list to add trace and layout to change second axe plot
-        # proxy_second_axe <- lg_profile_second(data = r_val$selected_axis_df,
-        #                                       y = r_val$selected_axis_df[[r_val$selected_profile_metric]],
-        #                                       y_label = r_val$selected_profile_metric_name,
-        #                                       y_label_category = r_val$selected_profile_metric_type)
-        #
-        # plotlyProxy("long_profile") %>%
-        #   plotlyProxyInvoke("deleteTraces", 1) %>%
-        #   plotlyProxyInvoke("addTraces", proxy_second_axe$trace, 1) %>%
-        #   plotlyProxyInvoke("relayout", proxy_second_axe$layout)
       }
     })
+
+    #### build longitudinal profile plot ####
+    observeEvent(input$profile_first_metric, {
+      if (!is.null(input$profile_first_metric)) {
+        r_val_local$plot <-
+          lg_profile_main(
+            data = r_val$dgo_axis,
+            y = r_val$dgo_axis[[input$profile_first_metric]],
+            y_label = params_metrics()[params_metrics()$metric_name == input$profile_first_metric,]$metric_title,
+            y_label_category = params_metrics()[params_metrics()$metric_name == input$profile_first_metric,]$metric_type_title
+          ) %>%
+          event_register("plotly_hover")
+
+
+
+        # build second axis input and add and remove buttons
+        r_val_local$profile_sec_metric = selectInput(ns("profile_sec_metric"), label = "Ajoutez 2éme métrique :",
+                                                     choices = params_get_metric_choices(),
+                                                     selected  = params_get_metric_choices()[[2]][1],
+                                                     width = "100%")
+
+        # build ROE checkboxInput
+        r_val_local$ui_roe_profile = NULL # delete checkbox before creating new one
+        r_val_local$ui_roe_profile = checkboxInput(ns("roe_profile"),
+                                                   label = "Obstacles à l'Ecoulement",
+                                                   value = FALSE)
+
+        # # add second metric to plot if valid
+        # if (!is.null(r_val_local$proxy_second_axe)) {
+        #   plotlyProxy("long_profile") %>%
+        #     plotlyProxyInvoke("deleteTraces", 1) %>%
+        #     plotlyProxyInvoke("addTraces", r_val_local$proxy_second_axe$trace, 1) %>%
+        #     plotlyProxyInvoke("relayout", r_val_local$proxy_second_axe$layout)
+        # }
+      }
+    })
+
 
     #### add second axis ####
 
@@ -184,16 +195,16 @@ mod_profil_long_server <- function(id, r_val){
         params_metrics() |> filter(metric_name == input$profile_sec_metric) |> pull(metric_type_title)
 
       # create the list to add trace and layout to change second axe plot
-      proxy_second_axe <- lg_profile_second(data = r_val$dgo_axis,
+      r_val_local$proxy_second_axe <- lg_profile_second(data = r_val$dgo_axis,
                                             y = r_val$dgo_axis[[input$profile_sec_metric]],
                                             y_label = r_val_local$sec_metric_name,
                                             y_label_category = r_val_local$sec_metric_type)
 
-      # add data to plot
+      # add second metric to plot
       plotlyProxy("long_profile") %>%
         plotlyProxyInvoke("deleteTraces", 1) %>%
-        plotlyProxyInvoke("addTraces", proxy_second_axe$trace, 1) %>%
-        plotlyProxyInvoke("relayout", proxy_second_axe$layout)
+        plotlyProxyInvoke("addTraces", r_val_local$proxy_second_axe$trace, 1) %>%
+        plotlyProxyInvoke("relayout", r_val_local$proxy_second_axe$layout)
     })
 
     #### remove second axis ####
@@ -206,10 +217,7 @@ mod_profil_long_server <- function(id, r_val){
       plotlyProxy("long_profile") %>%
         plotlyProxyInvoke("deleteTraces", 1)
 
-      # update dgo on axis to reset tooltip
-      # leafletProxy("exploremap") %>%
-      #   map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
-      #                main_metric = r_val$selected_metric, second_metric = r_val$selected_profile_metric)
+      r_val_local$proxy_second_axe = NULL
 
     })
 
