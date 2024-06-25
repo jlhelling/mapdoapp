@@ -57,6 +57,9 @@ app_server <- function(input, output, session) {
     # styling of wms-layer
     sld_body = NULL,
 
+    # longitudinal plot
+    plot_long_proxy = NULL,
+
     # others variables
     opacity = list(clickable = 0.01, not_clickable = 0.10) # opacity value to inform the user about available bassins and regions
 

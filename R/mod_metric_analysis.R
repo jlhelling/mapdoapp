@@ -224,12 +224,17 @@ mod_metric_analysis_server <- function(id, con, r_val){
 
       # merge regional and axis network in one df
       merged_network_classified <- merge_regional_axis_dfs(classified_network,
-                                                classified_axis,
-                                                r_val$selected_metric,
-                                                classes = TRUE)
+                                                           classified_axis,
+                                                           r_val$selected_metric,
+                                                           classes = TRUE)
 
       # create barplots of classes distribution
       r_val_local$barplots_classes_metric <- create_plotly_barplot(merged_network_classified)
+
+
+      # add data to longitudinal plot
+      r_val$plot_long_proxy %>%
+        plotlyProxyInvoke("relayout", list(shapes = create_classes_background(classified_axis)))
 
       # longitudinal plot
       # if (!is.null(r_val$dgo_axis)) {

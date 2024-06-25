@@ -295,3 +295,47 @@ lg_profile_second <- function(data, y, y_label, y_label_category){
 }
 
 
+
+#' Create background-layout of  classes for longitudinal profile
+#'
+#' @param classified_axis
+#'
+#' @return list ready to be used for plotly::layout()-function
+create_classes_background <- function(classified_axis) {
+
+  # Create empty list to store shapes in
+  shapes <- list()
+
+  for (i in 1:(nrow(classified_axis) - 1)) {
+
+    # set x-axis limits
+    start <- classified_axis$measure[i]
+    if (!is.na(classified_axis$measure[i + 1])) {
+      end <- classified_axis$measure[i + 1]
+    } else {
+      end <- start + 200
+    }
+
+    # set color
+    color <- classified_axis$color[i]
+
+    # create unique shape for each step
+    shapes <- append(shapes, list(
+      list(
+        type = "rect",
+        fillcolor = color,
+        line = list(color = color, width = 0),
+        opacity = 0.4,
+        x0 = start,
+        x1 = end,
+        xref = "x",
+        y0 = 0,
+        y1 = 1,
+        yref = "paper",
+        layer = "below"
+      )
+    ))
+  }
+
+  return(shapes)
+}

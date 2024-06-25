@@ -113,6 +113,11 @@ mod_profil_long_server <- function(id, r_val){
     })
 
 
+    # make plot available to other
+    observe({
+      r_val$plot_long_proxy <- plotlyProxy("long_profile")
+    })
+
     #### axis select ####
 
     observeEvent(r_val$axis_click, {

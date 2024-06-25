@@ -78,7 +78,6 @@ mod_fluvial_styles_server <- function(id, r_val){
                      position = "bottomright",
                      layerId = "legend_metric")
 
-      print(r_val_local$selected)
     })
 
 
