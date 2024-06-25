@@ -359,7 +359,11 @@ params_classes <- function() {
       "Répresent la complexité du réseaux hdrographique. Le nombre de Strahler est de 1 pour tout cours d'eau entre sa source et sa première confluence et mont avec chaque confluence.",
       "une classification simple basée sur la pente et la hauteur",
       "indique la classe d'utilisation des sols la plus dominante dans la zone du fond de vallée de chaque segment de cours d'eau",
-      "indique la part de la couverture urbaine dans la zone du fond de vallée de chaque segment de cours d'eau",
+      "4 classes basées sur le degré de couverture urbaine du fond de vallée du segment: \n
+        - 70 % fortement urbanisé \n
+        - 40 % urbanisé \n
+        - 10 % modérément urbanisé \n
+        - 0 % de terres non urbanisées",
       "indique la part de l'utilisation des terres agricoles dans la zone du fond de vallée de chaque segment de cours d'eau",
       "indique la part de l'utilisation naturelle des sols dans la zone du fond de vallée de chaque tronçon fluvial",
       "L'indice de confinement proposé, de 0 à 1, est divisé en 4 classes : \n

@@ -184,6 +184,12 @@ sld_get_style <- function(breaks, colors, metric) {
 }
 
 
+#' Create sld style for fluvial styles layers
+#'
+#' @return
+#' @export
+#'
+#' @examples
 sld_get_fluvialstyles <- function() {
 
   # classes_tbl$sld <- ""
@@ -204,10 +210,10 @@ sld_get_fluvialstyles <- function() {
 
   # strahler ----------------------------------------------------------------
 
-  colors_strahler <- colorRampPalette(c("#90e0ef", "#03045e"))(5)
+  colors_strahler <- colorRampPalette(c("#90e0ef", "#03045e"))(6)
   strahler_sld_rules <- character(0)
 
-  for (i in 1:5) {
+  for (i in 1:6) {
     strahler_sld_rule <- glue::glue('
       <se:Rule>
           <se:Name>{i}</se:Name>
@@ -461,8 +467,120 @@ sld_get_fluvialstyles <- function() {
 
   # Urban landuse -----------------------------------------------------------
 
+  colors_urban <- colors <- c("#6a040f", "#ba181b", "#ffd97d", "#74c69d") %>%
+    setNames(
+      c("Fortement urbanisé", "Urbanisé",
+        "Modérément urbanisé", "Presque pas/pas urbanisé")
+    )
 
-  sld_urban  <- NULL
+  sld_urban  <- glue::glue('
+      <se:Rule>
+          <se:Name>{names(colors_urban[1])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_urban[1])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>built_environment_pc</ogc:PropertyName>
+                <ogc:Literal>70</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_urban[[1]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_urban[[1]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_urban[2])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_urban[2])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>built_environment_pc</ogc:PropertyName>
+                <ogc:Literal>{70}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>built_environment_pc</ogc:PropertyName>
+                <ogc:Literal>40</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_urban[[2]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_urban[[2]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_urban[3])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_urban[3])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>built_environment_pc</ogc:PropertyName>
+                <ogc:Literal>{40}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>built_environment_pc</ogc:PropertyName>
+                <ogc:Literal>10</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_urban[[3]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_urban[[3]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_urban[4])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_urban[4])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>built_environment_pc</ogc:PropertyName>
+                <ogc:Literal>{10}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>built_environment_pc</ogc:PropertyName>
+                <ogc:Literal>0</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_urban[[4]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_urban[[4]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        ')
 
 
   # Agricultural landuse ----------------------------------------------------
