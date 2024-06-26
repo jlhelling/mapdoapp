@@ -186,13 +186,14 @@ sld_get_style <- function(breaks, colors, metric) {
 
 #' Create sld style for fluvial styles layers
 #'
-#' @return
-#' @export
+#' @importFrom glue glue
+#' @importFrom grDevices colorRampPalette
 #'
-#' @examples
+#' @return Style Layer Descriptor XML code for the styling of the network wms-layer based on the fluvial styles classifications
+#'
+#' @usage sld_get_fluvialstyles()
+#'
 sld_get_fluvialstyles <- function() {
-
-  # classes_tbl$sld <- ""
 
   sld_begin <- glue::glue('<?xml version="1.0" encoding="UTF-8"?>
     <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:se="http://www.opengis.net/se" xmlns:ogc="http://www.opengis.net/ogc">
@@ -467,7 +468,7 @@ sld_get_fluvialstyles <- function() {
 
   # Urban landuse -----------------------------------------------------------
 
-  colors_urban <- colors <- c("#6a040f", "#ba181b", "#ffd97d", "#74c69d") %>%
+  colors_urban <- colors <- c("#6a040f", "#ba181b", "#ffdd00", "#74c69d") %>%
     setNames(
       c("Fortement urbanisé", "Urbanisé",
         "Modérément urbanisé", "Presque pas/pas urbanisé")
@@ -586,14 +587,269 @@ sld_get_fluvialstyles <- function() {
   # Agricultural landuse ----------------------------------------------------
 
 
-  sld_agriculture  <- NULL
+  sld_agriculture  <-
 
+    colors_agriculture <- colors <- c("#6a040f", "#ba181b", "#ffdd00", "#74c69d") %>%
+    setNames(
+      c("Forte impact agricole", "Impact agricole élevé",
+        "Impact agricole modéré", "Presque pas/pas Impact agricole")
+    )
+
+  sld_agriculture  <- glue::glue('
+      <se:Rule>
+          <se:Name>{names(colors_agriculture[1])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_agriculture[1])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>crops_pc</ogc:PropertyName>
+                <ogc:Literal>70</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_agriculture[[1]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_agriculture[[1]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_agriculture[2])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_agriculture[2])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>crops_pc</ogc:PropertyName>
+                <ogc:Literal>{70}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>crops_pc</ogc:PropertyName>
+                <ogc:Literal>40</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_agriculture[[2]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_agriculture[[2]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_agriculture[3])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_agriculture[3])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>crops_pc</ogc:PropertyName>
+                <ogc:Literal>{40}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>crops_pc</ogc:PropertyName>
+                <ogc:Literal>10</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_agriculture[[3]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_agriculture[[3]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_agriculture[4])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_agriculture[4])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>crops_pc</ogc:PropertyName>
+                <ogc:Literal>{10}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>crops_pc</ogc:PropertyName>
+                <ogc:Literal>0</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_agriculture[[4]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_agriculture[[4]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        ')
 
   # Natural landuse ---------------------------------------------------------
 
+  colors_nature <- colors <- c("#081c15", "#2d6a4f", "#74c69d", "#d8f3dc") %>%
+    setNames(
+      c("Très forte utilisation naturelle", "Forte utilisation naturelle",
+        "Utilisation naturelle modérée", "Presque pas/pas naturelle")
+    )
 
-  sld_nature  <- NULL
 
+
+  sld_nature  <- glue::glue('
+      <se:Rule>
+          <se:Name>{names(colors_nature[1])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_nature[1])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:Add>
+                <ogc:PropertyName>natural_open_pc</ogc:PropertyName>
+                <ogc:PropertyName>forest_pc</ogc:PropertyName>
+                <ogc:PropertyName>grassland_pc</ogc:PropertyName>
+                </ogc:Add>
+                <ogc:Literal>70</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_nature[[1]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_nature[[1]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_nature[2])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_nature[2])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:Add>
+                <ogc:PropertyName>natural_open_pc</ogc:PropertyName>
+                <ogc:PropertyName>forest_pc</ogc:PropertyName>
+                <ogc:PropertyName>grassland_pc</ogc:PropertyName>
+                </ogc:Add>
+                <ogc:Literal>{70}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:Add>
+                <ogc:PropertyName>natural_open_pc</ogc:PropertyName>
+                <ogc:PropertyName>forest_pc</ogc:PropertyName>
+                <ogc:PropertyName>grassland_pc</ogc:PropertyName>
+                </ogc:Add>
+                <ogc:Literal>40</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_nature[[2]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_nature[[2]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_nature[3])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_nature[3])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:Add>
+                <ogc:PropertyName>natural_open_pc</ogc:PropertyName>
+                <ogc:PropertyName>forest_pc</ogc:PropertyName>
+                <ogc:PropertyName>grassland_pc</ogc:PropertyName>
+                </ogc:Add>
+                <ogc:Literal>{40}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:Add>
+                <ogc:PropertyName>natural_open_pc</ogc:PropertyName>
+                <ogc:PropertyName>forest_pc</ogc:PropertyName>
+                <ogc:PropertyName>grassland_pc</ogc:PropertyName>
+                </ogc:Add>
+                <ogc:Literal>10</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_nature[[3]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_nature[[3]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_nature[4])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_nature[4])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:Add>
+                <ogc:PropertyName>natural_open_pc</ogc:PropertyName>
+                <ogc:PropertyName>forest_pc</ogc:PropertyName>
+                <ogc:PropertyName>grassland_pc</ogc:PropertyName>
+                </ogc:Add>
+                <ogc:Literal>{10}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:Add>
+                <ogc:PropertyName>natural_open_pc</ogc:PropertyName>
+                <ogc:PropertyName>forest_pc</ogc:PropertyName>
+                <ogc:PropertyName>grassland_pc</ogc:PropertyName>
+                </ogc:Add>
+                <ogc:Literal>0</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_nature[[4]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_nature[[4]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        ')
 
   # Confinement -------------------------------------------------------------
 

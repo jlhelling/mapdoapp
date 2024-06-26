@@ -6,6 +6,9 @@
 \usage{
 sld_get_fluvialstyles()
 }
+\value{
+Style Layer Descriptor XML code for the styling of the network wms-layer based on the fluvial styles classifications
+}
 \description{
 Create sld style for fluvial styles layers
 }
