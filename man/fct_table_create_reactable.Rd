@@ -2,7 +2,7 @@
 % Please edit documentation in R/fct_table_characteristics.R
 \name{fct_table_create_reactable}
 \alias{fct_table_create_reactable}
-\title{Create reactable table}
+\title{create a table to compare metric-characteristics of region, axis, and segment}
 \usage{
 fct_table_create_reactable(df, unit)
 }
@@ -13,7 +13,10 @@ fct_table_create_reactable(df, unit)
 }
 \value{
 reactable table object
+fct_table_create_table_df(region_sf = network_dgo,
+ axis_sf = network_dgo,
+ dgo_sf = NULL)
 }
 \description{
-Create reactable table
+create a table to compare metric-characteristics of region, axis, and segment
 }

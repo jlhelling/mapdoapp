@@ -9,12 +9,12 @@
 #' @export
 #'
 fct_table_pivot_sf <- function(df_sf) {
-  df <- df_sf |>
-    sf::st_drop_geometry() |>
-    na.omit() |>
-    tidyr::pivot_longer(-c(fid, axis, measure, toponyme, strahler, gid_region), names_to = "metric_name", values_to = "value") |>
-    dplyr::mutate(value = round(value, 2)) |>
-    dplyr::group_by(metric_name) |>
+  df <- df_sf %>%
+    sf::st_drop_geometry() %>%
+    na.omit() %>%
+    tidyr::pivot_longer(-c(fid, axis, measure, toponyme, strahler, gid_region), names_to = "metric_name", values_to = "value") %>%
+    dplyr::mutate(value = round(value, 2)) %>%
+    dplyr::group_by(metric_name) %>%
     dplyr::summarize(
       mean = round(mean(value), 2),
       distr = list(value)
@@ -41,52 +41,52 @@ fct_table_pivot_sf <- function(df_sf) {
 fct_table_create_table_df <- function(region_sf, axis_sf, dgo_sf){
 
   # regional data
-  region_pivot <- fct_table_pivot_sf(region_sf) |>
+  region_pivot <- fct_table_pivot_sf(region_sf) %>%
     dplyr::rename(mean_region = mean, distr_region = distr)
 
   # region and axis selected, but dgo not
   if (is.null(dgo_sf)) {
 
     # axis data
-    axis_pivot <- fct_table_pivot_sf(axis_sf) |>
+    axis_pivot <- fct_table_pivot_sf(axis_sf) %>%
       dplyr::rename(mean_axis = mean, distr_axis = distr)
 
     # merge datasets
     merged <-
-      dplyr::left_join(params_metrics() |> select(metric_name, metric_title), region_pivot,
-                       by = join_by(metric_name)) |>
+      dplyr::left_join(params_metrics() %>% select(metric_name, metric_title), region_pivot,
+                       by = join_by(metric_name)) %>%
       dplyr::left_join(axis_pivot,
-                       by = join_by(metric_name)) |>
-      dplyr::mutate(segment = "") |>
-      dplyr::select(!metric_name) |>
-      dplyr::relocate(metric_title, mean_region, distr_region, mean_axis, distr_axis, segment) |>
+                       by = join_by(metric_name)) %>%
+      dplyr::mutate(segment = "") %>%
+      dplyr::select(!metric_name) %>%
+      dplyr::relocate(metric_title, mean_region, distr_region, mean_axis, distr_axis, segment) %>%
       dplyr::group_by(metric_title)
   }
   # region, axis, and dgo selected
   else {
 
     # axis data
-    axis_pivot <- fct_table_pivot_sf(axis_sf) |>
+    axis_pivot <- fct_table_pivot_sf(axis_sf) %>%
       dplyr::rename(mean_axis = mean, distr_axis = distr)
 
     # dgo data
-    dgo_pivot <- dgo_sf |>
-      sf::st_drop_geometry() |>
-      dplyr::select(-c(fid, axis, measure, toponyme, strahler, gid_region)) |>
-      tidyr::pivot_longer(-c(), names_to = "metric_name", values_to = "segment") |>
+    dgo_pivot <- dgo_sf %>%
+      sf::st_drop_geometry() %>%
+      dplyr::select(-c(fid, axis, measure, toponyme, strahler, gid_region)) %>%
+      tidyr::pivot_longer(-c(), names_to = "metric_name", values_to = "segment") %>%
       dplyr::mutate(segment = round(segment, 2))
 
     # merge datasets
     merged <-
-      dplyr::left_join(params_metrics() |> select(metric_name, metric_title), region_pivot,
-                       by = join_by(metric_name)) |>
+      dplyr::left_join(params_metrics() %>% select(metric_name, metric_title), region_pivot,
+                       by = join_by(metric_name)) %>%
       dplyr::left_join(axis_pivot,
                        by = join_by(metric_name),
-                       suffix = c("_region", "_axis")) |>
+                       suffix = c("_region", "_axis")) %>%
       dplyr::left_join(dgo_pivot,
-                       by = join_by(metric_name)) |>
-      dplyr::select(!metric_name) |>
-      dplyr::relocate(metric_title, mean_region, distr_region, mean_axis, distr_axis, segment) |>
+                       by = join_by(metric_name)) %>%
+      dplyr::select(!metric_name) %>%
+      dplyr::relocate(metric_title, mean_region, distr_region, mean_axis, distr_axis, segment) %>%
       dplyr::group_by(metric_title)
   }
 
@@ -94,17 +94,20 @@ fct_table_create_table_df <- function(region_sf, axis_sf, dgo_sf){
 }
 
 
-#' Create reactable table
+#' create a table to compare metric-characteristics of region, axis, and segment
 #'
 #' @import dplyr
 #' @importFrom reactable reactable colDef
 #' @importFrom sparkline sparkline
+#' @importFrom tibble tibble
 #'
 #' @param df dataframe of merged regional, axis and dgo data
 #' @param unit
 #'
 #' @return reactable table object
-#' @export
+#' fct_table_create_table_df(region_sf = network_dgo,
+#'  axis_sf = network_dgo,
+#'  dgo_sf = NULL)
 #'
 fct_table_create_reactable <- function(df, unit){
 
@@ -117,25 +120,50 @@ fct_table_create_reactable <- function(df, unit){
       dplyr::filter(!grepl('(ha)', metric_title))
   }
 
+
+  # convert data table and extract only values for a selected variable to create violinplots with plotly
+  convert_data <- function(data, i){
+    data_converted <- tibble::tibble(
+      scale = "Axe",
+      values = data$distr_axis[[i]]) %>%
+      dplyr::add_row(
+        tibble::tibble(
+          scale = "Région",
+          values = data$distr_region[[i]]
+        )
+      ) %>%
+      dplyr::rename(!!data$metric_title[i] := values)
+
+    return(data_converted)
+  }
+
+
+
   # create reactable table
   table <- reactable(
     data = data,
     columns = list(
-      metric_title = colDef(name = "Métrique"),
+      metric_title = colDef(name = "Métrique", width = 180),
       mean_region = colDef(name = "Région", width = 100),
-      distr_region = colDef(name = "", width = 100,
+      distr_region = colDef(name = "", width = 80,
                             cell = function(value, index) {
                               sparkline(data$distr_region[[index]], type = "box")
                             }),
       mean_axis = colDef(name = "Axe", width = 100),
-      distr_axis = colDef(name = "", width = 100,
+      distr_axis = colDef(name = "", width = 80,
                           cell = function(value, index) {
                             sparkline(data$distr_axis[[index]], type = "box")
                           }),
       segment = colDef(name = "Tronçon", width = 80)
     ),
+    # add violinplots of distribution from axis and region into details
+    details = function(index) {
+      htmltools::div(
+        style = "padding: 10px; margin-left: 50px; white-space: pre-wrap;",  # Add text indentation
+        create_plotly_violinplot(convert_data(data, index), data$metric_title[index], data$metric_title[index])
+      )},
     height = 600,
-    defaultPageSize = 15,
+    defaultPageSize = 13,
     highlight = TRUE, # highlight rows on hover
     compact = TRUE
   )
@@ -157,15 +185,15 @@ fct_table_create_reactable <- function(df, unit){
 
 
 
-#' #' create a table to compare characteristics of region and segment
-#' #'
-#' #' @description A fct function
-#' #'
-#' #' @import dplyr
-#' #' @importFrom reactable reactable colDef
-#' #' @importFrom sparkline sparkline
-#' #' @importFrom sf st_drop_geometry
-#' #' @importFrom tidyr pivot_longer
+#' create a table to compare characteristics of region and segment
+#'
+#' @description A fct function
+#'
+#' @import dplyr
+#' @importFrom reactable reactable colDef
+#' @importFrom sparkline sparkline
+#' @importFrom sf st_drop_geometry
+#' @importFrom tidyr pivot_longer
 #' #'
 #' #' @return The return value, if any, from executing the function.
 #' #'

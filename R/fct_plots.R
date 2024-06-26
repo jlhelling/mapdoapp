@@ -142,7 +142,8 @@ create_plotly_violinplot <- function(data, var, var_title){
                           hoverinfo = 'y',
                           source = 'V') %>%
     plotly::layout(
-      xaxis = list(title = "", showgrid = FALSE),
+      xaxis = list(title = "", showgrid = FALSE,
+                   categoryorder = "array", categoryarray = c('Région', 'Axe')),
       yaxis = list(title = var_title, side = 'left'),
       showlegend = FALSE
     )
