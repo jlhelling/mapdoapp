@@ -462,8 +462,158 @@ sld_get_fluvialstyles <- function() {
 
   # Dominant Land use -------------------------------------------------------
 
+  colors_lu_dominante <- c("#31572c", "#90be6d", "#ffbe0b", "#ae2012") %>%
+    setNames(
+      c("Forêt", "Praire", "Cultures", "Urbain et infrastructure")
+    )
 
-  sld_lu_dominante  <- NULL
+
+  sld_lu_dominante  <- glue::glue('
+      <se:Rule>
+          <se:Name>{names(colors_lu_dominante[1])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_lu_dominante[1])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+          <ogc:And>
+          <ogc:And>
+          <ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>forest_pc</ogc:PropertyName>
+                <ogc:PropertyName>grassland_pc</ogc:PropertyName>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>forest_pc</ogc:PropertyName>
+                <ogc:PropertyName>crops_pc</ogc:PropertyName>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>forest_pc</ogc:PropertyName>
+                <ogc:PropertyName>built_environment_pc</ogc:PropertyName>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_lu_dominante[[1]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_lu_dominante[[1]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_lu_dominante[2])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_lu_dominante[2])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+          <ogc:And>
+          <ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>grassland_pc</ogc:PropertyName>
+                <ogc:PropertyName>forest_pc</ogc:PropertyName>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>grassland_pc</ogc:PropertyName>
+                <ogc:PropertyName>crops_pc</ogc:PropertyName>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>grassland_pc</ogc:PropertyName>
+                <ogc:PropertyName>built_environment_pc</ogc:PropertyName>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_lu_dominante[[2]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_lu_dominante[[2]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_lu_dominante[3])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_lu_dominante[3])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+          <ogc:And>
+          <ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>crops_pc</ogc:PropertyName>
+                <ogc:PropertyName>grassland_pc</ogc:PropertyName>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>crops_pc</ogc:PropertyName>
+                <ogc:PropertyName>forest_pc</ogc:PropertyName>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>crops_pc</ogc:PropertyName>
+                <ogc:PropertyName>built_environment_pc</ogc:PropertyName>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_lu_dominante[[3]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_lu_dominante[[3]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_lu_dominante[4])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_lu_dominante[4])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+          <ogc:And>
+          <ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>built_environment_pc</ogc:PropertyName>
+                <ogc:PropertyName>grassland_pc</ogc:PropertyName>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>built_environment_pc</ogc:PropertyName>
+                <ogc:PropertyName>crops_pc</ogc:PropertyName>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>built_environment_pc</ogc:PropertyName>
+                <ogc:PropertyName>forest_pc</ogc:PropertyName>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_lu_dominante[[4]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_lu_dominante[[4]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        ')
 
 
   # Urban landuse -----------------------------------------------------------
@@ -866,7 +1016,109 @@ sld_get_fluvialstyles <- function() {
   # Gravel bars -------------------------------------------------------------
 
 
-  sld_gravel  <- NULL
+  colors_gravel <- c("#603808", "#e7bc91", "#0077b6") %>%
+    setNames(
+      c("abundant", "moyennement présente", "absent")
+    )
+
+  sld_gravel  <- glue::glue('
+      <se:Rule>
+          <se:Name>{names(colors_gravel[1])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_gravel[1])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:Div>
+                <ogc:PropertyName>gravel_bars</ogc:PropertyName>
+                <ogc:Add>
+                <ogc:PropertyName>water_channel</ogc:PropertyName>
+                <ogc:Literal>0.00001</ogc:Literal>
+                </ogc:Add>
+                </ogc:Div>
+                <ogc:Literal>0.5</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_gravel[[1]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_gravel[[1]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_gravel[2])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_gravel[2])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+          <ogc:And>
+          <ogc:PropertyIsLessThan>
+                <ogc:Div>
+                <ogc:PropertyName>gravel_bars</ogc:PropertyName>
+                <ogc:Add>
+                <ogc:PropertyName>water_channel</ogc:PropertyName>
+                <ogc:Literal>0.00001</ogc:Literal>
+                </ogc:Add>
+                </ogc:Div>
+                <ogc:Literal>0.5</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThan>
+                <ogc:Div>
+                <ogc:PropertyName>gravel_bars</ogc:PropertyName>
+                <ogc:Add>
+                <ogc:PropertyName>water_channel</ogc:PropertyName>
+                <ogc:Literal>0.00001</ogc:Literal>
+                </ogc:Add>
+                </ogc:Div>
+                <ogc:Literal>0</ogc:Literal>
+              </ogc:PropertyIsGreaterThan>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_gravel[[2]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_gravel[[2]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_gravel[3])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_gravel[3])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:PropertyIsEqualTo>
+                <ogc:Div>
+                <ogc:PropertyName>gravel_bars</ogc:PropertyName>
+                <ogc:Add>
+                <ogc:PropertyName>water_channel</ogc:PropertyName>
+                <ogc:Literal>0.00001</ogc:Literal>
+                </ogc:Add>
+                </ogc:Div>
+                <ogc:Literal>0</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_gravel[[3]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_gravel[[3]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        ')
 
 
   # Channel evolution -------------------------------------------------------
