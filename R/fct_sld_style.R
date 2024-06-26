@@ -1003,14 +1003,257 @@ sld_get_fluvialstyles <- function() {
 
   # Confinement -------------------------------------------------------------
 
+  colors_confinement <- c("#d9ed92", "#99d98c", "#168aad", "#184e77") %>%
+    setNames(
+      c("espace abondant", "modérement espace", "confiné", "très confiné")
+    )
 
-  sld_confinement  <- NULL
+  sld_confinement  <- glue::glue('
+      <se:Rule>
+          <se:Name>{names(colors_confinement[1])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_confinement[1])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>idx_confinement</ogc:PropertyName>
+                <ogc:Literal>0.7</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_confinement[[1]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_confinement[[1]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_confinement[2])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_confinement[2])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>idx_confinement</ogc:PropertyName>
+                <ogc:Literal>{0.7}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>idx_confinement</ogc:PropertyName>
+                <ogc:Literal>0.4</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_confinement[[2]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_confinement[[2]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_confinement[3])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_confinement[3])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>idx_confinement</ogc:PropertyName>
+                <ogc:Literal>{0.4}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>idx_confinement</ogc:PropertyName>
+                <ogc:Literal>0.1</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_confinement[[3]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_confinement[[3]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_confinement[4])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_confinement[4])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>idx_confinement</ogc:PropertyName>
+                <ogc:Literal>{0.1}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:PropertyName>idx_confinement</ogc:PropertyName>
+                <ogc:Literal>0</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_confinement[[4]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_confinement[[4]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        ')
 
 
   # Habitat -----------------------------------------------------------------
 
+  colors_habitat <- c("#2d6a4f", "#99d98c", "#fff3b0", "#ba181b") %>%
+    setNames(
+      c("très bien connecté", "bien connecté", "moyen connecté", "faible / absente")
+    )
 
-  sld_habitat  <- NULL
+  sld_habitat  <- glue::glue('
+      <se:Rule>
+          <se:Name>{names(colors_habitat[1])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_habitat[1])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:Add>
+                <ogc:PropertyName>riparian_corridor_pc</ogc:PropertyName>
+                <ogc:PropertyName>semi_natural_pc</ogc:PropertyName>
+                </ogc:Add>
+                <ogc:Literal>70</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_habitat[[1]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_habitat[[1]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_habitat[2])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_habitat[2])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:Add>
+                <ogc:PropertyName>riparian_corridor_pc</ogc:PropertyName>
+                <ogc:PropertyName>semi_natural_pc</ogc:PropertyName>
+                </ogc:Add>
+                <ogc:Literal>{70}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:Add>
+                <ogc:PropertyName>riparian_corridor_pc</ogc:PropertyName>
+                <ogc:PropertyName>semi_natural_pc</ogc:PropertyName>
+                </ogc:Add>
+                <ogc:Literal>40</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_habitat[[2]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_habitat[[2]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_habitat[3])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_habitat[3])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:Add>
+                <ogc:PropertyName>riparian_corridor_pc</ogc:PropertyName>
+                <ogc:PropertyName>semi_natural_pc</ogc:PropertyName>
+                </ogc:Add>
+                <ogc:Literal>{40}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:Add>
+                <ogc:PropertyName>riparian_corridor_pc</ogc:PropertyName>
+                <ogc:PropertyName>semi_natural_pc</ogc:PropertyName>
+                </ogc:Add>
+                <ogc:Literal>10</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_habitat[[3]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_habitat[[3]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>{names(colors_habitat[4])}</se:Name>
+          <se:Description>
+            <se:Title>{names(colors_habitat[4])}</se:Title>
+          </se:Description>
+          <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+              <ogc:And>
+              <ogc:PropertyIsLessThan>
+                <ogc:Add>
+                <ogc:PropertyName>riparian_corridor_pc</ogc:PropertyName>
+                <ogc:PropertyName>semi_natural_pc</ogc:PropertyName>
+                </ogc:Add>
+                <ogc:Literal>{10}</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+              <ogc:PropertyIsGreaterThanOrEqualTo>
+                <ogc:Add>
+                <ogc:PropertyName>riparian_corridor_pc</ogc:PropertyName>
+                <ogc:PropertyName>semi_natural_pc</ogc:PropertyName>
+                </ogc:Add>
+                <ogc:Literal>0</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              </ogc:And>
+          </ogc:Filter>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">{colors_habitat[[4]]}</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+              <CssParameter name="stroke">{colors_habitat[[4]]}</CssParameter>
+              <CssParameter name="stroke-width">2</CssParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        ')
 
 
   # Gravel bars -------------------------------------------------------------

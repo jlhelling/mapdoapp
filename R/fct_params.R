@@ -350,34 +350,69 @@ params_classes <- function() {
       "Pression urbaine",
       "Pression agricole",
       "Utilisation naturelle des sols",
+      "Présence de bancs sédimentaires",
       "Confinement de la bande active",
       "Connectivité des habitats riverains",
-      "Présence de bancs de galets",
       "Évolution de la taille du chenal de l'eau"
     ),
     description = c(
-      "Répresent la complexité du réseaux hdrographique. Le nombre de Strahler est de 1 pour tout cours d'eau entre sa source et sa première confluence et mont avec chaque confluence.",
-      "une classification simple basée sur la pente et la hauteur",
-      "indique la classe d'utilisation des sols la plus dominante dans la zone du fond de vallée de chaque segment de cours d'eau",
-      "4 classes basées sur le degré de couverture urbaine du fond de vallée du segment: \n
-        - 70 % fortement urbanisé \n
-        - 40 % urbanisé \n
-        - 10 % modérément urbanisé \n
-        - 0 % de terres non urbanisées",
-      "indique la part de l'utilisation des terres agricoles dans la zone du fond de vallée de chaque segment de cours d'eau",
-      "indique la part de l'utilisation naturelle des sols dans la zone du fond de vallée de chaque tronçon fluvial",
-      "L'indice de confinement proposé, de 0 à 1, est divisé en 4 classes : \n
-      - espace abondant : > 70 \n
-      - espace : > 40 \n
-      - espace modéré : > 10 \n
-      - confiné : 0 \n
-      basé sur le rapport entre la largeur du canal actif et la largeur du fond de la vallée.",
-      "basé sur la surface du corridor connecté (comprenant le canal actif, le corridor naturel et les corridors semi-naturels) à partir du fond de la vallée OU basé sur la surface du corridor connecté à partir du fond de la vallée, à l'exclusion de la zone du canal actif OU basé sur le rapport entre la largeur du corridor connecté et la largeur du canal actif !",
-      "la présence de bancs de galets : Absent, occasionnel, fréquent",
-      "*indique une réduction de la taille des chenaux sur le réseau de cours d'eau vers le bas* \n
-      - grandissant \n
-      - stable \n
-      - diminuant \n"
+      # strahler
+      "Répresent la complexité du réseaux hydrographique. Le nombre de Strahler est de 1 pour tout cours d'eau entre sa source et sa première confluence et mont avec chaque confluence.",
+      # topographie
+      "Classification simple basée sur la pente et la hauteur du cours de la rivière :
+      - plaines de basse altitude (> 0 m & < 5 % pente)
+      - plaines de moyenne altitude (> 300 m & < 5 % pente)
+      - plaines de montagne (> 1000 m & < 5 % pente)
+      - pentes de basse altitude (> 0 m & > 5 % pente)
+      - pentes de moyenne altitude (> 300 m & > 5 % pente)
+      - pentes de montagne (> 1000 m & > 5 % pente)
+      ",
+      # dominant land use
+      "Indique la classe d'utilisation des sols la plus dominante dans la zone du fond de vallée de chaque segment de cours d'eau :
+      - Forêt
+      - Prairies
+      - Cultures
+      - Espaces construits (zones urbaines et infrastructures)
+      ",
+      # urban areas
+      "Indique le degré de couverture urbaine du fond de vallée du segment :
+      - fortement urbanisé (> 70 % zones construites)
+      - urbanisé  (> 40 % zones construites)
+      - modérément urbanisé (> 10 % zones construites)
+      - Presque pas/pas urbanisé (< 10 % zones construites)",
+      # agriculture
+      "indique la part de l'utilisation des terres agricoles dans la zone du fond de vallée de chaque segment de cours d'eau
+      - Forte impact agricole (> 70 % cultures)
+      - Impact agricole élevé (> 40 % cultures)
+      - Impact agricole modéré (> 10 % cultures)
+      - Presque pas/pas d'impact agricole (< 10 % cultures)",
+      # natural
+      "indique la part de l'occupation naturelle des sols dans la zone du fond de vallée de chaque tronçon fluvial :
+      - Très forte utilisation naturelle (> 70 % espaces naturels)
+      - Forte utilisation naturelle (> 40 % espaces naturels)
+      - Utilisation naturelle modérée (> 10 % espaces naturels)
+      - Presque pas/pas naturelle (< 10 % espaces naturels)",
+      # gravel bars
+      "la présence de bancs sédimentaires. Basé sur le ratio entre la surface des sédiments et la surface du chenal actif, qui se compose des surfaces de sédiments et d'eau :
+      - Absent (pas des bancs sédimentaires)
+      - occasionnel (bancs sédimentaires < 50 % du chenal actif)
+      - fréquent (bancs sédimentaires >= 50 % du chenal actif)",
+      "Indique le dégrée du confinement du chenal actif. Basé sur le ratio entre la largeur du chenal actif et la largeur du fond de la vallée.
+      - espace abondant (chenal actif > 70 % du fond de la vallée)
+      - modérement espace (chenal actif > 40 % du fond de la vallée)
+      - confiné (chenal actif > 10 % du fond de la vallée)
+      - très confiné (chenal actif < 10 % du fond de la vallée)",
+      "Indique la disponibilité d'un espace naturel de corridor riverain l'espace du corridor. Basé sur ratio de la surface du corridor connecté (comprenant le chenal actif, le corridor naturel et les corridors semi-naturels) et le fond de la vallée :
+      - très bien connecté (>= 70 %)
+      - bien connecté (>= 40 %)
+      - moyen connecté (>= 10 % )
+      - faible / absente (< 10 %)",
+      "indique une réduction de la taille des chenaux sur le réseau de cours d'eau vers le bas
+      - grandissant
+      - stable
+      - diminuant
+
+      NOT WORKING UNTIL NOW DUE TO SLD STYLING CONSTRAINTS"
     ),
     class_name = c(
       "class_strahler",
@@ -386,9 +421,9 @@ params_classes <- function() {
       "class_urban",
       "class_agriculture",
       "class_nature",
+      "class_gravel",
       "class_confinement",
       "class_habitat",
-      "class_gravel",
       "class_channelevolution"
     )
   ) %>%
