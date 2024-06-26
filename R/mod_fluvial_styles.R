@@ -17,6 +17,7 @@ mod_fluvial_styles_ui <- function(id){
     fluidPage(
       useShinyjs(),
       fluidRow(
+        style = "margin-top: 20px;",
         uiOutput(ns("apply_buttonUI"))
       ),
       fluidRow(

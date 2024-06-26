@@ -21,6 +21,7 @@ mod_metric_analysis_ui <- function(id){
     fluidPage(
       useShinyjs(),
       fluidRow(
+        style = "margin-top: 20px;",
         textOutput(ns("metric_placeholder_descriptionUI"))
       ),
       fluidRow(
@@ -30,7 +31,7 @@ mod_metric_analysis_ui <- function(id){
         textOutput(ns("metric_descriptionUI"))
       ),
       fluidRow(
-        uiOutput(ns("accordeonUI"))
+        uiOutput(ns("classificationUI"))
       )
     )
   )
@@ -60,16 +61,14 @@ mod_metric_analysis_server <- function(id, con, r_val){
       metric_placeholder_description = "Cliquez sur une axe fluvial pour afficher l'analyse de métriques. ",
       ui_metric = NULL, # metric selection element
       metric_description = NULL, # information on selected metric
-      accordeon_ui = NULL, # accordeon navigation element
 
       # plots
-      violinplots_metric = NULL,
       barplots_classes_metric = NULL,
 
       # classification
-      # grouping
-      man_grouping_editable_table = NULL,
-      grouping_table_data = NULL
+      classification_ui = NULL, # UI placeholder
+      man_grouping_editable_table = NULL, # table which reacts on user input and datainput
+      grouping_table_data = NULL # datainput for table
     )
 
     ### OUTPUTS ####
@@ -85,13 +84,10 @@ mod_metric_analysis_server <- function(id, con, r_val){
       r_val_local$metric_description
     })
 
-    output$accordeonUI <- renderUI({
-      r_val_local$accordeon_ui
+    output$classificationUI <- renderUI({
+      r_val_local$classification_ui
     })
 
-    output$violinplots_metricUI <- renderPlotly({
-      r_val_local$violinplots_metric
-    })
     # barplots showing distribution of classes
     output$barplots_classes_metricUI <- renderPlotly({
       r_val_local$barplots_classes_metric
@@ -140,46 +136,35 @@ mod_metric_analysis_server <- function(id, con, r_val){
                                                 r_val$dgo_axis,
                                                 input$metric)
 
-      # create plots
-      r_val_local$violinplots_metric <-
-        create_plotly_violinplot(merged_network, input$metric, var_title = r_val$selected_metric_title)
 
-      r_val_local$accordeon_ui <- accordion(
-        accordion_panel(
-          "Comparaison regionale",
-          fluidRow(
-            column(width = 6,
-                   plotlyOutput(ns("violinplots_metricUI"))),
-            column(width = 6,
-                   plotlyOutput(ns("barplots_classes_metricUI")))
+      r_val_local$classification_ui <- fluidPage(
+        fluidRow(
+          column(width = 5,
+                 fluidRow(
+                   column(width = 6,
+                          numericInput(inputId = ns("man_grouping_quantile"),
+                                       "Quantile [%]", value = 95, min = 0, max = 100)
+                   ),
+                   column(width = 6,
+                          numericInput(inputId = ns("man_grouping_no_classes"),
+                                       "Classes", value = 4, min = 2, max = 10, step = 1)
+                   ),
+                   radioButtons(ns("man_grouping_scale_select"),
+                                "Base de classification",
+                                c("Région", "Axe fluvial"),
+                                selected = "Région",
+                                inline = TRUE)
+                 )
+          ),
+          column(width = 7,
+                 rHandsontableOutput(ns("man_grouping_editable_table"), width = "100%"),
+                 actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
           )
         ),
-        accordion_panel(
-          "Classification",
-          fluidRow(
-            column(width = 5,
-                   fluidRow(
-                     column(width = 6,
-                            numericInput(inputId = ns("man_grouping_quantile"),
-                                         "Quantile [%]", value = 95, min = 0, max = 100)
-                     ),
-                     column(width = 6,
-                            numericInput(inputId = ns("man_grouping_no_classes"),
-                                         "Classes", value = 4, min = 2, max = 10, step = 1)
-                     ),
-                     radioButtons(ns("man_grouping_scale_select"),
-                                  "Base de classification",
-                                  c("Région", "Axe fluvial"),
-                                  selected = "Région",
-                                  inline = TRUE)
-                   )
-            ),
-            column(width = 7,
-                   rHandsontableOutput(ns("man_grouping_editable_table"), width = "100%"),
-                   actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
-            )
-          )
-        ), open = FALSE
+        fluidRow(
+          plotlyOutput(ns("barplots_classes_metricUI"))
+        )
+
       )
     })
 
