@@ -36,7 +36,8 @@ mod_profil_long_ui <- function(id){
               )
             ),
             uiOutput(ns("profileroeUI"),
-                     style = "margin-top: 30px;")
+                     style = "margin-top: 30px;"),
+            uiOutput(ns("profile_backgroundUI"))
           )
         )
       )
@@ -64,6 +65,7 @@ mod_profil_long_server <- function(id, r_val){
       plot = lg_profile_empty(), # plotly render longitudinal profile output (default empty)
       leaflet_hover_shapes = NULL, # list to store vertical lines to display on longitudinal profile
       ui_roe_profile = NULL, # UI placeholder for ROE checkbox
+      ui_background_profile = NULL, # UI placeholder for background classes checkbox
       roe_vertical_line = NULL, # list with verticale line to plot on longitudinal profile
 
       # first metric
@@ -97,7 +99,7 @@ mod_profil_long_server <- function(id, r_val){
       r_val_local$profile_sec_metric
     })
 
-    # button to remove second axe
+    # button to add second axe
     output$add_sec_axeUI <- renderUI({
       r_val_local$add_sec_axe
     })
@@ -110,6 +112,11 @@ mod_profil_long_server <- function(id, r_val){
     # checkbox display ROE
     output$profileroeUI <- renderUI({
       r_val_local$ui_roe_profile
+    })
+
+    # checkbox display background based on classification
+    output$profile_backgroundUI <- renderUI({
+      r_val_local$ui_background_profile
     })
 
 
@@ -173,6 +180,13 @@ mod_profil_long_server <- function(id, r_val){
         r_val_local$ui_roe_profile = NULL # delete checkbox before creating new one
         r_val_local$ui_roe_profile = checkboxInput(ns("roe_profile"),
                                                    label = "Obstacles à l'Ecoulement",
+                                                   value = FALSE)
+
+
+        # build background classification checkboxInput
+        r_val_local$ui_background_profile = NULL # delete checkbox before creating new one
+        r_val_local$ui_background_profile = checkboxInput(ns("background_profile"),
+                                                   label = "Classifications en arrière-plan",
                                                    value = FALSE)
 
         # # add second metric to plot if valid
