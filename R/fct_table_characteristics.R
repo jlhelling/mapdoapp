@@ -159,7 +159,7 @@ fct_table_create_reactable <- function(df, unit){
     # add violinplots of distribution from axis and region into details
     details = function(index) {
       htmltools::div(
-        style = "padding: 10px; margin-left: 50px; white-space: pre-wrap;",  # Add text indentation
+        style = "padding: 10px; margin-left: 40px; white-space: pre-wrap;",  # Add text indentation
         create_plotly_violinplot(convert_data(data, index), data$metric_title[index], data$metric_title[index])
       )},
     height = 600,
