@@ -49,7 +49,6 @@ mod_metric_analysis_ui <- function(id){
 #' @importFrom bslib sidebar page_sidebar
 #' @importFrom leaflet removeControl clearGroup
 #' @importFrom leaflet.extras addWMSLegend
-#' @importFrom rhandsontable rHandsontableOutput rhandsontable hot_context_menu renderRHandsontable hot_to_r
 #' @importFrom shinyjs onclick runjs
 #' @importFrom colourpicker colourInput
 #' @noRd
@@ -150,7 +149,7 @@ mod_metric_analysis_server <- function(id, con, r_val){
       r_val_local$classification_ui <- fluidPage(
         fluidRow(
           page_sidebar(
-          sidebar = sidebar(width = 240,
+          sidebar = sidebar(
                             fluidRow(
                               column(width = 6,
                                      numericInput(inputId = ns("man_grouping_quantile"),
@@ -165,38 +164,11 @@ mod_metric_analysis_server <- function(id, con, r_val){
                                            c("Région", "Axe fluvial"),
                                            selected = "Région",
                                            inline = TRUE),
-                              actionButton(inputId = ns("man_grouping_apply_changes"), "Recalculer classes")
-                            )
+                              actionButton(inputId = ns("recalculate_classes_button"), "Recalculer classes")
+                            ), open = "closed", width = 240, position = "right"
           ),
           uiOutput(ns("reactable_classes")),
-          actionButton(inputId = ns("apply_to map"), "Ajouter à la carte")
-
-          # column(width = 8,
-          #          uiOutput(ns("reactable_classes")),
-          #        actionButton(inputId = ns("apply_to map"), "Ajouter à la carte")
-          # ),
-          # column(width = 4,
-          #        fluidRow(
-          #          column(width = 6,
-          #                 numericInput(inputId = ns("man_grouping_quantile"),
-          #                              "Quantile [%]", value = 95, min = 0, max = 100)
-          #          ),
-          #          column(width = 6,
-          #                 numericInput(inputId = ns("man_grouping_no_classes"),
-          #                              "Classes", value = 4, min = 2, max = 10, step = 1)
-          #          ),
-          #          radioButtons(ns("man_grouping_scale_select"),
-          #                       "Base de classification",
-          #                       c("Région", "Axe fluvial"),
-          #                       selected = "Région",
-          #                       inline = TRUE),
-          #          actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
-          #        )
-          # )
-          # column(width = 7,
-          #        rHandsontableOutput(ns("man_grouping_editable_table"), width = "100%"),
-          #        actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
-          # )
+          actionButton(inputId = ns("apply_to_map_button"), "Ajouter à la carte")
         )),
         fluidRow(
           plotlyOutput(ns("barplots_classes_metricUI"))
@@ -205,14 +177,55 @@ mod_metric_analysis_server <- function(id, con, r_val){
       )
     })
 
-    #### classification inputs changed ####
-    observeEvent(list(input$man_grouping_quantile,
-                      input$man_grouping_no_classes,
-                      input$man_grouping_scale_select
-    ), {
+    # #### classification inputs changed ####
+    # observeEvent(list(input$man_grouping_quantile,
+    #                   input$man_grouping_no_classes,
+    #                   input$man_grouping_scale_select
+    # ), {
+    #
+    #   # track input
+    #   track_inputs(input = input)
+    #
+    #   # check for valid values
+    #   if (!is.null(input$metric) &
+    #       !is.null(input$man_grouping_scale_select) &
+    #       !is.null(input$man_grouping_quantile) &
+    #       !is.null(input$man_grouping_no_classes)) {
+    #
+    #     if ((input$man_grouping_scale_select == "Région") &
+    #         !is.null(r_val$network_region)) {
+    #
+    #       # create classes-table
+    #       r_val_local$initial_classes_table = create_df_input(
+    #         axis_data = r_val$network_region,
+    #         variable_name = input$metric,
+    #         no_classes = input$man_grouping_no_classes,
+    #         quantile = input$man_grouping_quantile
+    #       )
+    #     }
+    #
+    #     else if (input$man_grouping_scale_select == "Axe fluvial" &
+    #              !is.null(r_val$dgo_axis) ) {
+    #
+    #       # create classes-table
+    #       r_val_local$initial_classes_table = create_df_input(
+    #         axis_data = r_val$dgo_axis,
+    #         variable_name = input$metric,
+    #         no_classes = input$man_grouping_no_classes,
+    #         quantile = input$man_grouping_quantile
+    #       )
+    #     }
+    #   }
+    # })
+
+    #### recalculate classes ####
+    # when button clicked or metric selection changed
+    observeEvent(c(input$metric, input$recalculate_classes_button), {
 
       # track input
       track_inputs(input = input)
+
+      r_val_local$barplots_classes_metric = NULL
 
       # check for valid values
       if (!is.null(input$metric) &
@@ -246,8 +259,47 @@ mod_metric_analysis_server <- function(id, con, r_val){
       }
     })
 
-    #### apply button clicked ####
-    observeEvent(input$man_grouping_apply_changes,{
+
+    #### UI classes creation ####
+    # update input fields for classification when setting the variables in the UI
+    observeEvent(r_val_local$initial_classes_table, {
+
+      if (!is.null(r_val_local$initial_classes_table)) {
+
+        # create classes UI
+        r_val_local$reactableUI =
+          renderUI({
+            # Start with a list to collect UI elements
+            ui_elements <- list()
+
+            # Add the first row of inputs
+            ui_elements[[1]] <- fluidRow(
+              column(width = 5, textInput(ns("class1"), label = "Classe", value = r_val_local$initial_classes_table$class[1])),
+              column(width = 4, numericInput(ns("greaterthan1"), label = "supérieur à", value = r_val_local$initial_classes_table$greaterthan[1])),
+              column(width = 3, colourInput(ns("color1"), label = "Couleur",
+                                            value = r_val_local$initial_classes_table$color[1],
+                                            showColour = "background", closeOnClick = TRUE))
+            )
+
+            # Loop through the remaining rows and add inputs
+            for (row in 2:nrow(r_val_local$initial_classes_table)) {
+              ui_elements[[row]] <- fluidRow(
+                column(width = 5, textInput(ns(paste0("class", row)), label = NULL, value = r_val_local$initial_classes_table$class[row])),
+                column(width = 4, numericInput(ns(paste0("greaterthan", row)), label = NULL, value = r_val_local$initial_classes_table$greaterthan[row])),
+                column(width = 3, colourInput(ns(paste0("color", row)), label = NULL,
+                                              value = r_val_local$initial_classes_table$color[row],
+                                              showColour = "background", closeOnClick = TRUE))
+              )
+            }
+
+            # Return the list of UI elements wrapped in tagList
+            do.call(tagList, ui_elements)
+          })
+      }
+    })
+
+    #### apply-to-map button clicked ####
+    observeEvent(input$apply_to_map_button,{
 
       r_val$visualization = "metric"
 
@@ -312,57 +364,6 @@ mod_metric_analysis_server <- function(id, con, r_val){
       r_val$plot_long_proxy %>%
         plotlyProxyInvoke("relayout", list(shapes = create_classes_background(classified_axis)))
 
-      # longitudinal plot
-      # if (!is.null(r_val$dgo_axis)) {
-      #   #   # create classified axis network
-      #   classified_axis <- r_val$dgo_axis %>%
-      #     na.omit() %>%
-      #     assign_classes(classes = r_val$classes_table)
-      #
-      #   # create plotly longitudinal series plot
-      #   r_val$longitudinal_plot <-
-      #     plot_class_series_plotly(classified_axis,
-      #                              y = input$metric,
-      #                              cat = "class_name",
-      #                              colors = get_colors_char_df(classified_axis))
-      # }
-    })
-
-    # update input fields for classification when setting the variables in the UI
-    observeEvent(r_val_local$initial_classes_table, {
-
-      if (!is.null(r_val_local$initial_classes_table)) {
-
-        # create classes UI
-        r_val_local$reactableUI =
-          renderUI({
-            # Start with a list to collect UI elements
-            ui_elements <- list()
-
-            # Add the first row of inputs
-            ui_elements[[1]] <- fluidRow(
-              column(width = 5, textInput(ns("class1"), label = "Classe", value = r_val_local$initial_classes_table$class[1])),
-              column(width = 4, numericInput(ns("greaterthan1"), label = "supérieur à", value = r_val_local$initial_classes_table$greaterthan[1])),
-              column(width = 3, colourInput(ns("color1"), label = "Couleur",
-                                            value = r_val_local$initial_classes_table$color[1],
-                                            showColour = "background", closeOnClick = TRUE))
-            )
-
-            # Loop through the remaining rows and add inputs
-            for (row in 2:nrow(r_val_local$initial_classes_table)) {
-              ui_elements[[row]] <- fluidRow(
-                column(width = 5, textInput(ns(paste0("class", row)), label = NULL, value = r_val_local$initial_classes_table$class[row])),
-                column(width = 4, numericInput(ns(paste0("greaterthan", row)), label = NULL, value = r_val_local$initial_classes_table$greaterthan[row])),
-                column(width = 3, colourInput(ns(paste0("color", row)), label = NULL,
-                                              value = r_val_local$initial_classes_table$color[row],
-                                              showColour = "background", closeOnClick = TRUE))
-              )
-            }
-
-            # Return the list of UI elements wrapped in tagList
-            do.call(tagList, ui_elements)
-          })
-      }
     })
   })
 }
