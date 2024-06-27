@@ -50,6 +50,7 @@ mod_metric_analysis_ui <- function(id){
 #' @importFrom leaflet.extras addWMSLegend
 #' @importFrom rhandsontable rHandsontableOutput rhandsontable hot_context_menu renderRHandsontable hot_to_r
 #' @importFrom shinyjs onclick runjs
+#' @importFrom colourpicker colourInput
 #' @noRd
 mod_metric_analysis_server <- function(id, con, r_val){
   moduleServer( id, function(input, output, session){
@@ -68,7 +69,10 @@ mod_metric_analysis_server <- function(id, con, r_val){
       # classification
       classification_ui = NULL, # UI placeholder
       man_grouping_editable_table = NULL, # table which reacts on user input and datainput
-      grouping_table_data = NULL # datainput for table
+      initial_classes_table = NULL, # datainput for table
+      classes_table = NULL, # dataoutput from table for classifications
+
+      reactableUI = NULL # reactable table
     )
 
     ### OUTPUTS ####
@@ -91,6 +95,11 @@ mod_metric_analysis_server <- function(id, con, r_val){
     # barplots showing distribution of classes
     output$barplots_classes_metricUI <- renderPlotly({
       r_val_local$barplots_classes_metric
+    })
+
+    # reactable table of classes
+    output$reactable_classes <- renderUI({
+      r_val_local$reactableUI
     })
 
     # editable table for classification
@@ -153,13 +162,17 @@ mod_metric_analysis_server <- function(id, con, r_val){
                                 "Base de classification",
                                 c("Région", "Axe fluvial"),
                                 selected = "Région",
-                                inline = TRUE)
+                                inline = TRUE),
+                   actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
                  )
-          ),
-          column(width = 7,
-                 rHandsontableOutput(ns("man_grouping_editable_table"), width = "100%"),
-                 actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
           )
+          # column(width = 7,
+          #        rHandsontableOutput(ns("man_grouping_editable_table"), width = "100%"),
+          #        actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
+          # )
+        ),
+        fluidRow(
+          uiOutput(ns("reactable_classes"))
         ),
         fluidRow(
           plotlyOutput(ns("barplots_classes_metricUI"))
@@ -168,13 +181,67 @@ mod_metric_analysis_server <- function(id, con, r_val){
       )
     })
 
+    #### classification inputs changed ####
+    observeEvent(list(input$man_grouping_quantile,
+                      input$man_grouping_no_classes,
+                      input$man_grouping_scale_select
+    ), {
+
+      # track input
+      track_inputs(input = input)
+
+      # check for valid values
+      if (!is.null(input$metric) &
+          !is.null(input$man_grouping_scale_select) &
+          !is.null(input$man_grouping_quantile) &
+          !is.null(input$man_grouping_no_classes)) {
+
+        if ((input$man_grouping_scale_select == "Région") &
+            !is.null(r_val$network_region)) {
+
+          # create classes-table
+          r_val_local$initial_classes_table = create_df_input(
+            axis_data = r_val$network_region,
+            variable_name = input$metric,
+            no_classes = input$man_grouping_no_classes,
+            quantile = input$man_grouping_quantile
+          )
+        }
+
+        else if (input$man_grouping_scale_select == "Axe fluvial" &
+                 !is.null(r_val$dgo_axis) ) {
+
+          # create classes-table
+          r_val_local$initial_classes_table = create_df_input(
+            axis_data = r_val$dgo_axis,
+            variable_name = input$metric,
+            no_classes = input$man_grouping_no_classes,
+            quantile = input$man_grouping_quantile
+          )
+        }
+      }
+    })
+
     #### apply button clicked ####
     observeEvent(input$man_grouping_apply_changes,{
 
       r_val$visualization = "metric"
 
+      # create classes table from input
+      # Initialize an empty tibble
+      r_val_local$classes_table <- tibble(variable = character(), class = character(), greaterthan = numeric(), color = character())
+
+      # Add rows to the tibble within a loop
+      for (row in 1:input$man_grouping_no_classes) {
+        r_val_local$classes_table <- r_val_local$classes_table %>%
+          add_row(variable = input$metric,
+                  class = input[[paste0("class", row)]],
+                  greaterthan = input[[paste0("greaterthan", row)]],
+                  color = input[[paste0("color", row)]])
+      }
+
       # sort classes
-      classes <- r_val_local$grouping_table_data %>%
+      classes <- r_val_local$classes_table %>%
         dplyr::arrange(greaterthan) %>%
         dplyr::mutate(greaterthan = round(greaterthan, 2))
 
@@ -200,12 +267,12 @@ mod_metric_analysis_server <- function(id, con, r_val){
       # classify and merge networks
       # Create classified network by adding the classes and colors
       classified_network <- r_val$network_region %>%
-        assign_classes(classes = r_val_local$grouping_table_data)
+        assign_classes(classes = r_val_local$classes_table)
 
       # create classified axis network
       classified_axis <- r_val$dgo_axis %>%
         na.omit() %>%
-        assign_classes(classes = r_val_local$grouping_table_data)
+        assign_classes(classes = r_val_local$classes_table)
 
       # merge regional and axis network in one df
       merged_network_classified <- merge_regional_axis_dfs(classified_network,
@@ -226,7 +293,7 @@ mod_metric_analysis_server <- function(id, con, r_val){
       #   #   # create classified axis network
       #   classified_axis <- r_val$dgo_axis %>%
       #     na.omit() %>%
-      #     assign_classes(classes = r_val$grouping_table_data)
+      #     assign_classes(classes = r_val$classes_table)
       #
       #   # create plotly longitudinal series plot
       #   r_val$longitudinal_plot <-
@@ -237,70 +304,37 @@ mod_metric_analysis_server <- function(id, con, r_val){
       # }
     })
 
-    #### classification inputs changed ####
-    observeEvent(list(input$man_grouping_quantile,
-                      input$man_grouping_no_classes,
-                      input$man_grouping_scale_select
-    ), {
+    # update input fields for classification when setting the variables in the UI
+    observeEvent(r_val_local$initial_classes_table, {
 
-      # track input
-      track_inputs(input = input)
+      if (!is.null(r_val_local$initial_classes_table)) {
 
-      # check for valid values
-      if (!is.null(input$metric) &
-          !is.null(input$man_grouping_scale_select) &
-          !is.null(input$man_grouping_quantile) &
-          !is.null(input$man_grouping_no_classes)) {
+        # create classes UI
+        r_val_local$reactableUI =
+          renderUI({
+            # Start with a list to collect UI elements
+            ui_elements <- list()
 
-        if ((input$man_grouping_scale_select == "Région") &
-            !is.null(r_val$network_region)) {
+            # Add the first row of inputs
+            ui_elements[[1]] <- fluidRow(
+              column(width = 6, textInput(ns("class1"), label = "Classe", value = r_val_local$initial_classes_table$class[1])),
+              column(width = 3, numericInput(ns("greaterthan1"), label = "supérieur à", value = r_val_local$initial_classes_table$greaterthan[1])),
+              column(width = 3, colourInput(ns("color1"), label = "Couleur", value = r_val_local$initial_classes_table$color[1]))
+            )
 
-          # create classes-table
-          r_val_local$grouping_table_data = create_df_input(
-            axis_data = r_val$network_region,
-            variable_name = input$metric,
-            no_classes = input$man_grouping_no_classes,
-            quantile = input$man_grouping_quantile
-          )
-        }
+            # Loop through the remaining rows and add inputs
+            for (row in 2:nrow(r_val_local$initial_classes_table)) {
+              ui_elements[[row]] <- fluidRow(
+                column(width = 6, textInput(ns(paste0("class", row)), label = NULL, value = r_val_local$initial_classes_table$class[row])),
+                column(width = 3, numericInput(ns(paste0("greaterthan", row)), label = NULL, value = r_val_local$initial_classes_table$greaterthan[row])),
+                column(width = 3, colourInput(ns(paste0("color", row)), label = NULL, value = r_val_local$initial_classes_table$color[row]))
+              )
+            }
 
-        else if (input$man_grouping_scale_select == "Axe fluvial" &
-                 !is.null(r_val$dgo_axis) ) {
-
-          # create classes-table
-          r_val_local$grouping_table_data = create_df_input(
-            axis_data = r_val$dgo_axis,
-            variable_name = input$metric,
-            no_classes = input$man_grouping_no_classes,
-            quantile = input$man_grouping_quantile
-          )
-        }
+            # Return the list of UI elements wrapped in tagList
+            do.call(tagList, ui_elements)
+          })
       }
     })
-
-    # update table when values are edited (either via editing the table or setting the variables in the UI)
-    observeEvent(r_val_local$grouping_table_data, {
-
-      if (!is.null(r_val_local$grouping_table_data)) {
-        output$man_grouping_editable_table <- renderRHandsontable({
-          tmp <- isolate(r_val_local$grouping_table_data %>% select(!variable))# Gotta isolate it or it'll cause infinite loop, see https://github.com/jrowen/rhandsontable/issues/166
-          rownames(tmp) <- NULL
-          rhandsontable( tmp, rowHeaders = NULL) %>%
-            hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
-        })
-      }
-    })
-
-    # Update the reactive values when user edits table in the UI
-    observeEvent(input$man_grouping_editable_table, {
-
-      r_val_local$grouping_table_data <- hot_to_r(input$man_grouping_editable_table) %>%
-        bind_cols(
-          r_val_local$grouping_table_data %>%
-            select(variable)
-        )
-    })
-
-
   })
 }
