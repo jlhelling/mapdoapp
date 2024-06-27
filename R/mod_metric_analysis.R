@@ -46,6 +46,7 @@ mod_metric_analysis_ui <- function(id){
 #' @importFrom htmltools HTML div img
 #' @importFrom dplyr filter mutate if_else pull bind_cols arrange add_row
 #' @importFrom tibble tibble
+#' @importFrom bslib sidebar page_sidebar
 #' @importFrom leaflet removeControl clearGroup
 #' @importFrom leaflet.extras addWMSLegend
 #' @importFrom rhandsontable rHandsontableOutput rhandsontable hot_context_menu renderRHandsontable hot_to_r
@@ -148,32 +149,55 @@ mod_metric_analysis_server <- function(id, con, r_val){
 
       r_val_local$classification_ui <- fluidPage(
         fluidRow(
-          column(width = 5,
-                 fluidRow(
-                   column(width = 6,
-                          numericInput(inputId = ns("man_grouping_quantile"),
-                                       "Quantile [%]", value = 95, min = 0, max = 100)
-                   ),
-                   column(width = 6,
-                          numericInput(inputId = ns("man_grouping_no_classes"),
-                                       "Classes", value = 4, min = 2, max = 10, step = 1)
-                   ),
-                   radioButtons(ns("man_grouping_scale_select"),
-                                "Base de classification",
-                                c("Région", "Axe fluvial"),
-                                selected = "Région",
-                                inline = TRUE),
-                   actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
-                 )
-          )
+          page_sidebar(
+          sidebar = sidebar(width = 240,
+                            fluidRow(
+                              column(width = 6,
+                                     numericInput(inputId = ns("man_grouping_quantile"),
+                                                  "Quantile [%]", value = 95, min = 0, max = 100)
+                              ),
+                              column(width = 6,
+                                     numericInput(inputId = ns("man_grouping_no_classes"),
+                                                  "Classes", value = 4, min = 2, max = 10, step = 1)
+                              ),
+                              radioButtons(ns("man_grouping_scale_select"),
+                                           "Base de classification",
+                                           c("Région", "Axe fluvial"),
+                                           selected = "Région",
+                                           inline = TRUE),
+                              actionButton(inputId = ns("man_grouping_apply_changes"), "Recalculer classes")
+                            )
+          ),
+          uiOutput(ns("reactable_classes")),
+          actionButton(inputId = ns("apply_to map"), "Ajouter à la carte")
+
+          # column(width = 8,
+          #          uiOutput(ns("reactable_classes")),
+          #        actionButton(inputId = ns("apply_to map"), "Ajouter à la carte")
+          # ),
+          # column(width = 4,
+          #        fluidRow(
+          #          column(width = 6,
+          #                 numericInput(inputId = ns("man_grouping_quantile"),
+          #                              "Quantile [%]", value = 95, min = 0, max = 100)
+          #          ),
+          #          column(width = 6,
+          #                 numericInput(inputId = ns("man_grouping_no_classes"),
+          #                              "Classes", value = 4, min = 2, max = 10, step = 1)
+          #          ),
+          #          radioButtons(ns("man_grouping_scale_select"),
+          #                       "Base de classification",
+          #                       c("Région", "Axe fluvial"),
+          #                       selected = "Région",
+          #                       inline = TRUE),
+          #          actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
+          #        )
+          # )
           # column(width = 7,
           #        rHandsontableOutput(ns("man_grouping_editable_table"), width = "100%"),
           #        actionButton(inputId = ns("man_grouping_apply_changes"), "Appliquer")
           # )
-        ),
-        fluidRow(
-          uiOutput(ns("reactable_classes"))
-        ),
+        )),
         fluidRow(
           plotlyOutput(ns("barplots_classes_metricUI"))
         )
@@ -317,17 +341,21 @@ mod_metric_analysis_server <- function(id, con, r_val){
 
             # Add the first row of inputs
             ui_elements[[1]] <- fluidRow(
-              column(width = 6, textInput(ns("class1"), label = "Classe", value = r_val_local$initial_classes_table$class[1])),
-              column(width = 3, numericInput(ns("greaterthan1"), label = "supérieur à", value = r_val_local$initial_classes_table$greaterthan[1])),
-              column(width = 3, colourInput(ns("color1"), label = "Couleur", value = r_val_local$initial_classes_table$color[1]))
+              column(width = 5, textInput(ns("class1"), label = "Classe", value = r_val_local$initial_classes_table$class[1])),
+              column(width = 4, numericInput(ns("greaterthan1"), label = "supérieur à", value = r_val_local$initial_classes_table$greaterthan[1])),
+              column(width = 3, colourInput(ns("color1"), label = "Couleur",
+                                            value = r_val_local$initial_classes_table$color[1],
+                                            showColour = "background", closeOnClick = TRUE))
             )
 
             # Loop through the remaining rows and add inputs
             for (row in 2:nrow(r_val_local$initial_classes_table)) {
               ui_elements[[row]] <- fluidRow(
-                column(width = 6, textInput(ns(paste0("class", row)), label = NULL, value = r_val_local$initial_classes_table$class[row])),
-                column(width = 3, numericInput(ns(paste0("greaterthan", row)), label = NULL, value = r_val_local$initial_classes_table$greaterthan[row])),
-                column(width = 3, colourInput(ns(paste0("color", row)), label = NULL, value = r_val_local$initial_classes_table$color[row]))
+                column(width = 5, textInput(ns(paste0("class", row)), label = NULL, value = r_val_local$initial_classes_table$class[row])),
+                column(width = 4, numericInput(ns(paste0("greaterthan", row)), label = NULL, value = r_val_local$initial_classes_table$greaterthan[row])),
+                column(width = 3, colourInput(ns(paste0("color", row)), label = NULL,
+                                              value = r_val_local$initial_classes_table$color[row],
+                                              showColour = "background", closeOnClick = TRUE))
               )
             }
 

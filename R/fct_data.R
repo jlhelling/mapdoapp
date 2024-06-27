@@ -481,7 +481,7 @@ create_df_input <- function(axis_data, variable_name, no_classes, quantile = 95)
 
   # set threshold values of all classes
   for (i in 1:no_classes) {
-    classes[i] <- q_steps*(no_classes - i)
+    classes[i] <- round(q_steps*(no_classes - i), 2)
   }
 
   # create dataframe
