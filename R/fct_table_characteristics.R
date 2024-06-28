@@ -162,8 +162,8 @@ fct_table_create_reactable <- function(df, unit){
         style = "padding: 10px; margin-left: 40px; white-space: pre-wrap;",  # Add text indentation
         create_plotly_violinplot(convert_data(data, index), data$metric_title[index], data$metric_title[index])
       )},
-    height = 600,
-    defaultPageSize = 13,
+    height = 420,
+    defaultPageSize = 9,
     highlight = TRUE, # highlight rows on hover
     compact = TRUE
   )

@@ -35,20 +35,20 @@ mod_mapdo_app_ui <- function(id){
       fluidRow(
         column(
           width = 6,
-          withSpinner(leafletOutput(ns("map"), height = 700)),
+          withSpinner(leafletOutput(ns("map"), height = 500)),
           textOutput(ns("selection_textUI"))
         ),
         column(
           width = 6,
           tabsetPanel(
             id = "tabset",
-            tabPanel("Styles fluviaux",
+            tabPanel("Classifications proposées",
                      mod_fluvial_styles_ui("fluvial_styles_1")
             ),
-            tabPanel("Caractéristiques",
+            tabPanel("Aperçu métriques",
                      mod_characterisation_ui("characterisation_1")
             ),
-            tabPanel("Analyse métrique",
+            tabPanel("Classification manuelle",
                      mod_metric_analysis_ui("metric_analysis_1")
             ), type = "pills"
           ) #tabsetpanel
@@ -64,7 +64,8 @@ mod_mapdo_app_ui <- function(id){
           ),
           tabPanel("Profil transversal",
                    mod_profil_transverse_ui("profil_transverse_1")
-          )
+          ),
+          tabPanel("Distribution des classes")
         )
       )
     ) #page
