@@ -64,7 +64,7 @@ mod_classification_proposed_server <- function(id, r_val){
     })
 
 
-    # create table output
+    # create table output (and classified dgo networks)
     observeEvent(input$table__reactable__selected, {
       r_val_local$selected <- getReactableState("table", "selected")
 
@@ -78,8 +78,29 @@ mod_classification_proposed_server <- function(id, r_val){
         addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
                      position = "bottomright",
                      layerId = "legend_metric")
-
     })
+
+
+    # TODO --------------------------------------------------------------------
+
+
+    # # check if dgo axis clicked
+    #
+    # # classify and merge networks
+    # # Create classified network by adding the classes and colors
+    # r_val$network_region_classified <- r_val$network_region %>%
+    #   assign_classes(classes = r_val_local$classes_table)
+    #
+    # # create classified axis network
+    # r_val$dgo_axis_classified <- r_val$dgo_axis %>%
+    #   na.omit() %>%
+    #   assign_classes(classes = r_val_local$classes_table)
+    #
+    # # merge regional and axis network in one df
+    # r_val$merged_networks_classified <- merge_regional_axis_dfs(r_val$network_region_classified,
+    #                                                             r_val$dgo_axis_classified,
+    #                                                             r_val$selected_metric,
+    #                                                             classes = TRUE)
 
 
     # check if other visualization is applied to map and create button to re-apply fluvial styles
