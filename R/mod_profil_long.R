@@ -80,7 +80,11 @@ mod_profil_long_server <- function(id, r_val){
       add_sec_axe = NULL, # add second axis
       remove_sec_axe = NULL, # remove second axis
       sec_metric_name = NULL, # title
-      sec_metric_type = NULL # metric type title
+      sec_metric_type = NULL, # metric type title
+
+      # plotly shapes
+      leaflet_hover_shapes = list(shapes = NULL), # list with roe elements to add as lines to plot
+      background_shapes = list(shapes = NULL), # list with shapes to plot classes in background
 
     )
 
@@ -136,9 +140,9 @@ mod_profil_long_server <- function(id, r_val){
 
         # build second axis input and add and remove buttons
         r_val_local$profile_first_metric = selectInput(ns("profile_first_metric"), label = "Métrique :",
-                                                     choices = params_get_metric_choices(),
-                                                     selected  = params_get_metric_choices()[1],
-                                                     width = "100%")
+                                                       choices = params_get_metric_choices(),
+                                                       selected  = params_get_metric_choices()[1],
+                                                       width = "100%")
 
         # build second axis input and add and remove buttons
         r_val_local$profile_sec_metric = selectInput(ns("profile_sec_metric"), label = "Ajoutez 2éme métrique :",
@@ -186,8 +190,8 @@ mod_profil_long_server <- function(id, r_val){
         # build background classification checkboxInput
         r_val_local$ui_background_profile = NULL # delete checkbox before creating new one
         r_val_local$ui_background_profile = checkboxInput(ns("background_profile"),
-                                                   label = "Classifications en arrière-plan",
-                                                   value = FALSE)
+                                                          label = "Classifications en arrière-plan",
+                                                          value = FALSE)
 
         # # add second metric to plot if valid
         # if (!is.null(r_val_local$proxy_second_axe)) {
@@ -215,9 +219,9 @@ mod_profil_long_server <- function(id, r_val){
 
       # create the list to add trace and layout to change second axe plot
       r_val_local$proxy_second_axe <- lg_profile_second(data = r_val$dgo_axis,
-                                            y = r_val$dgo_axis[[input$profile_sec_metric]],
-                                            y_label = r_val_local$sec_metric_name,
-                                            y_label_category = r_val_local$sec_metric_type)
+                                                        y = r_val$dgo_axis[[input$profile_sec_metric]],
+                                                        y_label = r_val_local$sec_metric_name,
+                                                        y_label_category = r_val_local$sec_metric_type)
 
       # add second metric to plot
       plotlyProxy("long_profile") %>%
@@ -240,6 +244,59 @@ mod_profil_long_server <- function(id, r_val){
 
     })
 
+    # #### add ROE ####
+    # observeEvent(input$roe_profile, {
+    #   # track input
+    #   track_inputs(input = input)
+    #
+    #   if (input$roe_profile == TRUE){
+    #     if (!is.null(r_val_local$roe_vertical_line)){
+    #       # remove the previous ROE vertical lines if exist
+    #       r_val_local$roe_vertical_line <- NULL
+    #     }
+    #     # create the vertical line from ROE distance_axis
+    #     r_val_local$roe_vertical_line <- lg_roe_vertical_line(r_val$roe_axis$distance_axis)
+    #
+    #     # increment the vertical list shape to keep the hover map vertical line
+    #     r_val_local$leaflet_hover_shapes$shapes <- c(r_val_local$leaflet_hover_shapes$shapes,
+    #                                                  r_val_local$roe_vertical_line)
+    #
+    #   } else {
+    #     # remove the previous ROE vertical lines if exist
+    #     r_val_local$leaflet_hover_shapes = NULL
+    #   }
+    #
+    #   # Combine shapes and update plot
+    #   combined_shapes <- c(
+    #     if (!is.null(r_val_local$leaflet_hover_shapes)) r_val_local$leaflet_hover_shapes else list(),
+    #     if (!is.null(r_val_local$background_shapes)) r_val_local$background_shapes else list()
+    #   )
+    #
+    #   plotlyProxy("long_profile") %>%
+    #     plotlyProxyInvoke("relayout", list(shapes = combined_shapes))
+    # })
+    #
+    #### add background classification ####
+    # observeEvent(input$background_profile, {
+    #
+    #   if ((input$background_profile == TRUE) & !is.null(r_val$dgo_axis_classified)) {
+    #     # add data to longitudinal plot
+    #     r_val_local$background_shapes <- create_classes_background(r_val$dgo_axis_classified)
+    #   } else {
+    #     # remove background classification
+    #     r_val_local$background_shapes = NULL
+    #   }
+    #
+    #   # Combine shapes and update plot
+    #   combined_shapes <- c(
+    #     if (!is.null(r_val_local$leaflet_hover_shapes)) r_val_local$leaflet_hover_shapes else list(),
+    #     if (!is.null(r_val_local$background_shapes)) r_val_local$background_shapes else list()
+    #   )
+    #
+    #   plotlyProxy("long_profile") %>%
+    #     plotlyProxyInvoke("relayout", list(shapes = combined_shapes))
+    # })
+
     #### add ROE ####
 
     observeEvent(input$roe_profile, {
@@ -247,27 +304,68 @@ mod_profil_long_server <- function(id, r_val){
       # track input
       track_inputs(input = input)
 
-      if (input$roe_profile == TRUE){
+      if (input$roe_profile == TRUE) {
         if (!is.null(r_val_local$roe_vertical_line)){
           # remove the previous ROE vertical lines if exist
-          r_val_local$leaflet_hover_shapes$shapes <- list(r_val_local$leaflet_hover_shapes$shapes[[1]])
+          r_val_local$leaflet_hover_shapes$shapes = list(r_val_local$leaflet_hover_shapes$shapes[[1]])
         }
         # create the vertical line from ROE distance_axis
         r_val_local$roe_vertical_line <- lg_roe_vertical_line(r_val$roe_axis$distance_axis)
         # increment the vertical list shape to keep the hover map vertical line
-        r_val_local$leaflet_hover_shapes$shapes <- c(r_val_local$leaflet_hover_shapes$shapes,
+        r_val_local$leaflet_hover_shapes = c(r_val_local$leaflet_hover_shapes$shapes,
                                                      r_val_local$roe_vertical_line)
-        # update profile
-        plotlyProxy("long_profile") %>%
-          plotlyProxyInvoke("relayout",  r_val_local$leaflet_hover_shapes)
-      }else{
+
+      } else {
         # remove the previous ROE vertical lines if exist
-        r_val_local$leaflet_hover_shapes$shapes <- list(r_val_local$leaflet_hover_shapes$shapes[[1]])
-        # update profile
-        plotlyProxy("long_profile") %>%
-          plotlyProxyInvoke("relayout",  r_val_local$leaflet_hover_shapes)
+        r_val_local$leaflet_hover_shapes = list(r_val_local$leaflet_hover_shapes$shapes[[1]])
+        # list(r_val_local$leaflet_hover_shapes$shapes[[1]])
+      }
+
+    })
+
+    #### add background classification ####
+
+    observeEvent(input$background_profile, {
+
+      print(paste0("clicked background: ", input$background_profile))
+
+      # track input
+      track_inputs(input = input)
+
+      # add background classification shapes
+      if ((input$background_profile == TRUE) & !is.null(r_val$dgo_axis_classified)) {
+
+        r_val_local$background_shapes = create_classes_background(r_val$dgo_axis_classified)
+      }
+      # remove background classification
+      else {
+        r_val_local$background_shapes = NULL
       }
     })
+
+    #### listen to shapes changes ####
+    observeEvent(c(r_val_local$leaflet_hover_shapes, r_val_local$background_shapes), {
+
+      # Combine shapes
+      combined_shapes <- c(
+        r_val_local$leaflet_hover_shapes,
+        r_val_local$background_shapes
+      )
+
+      # print(paste0("roe: ", r_val_local$leaflet_hover_shapes))
+      # print(paste0("background: ", r_val_local$background_shapes))
+      # print(paste0("combi: ", combined_shapes))
+
+      # update profile with change shapes
+      plotlyProxy("long_profile") %>%
+        plotlyProxyInvoke("relayout", list(shapes = combined_shapes))
+    })
+
+
+
+
+
+
 
     ### EVENT MOUSEOVER ####
 

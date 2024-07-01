@@ -63,12 +63,8 @@ mod_classification_manual_server <- function(id, con, r_val){
       ui_metric = NULL, # metric selection element
       metric_description = NULL, # information on selected metric
 
-      # plots
-      barplots_classes_metric = NULL,
-
       # classification
       classification_ui = NULL, # UI placeholder
-      man_grouping_editable_table = NULL, # table which reacts on user input and datainput
       initial_classes_table = NULL, # datainput for table
       classes_table = NULL, # dataoutput from table for classifications
 
@@ -80,31 +76,24 @@ mod_classification_manual_server <- function(id, con, r_val){
       r_val_local$metric_placeholder_description
     })
 
+    # metric select input
     output$metric_selectUI <- renderUI({
       r_val_local$ui_metric
     })
 
+    # text displaying info of metric
     output$metric_descriptionUI <- renderText({
       r_val_local$metric_description
     })
 
+    # classification UI enabling creation of different classes based on selected metric
     output$classificationUI <- renderUI({
       r_val_local$classification_ui
-    })
-
-    # barplots showing distribution of classes
-    output$barplots_classes_metricUI <- renderPlotly({
-      r_val_local$barplots_classes_metric
     })
 
     # reactable table of classes
     output$reactable_classes <- renderUI({
       r_val_local$reactableUI
-    })
-
-    # editable table for classification
-    output$man_grouping_editable_tableUI <- renderUI({
-      r_val_local$man_grouping_editable_table
     })
 
 
@@ -169,10 +158,7 @@ mod_classification_manual_server <- function(id, con, r_val){
             ),
             uiOutput(ns("reactable_classes")),
             actionButton(inputId = ns("apply_to_map_button"), "Ajouter à la carte")
-          )),
-        fluidRow(
-          plotlyOutput(ns("barplots_classes_metricUI"))
-        )
+          ))
 
       )
     })
@@ -225,7 +211,7 @@ mod_classification_manual_server <- function(id, con, r_val){
       # track input
       track_inputs(input = input)
 
-      r_val_local$barplots_classes_metric = NULL
+
 
       # check for valid values
       if (!is.null(input$metric) &
@@ -342,28 +328,19 @@ mod_classification_manual_server <- function(id, con, r_val){
 
       # classify and merge networks
       # Create classified network by adding the classes and colors
-      classified_network <- r_val$network_region %>%
+      r_val$network_region_classified <- r_val$network_region %>%
         assign_classes(classes = r_val_local$classes_table)
 
       # create classified axis network
-      classified_axis <- r_val$dgo_axis %>%
+      r_val$dgo_axis_classified <- r_val$dgo_axis %>%
         na.omit() %>%
         assign_classes(classes = r_val_local$classes_table)
 
       # merge regional and axis network in one df
-      merged_network_classified <- merge_regional_axis_dfs(classified_network,
-                                                           classified_axis,
+      r_val$merged_networks_classified <- merge_regional_axis_dfs(r_val$network_region_classified,
+                                                           r_val$dgo_axis_classified,
                                                            r_val$selected_metric,
                                                            classes = TRUE)
-
-      # create barplots of classes distribution
-      r_val_local$barplots_classes_metric <- create_plotly_barplot(merged_network_classified)
-
-
-      # add data to longitudinal plot
-      r_val$plot_long_proxy %>%
-        plotlyProxyInvoke("relayout", list(shapes = create_classes_background(classified_axis)))
-
     })
   })
 }
