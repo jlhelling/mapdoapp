@@ -1,7 +1,7 @@
 
 # UI ----------------------------------------------------------------------
 
-#' metric_analysis UI Function
+#' classification_manual UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -14,7 +14,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_metric_analysis_ui <- function(id){
+mod_classification_manual_ui <- function(id){
   ns <- NS(id)
   tagList(
     golem_add_external_resources(),
@@ -40,7 +40,7 @@ mod_metric_analysis_ui <- function(id){
 
 # SERVER ------------------------------------------------------------------
 
-#' metric_analysis Server Functions
+#' classification_manual Server Functions
 #'
 #' @import shiny
 #' @importFrom htmltools HTML div img
@@ -52,7 +52,7 @@ mod_metric_analysis_ui <- function(id){
 #' @importFrom shinyjs onclick runjs
 #' @importFrom colourpicker colourInput
 #' @noRd
-mod_metric_analysis_server <- function(id, con, r_val){
+mod_classification_manual_server <- function(id, con, r_val){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -149,27 +149,27 @@ mod_metric_analysis_server <- function(id, con, r_val){
       r_val_local$classification_ui <- fluidPage(
         fluidRow(
           page_sidebar(
-          sidebar = sidebar(
-                            fluidRow(
-                              column(width = 6,
-                                     numericInput(inputId = ns("man_grouping_quantile"),
-                                                  "Quantile [%]", value = 95, min = 0, max = 100)
-                              ),
-                              column(width = 6,
-                                     numericInput(inputId = ns("man_grouping_no_classes"),
-                                                  "Classes", value = 4, min = 2, max = 10, step = 1)
-                              ),
-                              radioButtons(ns("man_grouping_scale_select"),
-                                           "Base de classification",
-                                           c("Région", "Axe fluvial"),
-                                           selected = "Région",
-                                           inline = TRUE),
-                              actionButton(inputId = ns("recalculate_classes_button"), "Recalculer classes")
-                            ), open = "closed", width = 240, position = "right"
-          ),
-          uiOutput(ns("reactable_classes")),
-          actionButton(inputId = ns("apply_to_map_button"), "Ajouter à la carte")
-        )),
+            sidebar = sidebar(
+              fluidRow(
+                column(width = 6,
+                       numericInput(inputId = ns("man_grouping_quantile"),
+                                    "Quantile [%]", value = 95, min = 0, max = 100)
+                ),
+                column(width = 6,
+                       numericInput(inputId = ns("man_grouping_no_classes"),
+                                    "Classes", value = 4, min = 2, max = 10, step = 1)
+                ),
+                radioButtons(ns("man_grouping_scale_select"),
+                             "Base de classification",
+                             c("Région", "Axe fluvial"),
+                             selected = "Région",
+                             inline = TRUE),
+                actionButton(inputId = ns("recalculate_classes_button"), "Recalculer classes")
+              ), open = "closed", width = 240, position = "right"
+            ),
+            uiOutput(ns("reactable_classes")),
+            actionButton(inputId = ns("apply_to_map_button"), "Ajouter à la carte")
+          )),
         fluidRow(
           plotlyOutput(ns("barplots_classes_metricUI"))
         )

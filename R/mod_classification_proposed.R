@@ -1,4 +1,4 @@
-#' fluvial_styles UI Function
+#' classification_proposed UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -11,7 +11,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_fluvial_styles_ui <- function(id){
+mod_classification_proposed_ui <- function(id){
   ns <- NS(id)
   tagList(
     fluidPage(
@@ -27,13 +27,13 @@ mod_fluvial_styles_ui <- function(id){
   )
 }
 
-#' fluvial_styles Server Functions
+#' classification_proposed Server Functions
 #'
 #' @import shiny
 #' @importFrom reactable renderReactable getReactableState
 #'
 #' @noRd
-mod_fluvial_styles_server <- function(id, r_val){
+mod_classification_proposed_server <- function(id, r_val){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -72,9 +72,9 @@ mod_fluvial_styles_server <- function(id, r_val){
 
       r_val$map_proxy %>%
         map_class(wms_params = params_wms()$class,
-                   cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
-                   sld_body = r_val$sld_body,
-                   data_axis = r_val$network_region_axis) %>%
+                  cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
+                  sld_body = r_val$sld_body,
+                  data_axis = r_val$network_region_axis) %>%
         addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
                      position = "bottomright",
                      layerId = "legend_metric")

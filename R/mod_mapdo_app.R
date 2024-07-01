@@ -43,13 +43,13 @@ mod_mapdo_app_ui <- function(id){
           tabsetPanel(
             id = "tabset",
             tabPanel("Classifications proposées",
-                     mod_fluvial_styles_ui("fluvial_styles_1")
-            ),
-            tabPanel("Aperçu métriques",
-                     mod_characterisation_ui("characterisation_1")
+                     mod_classification_proposed_ui("classification_proposed_1")
             ),
             tabPanel("Classification manuelle",
-                     mod_metric_analysis_ui("metric_analysis_1")
+                     mod_classification_manual_ui("classification_manual_1")
+            ),
+            tabPanel("Aperçu métriques",
+                     mod_metric_overview_ui("metric_overview_1")
             ), type = "pills"
           ) #tabsetpanel
         ) #column

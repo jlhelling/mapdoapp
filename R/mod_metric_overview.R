@@ -1,4 +1,4 @@
-#' characterisation UI Function
+#' metric_overview UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -11,7 +11,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_characterisation_ui <- function(id){
+mod_metric_overview_ui <- function(id){
   ns <- NS(id)
   tagList(
     fluidPage(
@@ -30,13 +30,13 @@ mod_characterisation_ui <- function(id){
   )
 }
 
-#' characterisation Server Functions
+#' metric_overview Server Functions
 #'
 #' @import shiny
 #' @importFrom reactable renderReactable
 #'
 #' @noRd
-mod_characterisation_server <- function(id, r_val){
+mod_metric_overview_server <- function(id, r_val){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -64,7 +64,7 @@ mod_characterisation_server <- function(id, r_val){
         # create header
         r_val_local$descriptionUI = HTML("<p><strong>Comparaison de moyennes </strong></p>")
         r_val_local$selectinputUI = selectInput(ns("select_unit"), label = NULL,
-                                                 choices = list("surface relative (%)", "surface absolute (ha)"))
+                                                choices = list("surface relative (%)", "surface absolute (ha)"))
       }
     })
 
