@@ -65,7 +65,9 @@ mod_mapdo_app_ui <- function(id){
           tabPanel("Profil transversal",
                    mod_profil_transverse_ui("profil_transverse_1")
           ),
-          tabPanel("Distribution des classes")
+          tabPanel("Distribution des classes",
+                   mod_classes_distribution_ui("classes_distribution_1")
+          )
         )
       )
     ) #page

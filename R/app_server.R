@@ -79,6 +79,7 @@ app_server <- function(input, output, session) {
   mod_metric_overview_server("metric_overview_1", r_val)
   mod_profil_transverse_server("profil_transverse_1", r_val)
   mod_profil_long_server("profil_long_1", r_val)
+  mod_classes_distribution_server("classes_distribution_1", r_val)
 
   # disconnect database when closing session
   onStop(function() {
