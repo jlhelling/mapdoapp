@@ -26,17 +26,10 @@ mod_profil_long_ui <- function(id){
             width = 2,
             style = "margin-top: 20px;",
             uiOutput(ns("profile_first_metricUI")),
-            uiOutput(ns("profile_sec_metricUI")),
-            fluidRow(
-              column(width = 6,
-                     uiOutput(ns("add_sec_axeUI")),
-              ),
-              column(width = 6,
-                     uiOutput(ns("remove_sec_axeUI")),
-              )
-            ),
-            uiOutput(ns("profileroeUI"),
+            uiOutput(ns("add_sec_axeUI"),
                      style = "margin-top: 30px;"),
+            uiOutput(ns("profile_sec_metricUI")),
+            uiOutput(ns("profileroeUI")),
             uiOutput(ns("profile_backgroundUI"))
           )
         )
@@ -78,13 +71,12 @@ mod_profil_long_server <- function(id, r_val){
       proxy_second_axe = NULL,
       profile_sec_metric = NULL, # second metric selection
       add_sec_axe = NULL, # add second axis
-      remove_sec_axe = NULL, # remove second axis
       sec_metric_name = NULL, # title
       sec_metric_type = NULL, # metric type title
 
       # plotly shapes
-      leaflet_hover_shapes = list(shapes = NULL), # list with roe elements to add as lines to plot
-      background_shapes = list(shapes = NULL), # list with shapes to plot classes in background
+      leaflet_hover_shapes = NULL, # list with roe elements to add as lines to plot
+      background_shapes = NULL, # list with shapes to plot classes in background
 
     )
 
@@ -108,11 +100,6 @@ mod_profil_long_server <- function(id, r_val){
       r_val_local$add_sec_axe
     })
 
-    # button to remove second axe
-    output$remove_sec_axeUI <- renderUI({
-      r_val_local$remove_sec_axe
-    })
-
     # checkbox display ROE
     output$profileroeUI <- renderUI({
       r_val_local$ui_roe_profile
@@ -131,37 +118,23 @@ mod_profil_long_server <- function(id, r_val){
 
     #### axis select ####
 
-    observeEvent(r_val$axis_click, {
+    observeEvent(r_val$axis_clicked, {
 
       # track input
       track_inputs(input = input)
 
-      if (!is.null(r_val$dgo_axis)) {
+      if (!is.null(r_val$dgo_axis) & r_val$axis_clicked == TRUE) {
 
         # build second axis input and add and remove buttons
         r_val_local$profile_first_metric = selectInput(ns("profile_first_metric"), label = "Métrique :",
                                                        choices = params_get_metric_choices(),
                                                        selected  = params_get_metric_choices()[1],
                                                        width = "100%")
-
-        # build second axis input and add and remove buttons
-        r_val_local$profile_sec_metric = selectInput(ns("profile_sec_metric"), label = "Ajoutez 2éme métrique :",
-                                                     choices = params_get_metric_choices(),
-                                                     selected  = params_get_metric_choices()[[2]][1],
-                                                     width = "100%")
-        r_val_local$add_sec_axe = actionButton(inputId = ns("add_sec_axe"), "Ajouter", width = "100%")
-        r_val_local$remove_sec_axe = actionButton(inputId = ns("remove_sec_axe"), "Retirer", width = "100%")
-
-        # build ROE checkboxInput
-        r_val_local$ui_roe_profile = NULL # delete checkbox before creating new one
-        r_val_local$ui_roe_profile = checkboxInput(ns("roe_profile"),
-                                                   label = "Obstacles à l'Ecoulement",
-                                                   value = FALSE)
       }
     })
 
     #### build longitudinal profile plot ####
-    observeEvent(input$profile_first_metric, {
+    observeEvent(c(input$profile_first_metric, r_val$dgo_axis), {
       if (!is.null(input$profile_first_metric)) {
         r_val_local$plot <-
           lg_profile_main(
@@ -175,7 +148,10 @@ mod_profil_long_server <- function(id, r_val){
 
 
         # build second axis input and add and remove buttons
-        r_val_local$profile_sec_metric = selectInput(ns("profile_sec_metric"), label = "Ajoutez 2éme métrique :",
+        r_val_local$add_sec_axe = checkboxInput(ns("sec_axis"),
+                                                label = "Ajoutez 2éme métrique :",
+                                                value = FALSE)
+        r_val_local$profile_sec_metric = selectInput(ns("profile_sec_metric"), label = NULL,
                                                      choices = params_get_metric_choices(),
                                                      selected  = params_get_metric_choices()[[2]][1],
                                                      width = "100%")
@@ -192,110 +168,48 @@ mod_profil_long_server <- function(id, r_val){
         r_val_local$ui_background_profile = checkboxInput(ns("background_profile"),
                                                           label = "Classifications en arrière-plan",
                                                           value = FALSE)
-
-        # # add second metric to plot if valid
-        # if (!is.null(r_val_local$proxy_second_axe)) {
-        #   plotlyProxy("long_profile") %>%
-        #     plotlyProxyInvoke("deleteTraces", 1) %>%
-        #     plotlyProxyInvoke("addTraces", r_val_local$proxy_second_axe$trace, 1) %>%
-        #     plotlyProxyInvoke("relayout", r_val_local$proxy_second_axe$layout)
-        # }
       }
     })
 
 
-    #### add second axis ####
+    #### add or remove second axis ####
 
-    observeEvent(input$add_sec_axe, {
-
-      # track input
-      track_inputs(input = input)
-
-      # get metric title and type
-      r_val_local$sec_metric_name =
-        params_metrics() |> filter(metric_name == input$profile_sec_metric) |> pull(metric_title)
-      r_val_local$sec_metric_type =
-        params_metrics() |> filter(metric_name == input$profile_sec_metric) |> pull(metric_type_title)
-
-      # create the list to add trace and layout to change second axe plot
-      r_val_local$proxy_second_axe <- lg_profile_second(data = r_val$dgo_axis,
-                                                        y = r_val$dgo_axis[[input$profile_sec_metric]],
-                                                        y_label = r_val_local$sec_metric_name,
-                                                        y_label_category = r_val_local$sec_metric_type)
-
-      # add second metric to plot
-      plotlyProxy("long_profile") %>%
-        plotlyProxyInvoke("deleteTraces", 1) %>%
-        plotlyProxyInvoke("addTraces", r_val_local$proxy_second_axe$trace, 1) %>%
-        plotlyProxyInvoke("relayout", r_val_local$proxy_second_axe$layout)
-    })
-
-    #### remove second axis ####
-
-    observeEvent(input$remove_sec_axe, {
+    observeEvent(c(input$sec_axis, input$profile_sec_metric), {
 
       # track input
       track_inputs(input = input)
 
-      plotlyProxy("long_profile") %>%
-        plotlyProxyInvoke("deleteTraces", 1)
+      # add second axis
+      if (input$sec_axis == TRUE) {
+        # get metric title and type
+        r_val_local$sec_metric_name =
+          params_metrics() |> filter(metric_name == input$profile_sec_metric) |> pull(metric_title)
+        r_val_local$sec_metric_type =
+          params_metrics() |> filter(metric_name == input$profile_sec_metric) |> pull(metric_type_title)
 
-      r_val_local$proxy_second_axe = NULL
+        # create the list to add trace and layout to change second axe plot
+        r_val_local$proxy_second_axe <- lg_profile_second(data = r_val$dgo_axis,
+                                                          y = r_val$dgo_axis[[input$profile_sec_metric]],
+                                                          y_label = r_val_local$sec_metric_name,
+                                                          y_label_category = r_val_local$sec_metric_type)
+        # add second metric to plot
+        plotlyProxy("long_profile") %>%
+          plotlyProxyInvoke("deleteTraces", 1) %>%
+          plotlyProxyInvoke("addTraces", r_val_local$proxy_second_axe$trace, 1) %>%
+          plotlyProxyInvoke("relayout", r_val_local$proxy_second_axe$layout)
+      }
+      # remove second axis
+      else {
+        plotlyProxy("long_profile") %>%
+          plotlyProxyInvoke("deleteTraces", 1)
+
+        r_val_local$proxy_second_axe = NULL
+      }
+
 
     })
 
-    # #### add ROE ####
-    # observeEvent(input$roe_profile, {
-    #   # track input
-    #   track_inputs(input = input)
-    #
-    #   if (input$roe_profile == TRUE){
-    #     if (!is.null(r_val_local$roe_vertical_line)){
-    #       # remove the previous ROE vertical lines if exist
-    #       r_val_local$roe_vertical_line <- NULL
-    #     }
-    #     # create the vertical line from ROE distance_axis
-    #     r_val_local$roe_vertical_line <- lg_roe_vertical_line(r_val$roe_axis$distance_axis)
-    #
-    #     # increment the vertical list shape to keep the hover map vertical line
-    #     r_val_local$leaflet_hover_shapes$shapes <- c(r_val_local$leaflet_hover_shapes$shapes,
-    #                                                  r_val_local$roe_vertical_line)
-    #
-    #   } else {
-    #     # remove the previous ROE vertical lines if exist
-    #     r_val_local$leaflet_hover_shapes = NULL
-    #   }
-    #
-    #   # Combine shapes and update plot
-    #   combined_shapes <- c(
-    #     if (!is.null(r_val_local$leaflet_hover_shapes)) r_val_local$leaflet_hover_shapes else list(),
-    #     if (!is.null(r_val_local$background_shapes)) r_val_local$background_shapes else list()
-    #   )
-    #
-    #   plotlyProxy("long_profile") %>%
-    #     plotlyProxyInvoke("relayout", list(shapes = combined_shapes))
-    # })
-    #
-    #### add background classification ####
-    # observeEvent(input$background_profile, {
-    #
-    #   if ((input$background_profile == TRUE) & !is.null(r_val$dgo_axis_classified)) {
-    #     # add data to longitudinal plot
-    #     r_val_local$background_shapes <- create_classes_background(r_val$dgo_axis_classified)
-    #   } else {
-    #     # remove background classification
-    #     r_val_local$background_shapes = NULL
-    #   }
-    #
-    #   # Combine shapes and update plot
-    #   combined_shapes <- c(
-    #     if (!is.null(r_val_local$leaflet_hover_shapes)) r_val_local$leaflet_hover_shapes else list(),
-    #     if (!is.null(r_val_local$background_shapes)) r_val_local$background_shapes else list()
-    #   )
-    #
-    #   plotlyProxy("long_profile") %>%
-    #     plotlyProxyInvoke("relayout", list(shapes = combined_shapes))
-    # })
+    ### SHAPES Plotly ####
 
     #### add ROE ####
 
@@ -307,17 +221,17 @@ mod_profil_long_server <- function(id, r_val){
       if (input$roe_profile == TRUE) {
         if (!is.null(r_val_local$roe_vertical_line)){
           # remove the previous ROE vertical lines if exist
-          r_val_local$leaflet_hover_shapes$shapes = list(r_val_local$leaflet_hover_shapes$shapes[[1]])
+          r_val_local$leaflet_hover_shapes = list(r_val_local$leaflet_hover_shapes[[1]])
         }
         # create the vertical line from ROE distance_axis
         r_val_local$roe_vertical_line <- lg_roe_vertical_line(r_val$roe_axis$distance_axis)
         # increment the vertical list shape to keep the hover map vertical line
-        r_val_local$leaflet_hover_shapes = c(r_val_local$leaflet_hover_shapes$shapes,
-                                                     r_val_local$roe_vertical_line)
+        r_val_local$leaflet_hover_shapes = c(r_val_local$leaflet_hover_shapes,
+                                             r_val_local$roe_vertical_line)
 
       } else {
         # remove the previous ROE vertical lines if exist
-        r_val_local$leaflet_hover_shapes = list(r_val_local$leaflet_hover_shapes$shapes[[1]])
+        r_val_local$leaflet_hover_shapes = list(r_val_local$leaflet_hover_shapes[[1]])
         # list(r_val_local$leaflet_hover_shapes$shapes[[1]])
       }
 
@@ -327,14 +241,11 @@ mod_profil_long_server <- function(id, r_val){
 
     observeEvent(input$background_profile, {
 
-      print(paste0("clicked background: ", input$background_profile))
-
       # track input
       track_inputs(input = input)
 
       # add background classification shapes
       if ((input$background_profile == TRUE) & !is.null(r_val$dgo_axis_classified)) {
-
         r_val_local$background_shapes = create_classes_background(r_val$dgo_axis_classified)
       }
       # remove background classification
@@ -397,12 +308,12 @@ mod_profil_long_server <- function(id, r_val){
     #### leaflet map dgo mouseover ####
     observeEvent(r_val$leaflet_hover_measure, {
       # remove the first element (hover dgo vertical line)
-      r_val_local$leaflet_hover_shapes <- list(shapes = r_val_local$leaflet_hover_shapes$shapes[-1])
+      r_val_local$leaflet_hover_shapes <- list(shapes = r_val_local$leaflet_hover_shapes[-1])
       # add the new hover dgo vertical line
-      r_val_local$leaflet_hover_shapes$shapes <- c(list(lg_vertical_line(r_val$leaflet_hover_measure)), r_val_local$leaflet_hover_shapes$shapes)
+      r_val_local$leaflet_hover_shapes <- c(list(lg_vertical_line(r_val$leaflet_hover_measure)), r_val_local$leaflet_hover_shapes)
       # change profile layout with vertical line
       plotlyProxy("long_profile") %>%
-        plotlyProxyInvoke("relayout", r_val_local$leaflet_hover_shapes)
+        plotlyProxyInvoke("relayout", list(shapes = r_val_local$leaflet_hover_shapes))
     })
   })
 }
