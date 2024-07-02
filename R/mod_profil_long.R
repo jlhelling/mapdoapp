@@ -75,8 +75,9 @@ mod_profil_long_server <- function(id, r_val){
       sec_metric_type = NULL, # metric type title
 
       # plotly shapes
-      leaflet_hover_shapes = NULL, # list with roe elements to add as lines to plot
-      background_shapes = NULL, # list with shapes to plot classes in background
+      shapes_dgo = NULL, # list with shapes to plot clicked dgo element as line
+      shapes_roe = NULL, # list with shapes to plot ROE obstacles as lines
+      shapes_background = NULL, # list with shapes to plot classes in background
 
     )
 
@@ -162,7 +163,6 @@ mod_profil_long_server <- function(id, r_val){
                                                    label = "Obstacles à l'Ecoulement",
                                                    value = FALSE)
 
-
         # build background classification checkboxInput
         r_val_local$ui_background_profile = NULL # delete checkbox before creating new one
         r_val_local$ui_background_profile = checkboxInput(ns("background_profile"),
@@ -211,7 +211,20 @@ mod_profil_long_server <- function(id, r_val){
 
     ### SHAPES Plotly ####
 
-    #### add ROE ####
+    #### clicked dgo ####
+
+    observeEvent(r_val$data_dgo_clicked, {
+
+      # track input
+      track_inputs(input = input)
+
+      # remove the previous element
+      r_val_local$shapes_dgo <- r_val_local$dgo_shape[-1]
+      # get new shapes-element for longitudinal plot marker of clicked dgo for
+      r_val_local$shapes_dgo <- list(lg_vertical_line(r_val$data_dgo_clicked %>% pull(measure)))
+    })
+
+    #### ROE ####
 
     observeEvent(input$roe_profile, {
 
@@ -219,25 +232,16 @@ mod_profil_long_server <- function(id, r_val){
       track_inputs(input = input)
 
       if (input$roe_profile == TRUE) {
-        if (!is.null(r_val_local$roe_vertical_line)){
-          # remove the previous ROE vertical lines if exist
-          r_val_local$leaflet_hover_shapes = list(r_val_local$leaflet_hover_shapes[[1]])
-        }
         # create the vertical line from ROE distance_axis
-        r_val_local$roe_vertical_line <- lg_roe_vertical_line(r_val$roe_axis$distance_axis)
-        # increment the vertical list shape to keep the hover map vertical line
-        r_val_local$leaflet_hover_shapes = c(r_val_local$leaflet_hover_shapes,
-                                             r_val_local$roe_vertical_line)
+        r_val_local$shapes_roe = list(lg_roe_vertical_line(r_val$roe_axis$distance_axis))
 
       } else {
         # remove the previous ROE vertical lines if exist
-        r_val_local$leaflet_hover_shapes = list(r_val_local$leaflet_hover_shapes[[1]])
-        # list(r_val_local$leaflet_hover_shapes$shapes[[1]])
+        r_val_local$shapes_roe = NULL
       }
-
     })
 
-    #### add background classification ####
+    #### background classification ####
 
     observeEvent(input$background_profile, {
 
@@ -246,30 +250,28 @@ mod_profil_long_server <- function(id, r_val){
 
       # add background classification shapes
       if ((input$background_profile == TRUE) & !is.null(r_val$dgo_axis_classified)) {
-        r_val_local$background_shapes = create_classes_background(r_val$dgo_axis_classified)
+        r_val_local$shapes_background = create_classes_background(r_val$dgo_axis_classified)
       }
       # remove background classification
-      else {
-        r_val_local$background_shapes = NULL
+      else if (input$background_profile == FALSE) {
+        r_val_local$shapes_background = NULL
       }
     })
 
-    #### listen to shapes changes ####
-    observeEvent(c(r_val_local$leaflet_hover_shapes, r_val_local$background_shapes), {
+    #### COMBINE shapes ####
 
-      # Combine shapes
-      combined_shapes <- c(
-        r_val_local$leaflet_hover_shapes,
-        r_val_local$background_shapes
-      )
+    # reactive that listens to all changes in shapes and returns a combined list of them
+    combined_shapes <- reactive({
+      c(r_val_local$shapes_dgo, r_val_local$shapes_roe, r_val_local$shapes_background)
+    })
 
-      # print(paste0("roe: ", r_val_local$leaflet_hover_shapes))
-      # print(paste0("background: ", r_val_local$background_shapes))
-      # print(paste0("combi: ", combined_shapes))
+    # observe the combined shapes and update the plotly plot
+    observe({
+      shapes <- combined_shapes()
 
-      # update profile with change shapes
+      # update profile with changed shapes
       plotlyProxy("long_profile") %>%
-        plotlyProxyInvoke("relayout", list(shapes = combined_shapes))
+        plotlyProxyInvoke("relayout", list(shapes = shapes))
     })
 
 
@@ -305,15 +307,17 @@ mod_profil_long_server <- function(id, r_val){
       }
     })
 
+
     #### leaflet map dgo mouseover ####
-    observeEvent(r_val$leaflet_hover_measure, {
-      # remove the first element (hover dgo vertical line)
-      r_val_local$leaflet_hover_shapes <- list(shapes = r_val_local$leaflet_hover_shapes[-1])
-      # add the new hover dgo vertical line
-      r_val_local$leaflet_hover_shapes <- c(list(lg_vertical_line(r_val$leaflet_hover_measure)), r_val_local$leaflet_hover_shapes)
-      # change profile layout with vertical line
-      plotlyProxy("long_profile") %>%
-        plotlyProxyInvoke("relayout", list(shapes = r_val_local$leaflet_hover_shapes))
-    })
+
+    # observeEvent(r_val$leaflet_hover_measure, {
+    #   # remove the first element (hover dgo vertical line)
+    #   r_val_local$leaflet_hover_shapes <- r_val_local$leaflet_hover_shapes[-1]
+    #   # add the new hover dgo vertical line
+    #   r_val_local$leaflet_hover_shapes <- c(list(lg_vertical_line(r_val$leaflet_hover_measure)), r_val_local$leaflet_hover_shapes)
+    #   # change profile layout with vertical line
+    #   plotlyProxy("long_profile") %>%
+    #     plotlyProxyInvoke("relayout", list(shapes = r_val_local$leaflet_hover_shapes))
+    # })
   })
 }

@@ -32,6 +32,7 @@ app_server <- function(input, output, session) {
     bassins = NULL,
     bassin_name = NULL,
     regions_in_bassin = NULL,
+    region_click = NULL,
     region_name = NULL,
     selected_region_feature = NULL,
     network_region_axis = NULL,

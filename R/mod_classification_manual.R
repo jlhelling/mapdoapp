@@ -59,12 +59,13 @@ mod_classification_manual_server <- function(id, con, r_val){
 
     ### REACTIVES ####
     r_val_local <- reactiveValues(
-      metric_placeholder_description = "Cliquez sur une axe fluvial pour afficher l'analyse de métriques. ",
+      metric_placeholder_description = "Cliquez sur une région pour afficher la classification de métriques. ",
       ui_metric = NULL, # metric selection element
       metric_description = NULL, # information on selected metric
 
       # classification
       classification_ui = NULL, # UI placeholder
+      scale_selectUI = NULL, # scale selection element
       initial_classes_table = NULL, # datainput for table
       classes_table = NULL, # dataoutput from table for classifications
 
@@ -91,6 +92,11 @@ mod_classification_manual_server <- function(id, con, r_val){
       r_val_local$classification_ui
     })
 
+    # classification UI enabling creation of different classes based on selected metric
+    output$scale_select_UI <- renderUI({
+      r_val_local$scale_selectUI
+    })
+
     # reactable table of classes
     output$reactable_classes <- renderUI({
       r_val_local$reactableUI
@@ -99,42 +105,22 @@ mod_classification_manual_server <- function(id, con, r_val){
 
     ### EVENTS ####
 
-    #### axis clicked ####
-    observe({
+    #### region selected ####
+    observeEvent(r_val$network_region,{
 
-      if (!is.null(r_val$axis_click)) {
-        # create elements of manual grouping pane
-        r_val_local$ui_metric = selectInput(ns("metric"), NULL,
-                                            choices = params_get_metric_choices(),
-                                            selected  = params_get_metric_choices()[1],
-                                            width = "100%")
+      # remove placeholder text
+      r_val_local$metric_placeholder_description = NULL
 
-        # remove placeholder text
-        r_val_local$metric_placeholder_description = NULL
-      }
-    })
-
-    #### metric changed ####
-    observeEvent(input$metric, {
-
-      # set metric names and info
-      r_val$selected_metric = input$metric
-      r_val$selected_metric_title =
-        params_metrics() |> filter(metric_name == r_val$selected_metric) |> pull(metric_title)
-      r_val$selected_metric_type =
-        params_metrics() |> filter(metric_name == r_val$selected_metric) |> pull(metric_type_title)
-      r_val$selected_metric_description =
-        params_metrics() |> filter(metric_name == r_val$selected_metric) |> pull(metric_description)
+      # create elements of manual grouping pane
+      r_val_local$ui_metric = selectInput(ns("metric"), NULL,
+                                          choices = params_get_metric_choices(),
+                                          selected  = params_get_metric_choices()[1],
+                                          width = "100%")
 
       # create metric description
       r_val_local$metric_description = r_val$selected_metric_description
 
-      # combine networks of axis and region for violinplots
-      merged_network <- merge_regional_axis_dfs(r_val$network_region,
-                                                r_val$dgo_axis,
-                                                input$metric)
-
-
+      # create classification UI
       r_val_local$classification_ui <- fluidPage(
         fluidRow(
           page_sidebar(
@@ -148,70 +134,49 @@ mod_classification_manual_server <- function(id, con, r_val){
                        numericInput(inputId = ns("man_grouping_no_classes"),
                                     "Classes", value = 4, min = 2, max = 10, step = 1)
                 ),
-                radioButtons(ns("man_grouping_scale_select"),
-                             "Base de classification",
-                             c("Région", "Axe fluvial"),
-                             selected = "Région",
-                             inline = TRUE),
+                uiOutput(ns("scale_select_UI")),
                 actionButton(inputId = ns("recalculate_classes_button"), "Recalculer classes")
               ), open = "closed", width = 240, position = "right"
             ),
             uiOutput(ns("reactable_classes")),
             actionButton(inputId = ns("apply_to_map_button"), "Ajouter à la carte")
           ))
+      )
 
+      r_val_local$scale_selectUI = radioButtons(ns("man_grouping_scale_select"),
+                                                "Base de classification",
+                                                c("Région"),
+                                                selected = "Région",
+                                                inline = TRUE)
+
+      # create classes-table to initialize classes UI
+      r_val_local$initial_classes_table = create_df_input(
+        axis_data = r_val$network_region,
+        variable_name = params_get_metric_choices()[[1]],
+        no_classes = 4,
+        quantile = 95
       )
     })
 
-    # #### classification inputs changed ####
-    # observeEvent(list(input$man_grouping_quantile,
-    #                   input$man_grouping_no_classes,
-    #                   input$man_grouping_scale_select
-    # ), {
-    #
-    #   # track input
-    #   track_inputs(input = input)
-    #
-    #   # check for valid values
-    #   if (!is.null(input$metric) &
-    #       !is.null(input$man_grouping_scale_select) &
-    #       !is.null(input$man_grouping_quantile) &
-    #       !is.null(input$man_grouping_no_classes)) {
-    #
-    #     if ((input$man_grouping_scale_select == "Région") &
-    #         !is.null(r_val$network_region)) {
-    #
-    #       # create classes-table
-    #       r_val_local$initial_classes_table = create_df_input(
-    #         axis_data = r_val$network_region,
-    #         variable_name = input$metric,
-    #         no_classes = input$man_grouping_no_classes,
-    #         quantile = input$man_grouping_quantile
-    #       )
-    #     }
-    #
-    #     else if (input$man_grouping_scale_select == "Axe fluvial" &
-    #              !is.null(r_val$dgo_axis) ) {
-    #
-    #       # create classes-table
-    #       r_val_local$initial_classes_table = create_df_input(
-    #         axis_data = r_val$dgo_axis,
-    #         variable_name = input$metric,
-    #         no_classes = input$man_grouping_no_classes,
-    #         quantile = input$man_grouping_quantile
-    #       )
-    #     }
-    #   }
-    # })
 
-    #### recalculate classes ####
-    # when button clicked or metric selection changed
+    #### axis clicked first time ####
+    observe({
+
+      if (r_val$axis_clicked == TRUE) {
+
+        r_val_local$scale_selectUI = radioButtons(ns("man_grouping_scale_select"),
+                                                  "Base de classification",
+                                                  c("Région", "Axe fluvial"),
+                                                  selected = "Région",
+                                                  inline = TRUE)
+      }
+    })
+
+    #### metric change / re-calculation clicked ####
     observeEvent(c(input$metric, input$recalculate_classes_button), {
 
       # track input
       track_inputs(input = input)
-
-
 
       # check for valid values
       if (!is.null(input$metric) &
@@ -326,21 +291,29 @@ mod_classification_manual_server <- function(id, con, r_val){
                      position = "bottomright",
                      layerId = "legend_metric")
 
-      # classify and merge networks
+
       # Create classified network by adding the classes and colors
       r_val$network_region_classified <- r_val$network_region %>%
         assign_classes(classes = r_val_local$classes_table)
+    })
 
-      # create classified axis network
-      r_val$dgo_axis_classified <- r_val$dgo_axis %>%
-        na.omit() %>%
-        assign_classes(classes = r_val_local$classes_table)
 
-      # merge regional and axis network in one df
-      r_val$merged_networks_classified <- merge_regional_axis_dfs(r_val$network_region_classified,
-                                                           r_val$dgo_axis_classified,
-                                                           r_val$selected_metric,
-                                                           classes = TRUE)
+    #### axis changed / apply button clicked ####
+    observeEvent(c(r_val$dgo_axis, input$apply_to_map_button), {
+
+      if (r_val$visualization == "metric") {
+
+        # create classified axis network
+        r_val$dgo_axis_classified <- r_val$dgo_axis %>%
+          na.omit() %>%
+          assign_classes(classes = r_val_local$classes_table)
+
+        # merge regional and axis network in one df
+        r_val$merged_networks_classified <- merge_regional_axis_dfs(r_val$network_region_classified,
+                                                                    r_val$dgo_axis_classified,
+                                                                    r_val$selected_metric,
+                                                                    classes = TRUE)
+      }
     })
   })
 }

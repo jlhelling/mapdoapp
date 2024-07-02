@@ -189,6 +189,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
         # get ROE in region
         r_val$roe_region = data_get_roe_in_region(r_val$region_click$id,
                                                   con = con)
+
         # get hydro sites in region
         r_val$hydro_sites_region = data_get_hydro_sites(r_val$region_click$id,
                                                         con = con)
