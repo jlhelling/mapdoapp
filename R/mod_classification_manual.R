@@ -281,7 +281,6 @@ mod_classification_manual_server <- function(id, con, r_val){
 
       # add classified network to map
       r_val$map_proxy %>%
-        clearGroup(params_map_group()$dgo_axis) %>%
         removeControl(layerId = "legend_metric") %>%
         map_metric(wms_params = params_wms()$metric,
                    cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),

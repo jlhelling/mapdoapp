@@ -262,7 +262,7 @@ mod_profil_long_server <- function(id, r_val){
 
     # reactive that listens to all changes in shapes and returns a combined list of them
     combined_shapes <- reactive({
-      c(r_val_local$shapes_dgo, r_val_local$shapes_roe, r_val_local$shapes_background)
+      c(r_val_local$shapes_dgo, r_val_local$shapes_roe, r_val_local$shapes_background, r_val_local$leaflet_hover_shapes)
     })
 
     # observe the combined shapes and update the plotly plot
@@ -273,11 +273,6 @@ mod_profil_long_server <- function(id, r_val){
       plotlyProxy("long_profile") %>%
         plotlyProxyInvoke("relayout", list(shapes = shapes))
     })
-
-
-
-
-
 
 
     ### EVENT MOUSEOVER ####
@@ -310,14 +305,12 @@ mod_profil_long_server <- function(id, r_val){
 
     #### leaflet map dgo mouseover ####
 
-    # observeEvent(r_val$leaflet_hover_measure, {
-    #   # remove the first element (hover dgo vertical line)
-    #   r_val_local$leaflet_hover_shapes <- r_val_local$leaflet_hover_shapes[-1]
-    #   # add the new hover dgo vertical line
-    #   r_val_local$leaflet_hover_shapes <- c(list(lg_vertical_line(r_val$leaflet_hover_measure)), r_val_local$leaflet_hover_shapes)
-    #   # change profile layout with vertical line
-    #   plotlyProxy("long_profile") %>%
-    #     plotlyProxyInvoke("relayout", list(shapes = r_val_local$leaflet_hover_shapes))
-    # })
+    observeEvent(r_val$leaflet_hover_measure, {
+      # remove the first element (hover dgo vertical line)
+      r_val_local$leaflet_hover_shapes = NULL
+      # add the new hover dgo vertical line
+      r_val_local$leaflet_hover_shapes = list(lg_vertical_line(r_val$leaflet_hover_measure, color = "red"))
+
+    })
   })
 }

@@ -603,7 +603,7 @@ map_dgo_cross_section <- function(map, selected_dgo){
       data = selected_dgo,
       layerId = ~fid,
       weight = 8,
-      color = "yellow",
+      color = "purple",
       opacity = 1,
       group = params_map_group()$dgo,
       options = pathOptions(zIndex = 90)

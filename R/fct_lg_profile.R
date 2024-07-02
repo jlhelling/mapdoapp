@@ -49,7 +49,7 @@ lg_profile_empty <- function() {
 #' vertical_line_annotation <- lg_vertical_line(x = 10, color = "red")
 #'
 #' @export
-lg_vertical_line <- function(x = 0, color = "green") {
+lg_vertical_line <- function(x = 0, color = "purple") {
   list(
     type = "line",
     y0 = 0,
