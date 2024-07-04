@@ -226,20 +226,20 @@ mod_classification_manual_server <- function(id, con, r_val){
             # Add the first row of inputs
             ui_elements[[1]] <- fluidRow(
               column(width = 5, textInput(ns("class1"), label = "Classe", value = r_val_local$initial_classes_table$class[1])),
-              column(width = 4, numericInput(ns("greaterthan1"), label = "supérieur à", value = r_val_local$initial_classes_table$greaterthan[1])),
               column(width = 3, colourInput(ns("color1"), label = "Couleur",
                                             value = r_val_local$initial_classes_table$color[1],
-                                            showColour = "background", closeOnClick = TRUE))
+                                            showColour = "background", closeOnClick = TRUE)),
+              column(width = 4, numericInput(ns("greaterthan1"), label = "supérieur à", value = r_val_local$initial_classes_table$greaterthan[1]))
             )
 
             # Loop through the remaining rows and add inputs
             for (row in 2:nrow(r_val_local$initial_classes_table)) {
               ui_elements[[row]] <- fluidRow(
                 column(width = 5, textInput(ns(paste0("class", row)), label = NULL, value = r_val_local$initial_classes_table$class[row])),
-                column(width = 4, numericInput(ns(paste0("greaterthan", row)), label = NULL, value = r_val_local$initial_classes_table$greaterthan[row])),
                 column(width = 3, colourInput(ns(paste0("color", row)), label = NULL,
                                               value = r_val_local$initial_classes_table$color[row],
-                                              showColour = "background", closeOnClick = TRUE))
+                                              showColour = "background", closeOnClick = TRUE)),
+                column(width = 4, numericInput(ns(paste0("greaterthan", row)), label = NULL, value = r_val_local$initial_classes_table$greaterthan[row]))
               )
             }
 
