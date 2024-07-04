@@ -16,18 +16,6 @@ mod_classification_proposed_ui <- function(id){
   tagList(
     fluidPage(
       useShinyjs(),
-      tags$script(HTML("
-    Shiny.addCustomMessageHandler('deselectRow', function(message) {
-      var table = document.getElementById(message.id);
-      if (table) {
-        // Reactable uses class names to mark selected rows
-        var selectedRows = table.querySelectorAll('.rt-tr.selected');
-        selectedRows.forEach(function(row) {
-          row.classList.remove('selected');
-        });
-      }
-    });
-  ")),
       fluidRow(
         reactableOutput(ns("table"), width = "100%")
       )

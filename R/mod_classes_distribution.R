@@ -17,7 +17,11 @@ mod_classes_distribution_ui <- function(id){
     fluidPage(
       useShinyjs(),
       fluidRow(
-        plotlyOutput(ns("barplots_classes_metricUI"))
+        style = "margin-top: 10px;",
+        textOutput(ns("placeholder_ui")),
+        column(width = 8,
+               plotlyOutput(ns("barplots_classes_metricUI"))
+               )
       )
     )
   )
@@ -33,11 +37,14 @@ mod_classes_distribution_server <- function(id, r_val){
     ns <- session$ns
 
     r_val_local <- reactiveValues(
-
-      barplots_classes_metric = NULL
-
+      barplots_classes_metric = NULL,
+      placeholder_text = "Sélectionnez un cours d'eau sur la carte et appliquez une classification pour afficher le graphique."
     )
 
+    # text placeholder
+    output$placeholder_ui <- renderText({
+      r_val_local$placeholder_text
+    })
 
     # barplots showing distribution of classes
     output$barplots_classes_metricUI <- renderPlotly({
@@ -45,11 +52,15 @@ mod_classes_distribution_server <- function(id, r_val){
     })
 
     # create barplots of classes distribution
-    observeEvent(r_val$merged_networks_classified , {
+    observe({
 
       if (!is.null(r_val$merged_networks_classified)) {
         r_val_local$barplots_classes_metric <- create_plotly_barplot(r_val$merged_networks_classified)
-      }
+        r_val_local$placeholder_text = NULL
+        } else {
+          r_val_local$placeholder_text = "Sélectionnez un cours d'eau sur la carte et appliquez une classification pour afficher le graphique."
+          r_val_local$barplots_classes_metric = NULL
+        }
     })
 
 

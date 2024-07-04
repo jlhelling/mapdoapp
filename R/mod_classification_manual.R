@@ -302,9 +302,9 @@ mod_classification_manual_server <- function(id, con, r_val){
     })
 
     #### axis changed / apply button clicked ####
-    observeEvent(r_val$dgo_axis, {
+    observeEvent(c(r_val$dgo_axis, r_val$network_region_classified), {
 
-      if (r_val$visualization == "manual") {
+      if ((r_val$visualization == "manual") & !is.null(r_val$network_region_classified)) {
 
         # create classified axis network
         r_val$dgo_axis_classified <- r_val$dgo_axis %>%
