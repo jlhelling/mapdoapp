@@ -136,7 +136,7 @@ mod_classification_manual_server <- function(id, con, r_val){
                 ),
                 uiOutput(ns("scale_select_UI")),
                 actionButton(inputId = ns("recalculate_classes_button"), "Recalculer classes")
-              ), open = "closed", width = 240, position = "right"
+              ), open = "open", width = 240, position = "right"
             ),
             uiOutput(ns("reactable_classes")),
             actionButton(inputId = ns("apply_to_map_button"), "Ajouter à la carte")
@@ -258,7 +258,7 @@ mod_classification_manual_server <- function(id, con, r_val){
       # Initialize an empty tibble
       r_val_local$classes_table <- tibble(variable = character(), class = character(), greaterthan = numeric(), color = character())
 
-      # Add rows to the tibble within a loop
+      # Add rows to the tibble looping through number of classes
       for (row in 1:input$man_grouping_no_classes) {
         r_val_local$classes_table <- r_val_local$classes_table %>%
           add_row(variable = input$metric,
@@ -272,6 +272,8 @@ mod_classification_manual_server <- function(id, con, r_val){
         dplyr::arrange(greaterthan) %>%
         dplyr::mutate(greaterthan = round(greaterthan, 2))
 
+      print(classes)
+
       # build SLD symbology
       r_val$sld_body = sld_get_style(
         breaks = classes$greaterthan,
@@ -281,7 +283,6 @@ mod_classification_manual_server <- function(id, con, r_val){
 
       # add classified network to map
       r_val$map_proxy %>%
-        removeControl(layerId = "legend_metric") %>%
         map_metric(wms_params = params_wms()$metric,
                    cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
                    sld_body = r_val$sld_body,
@@ -290,15 +291,13 @@ mod_classification_manual_server <- function(id, con, r_val){
                      position = "bottomright",
                      layerId = "legend_metric")
 
-
       # Create classified network by adding the classes and colors
       r_val$network_region_classified <- r_val$network_region %>%
         assign_classes(classes = r_val_local$classes_table)
     })
 
-
     #### axis changed / apply button clicked ####
-    observeEvent(c(r_val$dgo_axis, input$apply_to_map_button), {
+    observeEvent(r_val$dgo_axis, {
 
       if (r_val$visualization == "metric") {
 

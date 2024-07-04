@@ -34,12 +34,12 @@ mod_mapdo_app_ui <- function(id){
 
       fluidRow(
         column(
-          width = 6,
+          width = 8,
           withSpinner(leafletOutput(ns("map"), height = 500)),
           textOutput(ns("selection_textUI"))
         ),
         column(
-          width = 6,
+          width = 4,
           tabsetPanel(
             id = "tabset",
             tabPanel("Classifications proposées",
@@ -353,7 +353,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
       if (any(input$map_groups %in% params_map_group()$landuse)) {
         leafletProxy("map") %>%
           addWMSLegend(map_legend_wms_overlayer(wms_params = params_wms()$landuse),
-                       position = "bottomright",
+                       position = "bottomleft",
                        layerId = "landuse")
       } else {
         leafletProxy("map") %>%
@@ -364,7 +364,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
       if (any(input$map_groups %in% params_map_group()$continuity)) {
         leafletProxy("map") %>%
           addWMSLegend(map_legend_wms_overlayer(wms_params = params_wms()$continuity),
-                       position = "bottomright",
+                       position = "bottomleft",
                        layerId = "continuity")
       } else {
         leafletProxy("map") %>%
@@ -375,7 +375,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
       if (any(input$map_groups %in% params_map_group()$valley_bottom)) {
         leafletProxy("map") %>%
           addWMSLegend(map_legend_wms_overlayer(wms_params = params_wms()$valley_bottom),
-                       position = "bottomright",
+                       position = "bottomleft",
                        layerId = "valley_bottom")
       } else {
         leafletProxy("map") %>%
@@ -386,7 +386,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
       if (any(input$map_groups %in% params_map_group()$inondation)) {
         leafletProxy("map") %>%
           addWMSLegend(map_legend_wms_overlayer(wms_params = params_wms()$inondation),
-                       position = "bottomright",
+                       position = "bottomleft",
                        layerId = "inondation")
       } else {
         leafletProxy("map") %>%
@@ -397,7 +397,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
       if (any(input$map_groups %in% params_map_group()[["ouvrage_protection"]])) {
         leafletProxy("map") %>%
           addWMSLegend(map_legend_wms_overlayer(wms_params = params_wms()$ouvrage_protection),
-                       position = "bottomright",
+                       position = "bottomleft",
                        layerId = "ouvrage_protection")
       } else {
         leafletProxy("map") %>%
@@ -416,7 +416,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
                   <div style='background-color: #323232; border-radius: 50%; width: 12px; height: 12px; margin-right: 8px;'></div>
                   <div>Obstacles à l'Ecoulement (ROE)</div>
                 </div>"),
-              position = "bottomright", layerId = "roe"
+              position = "bottomleft", layerId = "roe"
             )
           # addLegend(
           #   position = "bottomright",
@@ -438,7 +438,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
                   <div style='background-color: #33B1FF; border-radius: 50%; width: 12px; height: 12px; margin-right: 8px;'></div>
                   <div>Sites hydrométriques</div>
                 </div>"),
-            position = "bottomright", layerId = "hydro_sites"
+            position = "bottomleft", layerId = "hydro_sites"
           )
         # addLegend(
         #   position = "bottomright",
