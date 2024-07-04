@@ -215,6 +215,9 @@ map_region_clicked <- function(map,
     clearGroup(c(params_map_group()[["region"]],
                  params_map_group()[["roe"]],
                  params_map_group()[["hydro_sites"]],
+                 params_map_group()[["dgo_axis"]],
+                 params_map_group()[["dgo"]],
+                 params_map_group()[["axis_start_end"]],
                  unlist(sapply(params_wms(), function(x) if (x$overlayer) x$name else NULL), use.names = FALSE))) %>%
     # restyle the regions
     addPolygons(data = regions_data,

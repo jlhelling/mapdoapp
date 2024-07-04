@@ -178,14 +178,11 @@ mod_classification_manual_server <- function(id, con, r_val){
       # track input
       track_inputs(input = input)
 
-      # check for valid values
-      if (!is.null(input$metric) &
-          !is.null(input$man_grouping_scale_select) &
-          !is.null(input$man_grouping_quantile) &
-          !is.null(input$man_grouping_no_classes)) {
+      # check for valid selected metric
+      if (!is.null(input$metric)) {
 
-        if ((input$man_grouping_scale_select == "Région") &
-            !is.null(r_val$network_region)) {
+        # apply to region if region selected
+        if (!is.null(r_val$network_region)) {
 
           # create classes-table
           r_val_local$initial_classes_table = create_df_input(
@@ -196,6 +193,7 @@ mod_classification_manual_server <- function(id, con, r_val){
           )
         }
 
+        # apply to axis if axis selected
         else if (input$man_grouping_scale_select == "Axe fluvial" &
                  !is.null(r_val$dgo_axis) ) {
 

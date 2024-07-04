@@ -4,7 +4,7 @@
 \alias{create_df_input}
 \title{Create initial dataframe for 1-variable classification, to be displayed on the UI table}
 \usage{
-create_df_input(axis_data, variable_name, no_classes, quantile = 95)
+create_df_input(axis_data, variable_name, no_classes = 4, quantile = 95)
 }
 \arguments{
 \item{axis_data}{sf-object of an axis, containing all dgos inside the axis}

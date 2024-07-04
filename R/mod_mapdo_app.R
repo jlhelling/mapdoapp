@@ -164,16 +164,16 @@ mod_mapdo_app_server <- function(id, con, r_val){
         r_val$region_clicked = TRUE
 
         # set axis values back to NULL
-        axis_name = NULL
-        axis_click = NULL
-        axis_clicked = FALSE
-        dgo_axis = NULL
-        axis_start_end = NULL
-        data_dgo_clicked = NULL
-        data_section = NULL
-        network_region_classified = NULL
-        dgo_axis_classified = NULL
-        merged_networks_classified = NULL
+        r_val$r_val$axis_name = NULL
+        r_val$axis_click = NULL
+        r_val$axis_clicked = FALSE
+        r_val$dgo_axis = NULL
+        r_val$axis_start_end = NULL
+        r_val$data_dgo_clicked = NULL
+        r_val$data_section = NULL
+        r_val$network_region_classified = NULL
+        r_val$dgo_axis_classified = NULL
+        r_val$merged_networks_classified = NULL
 
         # store the region click values
         r_val$region_click = input$map_shape_click
@@ -311,7 +311,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
           filter(axis == r_val$axis_click$id)
 
         # map dgo axis when axis clicked and metric selected
-        leafletProxy("map") %>%
+        r_val$map_proxy %>%
           map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,
                        main_metric = r_val$selected_metric, second_metric = r_val$selected_profile_metric) %>%
           map_axis_start_end(axis_start_end = r_val$axis_start_end, region_axis = r_val$network_region_axis)
@@ -338,7 +338,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
           filter(fid == input$map_shape_click$id)
 
         # Highlight clicked DGO
-        leafletProxy("map") %>%
+        r_val$map_proxy %>%
           map_dgo_cross_section(selected_dgo = r_val$data_dgo_clicked)
       }
     })

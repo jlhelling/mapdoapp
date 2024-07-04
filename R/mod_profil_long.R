@@ -136,7 +136,8 @@ mod_profil_long_server <- function(id, r_val){
 
     #### build longitudinal profile plot ####
     observeEvent(c(input$profile_first_metric, r_val$dgo_axis), {
-      if (!is.null(input$profile_first_metric)) {
+
+      if (!is.null(input$profile_first_metric) & !is.null(r_val$dgo_axis)) {
         r_val_local$plot <-
           lg_profile_main(
             data = r_val$dgo_axis,
@@ -168,6 +169,8 @@ mod_profil_long_server <- function(id, r_val){
         r_val_local$ui_background_profile = checkboxInput(ns("background_profile"),
                                                           label = "Classifications en arrière-plan",
                                                           value = FALSE)
+      } else {
+        r_val_local$plot = lg_profile_empty()
       }
     })
 
@@ -281,24 +284,30 @@ mod_profil_long_server <- function(id, r_val){
 
     # capture hover events on map to display dgo on profile-plot
     observeEvent(event_data("plotly_hover", source = 'L'), {
-      # event data
-      hover_event <- event_data("plotly_hover", source = 'L')
 
-      # add line to profile-plot
-      if (!is.null(hover_event)) {
-        hover_fid <- hover_event$key[1]
-        highlighted_feature <- r_val$dgo_axis[r_val$dgo_axis$fid == hover_fid, ]
-        r_val$map_proxy %>%
-          addPolylines(data = highlighted_feature, color = "red", weight = 10,
-                       group = params_map_group()$light)
+      if(!is.null(r_val_local$plot)) {
+        # event data
+        hover_event <- event_data("plotly_hover", source = 'L')
+
+        # add line to profile-plot
+        if (!is.null(hover_event)) {
+          hover_fid <- hover_event$key[1]
+          highlighted_feature <- r_val$dgo_axis[r_val$dgo_axis$fid == hover_fid, ]
+          r_val$map_proxy %>%
+            addPolylines(data = highlighted_feature, color = "red", weight = 10,
+                         group = params_map_group()$light)
+        }
       }
+
     })
 
     # clear previous point on map when moving along profile to not display all the point move over
     observe({
-      if (is.null(event_data("plotly_hover", source = 'L'))) {
-        r_val$map_proxy %>%
-          clearGroup(params_map_group()$light)
+      if (!is.null(r_val_local$plot)) {
+        if (is.null(event_data("plotly_hover", source = 'L'))) {
+          r_val$map_proxy %>%
+            clearGroup(params_map_group()$light)
+        }
       }
     })
 
@@ -306,11 +315,13 @@ mod_profil_long_server <- function(id, r_val){
     #### leaflet map dgo mouseover ####
 
     observeEvent(r_val$leaflet_hover_measure, {
-      # remove the first element (hover dgo vertical line)
-      r_val_local$leaflet_hover_shapes = NULL
-      # add the new hover dgo vertical line
-      r_val_local$leaflet_hover_shapes = list(lg_vertical_line(r_val$leaflet_hover_measure, color = "red"))
 
+      if(!is.null(r_val_local$plot)) {
+        # remove the first element (hover dgo vertical line)
+        r_val_local$leaflet_hover_shapes = NULL
+        # add the new hover dgo vertical line
+        r_val_local$leaflet_hover_shapes = list(lg_vertical_line(r_val$leaflet_hover_measure, color = "red"))
+      }
     })
   })
 }

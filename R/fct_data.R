@@ -466,7 +466,7 @@ data_get_elevation_profiles <- function(selected_dgo_fid, con){
 #'       quantile = input$quantile
 #'       )
 #'
-create_df_input <- function(axis_data, variable_name, no_classes, quantile = 95){
+create_df_input <- function(axis_data, variable_name, no_classes = 4, quantile = 95){
 
   # set upper and lower boundaries of quantile interval
   q_low <- (1 - quantile/100)/2
