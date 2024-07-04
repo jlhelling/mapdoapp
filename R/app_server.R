@@ -17,9 +17,6 @@ app_server <- function(input, output, session) {
 
     # UI
     selection_text = "", # description text indicating basin, region, axis
-    selected_region_feature = NULL,
-    region_click = NULL,
-    axis_click = NULL,
 
     # map
     map_proxy = NULL,
@@ -33,6 +30,7 @@ app_server <- function(input, output, session) {
     bassin_name = NULL,
     regions_in_bassin = NULL,
     region_click = NULL,
+    region_clicked = FALSE, # boolean stating whether first region was clicked
     region_name = NULL,
     selected_region_feature = NULL,
     network_region_axis = NULL,

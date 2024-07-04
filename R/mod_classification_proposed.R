@@ -55,23 +55,32 @@ mod_classification_proposed_server <- function(id, r_val){
       r_val_local$table
     )
 
-    # build table when region clicked
-    observeEvent(r_val$region_click, {
+    # build table when region first time clicked
+    observeEvent(r_val$region_clicked, {
 
       if (!is.null(r_val$region_click)) {
         r_val_local$classes_tbl <- params_classes()
         r_val_local$table = create_table_fluvialstyles(r_val_local$classes_tbl)
       }
     })
+#
+#     # build table when region clicked
+#     observeEvent(r_val$region_click, {
+#
+#       if (!is.null(r_val$region_click) & (r_val$visualization == "classes")) {
+#         r_val_local$classes_tbl <- params_classes()
+#       }
+#     })
 
 
     # create table output and add classification to map when region changed or other variable selected
-    observeEvent(c(input$table__reactable__selected, r_val_local$classes_tbl), {
+    observeEvent(c(input$table__reactable__selected, r_val$region_click), {
 
     r_val_local$selected <- getReactableState("table", "selected")
 
     # check if row is actually selected
     if(!is.null(r_val_local$selected)) {
+
       r_val$visualization = "classes"
 
       r_val$sld_body = r_val_local$classes_tbl[r_val_local$selected,]$class_sld

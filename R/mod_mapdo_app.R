@@ -160,6 +160,9 @@ mod_mapdo_app_server <- function(id, con, r_val){
       ### region clicked ####
       if (input$map_shape_click$group == params_map_group()$region){
 
+        # register first selection of region
+        r_val$region_clicked = TRUE
+
         # set axis values back to NULL
         axis_name = NULL
         axis_click = NULL

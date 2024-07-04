@@ -106,7 +106,7 @@ mod_classification_manual_server <- function(id, con, r_val){
     ### EVENTS ####
 
     #### region selected ####
-    observeEvent(r_val$network_region,{
+    observeEvent(r_val$region_clicked,{
 
       # remove placeholder text
       r_val_local$metric_placeholder_description = NULL
