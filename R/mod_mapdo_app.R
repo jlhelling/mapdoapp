@@ -161,8 +161,16 @@ mod_mapdo_app_server <- function(id, con, r_val){
       if (input$map_shape_click$group == params_map_group()$region){
 
         # set axis values back to NULL
-        r_val$axis_clicked = FALSE
-        r_val$axis_click = NULL
+        axis_name = NULL
+        axis_click = NULL
+        axis_clicked = FALSE
+        dgo_axis = NULL
+        axis_start_end = NULL
+        data_dgo_clicked = NULL
+        data_section = NULL
+        network_region_classified = NULL
+        dgo_axis_classified = NULL
+        merged_networks_classified = NULL
 
         # store the region click values
         r_val$region_click = input$map_shape_click
@@ -217,14 +225,14 @@ mod_mapdo_app_server <- function(id, con, r_val){
                              selected_region_feature = r_val$selected_region_feature,
                              regions_data = r_val$regions_in_bassin,
                              roe_region = r_val$roe_region,
-                             hydro_sites_region = r_val$hydro_sites_region) %>%
-          map_metric(wms_params = params_wms()$metric,
-                     cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
-                     sld_body = r_val$sld_body,
-                     data_axis = r_val$network_region_axis) %>%
-          addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
-                       position = "bottomright",
-                       layerId = "legend_metric")
+                             hydro_sites_region = r_val$hydro_sites_region)
+          # map_metric(wms_params = params_wms()$metric,
+          #            cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
+          #            sld_body = r_val$sld_body,
+          #            data_axis = r_val$network_region_axis) %>%
+          # addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
+          #              position = "bottomright",
+          #              layerId = "legend_metric")
         # addControl(
         #   html = HTML(paste0('<div id="legend-container" style="background: white; padding: 10px; border: 1px solid #ccc;">
         #                  <h6 id="legend-title" style="cursor: pointer; margin: 0; font-size: 12px;">Legend Title</h6>

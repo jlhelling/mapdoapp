@@ -16,10 +16,18 @@ mod_classification_proposed_ui <- function(id){
   tagList(
     fluidPage(
       useShinyjs(),
-      fluidRow(
-        style = "margin-top: 20px;",
-        uiOutput(ns("apply_buttonUI"))
-      ),
+      tags$script(HTML("
+    Shiny.addCustomMessageHandler('deselectRow', function(message) {
+      var table = document.getElementById(message.id);
+      if (table) {
+        // Reactable uses class names to mark selected rows
+        var selectedRows = table.querySelectorAll('.rt-tr.selected');
+        selectedRows.forEach(function(row) {
+          row.classList.remove('selected');
+        });
+      }
+    });
+  ")),
       fluidRow(
         reactableOutput(ns("table"), width = "100%")
       )
@@ -30,7 +38,7 @@ mod_classification_proposed_ui <- function(id){
 #' classification_proposed Server Functions
 #'
 #' @import shiny
-#' @importFrom reactable renderReactable getReactableState
+#' @importFrom reactable renderReactable getReactableState updateReactable
 #'
 #' @noRd
 mod_classification_proposed_server <- function(id, r_val){
@@ -38,16 +46,9 @@ mod_classification_proposed_server <- function(id, r_val){
     ns <- session$ns
 
     r_val_local <- reactiveValues(
-      apply_button = NULL,
       selected = NULL,
-      classes_tbl = NULL
-    )
-
-
-
-    # apply button
-    output$apply_buttonUI <- renderUI(
-      r_val_local$apply_button
+      classes_tbl = NULL,
+      table = NULL
     )
 
     output$table <- renderReactable(
@@ -64,9 +65,14 @@ mod_classification_proposed_server <- function(id, r_val){
     })
 
 
-    # create table output (and classified dgo networks)
-    observeEvent(input$table__reactable__selected, {
-      r_val_local$selected <- getReactableState("table", "selected")
+    # create table output and add classification to map when region changed or other variable selected
+    observeEvent(c(input$table__reactable__selected, r_val_local$classes_tbl), {
+
+    r_val_local$selected <- getReactableState("table", "selected")
+
+    # check if row is actually selected
+    if(!is.null(r_val_local$selected)) {
+      r_val$visualization = "classes"
 
       r_val$sld_body = r_val_local$classes_tbl[r_val_local$selected,]$class_sld
 
@@ -78,6 +84,8 @@ mod_classification_proposed_server <- function(id, r_val){
         addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
                      position = "bottomright",
                      layerId = "legend_metric")
+
+    }
     })
 
 
@@ -103,19 +111,11 @@ mod_classification_proposed_server <- function(id, r_val){
     #                                                             classes = TRUE)
 
 
-    # check if other visualization is applied to map and create button to re-apply fluvial styles
+    # check if other visualization is applied to map and de-select all proposed classifications
     observeEvent(r_val$visualization, {
       if (r_val$visualization != "classes") {
-        r_val_local$apply_button = actionButton(ns("apply_button"), label = "Remettre la visualisation")
-      } else {
-        r_val_local$apply_button = NULL
+        updateReactable("table", selected = NA)
       }
-    })
-
-    # check if apply button clicked
-    observeEvent(input$apply_button, {
-      r_val$visualization = "classes"
-      r_val_local$apply_button = NULL
     })
   })
 }

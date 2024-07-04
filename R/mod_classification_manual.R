@@ -252,54 +252,61 @@ mod_classification_manual_server <- function(id, con, r_val){
     #### apply-to-map button clicked ####
     observeEvent(input$apply_to_map_button,{
 
-      r_val$visualization = "metric"
+      r_val$visualization = "manual"
+    })
 
-      # create classes table from input
-      # Initialize an empty tibble
-      r_val_local$classes_table <- tibble(variable = character(), class = character(), greaterthan = numeric(), color = character())
+    #### visualisation switched to manual ####
+    observeEvent(c(r_val$visualization, r_val$region_click), {
 
-      # Add rows to the tibble looping through number of classes
-      for (row in 1:input$man_grouping_no_classes) {
-        r_val_local$classes_table <- r_val_local$classes_table %>%
-          add_row(variable = input$metric,
-                  class = input[[paste0("class", row)]],
-                  greaterthan = input[[paste0("greaterthan", row)]],
-                  color = input[[paste0("color", row)]])
+      if (r_val$visualization == "manual") {
+
+        # create classes table from input
+        # Initialize an empty tibble
+        r_val_local$classes_table <- tibble(variable = character(), class = character(), greaterthan = numeric(), color = character())
+
+        # Add rows to the tibble looping through number of classes
+        for (row in 1:input$man_grouping_no_classes) {
+          r_val_local$classes_table <- r_val_local$classes_table %>%
+            add_row(variable = input$metric,
+                    class = input[[paste0("class", row)]],
+                    greaterthan = input[[paste0("greaterthan", row)]],
+                    color = input[[paste0("color", row)]])
+        }
+
+        # sort classes
+        classes <- r_val_local$classes_table %>%
+          dplyr::arrange(greaterthan) %>%
+          dplyr::mutate(greaterthan = round(greaterthan, 2))
+
+        # build SLD symbology
+        r_val$sld_body = sld_get_style(
+          breaks = classes$greaterthan,
+          colors = classes$color,
+          metric = r_val$selected_metric
+        )
+
+        # add classified network to map
+        r_val$map_proxy %>%
+          map_metric(wms_params = params_wms()$metric,
+                     cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
+                     sld_body = r_val$sld_body,
+                     data_axis = r_val$network_region_axis) %>%
+          addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
+                       position = "bottomright",
+                       layerId = "legend_metric")
+
+        # Create classified network by adding the classes and colors
+        r_val$network_region_classified <- r_val$network_region %>%
+          assign_classes(classes = r_val_local$classes_table)
+
       }
 
-      # sort classes
-      classes <- r_val_local$classes_table %>%
-        dplyr::arrange(greaterthan) %>%
-        dplyr::mutate(greaterthan = round(greaterthan, 2))
-
-      print(classes)
-
-      # build SLD symbology
-      r_val$sld_body = sld_get_style(
-        breaks = classes$greaterthan,
-        colors = classes$color,
-        metric = r_val$selected_metric
-      )
-
-      # add classified network to map
-      r_val$map_proxy %>%
-        map_metric(wms_params = params_wms()$metric,
-                   cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
-                   sld_body = r_val$sld_body,
-                   data_axis = r_val$network_region_axis) %>%
-        addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
-                     position = "bottomright",
-                     layerId = "legend_metric")
-
-      # Create classified network by adding the classes and colors
-      r_val$network_region_classified <- r_val$network_region %>%
-        assign_classes(classes = r_val_local$classes_table)
     })
 
     #### axis changed / apply button clicked ####
     observeEvent(r_val$dgo_axis, {
 
-      if (r_val$visualization == "metric") {
+      if (r_val$visualization == "manual") {
 
         # create classified axis network
         r_val$dgo_axis_classified <- r_val$dgo_axis %>%

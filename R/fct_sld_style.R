@@ -211,7 +211,7 @@ sld_get_fluvialstyles <- function() {
 
   # strahler ----------------------------------------------------------------
 
-  colors_strahler <- colorRampPalette(c("#90e0ef", "#03045e"))(6)
+  colors_strahler <- c("#64b5f6", "#1e88e5", "#1976d2", "#1565c0", "#0d47a1", "#0a2472")
   strahler_sld_rules <- character(0)
 
   for (i in 1:6) {
