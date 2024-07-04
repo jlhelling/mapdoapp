@@ -164,7 +164,8 @@ mod_mapdo_app_server <- function(id, con, r_val){
         # register first selection of region
         r_val$region_clicked = TRUE
 
-        # set axis values back to NULL
+        # set axis and dgo values back to NULL
+        r_val$network_region_classified = NULL
         r_val$r_val$axis_name = NULL
         r_val$axis_click = NULL
         r_val$axis_clicked = FALSE
@@ -172,10 +173,6 @@ mod_mapdo_app_server <- function(id, con, r_val){
         r_val$axis_start_end = NULL
         r_val$data_dgo_clicked = NULL
         r_val$data_section = NULL
-        r_val$network_region_classified = NULL
-        r_val$dgo_axis_classified = NULL
-        r_val$merged_networks_classified = NULL
-        r_val$network_region_classified = NULL
         r_val$dgo_axis_classified = NULL
         r_val$merged_networks_classified = NULL
 
@@ -287,9 +284,12 @@ mod_mapdo_app_server <- function(id, con, r_val){
 
         r_val$axis_clicked = TRUE
 
-        # set selected dgo back to NULL
+        # set values back to NULL
         r_val$data_dgo_clicked = NULL
         r_val$data_section = NULL
+        r_val$dgo_axis_classified = NULL
+        r_val$merged_networks_classified = NULL
+        r_val$leaflet_hover_measure = NULL
 
         # save the clicked axis values
         r_val$axis_click = input$map_shape_click
@@ -347,16 +347,19 @@ mod_mapdo_app_server <- function(id, con, r_val){
       }
     })
 
-    #### EVENT DGO Mouseover ####
+    #### DGO Mouseover ####
 
     # check for hover over dgo event
     observeEvent(input$map_shape_mouseover, {
       if (input$map_shape_mouseover$group == params_map_group()$dgo_axis && !is.null(input$map_shape_mouseover)){
 
         # extract dgo axis fid from map
-        r_val$leaflet_hover_measure <- r_val$dgo_axis %>%
+        r_val$leaflet_hover_measure = r_val$dgo_axis %>%
           filter(fid == input$map_shape_mouseover$id) %>%
           pull(measure)
+      } else if (input$map_shape_mouseover$group != params_map_group()$dgo_axis) {
+        print("reaction, no hovering over dgo")
+        r_val$leaflet_hover_measure = NULL
       }
     })
 

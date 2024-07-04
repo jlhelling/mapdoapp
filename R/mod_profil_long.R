@@ -217,23 +217,22 @@ mod_profil_long_server <- function(id, r_val){
 
     #### clicked dgo ####
 
-    observeEvent(r_val$data_dgo_clicked, {
+    observe({
 
-      # track input
-      track_inputs(input = input)
+      if(!is.null(r_val$data_dgo_clicked)) {
+        # remove the previous element
+        r_val_local$shapes_dgo = NULL
 
-      # remove the previous element
-      r_val_local$shapes_dgo <- r_val_local$dgo_shape[-1]
-      # get new shapes-element for longitudinal plot marker of clicked dgo for
-      r_val_local$shapes_dgo <- list(lg_vertical_line(r_val$data_dgo_clicked %>% pull(measure)))
+        # get new shapes-element for longitudinal plot marker of clicked dgo for
+        r_val_local$shapes_dgo <- list(lg_vertical_line(r_val$data_dgo_clicked %>% pull(measure)))
+      } else if (is.null(r_val$data_dgo_clicked)) {
+        r_val_local$shapes_dgo = NULL
+      }
     })
 
     #### ROE ####
 
     observeEvent(input$roe_profile, {
-
-      # track input
-      track_inputs(input = input)
 
       if (input$roe_profile == TRUE) {
         # create the vertical line from ROE distance_axis
@@ -266,16 +265,40 @@ mod_profil_long_server <- function(id, r_val){
 
     # reactive that listens to all changes in shapes and returns a combined list of them
     combined_shapes <- reactive({
-      c(r_val_local$shapes_dgo, r_val_local$shapes_roe, r_val_local$shapes_background, r_val_local$leaflet_hover_shapes)
+      shapes_list <- list()
+
+      if (!is.null(r_val_local$shapes_dgo)) {
+        shapes_list <- c(shapes_list, r_val_local$shapes_dgo)
+      }
+
+      if (!is.null(r_val_local$shapes_roe)) {
+        shapes_list <- c(shapes_list, r_val_local$shapes_roe)
+      }
+
+      if (!is.null(r_val_local$shapes_background)) {
+        shapes_list <- c(shapes_list, r_val_local$shapes_background)
+      }
+
+      if (!is.null(r_val_local$shapes_background)) {
+        shapes_list <- c(shapes_list, r_val_local$leaflet_hover_shapes)
+      }
+
+      shapes_list
+
+      # c(r_val_local$shapes_dgo, r_val_local$shapes_roe, r_val_local$shapes_background, r_val_local$leaflet_hover_shapes)
     })
 
     # observe the combined shapes and update the plotly plot
     observe({
-      shapes <- combined_shapes()
 
-      # update profile with changed shapes
-      plotlyProxy("long_profile") %>%
-        plotlyProxyInvoke("relayout", list(shapes = shapes))
+      if (!is.null(combined_shapes())) {
+
+        shapes <- combined_shapes()
+
+        # update profile with changed shapes
+        plotlyProxy("long_profile") %>%
+          plotlyProxyInvoke("relayout", list(shapes = shapes))
+      }
     })
 
 
@@ -283,14 +306,14 @@ mod_profil_long_server <- function(id, r_val){
 
     #### plotly profile ####
 
-    # capture hover events on map to display dgo on profile-plot
+    # capture hover events on profile-plot to display dgo on map
     observeEvent(event_data("plotly_hover", source = 'L'), {
 
       if(!is.null(r_val_local$plot)) {
         # event data
         hover_event <- event_data("plotly_hover", source = 'L')
 
-        # add line to profile-plot
+        # add line to map and plot
         if (!is.null(hover_event)) {
           hover_fid <- hover_event$key[1]
           highlighted_feature <- r_val$dgo_axis[r_val$dgo_axis$fid == hover_fid, ]
@@ -315,14 +338,20 @@ mod_profil_long_server <- function(id, r_val){
 
     #### leaflet map dgo mouseover ####
 
-    observeEvent(r_val$leaflet_hover_measure, {
+    observe( {
 
-      if(!is.null(r_val_local$plot)) {
-        # remove the first element (hover dgo vertical line)
+      if (!is.null(r_val$leaflet_hover_measure)) {
+        if (!is.null(r_val_local$plot)) {
+          # remove the first element (hover dgo vertical line)
+          r_val_local$leaflet_hover_shapes = NULL
+          # add the new hover dgo vertical line
+          r_val_local$leaflet_hover_shapes = list(lg_vertical_line(r_val$leaflet_hover_measure, color = "red"))
+        }
+      } else if (is.null(r_val$leaflet_hover_measure)) {
         r_val_local$leaflet_hover_shapes = NULL
-        # add the new hover dgo vertical line
-        r_val_local$leaflet_hover_shapes = list(lg_vertical_line(r_val$leaflet_hover_measure, color = "red"))
+        print("reaction, hover_shape NULL")
       }
+
     })
   })
 }

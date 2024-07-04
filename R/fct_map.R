@@ -573,6 +573,7 @@ map_dgo_axis <- function(map, selected_axis, region_axis, main_metric, second_me
   map %>%
     clearGroup(params_map_group()$dgo_axis) %>%
     clearGroup(params_map_group()$axis) %>%
+    clearGroup(params_map_group()$dgo) %>%
     map_axis(data_axis = region_axis) %>%
     addPolylines(
       data = selected_axis,

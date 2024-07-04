@@ -188,7 +188,7 @@ lg_profile_main <- function(data, y, y_label, y_label_category) {
       showlegend = TRUE,
       legend = list(orientation = 'h'),
       hovermode = "x unified",
-      shapes = list(lg_vertical_line(2.5)),
+      # shapes = list(shapes = NULL),
       margin = list(t = 20, b = 10, l = 50, r = 80)  # create space for the second y-axis title
     )
   return(plot)
