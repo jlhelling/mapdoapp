@@ -126,17 +126,17 @@ mod_classification_manual_server <- function(id, con, r_val){
           page_sidebar(
             sidebar = sidebar(
               fluidRow(
-                column(width = 6,
+                column(width = 7,
                        numericInput(inputId = ns("man_grouping_quantile"),
                                     "Quantile [%]", value = 95, min = 0, max = 100)
                 ),
-                column(width = 6,
+                column(width = 5,
                        numericInput(inputId = ns("man_grouping_no_classes"),
                                     "Classes", value = 4, min = 2, max = 10, step = 1)
                 ),
                 uiOutput(ns("scale_select_UI")),
                 actionButton(inputId = ns("recalculate_classes_button"), "Recalculer classes")
-              ), open = "open", width = 240, position = "right"
+              ), open = "closed", width = 220, position = "right"
             ),
             uiOutput(ns("reactable_classes")),
             actionButton(inputId = ns("apply_to_map_button"), "Ajouter à la carte")
