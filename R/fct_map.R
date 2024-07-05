@@ -697,25 +697,41 @@ map_axis_start_end <- function(map, axis_start_end, region_axis) {
 #'   # Used in map_init_bassins() function, its use is in the function
 #' }
 #'
-#' @importFrom leaflet addWMSTiles
+#' @importFrom leaflet addWMSTiles addTiles tileOptions
 #'
 #' @export
 map_add_basemaps <- function(map) {
   for (i in params_wms()) {
     if (i$basemap == TRUE){
-      map <- map %>%
-        addWMSTiles(
-          baseUrl = i$url,
-          layers = i$layer,
-          attribution = i$attribution,
-          options = WMSTileOptions(
-            format = i$format,
-            transparent = TRUE,
-            opacity = 0.7,
-            styles = i$style,
-          ),
-          group = i$name
-        )
+      if ((i$name == "Occupation du sol") || (i$name == "Géologie")){
+        map <- map %>%
+          addWMSTiles(
+            baseUrl = i$url,
+            layers = i$layer,
+            attribution = i$attribution,
+            options = WMSTileOptions(
+              format = i$format,
+              transparent = TRUE,
+              opacity = 0.7,
+              styles = i$style,
+            ),
+            group = i$name
+          )
+      } else {
+        map <- map %>%
+          addTiles(
+            urlTemplate = i$url,
+            options = tileOptions(
+              attribution = i$attribution,
+              transparent = TRUE,
+              opacity = 0.7,
+              format = i$format,
+              style = i$style
+            ),
+            group = i$name
+          )
+      }
+
     }
   }
   return(map)
