@@ -34,7 +34,6 @@ mod_classification_proposed_server <- function(id, r_val){
     ns <- session$ns
 
     r_val_local <- reactiveValues(
-      selected = NULL,
       classes_tbl = NULL,
       table = NULL
     )
@@ -64,14 +63,14 @@ mod_classification_proposed_server <- function(id, r_val){
     # create table output and add classification to map when region changed or other variable selected
     observeEvent(c(input$table__reactable__selected, r_val$region_click), {
 
-    r_val_local$selected <- getReactableState("table", "selected")
+    r_val$classes_proposed_selected <- getReactableState("table", "selected")
 
     # check if row is actually selected
-    if(!is.null(r_val_local$selected)) {
+    if(!is.null(r_val$classes_proposed_selected)) {
 
       r_val$visualization = "classes"
 
-      r_val$sld_body = r_val_local$classes_tbl[r_val_local$selected,]$class_sld
+      r_val$sld_body = r_val_local$classes_tbl[r_val$classes_proposed_selected,]$class_sld
 
       r_val$map_proxy %>%
         map_class(wms_params = params_wms()$class,

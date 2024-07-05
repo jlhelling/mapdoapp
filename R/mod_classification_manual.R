@@ -108,54 +108,58 @@ mod_classification_manual_server <- function(id, con, r_val){
     #### region selected ####
     observeEvent(r_val$region_clicked,{
 
-      # remove placeholder text
-      r_val_local$metric_placeholder_description = NULL
+      if(r_val$region_clicked == TRUE){
 
-      # create elements of manual grouping pane
-      r_val_local$ui_metric = selectInput(ns("metric"), NULL,
-                                          choices = params_get_metric_choices(),
-                                          selected  = params_get_metric_choices()[1],
-                                          width = "100%")
+        # remove placeholder text
+        r_val_local$metric_placeholder_description = NULL
 
-      # create metric description
-      r_val_local$metric_description = r_val$selected_metric_description
+        # create elements of manual grouping pane
+        r_val_local$ui_metric = selectInput(ns("metric"), NULL,
+                                            choices = params_get_metric_choices(),
+                                            selected  = params_get_metric_choices()[1],
+                                            width = "100%")
 
-      # create classification UI
-      r_val_local$classification_ui <- fluidPage(
-        fluidRow(
-          page_sidebar(
-            sidebar = sidebar(
-              fluidRow(
-                column(width = 7,
-                       numericInput(inputId = ns("man_grouping_quantile"),
-                                    "Quantile [%]", value = 95, min = 0, max = 100)
-                ),
-                column(width = 5,
-                       numericInput(inputId = ns("man_grouping_no_classes"),
-                                    "Classes", value = 4, min = 2, max = 10, step = 1)
-                ),
-                uiOutput(ns("scale_select_UI")),
-                actionButton(inputId = ns("recalculate_classes_button"), "Recalculer classes")
-              ), open = "closed", width = 220, position = "right"
-            ),
-            uiOutput(ns("reactable_classes")),
-            actionButton(inputId = ns("apply_to_map_button"), "Ajouter à la carte")
-          ))
-      )
+        # create metric description
+        r_val_local$metric_description = r_val$selected_metric_description
 
-      r_val_local$scale_selectUI = radioButtons(ns("man_grouping_scale_select"),
-                                                "Base de classification",
-                                                c("Région"),
-                                                selected = "Région",
-                                                inline = TRUE)
+        # create classification UI
+        r_val_local$classification_ui <- fluidPage(
+          fluidRow(
+            page_sidebar(
+              sidebar = sidebar(
+                fluidRow(
+                  column(width = 7,
+                         numericInput(inputId = ns("man_grouping_quantile"),
+                                      "Quantile [%]", value = 95, min = 0, max = 100)
+                  ),
+                  column(width = 5,
+                         numericInput(inputId = ns("man_grouping_no_classes"),
+                                      "Classes", value = 4, min = 2, max = 10, step = 1)
+                  ),
+                  uiOutput(ns("scale_select_UI")),
+                  actionButton(inputId = ns("recalculate_classes_button"), "Recalculer classes")
+                ), open = "closed", width = 220, position = "right"
+              ),
+              uiOutput(ns("reactable_classes")),
+              actionButton(inputId = ns("apply_to_map_button"), "Ajouter à la carte")
+            ))
+        )
 
-      # create classes-table to initialize classes UI
-      r_val_local$initial_classes_table = create_df_input(
-        axis_data = r_val$network_region,
-        variable_name = params_get_metric_choices()[[1]],
-        no_classes = 4,
-        quantile = 95
-      )
+        r_val_local$scale_selectUI = radioButtons(ns("man_grouping_scale_select"),
+                                                  "Base de classification",
+                                                  c("Région"),
+                                                  selected = "Région",
+                                                  inline = TRUE)
+
+        # create classes-table to initialize classes UI
+        r_val_local$initial_classes_table = create_df_input(
+          axis_data = r_val$network_region,
+          variable_name = params_get_metric_choices()[[1]],
+          no_classes = 4,
+          quantile = 95
+        )
+      }
+
     })
 
 
@@ -254,7 +258,7 @@ mod_classification_manual_server <- function(id, con, r_val){
     })
 
     #### visualisation switched to manual ####
-    observeEvent(c(r_val$visualization, r_val$region_click), {
+    observeEvent(c(r_val$visualization, r_val$region_click, input$apply_to_map_button), {
 
       if (r_val$visualization == "manual") {
 
@@ -263,13 +267,24 @@ mod_classification_manual_server <- function(id, con, r_val){
         r_val_local$classes_table <- tibble(variable = character(), class = character(), greaterthan = numeric(), color = character())
 
         # Add rows to the tibble looping through number of classes
-        for (row in 1:input$man_grouping_no_classes) {
-          r_val_local$classes_table <- r_val_local$classes_table %>%
-            add_row(variable = input$metric,
-                    class = input[[paste0("class", row)]],
-                    greaterthan = input[[paste0("greaterthan", row)]],
-                    color = input[[paste0("color", row)]])
+        if (!is.null(input$man_grouping_no_classes)) {
+          for (row in 1:input$man_grouping_no_classes) {
+            r_val_local$classes_table <- r_val_local$classes_table %>%
+              add_row(variable = input$metric,
+                      class = input[[paste0("class", row)]],
+                      greaterthan = input[[paste0("greaterthan", row)]],
+                      color = input[[paste0("color", row)]])
+          }
+        } else {
+          for (row in 1:4) {
+            r_val_local$classes_table <- r_val_local$classes_table %>%
+              add_row(variable = input$metric,
+                      class = input[[paste0("class", row)]],
+                      greaterthan = input[[paste0("greaterthan", row)]],
+                      color = input[[paste0("color", row)]])
+          }
         }
+
 
         # sort classes
         classes <- r_val_local$classes_table %>%
@@ -296,7 +311,6 @@ mod_classification_manual_server <- function(id, con, r_val){
         # Create classified network by adding the classes and colors
         r_val$network_region_classified <- r_val$network_region %>%
           assign_classes(classes = r_val_local$classes_table)
-
       }
 
     })
@@ -304,7 +318,7 @@ mod_classification_manual_server <- function(id, con, r_val){
     #### axis changed / apply button clicked ####
     observeEvent(c(r_val$dgo_axis, r_val$network_region_classified), {
 
-      if ((r_val$visualization == "manual") & !is.null(r_val$network_region_classified)) {
+      if ((r_val$visualization == "manual") & !is.null(r_val$network_region_classified) & !is.null(r_val$dgo_axis)) {
 
         # create classified axis network
         r_val$dgo_axis_classified <- r_val$dgo_axis %>%

@@ -48,6 +48,8 @@ app_server <- function(input, output, session) {
     dgo_axis_classified = NULL, # classified dgos of selected axis
     merged_networks_classified = NULL, # merged classified networks of region and axis, with additional scale-variable to distinguish them
 
+    # selected class from proposed classes
+    classes_proposed_selected = NULL,
 
     # metric info
     selected_metric_title = NULL,

@@ -42,7 +42,7 @@ mod_mapdo_app_ui <- function(id){
           width = 4,
           tabsetPanel(
             id = "tabset",
-            tabPanel("Classifications proposées",
+            tabPanel("Classes proposées",
                      mod_classification_proposed_ui("classification_proposed_1")
             ),
             tabPanel("Classification manuelle",
@@ -68,7 +68,7 @@ mod_mapdo_app_ui <- function(id){
           ),
           tabPanel("Distribution des classes",
                    mod_classes_distribution_ui("classes_distribution_1")
-          )
+          ), type = "pills"
         )
       )
     ) #page
@@ -223,20 +223,32 @@ mod_mapdo_app_server <- function(id, con, r_val){
           metric = r_val$selected_metric
         )
 
-        # map region clicked with region clicked and overlayers
+        # map region clicked with region clicked and overlayers and initial network with strahler-order
         r_val$map_proxy %>%
           map_region_clicked(region_click = input$map_shape_click,
                              selected_region_feature = r_val$selected_region_feature,
                              regions_data = r_val$regions_in_bassin,
                              roe_region = r_val$roe_region,
                              hydro_sites_region = r_val$hydro_sites_region)
-          # map_metric(wms_params = params_wms()$metric,
-          #            cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
-          #            sld_body = r_val$sld_body,
-          #            data_axis = r_val$network_region_axis) %>%
-          # addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
-          #              position = "bottomright",
-          #              layerId = "legend_metric")
+
+        # add strahler-order network visualization to map when classes visualisation is selected (and not manual)
+        if ((r_val$visualization == "classes") & is.null(r_val$classes_proposed_selected)){
+          r_val$map_proxy %>%
+            map_class(wms_params = params_wms()$class,
+                      cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
+                      sld_body = params_classes()[1,]$class_sld,
+                      data_axis = r_val$network_region_axis) %>%
+            addWMSLegend(uri = map_legend_metric(sld_body = params_classes()[1,]$class_sld),
+                         position = "bottomright",
+                         layerId = "legend_metric")
+        }
+        # map_metric(wms_params = params_wms()$metric,
+        #            cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
+        #            sld_body = r_val$sld_body,
+        #            data_axis = r_val$network_region_axis) %>%
+        # addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
+        #              position = "bottomright",
+        #              layerId = "legend_metric")
         # addControl(
         #   html = HTML(paste0('<div id="legend-container" style="background: white; padding: 10px; border: 1px solid #ccc;">
         #                  <h6 id="legend-title" style="cursor: pointer; margin: 0; font-size: 12px;">Legend Title</h6>
@@ -357,8 +369,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
         r_val$leaflet_hover_measure = r_val$dgo_axis %>%
           filter(fid == input$map_shape_mouseover$id) %>%
           pull(measure)
-      } else if (input$map_shape_mouseover$group != params_map_group()$dgo_axis) {
-        print("reaction, no hovering over dgo")
+      } else {
         r_val$leaflet_hover_measure = NULL
       }
     })

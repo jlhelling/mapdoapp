@@ -349,7 +349,6 @@ mod_profil_long_server <- function(id, r_val){
         }
       } else if (is.null(r_val$leaflet_hover_measure)) {
         r_val_local$leaflet_hover_shapes = NULL
-        print("reaction, hover_shape NULL")
       }
 
     })
