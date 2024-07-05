@@ -4,7 +4,7 @@
 \alias{fct_table_create_reactable}
 \title{create a table to compare metric-characteristics of region, axis, and segment}
 \usage{
-fct_table_create_reactable(df, unit)
+fct_table_create_reactable(df, unit, details = FALSE)
 }
 \arguments{
 \item{df}{dataframe of merged regional, axis and dgo data}

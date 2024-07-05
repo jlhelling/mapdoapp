@@ -14,17 +14,26 @@
 mod_metric_overview_ui <- function(id){
   ns <- NS(id)
   tagList(
-      useShinyjs(),
-      fluidRow(
-        style = "margin-top: 20px;",
-        column(width = 6,
-               uiOutput(ns("description"))),
-        column(width = 6,
-               uiOutput(ns("selectinput")))
-      ),
-      fluidRow(
-        reactableOutput(ns("table"), width = "100%")
+    useShinyjs(),
+    tags$style(HTML("
+      .reactable-table {
+        font-size: 15px;  /* Adjust this value to change the text size */
+      }
+    ")),
+    fluidRow(
+      div(class = "reactable-table",
+          style = "margin-top: 10px;",
+          textOutput(ns("placeholder_ui")),
+          column(width = 6,
+                 uiOutput(ns("description"))),
+          column(width = 6,
+                 uiOutput(ns("selectinput")))
+      )),
+    fluidRow(
+      div(class = "reactable-table",
+          reactableOutput(ns("table"), width = "100%")
       )
+    )
   )
 }
 
@@ -40,7 +49,8 @@ mod_metric_overview_server <- function(id, r_val){
 
     r_val_local <- reactiveValues(
       characteristics_table = NULL,
-      descriptionUI = HTML("<p> Cliquez sur un axe hydrographique pour afficher la comparaison des caractéristiques géomorphologiques. </p>"),
+      descriptionUI = NULL,
+      placeholder_text = "Cliquez sur un axe hydrographique pour afficher la comparaison régionale des métriques. ",
       selectinputUI = NULL,
       unit = NULL
     )
@@ -53,14 +63,24 @@ mod_metric_overview_server <- function(id, r_val){
       r_val_local$descriptionUI
     )
 
+    # text placeholder
+    output$placeholder_ui <- renderText({
+      r_val_local$placeholder_text
+    })
+
     output$selectinput <- renderUI(
       r_val_local$selectinputUI
     )
 
     observe({
       if (!is.null(r_val$axis_click)) {
+        # remove placeholder text
+        r_val_local$placeholder_text = NULL
+
         # create header
         r_val_local$descriptionUI = HTML("<p><strong>Comparaison de moyennes </strong></p>")
+
+        # create metric-select input
         r_val_local$selectinputUI = selectInput(ns("select_unit"), label = NULL,
                                                 choices = list("surface relative (%)", "surface absolute (ha)"))
       }

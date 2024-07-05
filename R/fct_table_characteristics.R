@@ -109,7 +109,7 @@ fct_table_create_table_df <- function(region_sf, axis_sf, dgo_sf){
 #'  axis_sf = network_dgo,
 #'  dgo_sf = NULL)
 #'
-fct_table_create_reactable <- function(df, unit){
+fct_table_create_reactable <- function(df, unit, details = FALSE){
 
   # filter for ha or % units
   if (unit == "ha") {
@@ -137,36 +137,62 @@ fct_table_create_reactable <- function(df, unit){
     return(data_converted)
   }
 
-
-
-  # create reactable table
-  table <- reactable(
-    data = data,
-    columns = list(
-      metric_title = colDef(name = "Métrique", width = 180),
-      mean_region = colDef(name = "Région", width = 100),
-      distr_region = colDef(name = "", width = 80,
+  if (details == TRUE) {
+    # create reactable table with violinplots in details
+    table <- reactable(
+      data = data,
+      columns = list(
+        metric_title = colDef(name = "Métrique", width = 180),
+        mean_region = colDef(name = "Région", width = 100),
+        distr_region = colDef(name = "", width = 80,
+                              cell = function(value, index) {
+                                sparkline(data$distr_region[[index]], type = "box")
+                              }),
+        mean_axis = colDef(name = "Axe", width = 100),
+        distr_axis = colDef(name = "", width = 80,
                             cell = function(value, index) {
-                              sparkline(data$distr_region[[index]], type = "box")
+                              sparkline(data$distr_axis[[index]], type = "box")
                             }),
-      mean_axis = colDef(name = "Axe", width = 100),
-      distr_axis = colDef(name = "", width = 80,
-                          cell = function(value, index) {
-                            sparkline(data$distr_axis[[index]], type = "box")
-                          }),
-      segment = colDef(name = "Tronçon", width = 80)
-    ),
-    # add violinplots of distribution from axis and region into details
-    details = function(index) {
-      htmltools::div(
-        style = "padding: 10px; margin-left: 40px; white-space: pre-wrap;",  # Add text indentation
-        create_plotly_violinplot(convert_data(data, index), data$metric_title[index], data$metric_title[index])
-      )},
-    height = 420,
-    defaultPageSize = 9,
-    highlight = TRUE, # highlight rows on hover
-    compact = TRUE
-  )
+        segment = colDef(name = "Tronçon", width = 80)
+      ),
+      # add violinplots of distribution from axis and region into details
+      details = function(index) {
+        htmltools::div(
+          style = "padding: 10px; margin-left: 40px; white-space: pre-wrap;",  # Add text indentation
+          create_plotly_violinplot(convert_data(data, index), data$metric_title[index], data$metric_title[index])
+        )},
+      height = 420,
+      defaultPageSize = 9,
+      highlight = TRUE, # highlight rows on hover
+      compact = TRUE
+    )
+  } else {
+
+    # create reactable table without violinplots
+    table <- reactable(
+      data = data,
+      columns = list(
+        metric_title = colDef(name = "Métrique", width = 150),
+        mean_region = colDef(name = "Région", width = 80),
+        distr_region = colDef(name = "", width = 70,
+                              cell = function(value, index) {
+                                sparkline(data$distr_region[[index]], type = "box")
+                              }),
+        mean_axis = colDef(name = "Axe", width = 80),
+        distr_axis = colDef(name = "", width = 70,
+                            cell = function(value, index) {
+                              sparkline(data$distr_axis[[index]], type = "box")
+                            }),
+        segment = colDef(name = "Tronçon", width = 80)
+      ),
+      height = 400,
+      pagination = FALSE,
+      outlined = TRUE,
+      highlight = TRUE, # highlight rows on hover
+      compact = TRUE
+    )
+
+  }
 
   return(table)
 }
