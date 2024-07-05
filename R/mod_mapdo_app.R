@@ -175,6 +175,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
         r_val$data_section = NULL
         r_val$dgo_axis_classified = NULL
         r_val$merged_networks_classified = NULL
+        r_val$roe_region = NULL
 
         # store the region click values
         r_val$region_click = input$map_shape_click
@@ -302,6 +303,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
         r_val$dgo_axis_classified = NULL
         r_val$merged_networks_classified = NULL
         r_val$leaflet_hover_measure = NULL
+        r_val$roe_axis = NULL
 
         # save the clicked axis values
         r_val$axis_click = input$map_shape_click
@@ -325,6 +327,8 @@ mod_mapdo_app_server <- function(id, con, r_val){
         # get ROE in axis clicked
         r_val$roe_axis = r_val$roe_region %>%
           filter(axis == r_val$axis_click$id)
+
+        print(r_val$roe_axis)
 
         # map dgo axis when axis clicked and metric selected
         r_val$map_proxy %>%

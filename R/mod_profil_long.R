@@ -233,8 +233,8 @@ mod_profil_long_server <- function(id, r_val){
 
       if (input$roe_profile == TRUE) {
         # create the vertical line from ROE distance_axis
-        r_val_local$shapes_roe = list(lg_roe_vertical_line(r_val$roe_axis$distance_axis))
-
+        r_val_local$shapes_roe = lg_roe_vertical_line(r_val$roe_axis$distance_axis)
+        print(paste0("roe shapes: ", r_val_local$shapes_roe))
       } else {
         # remove the previous ROE vertical lines if exist
         r_val_local$shapes_roe = NULL
@@ -262,6 +262,11 @@ mod_profil_long_server <- function(id, r_val){
 
     # reactive that listens to all changes in shapes and returns a combined list of them
     combined_shapes <- reactive({
+
+      # c(r_val_local$shapes_dgo, r_val_local$shapes_roe, r_val_local$shapes_background,
+      #   r_val_local$leaflet_hover_shapes)
+
+      # create always new an empty list to store only shapes which are really activated
       shapes_list <- list()
 
       if (!is.null(r_val_local$shapes_dgo)) {
@@ -276,13 +281,12 @@ mod_profil_long_server <- function(id, r_val){
         shapes_list <- c(shapes_list, r_val_local$shapes_background)
       }
 
-      if (!is.null(r_val_local$shapes_background)) {
+      if (!is.null(r_val_local$leaflet_hover_shapes)) {
         shapes_list <- c(shapes_list, r_val_local$leaflet_hover_shapes)
       }
 
       shapes_list
 
-      # c(r_val_local$shapes_dgo, r_val_local$shapes_roe, r_val_local$shapes_background, r_val_local$leaflet_hover_shapes)
     })
 
     # observe the combined shapes and update the plotly plot
