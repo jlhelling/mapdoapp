@@ -263,9 +263,6 @@ mod_profil_long_server <- function(id, r_val){
     # reactive that listens to all changes in shapes and returns a combined list of them
     combined_shapes <- reactive({
 
-      # c(r_val_local$shapes_dgo, r_val_local$shapes_roe, r_val_local$shapes_background,
-      #   r_val_local$leaflet_hover_shapes)
-
       # create always new an empty list to store only shapes which are really activated
       shapes_list <- list()
 

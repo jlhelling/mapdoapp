@@ -562,11 +562,11 @@ map_dgo_axis <- function(map, selected_axis, region_axis, main_metric, second_me
   # create HTML conditional tooltip labels
   tooltip_label <- NULL
   if (!is.null(main_metric) && is.null(second_metric)){
-    tooltip_label <- lapply(paste0('<span style="color:blue;"> <b>', selected_axis[[main_metric]], '</b> </span>'),
+    tooltip_label <- lapply(paste0('<span style="color:blue;"> <b>', selected_axis$toponyme, '</b> </span>'),
                             htmltools::HTML)
   } else if (!is.null(main_metric) && !is.null(second_metric)){
-    tooltip_label <- lapply(paste0('<span style="color:blue;"> <b>', selected_axis[[main_metric]], '</b> </span> <br/>',
-                                   '<span style="color:#FC9D5A;"> <b>', selected_axis[[second_metric]], '</b> </span>'),
+    tooltip_label <- lapply(paste0('<span style="color:blue;"> <b>', selected_axis$toponyme, '</b> </span> <br/>',
+                                   '<span style="color:#FC9D5A;"> <b>', selected_axis$measure, ' m', '</b> </span>'),
                             htmltools::HTML)
   }
 
