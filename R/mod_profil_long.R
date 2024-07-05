@@ -14,25 +14,22 @@
 mod_profil_long_ui <- function(id){
   ns <- NS(id)
   tagList(
-
-    fluidPage(
-      useShinyjs(),
-      div(
-        fluidRow(
-          style = "margin-top: 10px;",
-          column(width = 10,
-                 plotlyOutput(ns("long_profile"))
-          ),
-          column(
-            width = 2,
-            style = "margin-top: 20px;",
-            uiOutput(ns("profile_first_metricUI")),
-            uiOutput(ns("add_sec_axeUI"),
-                     style = "margin-top: 30px;"),
-            uiOutput(ns("profile_sec_metricUI")),
-            uiOutput(ns("profileroeUI")),
-            uiOutput(ns("profile_backgroundUI"))
-          )
+    useShinyjs(),
+    div(
+      fluidRow(
+        style = "margin-top: 10px;",
+        column(width = 10,
+               plotlyOutput(ns("long_profile"))
+        ),
+        column(
+          width = 2,
+          style = "margin-top: 20px;",
+          uiOutput(ns("profile_first_metricUI")),
+          uiOutput(ns("add_sec_axeUI"),
+                   style = "margin-top: 30px;"),
+          uiOutput(ns("profile_sec_metricUI")),
+          uiOutput(ns("profileroeUI")),
+          uiOutput(ns("profile_backgroundUI"))
         )
       )
     )

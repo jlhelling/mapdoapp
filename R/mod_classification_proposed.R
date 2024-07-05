@@ -14,11 +14,11 @@
 mod_classification_proposed_ui <- function(id){
   ns <- NS(id)
   tagList(
-    fluidPage(
-      useShinyjs(),
-      fluidRow(
-        reactableOutput(ns("table"), width = "100%")
-      )
+    useShinyjs(),
+    fluidRow(
+      style = "margin-top: 10px;",
+      textOutput(ns("placeholder_ui")),
+      reactableOutput(ns("table"), width = "100%")
     )
   )
 }
@@ -35,8 +35,14 @@ mod_classification_proposed_server <- function(id, r_val){
 
     r_val_local <- reactiveValues(
       classes_tbl = NULL,
-      table = NULL
+      table = NULL,
+      placeholder_text = "Sélectionnez une région hydrographique sur la carte pour afficher la classification."
     )
+
+    # text placeholder
+    output$placeholder_ui <- renderText({
+      r_val_local$placeholder_text
+    })
 
     output$table <- renderReactable(
       r_val_local$table
@@ -46,42 +52,43 @@ mod_classification_proposed_server <- function(id, r_val){
     observeEvent(r_val$region_clicked, {
 
       if (!is.null(r_val$region_click)) {
+        r_val_local$placeholder_text = NULL
         r_val_local$classes_tbl <- params_classes()
         r_val_local$table = create_table_fluvialstyles(r_val_local$classes_tbl)
       }
     })
-#
-#     # build table when region clicked
-#     observeEvent(r_val$region_click, {
-#
-#       if (!is.null(r_val$region_click) & (r_val$visualization == "classes")) {
-#         r_val_local$classes_tbl <- params_classes()
-#       }
-#     })
+    #
+    #     # build table when region clicked
+    #     observeEvent(r_val$region_click, {
+    #
+    #       if (!is.null(r_val$region_click) & (r_val$visualization == "classes")) {
+    #         r_val_local$classes_tbl <- params_classes()
+    #       }
+    #     })
 
 
     # create table output and add classification to map when region changed or other variable selected
     observeEvent(c(input$table__reactable__selected, r_val$region_click), {
 
-    r_val$classes_proposed_selected <- getReactableState("table", "selected")
+      r_val$classes_proposed_selected <- getReactableState("table", "selected")
 
-    # check if row is actually selected
-    if(!is.null(r_val$classes_proposed_selected)) {
+      # check if row is actually selected
+      if(!is.null(r_val$classes_proposed_selected)) {
 
-      r_val$visualization = "classes"
+        r_val$visualization = "classes"
 
-      r_val$sld_body = r_val_local$classes_tbl[r_val$classes_proposed_selected,]$class_sld
+        r_val$sld_body = r_val_local$classes_tbl[r_val$classes_proposed_selected,]$class_sld
 
-      r_val$map_proxy %>%
-        map_class(wms_params = params_wms()$class,
-                  cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
-                  sld_body = r_val$sld_body,
-                  data_axis = r_val$network_region_axis) %>%
-        addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
-                     position = "bottomright",
-                     layerId = "legend_metric")
+        r_val$map_proxy %>%
+          map_class(wms_params = params_wms()$class,
+                    cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
+                    sld_body = r_val$sld_body,
+                    data_axis = r_val$network_region_axis) %>%
+          addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
+                       position = "bottomright",
+                       layerId = "legend_metric")
 
-    }
+      }
     })
 
 

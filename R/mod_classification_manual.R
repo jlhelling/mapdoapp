@@ -18,21 +18,19 @@ mod_classification_manual_ui <- function(id){
   ns <- NS(id)
   tagList(
     golem_add_external_resources(),
-    fluidPage(
-      useShinyjs(),
-      fluidRow(
-        style = "margin-top: 20px;",
-        textOutput(ns("metric_placeholder_descriptionUI"))
-      ),
-      fluidRow(
-        uiOutput(ns("metric_selectUI"))
-      ),
-      fluidRow(
-        textOutput(ns("metric_descriptionUI"))
-      ),
-      fluidRow(
-        uiOutput(ns("classificationUI"))
-      )
+    useShinyjs(),
+    fluidRow(
+      style = "margin-top: 20px;",
+      textOutput(ns("metric_placeholder_descriptionUI"))
+    ),
+    fluidRow(
+      uiOutput(ns("metric_selectUI"))
+    ),
+    fluidRow(
+      textOutput(ns("metric_descriptionUI"))
+    ),
+    fluidRow(
+      uiOutput(ns("classificationUI"))
     )
   )
 }

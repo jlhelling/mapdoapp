@@ -14,7 +14,6 @@
 mod_metric_overview_ui <- function(id){
   ns <- NS(id)
   tagList(
-    fluidPage(
       useShinyjs(),
       fluidRow(
         style = "margin-top: 20px;",
@@ -26,7 +25,6 @@ mod_metric_overview_ui <- function(id){
       fluidRow(
         reactableOutput(ns("table"), width = "100%")
       )
-    )
   )
 }
 

@@ -14,14 +14,12 @@
 mod_classes_distribution_ui <- function(id){
   ns <- NS(id)
   tagList(
-    fluidPage(
-      useShinyjs(),
-      fluidRow(
-        style = "margin-top: 10px;",
-        textOutput(ns("placeholder_ui")),
-        column(width = 8,
-               plotlyOutput(ns("barplots_classes_metricUI"))
-               )
+    useShinyjs(),
+    fluidRow(
+      style = "margin-top: 10px;",
+      textOutput(ns("placeholder_ui")),
+      column(width = 8,
+             plotlyOutput(ns("barplots_classes_metricUI"))
       )
     )
   )
@@ -57,10 +55,10 @@ mod_classes_distribution_server <- function(id, r_val){
       if (!is.null(r_val$merged_networks_classified)) {
         r_val_local$barplots_classes_metric <- create_plotly_barplot(r_val$merged_networks_classified)
         r_val_local$placeholder_text = NULL
-        } else {
-          r_val_local$placeholder_text = "Sélectionnez un cours d'eau sur la carte et appliquez une classification pour afficher le graphique."
-          r_val_local$barplots_classes_metric = NULL
-        }
+      } else {
+        r_val_local$placeholder_text = "Sélectionnez un cours d'eau sur la carte et appliquez une classification pour afficher le graphique."
+        r_val_local$barplots_classes_metric = NULL
+      }
     })
 
 
