@@ -243,33 +243,36 @@ mod_profil_long_server <- function(id, r_val){
 
     #### background classification ####
 
-    observeEvent(input$background_profile,  {
+    observeEvent(c(input$background_profile, r_val$classes_proposed_selected),  {
 
       # track input
       track_inputs(input = input)
 
-      # add background classification shapes
-      if ((input$background_profile == TRUE)) {
+      if (!is.null(input$background_profile)) {
 
-        # proposed classification applied
-        if (r_val$visualization == "classes") {
-          r_val$dgo_axis_classified = r_val$dgo_axis %>%
-            na.omit() %>%
-            assign_classes_proposed(proposed_class = params_classes()[r_val$classes_proposed_selected,]$class_name)
+        # add background classification shapes
+        if (input$background_profile == TRUE) {
+
+          # proposed classification applied
+          if (r_val$visualization == "classes") {
+            r_val$dgo_axis_classified = r_val$dgo_axis %>%
+              na.omit() %>%
+              assign_classes_proposed(proposed_class = params_classes()[r_val$classes_proposed_selected,]$class_name)
+          }
+
+          # manual classification applied
+          else if (r_val$visualization == "manual") {
+            r_val$dgo_axis_classified <- r_val$dgo_axis %>%
+              na.omit() %>%
+              assign_classes_manual(classes = r_val$manual_classes_table)
+          }
+
+          r_val_local$shapes_background = create_classes_background(r_val$dgo_axis_classified)
         }
-
-        # manual classification applied
-        else if (r_val$visualization == "manual") {
-          r_val$dgo_axis_classified <- r_val$dgo_axis %>%
-            na.omit() %>%
-            assign_classes_manual(classes = r_val$manual_classes_table)
+        # remove background classification
+        else if (input$background_profile == FALSE) {
+          r_val_local$shapes_background = NULL
         }
-
-        r_val_local$shapes_background = create_classes_background(r_val$dgo_axis_classified)
-      }
-      # remove background classification
-      else if (input$background_profile == FALSE) {
-        r_val_local$shapes_background = NULL
       }
     })
 
