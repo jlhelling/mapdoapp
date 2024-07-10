@@ -43,6 +43,8 @@ app_server <- function(input, output, session) {
     data_dgo_clicked = NULL,
     data_section = NULL,
 
+    manual_classes_table = NULL, # manual classification table
+
     # classified networks
     network_region_classified = NULL, # classified dgos of selected region
     dgo_axis_classified = NULL, # classified dgos of selected axis

@@ -262,12 +262,12 @@ mod_classification_manual_server <- function(id, con, r_val){
 
         # create classes table from input
         # Initialize an empty tibble
-        r_val_local$classes_table <- tibble(variable = character(), class = character(), greaterthan = numeric(), color = character())
+        r_val$manual_classes_table <- tibble(variable = character(), class = character(), greaterthan = numeric(), color = character())
 
         # Add rows to the tibble looping through number of classes
         if (!is.null(input$man_grouping_no_classes)) {
           for (row in 1:input$man_grouping_no_classes) {
-            r_val_local$classes_table <- r_val_local$classes_table %>%
+            r_val$manual_classes_table <- r_val$manual_classes_table %>%
               add_row(variable = input$metric,
                       class = input[[paste0("class", row)]],
                       greaterthan = input[[paste0("greaterthan", row)]],
@@ -275,7 +275,7 @@ mod_classification_manual_server <- function(id, con, r_val){
           }
         } else {
           for (row in 1:4) {
-            r_val_local$classes_table <- r_val_local$classes_table %>%
+            r_val$manual_classes_table <- r_val$manual_classes_table %>%
               add_row(variable = input$metric,
                       class = input[[paste0("class", row)]],
                       greaterthan = input[[paste0("greaterthan", row)]],
@@ -285,7 +285,7 @@ mod_classification_manual_server <- function(id, con, r_val){
 
 
         # sort classes
-        classes <- r_val_local$classes_table %>%
+        classes <- r_val$manual_classes_table %>%
           dplyr::arrange(greaterthan) %>%
           dplyr::mutate(greaterthan = round(greaterthan, 2))
 
@@ -306,29 +306,29 @@ mod_classification_manual_server <- function(id, con, r_val){
                        position = "bottomright",
                        layerId = "legend_metric")
 
-        # Create classified network by adding the classes and colors
-        r_val$network_region_classified <- r_val$network_region %>%
-          assign_classes_manual(classes = r_val_local$classes_table)
+        # # Create classified network by adding the classes and colors
+        # r_val$network_region_classified <- r_val$network_region %>%
+        #   assign_classes_manual(classes = r_val_local$classes_table)
       }
 
     })
 
     #### axis changed / apply button clicked ####
-    observeEvent(c(r_val$dgo_axis, r_val$network_region_classified), {
-
-      if ((r_val$visualization == "manual") & !is.null(r_val$network_region_classified) & !is.null(r_val$dgo_axis)) {
-
-        # create classified axis network
-        r_val$dgo_axis_classified <- r_val$dgo_axis %>%
-          na.omit() %>%
-          assign_classes_manual(classes = r_val_local$classes_table)
-
-        # merge regional and axis network in one df
-        r_val$merged_networks_classified <- merge_regional_axis_dfs(r_val$network_region_classified,
-                                                                    r_val$dgo_axis_classified,
-                                                                    r_val$selected_metric,
-                                                                    classes = TRUE)
-      }
-    })
+    # observeEvent(c(r_val$dgo_axis, r_val$network_region_classified), {
+    #
+    #   if ((r_val$visualization == "manual") & !is.null(r_val$network_region_classified) & !is.null(r_val$dgo_axis)) {
+    #
+    #     # create classified axis network
+    #     r_val$dgo_axis_classified <- r_val$dgo_axis %>%
+    #       na.omit() %>%
+    #       assign_classes_manual(classes = r_val_local$classes_table)
+    #
+    #     # merge regional and axis network in one df
+    #     r_val$merged_networks_classified <- merge_regional_axis_dfs(r_val$network_region_classified,
+    #                                                                 r_val$dgo_axis_classified,
+    #                                                                 r_val$selected_metric,
+    #                                                                 classes = TRUE)
+    #   }
+    # })
   })
 }

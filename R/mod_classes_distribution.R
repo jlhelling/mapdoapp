@@ -52,15 +52,55 @@ mod_classes_distribution_server <- function(id, r_val){
     # create barplots of classes distribution
     observe({
 
-      if (!is.null(r_val$merged_networks_classified)) {
-        r_val_local$barplots_classes_metric <- create_plotly_barplot(r_val$merged_networks_classified)
-        r_val_local$placeholder_text = NULL
-      } else {
-        r_val_local$placeholder_text = "Sélectionnez un cours d'eau sur la carte et appliquez une classification pour afficher le graphique."
-        r_val_local$barplots_classes_metric = NULL
+      if (r_val$axis_clicked == TRUE) {
+
+        if (r_val$visualization == "classes") {
+
+          # Create classified network by adding the classes and colors
+          r_val$network_region_classified <- r_val$network_region %>%
+            na.omit() %>%
+            assign_classes_proposed(proposed_class = params_classes()[r_val$classes_proposed_selected,]$class_name)
+
+          # create classified axis network
+          r_val$dgo_axis_classified <- r_val$dgo_axis %>%
+            na.omit() %>%
+            assign_classes_proposed(proposed_class = params_classes()[r_val$classes_proposed_selected,]$class_name)
+
+          # merge regional and axis network in one df
+          r_val$merged_networks_classified <- merge_regional_axis_dfs(r_val$network_region_classified,
+                                                                      r_val$dgo_axis_classified,
+                                                                      "talweg_elevation_min",
+                                                                      classes = TRUE)
+
+        } else if (r_val$visualization == "manual") {
+
+          # Create classified network by adding the classes and colors
+          r_val$network_region_classified <- r_val$network_region %>%
+            na.omit() %>%
+            assign_classes_manual(classes = r_val$manual_classes_table)
+
+          # create classified axis network
+          r_val$dgo_axis_classified <- r_val$dgo_axis %>%
+            na.omit() %>%
+            assign_classes_manual(classes = r_val$manual_classes_table)
+
+          # merge regional and axis network in one df
+          r_val$merged_networks_classified <- merge_regional_axis_dfs(r_val$network_region_classified,
+                                                                      r_val$dgo_axis_classified,
+                                                                      r_val$manual_classes_table$variable[1],
+                                                                      classes = TRUE)
+        }
+
+        if (!is.null(r_val$merged_networks_classified)) {
+          r_val_local$barplots_classes_metric <- create_plotly_barplot(r_val$merged_networks_classified)
+          r_val_local$placeholder_text = NULL
+        } else {
+          r_val_local$placeholder_text = "Sélectionnez un cours d'eau sur la carte et appliquez une classification pour afficher le graphique."
+          r_val_local$barplots_classes_metric = NULL
+        }
+
       }
     })
-
 
 
   })

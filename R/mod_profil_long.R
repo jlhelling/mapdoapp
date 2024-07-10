@@ -234,7 +234,7 @@ mod_profil_long_server <- function(id, r_val){
       if (input$roe_profile == TRUE) {
         # create the vertical line from ROE distance_axis
         r_val_local$shapes_roe = lg_roe_vertical_line(r_val$roe_axis$distance_axis)
-        print(paste0("roe shapes: ", r_val_local$shapes_roe))
+
       } else {
         # remove the previous ROE vertical lines if exist
         r_val_local$shapes_roe = NULL
@@ -243,7 +243,7 @@ mod_profil_long_server <- function(id, r_val){
 
     #### background classification ####
 
-    observeEvent(input$background_profile, {
+    observeEvent(input$background_profile,  {
 
       # track input
       track_inputs(input = input)

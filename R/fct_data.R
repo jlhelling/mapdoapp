@@ -538,14 +538,16 @@ assign_classes_manual <- function(data, classes) {
 #'
 #' @return classified dataframe/sf object with additional variables: class_name and colors
 #' @importFrom rlang parse_exprs
-#' @importFrom dplyr mutate case_when left_join join_by
-#' @importFrom sf st_as_sf
+#' @importFrom dplyr mutate case_when left_join join_by rowwise ungroup c_across select
+#' @importFrom sf st_as_sf st_drop_geometry
 #'
 #' @examples
 #' classified_network <- network_dgo %>%
 #'     assign_classes(proposed_class = "class_strahler")
 #'
 assign_classes_proposed <- function(data, proposed_class) {
+
+  data <- data %>% sf::st_drop_geometry()
 
   if (proposed_class == "class_strahler") {
 
@@ -571,15 +573,16 @@ assign_classes_proposed <- function(data, proposed_class) {
       mutate(
         class_name =
           case_when(
-            (talweg_elevation_min >= 1000 & talweg_slope < 5) ~ names(colors_topo)[[1]],
-            (talweg_elevation_min >= 300 & talweg_slope < 5) ~ names(colors_topo)[[2]],
-            (talweg_elevation_min >= -50 & talweg_slope < 5) ~ names(colors_topo)[[3]],
-            (talweg_elevation_min >= 1000 & talweg_slope >= 5) ~ names(colors_topo)[[4]],
-            (talweg_elevation_min >= 300 & talweg_slope >= 5) ~ names(colors_topo)[[5]],
-            (talweg_elevation_min >= -50 & talweg_slope >= 5) ~ names(colors_topo)[[6]],
+            (talweg_elevation_min >= 1000 & talweg_slope >= 0.05) ~ names(colors_topo)[[4]],
+            (talweg_elevation_min >= 1000 & talweg_slope < 0.05) ~ names(colors_topo)[[1]],
+            (talweg_elevation_min >= 300 & talweg_slope >= 0.05) ~ names(colors_topo)[[5]],
+            (talweg_elevation_min >= 300 & talweg_slope < 0.05) ~ names(colors_topo)[[2]],
+            (talweg_elevation_min >= -50 & talweg_slope >= 0.05) ~ names(colors_topo)[[6]],
+            (talweg_elevation_min >= -50 & talweg_slope < 0.05) ~ names(colors_topo)[[3]],
           ),
         color = colors_topo[[class_name]]
-      )
+      ) %>%
+      ungroup()  # Ungroup after row-wise operation
   }
 
   # dominant lu class -------------------------------------------------------
