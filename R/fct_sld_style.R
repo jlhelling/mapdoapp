@@ -175,7 +175,6 @@ sld_get_style <- function(breaks, colors, metric) {
         </se:Rule>
         ')
     }
-
     sld_rules <- c(sld_rules, sld_rule)
   }
 

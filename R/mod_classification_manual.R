@@ -293,7 +293,7 @@ mod_classification_manual_server <- function(id, con, r_val){
         r_val$sld_body = sld_get_style(
           breaks = classes$greaterthan,
           colors = classes$color,
-          metric = r_val$selected_metric
+          metric = classes$variable[1]
         )
 
         # add classified network to map

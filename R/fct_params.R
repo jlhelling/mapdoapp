@@ -408,7 +408,7 @@ params_classes <- function() {
       - très bien connecté (>= 70 %)
       - bien connecté (>= 40 %)
       - moyen connecté (>= 10 % )
-      - faible / absente (< 10 %)",
+      - faible / absente (< 10 %)"
       # channel size evolution
       # "indique une réduction de la taille des chenaux sur le réseau de cours d'eau vers le bas
       # - grandissant
@@ -426,8 +426,8 @@ params_classes <- function() {
       "class_nature",
       "class_gravel",
       "class_confinement",
-      "class_habitat",
-      "class_channelevolution"
+      "class_habitat"
+      # "class_channelevolution"
     )
   ) %>%
     # join sld styles
