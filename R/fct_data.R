@@ -193,8 +193,8 @@ data_get_min_max_metric <- function(selected_region_id, selected_metric, con) {
       WHERE gid_region = ?selected_region_id"
 
   query <- sqlInterpolate(conn = con, sql,
-                 selected_metric = DBI::dbQuoteIdentifier(con, selected_metric),
-                 selected_region_id = DBI::SQL(selected_region_id)
+                          selected_metric = DBI::dbQuoteIdentifier(con, selected_metric),
+                          selected_region_id = DBI::SQL(selected_region_id)
   )
 
   data <- DBI::dbGetQuery(conn = con, statement = query)
@@ -497,12 +497,10 @@ create_df_input <- function(axis_data, variable_name, no_classes = 4, quantile =
 
 #' Assign classes to network dgos
 #'
-#' @param data dataframe or sf object to which classes
-#' @param variables vector of variable names on which the classification is based
-#' @param greater_thans vector of class-thresholds for classification
-#' @param class_names vector containing the names of all classes to be assigned
+#' @param data dataframe or sf object which contains dgos of axis or region
+#' @param classes df containing columns variables, greater_thans, class_names, colors which define the classification of the network
 #'
-#' @return classified dataframe/sf object with additional variable: class
+#' @return classified dataframe/sf object with additional variables: class_name and color
 #' @importFrom rlang parse_exprs
 #' @importFrom dplyr mutate case_when left_join join_by
 #' @importFrom sf st_as_sf
@@ -513,7 +511,7 @@ create_df_input <- function(axis_data, variable_name, no_classes = 4, quantile =
 #'     greater_thans = r_val$grouping_table_data$greaterthan,
 #'     class_names = r_val$grouping_table_data$class)
 #'
-assign_classes <- function(data, classes) {
+assign_classes_manual <- function(data, classes) {
 
   variables <- as.character(classes$variable)
   greater_thans <- classes$greaterthan
@@ -529,6 +527,98 @@ assign_classes <- function(data, classes) {
       )
     ) %>%
     left_join(colors, by = join_by(class_name == class))
+
+  return(df)
+}
+
+#' Assign classes to network dgos
+#'
+#' @param data dataframe or sf object containing all dgos of an axis or region
+#' @param proposed_class string indicating the type of classification which should be applied to the data
+#'
+#' @return classified dataframe/sf object with additional variables: class_name and colors
+#' @importFrom rlang parse_exprs
+#' @importFrom dplyr mutate case_when left_join join_by
+#' @importFrom sf st_as_sf
+#'
+#' @examples
+#' classified_network <- network_dgo %>%
+#'     assign_classes(proposed_class = "class_strahler")
+#'
+assign_classes_proposed <- function(data, proposed_class) {
+
+  if (proposed_class == "class_strahler") {
+
+  }
+
+
+# topography --------------------------------------------------------------
+  else if (proposed_class == "class_topographie") {
+
+    colors_topo <- c("#ff8fab", "#f4a261", "#90e0ef",
+                     "#6a040f", "#e36414", "#03045e") %>%
+      setNames(
+        c("Plaines de montagne",
+          "Plaines de moyenne altitude",
+          "Plaines de basse altitude",
+          "Pentes de montagne",
+          "Pentes de moyenne altitude",
+          "Pentes de basse altitude")
+      )
+
+    df <- data %>%
+      rowwise() %>%
+      mutate(
+        class_name =
+          case_when(
+            (talweg_elevation_min >= 1000 & talweg_slope < 5) ~ names(colors_topo)[[1]],
+            (talweg_elevation_min >= 300 & talweg_slope < 5) ~ names(colors_topo)[[2]],
+            (talweg_elevation_min >= -50 & talweg_slope < 5) ~ names(colors_topo)[[3]],
+            (talweg_elevation_min >= 1000 & talweg_slope >= 5) ~ names(colors_topo)[[4]],
+            (talweg_elevation_min >= 300 & talweg_slope >= 5) ~ names(colors_topo)[[5]],
+            (talweg_elevation_min >= -50 & talweg_slope >= 5) ~ names(colors_topo)[[6]],
+          ),
+        color = colors_topo[[class_name]]
+      )
+  }
+
+  # dominant lu class -------------------------------------------------------
+  else if (proposed_class == "class_lu_dominante") {
+
+    # variables among which to select the one with greatest value
+    colors_dom <- c("#31572c", "#90be6d", "#ffbe0b", "#ae2012") %>%
+      setNames(c("forest_pc", "grassland_pc", "crops_pc", "built_environment_pc"))
+
+    # get variable with maximum values and save it as new variable metric_max
+    df <- data %>%
+      rowwise() %>%
+      mutate(
+        metric_max = names(colors_dom)[which.max(c_across(names(colors_dom)))],
+        color = colors_dom[[metric_max]]
+      ) %>% # Assign land use class with maximum value and the corresponding color
+      ungroup() %>%  # Ungroup after row-wise operation
+      mutate(class_name = case_when(
+        metric_max == "forest_pc" ~ "Forêt",
+        metric_max == "grassland_pc" ~ "Prairies",
+        metric_max == "crops_pc" ~ "Cultures",
+        metric_max == "built_environment_pc" ~ "Espace construits"
+      )) %>% # Assign proper class names based on metric_max
+      select(!metric_max)  # Remove metric_max column
+
+
+  } else if (proposed_class == "class_urban") {
+
+  } else if (proposed_class == "class_agriculture") {
+
+  } else if (proposed_class == "class_nature") {
+
+  } else if (proposed_class == "class_gravel") {
+
+  } else if (proposed_class == "class_confinement") {
+
+  } else if (proposed_class == "class_habitat") {
+
+  }
 
   return(df)
 }

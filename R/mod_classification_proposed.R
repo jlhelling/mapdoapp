@@ -66,19 +66,21 @@ mod_classification_proposed_server <- function(id, r_val){
     #       }
     #     })
 
-
     # create table output and add classification to map when region changed or other variable selected
     observeEvent(c(input$table__reactable__selected, r_val$region_click), {
 
       r_val$classes_proposed_selected <- getReactableState("table", "selected")
 
       # check if row is actually selected
-      if(!is.null(r_val$classes_proposed_selected)) {
+      if (!is.null(r_val$classes_proposed_selected)) {
 
+        # set visualisation to classes to tell app that proposed classes are selected
         r_val$visualization = "classes"
 
+        # create map styling based on selected classification
         r_val$sld_body = r_val_local$classes_tbl[r_val$classes_proposed_selected,]$class_sld
 
+        # add styling to map
         r_val$map_proxy %>%
           map_class(wms_params = params_wms()$class,
                     cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),

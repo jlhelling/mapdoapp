@@ -308,7 +308,7 @@ mod_classification_manual_server <- function(id, con, r_val){
 
         # Create classified network by adding the classes and colors
         r_val$network_region_classified <- r_val$network_region %>%
-          assign_classes(classes = r_val_local$classes_table)
+          assign_classes_manual(classes = r_val_local$classes_table)
       }
 
     })
@@ -321,7 +321,7 @@ mod_classification_manual_server <- function(id, con, r_val){
         # create classified axis network
         r_val$dgo_axis_classified <- r_val$dgo_axis %>%
           na.omit() %>%
-          assign_classes(classes = r_val_local$classes_table)
+          assign_classes_manual(classes = r_val_local$classes_table)
 
         # merge regional and axis network in one df
         r_val$merged_networks_classified <- merge_regional_axis_dfs(r_val$network_region_classified,

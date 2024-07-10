@@ -244,14 +244,8 @@ sld_get_fluvialstyles <- function() {
 
   # Topographie -------------------------------------------------------------
 
-  # vars_topo <- c("plaines de montagne",
-  #                "plaines de moyenne altitude",
-  #                "plaines de basse altitude",
-  #                "pentes de montagne",
-  #                "pentes de moyenne altitude",
-  #                "pentes de basse altitude")
-  colors_topo <- c("#e76f51", "#90e0ef", "#a3b18a",
-                   "#6a040f", "#03045e", "#344e41") |>
+  colors_topo <- c("#ff8fab", "#f4a261", "#90e0ef",
+                   "#6a040f", "#e36414", "#03045e") |>
     setNames(
       c("Plaines de montagne",
         "Plaines de moyenne altitude",

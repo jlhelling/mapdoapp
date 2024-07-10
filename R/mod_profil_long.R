@@ -249,7 +249,14 @@ mod_profil_long_server <- function(id, r_val){
       track_inputs(input = input)
 
       # add background classification shapes
-      if ((input$background_profile == TRUE) & !is.null(r_val$dgo_axis_classified)) {
+      if ((input$background_profile == TRUE)) {
+
+        if (r_val$visualization == "classes") {
+          r_val$dgo_axis_classified = r_val$dgo_axis %>%
+            na.omit() %>%
+            assign_classes_proposed(proposed_class = params_classes()[r_val$classes_proposed_selected,]$class_name)
+        }
+
         r_val_local$shapes_background = create_classes_background(r_val$dgo_axis_classified)
       }
       # remove background classification
