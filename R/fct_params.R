@@ -352,8 +352,8 @@ params_classes <- function() {
       "Utilisation naturelle des sols",
       "Présence de bancs sédimentaires",
       "Confinement de la bande active",
-      "Connectivité des habitats riverains",
-      "Évolution de la taille du chenal de l'eau"
+      "Connectivité des habitats riverains"
+      # "Évolution de la taille du chenal de l'eau"
     ),
     description = c(
       # strahler
@@ -397,22 +397,25 @@ params_classes <- function() {
       - Absent (pas des bancs sédimentaires)
       - occasionnel (bancs sédimentaires < 50 % du chenal actif)
       - fréquent (bancs sédimentaires >= 50 % du chenal actif)",
+      # confinement
       "Indique le dégrée du confinement du chenal actif. Basé sur le ratio entre la largeur du chenal actif et la largeur du fond de la vallée.
       - espace abondant (chenal actif > 70 % du fond de la vallée)
       - modérement espace (chenal actif > 40 % du fond de la vallée)
       - confiné (chenal actif > 10 % du fond de la vallée)
       - très confiné (chenal actif < 10 % du fond de la vallée)",
-      "Indique la disponibilité d'un espace naturel de corridor riverain l'espace du corridor. Basé sur ratio de la surface du corridor connecté (comprenant le chenal actif, le corridor naturel et les corridors semi-naturels) et le fond de la vallée :
+      # habitat connectivity
+      "Indique la présence d'un corridor riverain naturel. Basé sur ratio de la surface du corridor connecté (comprenant le chenal actif, le corridor naturel et les corridors semi-naturels) et le fond de la vallée :
       - très bien connecté (>= 70 %)
       - bien connecté (>= 40 %)
       - moyen connecté (>= 10 % )
       - faible / absente (< 10 %)",
-      "indique une réduction de la taille des chenaux sur le réseau de cours d'eau vers le bas
-      - grandissant
-      - stable
-      - diminuant
-
-      NOT WORKING UNTIL NOW DUE TO SLD STYLING CONSTRAINTS"
+      # channel size evolution
+      # "indique une réduction de la taille des chenaux sur le réseau de cours d'eau vers le bas
+      # - grandissant
+      # - stable
+      # - diminuant
+      #
+      # NOT WORKING UNTIL NOW DUE TO SLD STYLING CONSTRAINTS"
     ),
     class_name = c(
       "class_strahler",
