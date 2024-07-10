@@ -173,6 +173,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
         r_val$axis_start_end = NULL
         r_val$data_dgo_clicked = NULL
         r_val$data_section = NULL
+        r_val$network_region_classified = NULL
         r_val$dgo_axis_classified = NULL
         r_val$merged_networks_classified = NULL
         r_val$roe_region = NULL

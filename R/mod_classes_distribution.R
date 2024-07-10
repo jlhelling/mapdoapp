@@ -49,10 +49,8 @@ mod_classes_distribution_server <- function(id, r_val){
       r_val_local$barplots_classes_metric
     })
 
-    # create barplots of classes distribution
-    observe({
-
-      if (r_val$axis_clicked == TRUE) {
+    # classify regional and axis network and merge them
+    observeEvent(r_val$axis_click, {
 
         if (r_val$visualization == "classes") {
 
@@ -90,15 +88,16 @@ mod_classes_distribution_server <- function(id, r_val){
                                                                       r_val$manual_classes_table$variable[1],
                                                                       classes = TRUE)
         }
+    })
 
-        if (!is.null(r_val$merged_networks_classified)) {
-          r_val_local$barplots_classes_metric <- create_plotly_barplot(r_val$merged_networks_classified)
-          r_val_local$placeholder_text = NULL
-        } else {
-          r_val_local$placeholder_text = "Sélectionnez un cours d'eau sur la carte et appliquez une classification pour afficher le graphique."
-          r_val_local$barplots_classes_metric = NULL
-        }
-
+    # create barplots of classes distribution
+    observeEvent(r_val$merged_networks_classified, {
+      if (!is.null(r_val$merged_networks_classified)) {
+        r_val_local$barplots_classes_metric <- create_plotly_barplot(r_val$merged_networks_classified)
+        r_val_local$placeholder_text = NULL
+      } else {
+        r_val_local$placeholder_text = "Sélectionnez un cours d'eau sur la carte et appliquez une classification pour afficher le graphique."
+        r_val_local$barplots_classes_metric = NULL
       }
     })
 

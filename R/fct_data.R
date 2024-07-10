@@ -549,12 +549,30 @@ assign_classes_proposed <- function(data, proposed_class) {
 
   data <- data %>% sf::st_drop_geometry()
 
-  if (proposed_class == "class_strahler") {
 
+  # strahler ----------------------------------------------------------------
+  if (proposed_class == "class_strahler") {
+    colors_strahler <- c("#64b5f6", "#1e88e5", "#1976d2", "#1565c0", "#0d47a1", "#0a2472") %>%
+      setNames(c(1,2,3,4,5,6))
+
+    df <- data %>%
+      rowwise() %>%
+      mutate(
+        class_name =
+          case_when(
+            strahler == 1 ~ "1",
+            strahler == 2 ~ "2",
+            strahler == 3 ~ "3",
+            strahler == 4 ~ "4",
+            strahler == 5 ~ "5",
+            strahler == 6 ~ "6"
+          ),
+        color = colors_strahler[[class_name]]
+      ) %>%
+      ungroup()  # Ungroup after row-wise operation
   }
 
-
-# topography --------------------------------------------------------------
+  # topography --------------------------------------------------------------
   else if (proposed_class == "class_topographie") {
 
     colors_topo <- c("#ff8fab", "#f4a261", "#90e0ef",
@@ -609,17 +627,135 @@ assign_classes_proposed <- function(data, proposed_class) {
       select(!metric_max)  # Remove metric_max column
 
 
-  } else if (proposed_class == "class_urban") {
+  }
 
-  } else if (proposed_class == "class_agriculture") {
+  # urban lu ----------------------------------------------------------------
+  else if (proposed_class == "class_urban") {
+    colors_urban <- c("#6a040f", "#ba181b", "#ffdd00", "#74c69d") %>%
+      setNames(
+        c("fortement urbanisé", "urbanisé", "modérément urbanisé", "Presque pas/pas urbanisé")
+      )
 
-  } else if (proposed_class == "class_nature") {
+    df <- data %>%
+      rowwise() %>%
+      mutate(class_name =
+               case_when(
+                 built_environment_pc >= 70 ~ names(colors_urban)[[1]],
+                 built_environment_pc >= 40 ~ names(colors_urban)[[2]],
+                 built_environment_pc >= 10 ~ names(colors_urban)[[3]],
+                 built_environment_pc >= 0 ~ names(colors_urban)[[4]],
+               ),
+             color = colors_urban[[class_name]]) %>%
+      ungroup()  # Ungroup after row-wise operation
 
-  } else if (proposed_class == "class_gravel") {
+  }
 
-  } else if (proposed_class == "class_confinement") {
+  # agricultural lu ---------------------------------------------------------
+  else if (proposed_class == "class_agriculture") {
+    colors_agriculture <- colors <- c("#6a040f", "#ba181b", "#ffdd00", "#74c69d") %>%
+      setNames(
+        c("Forte impact agricole", "Impact agricole élevé",
+          "Impact agricole modéré", "Presque pas/pas d'impact agricole")
+      )
 
-  } else if (proposed_class == "class_habitat") {
+    df <- data %>%
+      rowwise() %>%
+      mutate(class_name =
+               case_when(
+                 crops_pc >= 70 ~ names(colors_agriculture)[[1]],
+                 crops_pc >= 40 ~ names(colors_agriculture)[[2]],
+                 crops_pc >= 10 ~ names(colors_agriculture)[[3]],
+                 crops_pc >= 0 ~ names(colors_agriculture)[[4]],
+               ),
+             color = colors_agriculture[[class_name]]) %>%
+      ungroup()  # Ungroup after row-wise operation
+
+  }
+
+  # natural landuse ---------------------------------------------------------
+  else if (proposed_class == "class_nature") {
+    colors_nature <- colors <- c("#081c15", "#2d6a4f", "#74c69d", "#d8f3dc") %>%
+      setNames(
+        c("Très forte utilisation naturelle", "Forte utilisation naturelle",
+          "Utilisation naturelle modérée", "Presque pas/pas naturelle")
+      )
+
+    df <- data %>%
+      rowwise() %>%
+      mutate(
+        class_name =
+          case_when(
+            (natural_open_pc + forest_pc + grassland_pc >= 70) ~ names(colors_nature)[[1]],
+            (natural_open_pc + forest_pc + grassland_pc >= 40) ~ names(colors_nature)[[2]],
+            (natural_open_pc + forest_pc + grassland_pc >= 10) ~ names(colors_nature)[[3]],
+            (natural_open_pc + forest_pc + grassland_pc >= 0) ~ names(colors_nature)[[4]],
+          ),
+        color = colors_nature[[class_name]]) %>%
+      ungroup() # Ungroup after row-wise operation
+  }
+
+  # gravel bars -------------------------------------------------------------
+  else if (proposed_class == "class_gravel") {
+    colors_gravel <- c("#603808", "#e7bc91", "#0077b6") %>%
+      setNames(
+        c("abundant", "moyennement présente", "absent")
+      )
+
+    df <- data %>%
+      rowwise() %>%
+      mutate(
+        class_name =
+          case_when(
+            (gravel_bars/(water_channel+0.00001) >= 0.5) ~ names(colors_gravel)[[1]],
+            (gravel_bars/(water_channel+0.00001) > 0) ~ names(colors_gravel)[[2]],
+            (gravel_bars/(water_channel+0.00001) == 0) ~ names(colors_gravel)[[3]]
+          ),
+        color = colors_gravel[[class_name]]) %>%
+      ungroup()  # Ungroup after row-wise operation
+
+  }
+
+  # Confinement -------------------------------------------------------------
+  else if (proposed_class == "class_confinement") {
+    colors_confinement <- c("#d9ed92", "#99d98c", "#168aad", "#184e77") %>%
+      setNames(
+        c("espace abondant", "modérement espace", "confiné", "très confiné")
+      )
+
+    df <- data %>%
+      rowwise() %>%
+      mutate(
+        class_name =
+          case_when(
+            idx_confinement >= 0.75 ~ names(colors_confinement)[[1]],
+            idx_confinement >= 0.5 ~ names(colors_confinement)[[2]],
+            idx_confinement >= 0.25 ~ names(colors_confinement)[[3]],
+            idx_confinement >= 0 ~ names(colors_confinement)[[4]]
+          ),
+        color = colors_confinement[[class_name]]) %>%
+      ungroup()  # Ungroup after row-wise operation
+
+  }
+
+  # Habitat -----------------------------------------------------------------
+  else if (proposed_class == "class_habitat") {
+    colors_habitat <- c("#2d6a4f", "#99d98c", "#fff3b0", "#ba181b") %>%
+      setNames(
+        c("très bien connecté", "bien connecté", "moyen connecté", "faible / absente")
+      )
+
+    df <- data %>%
+      rowwise() %>%
+      mutate(
+        class_name =
+          case_when(
+            (riparian_corridor_pc+semi_natural_pc >= 70) ~ names(colors_habitat)[[1]],
+            (riparian_corridor_pc+semi_natural_pc >= 40) ~ names(colors_habitat)[[2]],
+            (riparian_corridor_pc+semi_natural_pc >= 10) ~ names(colors_habitat)[[3]],
+            (riparian_corridor_pc+semi_natural_pc >= 0) ~ names(colors_habitat)[[4]]
+          ),
+        color = colors_habitat[[class_name]]) %>%
+      ungroup()  # Ungroup after row-wise operation
 
   }
 
