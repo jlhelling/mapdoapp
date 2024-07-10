@@ -328,8 +328,6 @@ mod_mapdo_app_server <- function(id, con, r_val){
         r_val$roe_axis = r_val$roe_region %>%
           filter(axis == r_val$axis_click$id)
 
-        print(r_val$roe_axis)
-
         # map dgo axis when axis clicked and metric selected
         r_val$map_proxy %>%
           map_dgo_axis(selected_axis = r_val$dgo_axis, region_axis = r_val$network_region_axis,

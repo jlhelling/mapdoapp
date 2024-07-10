@@ -65,7 +65,6 @@ mod_classification_manual_server <- function(id, con, r_val){
       classification_ui = NULL, # UI placeholder
       scale_selectUI = NULL, # scale selection element
       initial_classes_table = NULL, # datainput for table
-      classes_table = NULL, # dataoutput from table for classifications
 
       reactableUI = NULL # reactable table
     )
@@ -305,30 +304,8 @@ mod_classification_manual_server <- function(id, con, r_val){
           addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
                        position = "bottomright",
                        layerId = "legend_metric")
-
-        # # Create classified network by adding the classes and colors
-        # r_val$network_region_classified <- r_val$network_region %>%
-        #   assign_classes_manual(classes = r_val_local$classes_table)
       }
 
     })
-
-    #### axis changed / apply button clicked ####
-    # observeEvent(c(r_val$dgo_axis, r_val$network_region_classified), {
-    #
-    #   if ((r_val$visualization == "manual") & !is.null(r_val$network_region_classified) & !is.null(r_val$dgo_axis)) {
-    #
-    #     # create classified axis network
-    #     r_val$dgo_axis_classified <- r_val$dgo_axis %>%
-    #       na.omit() %>%
-    #       assign_classes_manual(classes = r_val_local$classes_table)
-    #
-    #     # merge regional and axis network in one df
-    #     r_val$merged_networks_classified <- merge_regional_axis_dfs(r_val$network_region_classified,
-    #                                                                 r_val$dgo_axis_classified,
-    #                                                                 r_val$selected_metric,
-    #                                                                 classes = TRUE)
-    #   }
-    # })
   })
 }

@@ -57,14 +57,6 @@ mod_classification_proposed_server <- function(id, r_val){
         r_val_local$table = create_table_fluvialstyles(r_val_local$classes_tbl)
       }
     })
-    #
-    #     # build table when region clicked
-    #     observeEvent(r_val$region_click, {
-    #
-    #       if (!is.null(r_val$region_click) & (r_val$visualization == "classes")) {
-    #         r_val_local$classes_tbl <- params_classes()
-    #       }
-    #     })
 
     # create table output and add classification to map when region changed or other variable selected
     observeEvent(c(input$table__reactable__selected, r_val$region_click), {
@@ -92,28 +84,6 @@ mod_classification_proposed_server <- function(id, r_val){
 
       }
     })
-
-
-    # TODO --------------------------------------------------------------------
-
-
-    # # check if dgo axis clicked
-    #
-    # # classify and merge networks
-    # # Create classified network by adding the classes and colors
-    # r_val$network_region_classified <- r_val$network_region %>%
-    #   assign_classes(classes = r_val_local$classes_table)
-    #
-    # # create classified axis network
-    # r_val$dgo_axis_classified <- r_val$dgo_axis %>%
-    #   na.omit() %>%
-    #   assign_classes(classes = r_val_local$classes_table)
-    #
-    # # merge regional and axis network in one df
-    # r_val$merged_networks_classified <- merge_regional_axis_dfs(r_val$network_region_classified,
-    #                                                             r_val$dgo_axis_classified,
-    #                                                             r_val$selected_metric,
-    #                                                             classes = TRUE)
 
 
     # check if other visualization is applied to map and de-select all proposed classifications
