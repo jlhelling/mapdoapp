@@ -50,8 +50,9 @@ mod_classes_distribution_server <- function(id, r_val){
     })
 
     # classify regional and axis network and merge them
-    observeEvent(r_val$axis_click, {
+    observeEvent(c(r_val$axis_click, r_val$classes_proposed_selected, r_val$manual_classes_table), {
 
+      if (!is.null(r_val$dgo_axis)) {
         if (r_val$visualization == "classes") {
 
           # Create classified network by adding the classes and colors
@@ -88,6 +89,7 @@ mod_classes_distribution_server <- function(id, r_val){
                                                                       r_val$manual_classes_table$variable[1],
                                                                       classes = TRUE)
         }
+      }
     })
 
     # create barplots of classes distribution
