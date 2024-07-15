@@ -20,15 +20,13 @@ mod_metric_overview_ui <- function(id){
         font-size: 15px;  /* Adjust this value to change the text size */
       }
     ")),
-    fluidRow(
-      div(class = "reactable-table",
-          style = "margin-top: 10px;",
+    fluidRow(style = "margin-top: 10px;",
           textOutput(ns("placeholder_ui")),
           column(width = 6,
                  uiOutput(ns("description"))),
           column(width = 6,
                  uiOutput(ns("selectinput")))
-      )),
+      ),
     fluidRow(
       div(class = "reactable-table",
           reactableOutput(ns("table"), width = "100%")
@@ -52,7 +50,8 @@ mod_metric_overview_server <- function(id, r_val){
       descriptionUI = NULL,
       placeholder_text = "Cliquez sur un axe hydrographique pour afficher la comparaison régionale des métriques. ",
       selectinputUI = NULL,
-      unit = NULL
+      unit = NULL,
+      data_df = NULL # df to create table
     )
 
     output$table <- renderReactable(
@@ -72,8 +71,9 @@ mod_metric_overview_server <- function(id, r_val){
       r_val_local$selectinputUI
     )
 
+    # observe if axis clicked to create UI
     observe({
-      if (!is.null(r_val$axis_click)) {
+      if (r_val$axis_clicked == TRUE) {
         # remove placeholder text
         r_val_local$placeholder_text = NULL
 
@@ -86,24 +86,30 @@ mod_metric_overview_server <- function(id, r_val){
       }
     })
 
+    # cheack for changes in unit, or regional and axis network or selected dgo to create the df as basis for table
     observeEvent(c(input$select_unit, r_val$network_region, r_val$dgo_axis, r_val$data_dgo_clicked), {
-
-      check <- input$select_unit
-
-      if (!is.null(check) & !is.null(r_val$network_region) & !is.null(r_val$dgo_axis)) {
-        # create data for table
-        data_df <- fct_table_create_table_df(region_sf = r_val$network_region,
-                                             axis_sf = r_val$dgo_axis,
-                                             dgo_sf = r_val$data_dgo_clicked)
-
-        # create reactable
-        if (check == "surface relative (%)") {
-          r_val_local$characteristics_table <- fct_table_create_reactable(data_df, "%")
-        } else {
-          r_val_local$characteristics_table <- fct_table_create_reactable(data_df, "ha")
+      if (!is.null(input$select_unit)) {
+        if (!is.null(r_val$network_region) & !is.null(r_val$dgo_axis)) {
+          # create data for table
+          r_val_local$data_df <- fct_table_create_table_df(region_sf = r_val$network_region,
+                                                           axis_sf = r_val$dgo_axis,
+                                                           dgo_sf = r_val$data_dgo_clicked)
         }
-
       }
+    })
+
+    # create new table each time when df changed
+    observeEvent(r_val_local$data_df, {
+
+      if (!is.null(r_val_local$data_df)){
+        # check which surface unit should be used for metrics
+        if (input$select_unit == "surface relative (%)") {
+          r_val_local$characteristics_table <- fct_table_create_reactable(r_val_local$data_df, "%")
+        } else {
+          r_val_local$characteristics_table <- fct_table_create_reactable(r_val_local$data_df, "ha")
+        }
+      }
+
     })
   })
 }

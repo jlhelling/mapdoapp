@@ -296,7 +296,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
 
       if (input$map_shape_click$group == params_map_group()$axis) {
 
-        r_val$axis_clicked = TRUE
+
 
         # set values back to NULL
         r_val$data_dgo_clicked = NULL
@@ -343,6 +343,9 @@ mod_mapdo_app_server <- function(id, con, r_val){
         # create or update profile dataset with new axis
         r_val$selected_axis_df = r_val$dgo_axis %>%
           as.data.frame()
+
+        # inform the first axis has been clicked
+        r_val$axis_clicked = TRUE
       }
       #
       # ### dgo clicked ####
