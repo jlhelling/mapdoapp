@@ -104,11 +104,12 @@ sld_get_style <- function(breaks, colors, metric) {
     <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:se="http://www.opengis.net/se" xmlns:ogc="http://www.opengis.net/ogc">
       <NamedLayer>
       <se:Name>network_metrics</se:Name>
-      <UserStyle>
-      <se:Name>network_metrics</se:Name>
-      <se:FeatureTypeStyle>')
+        <UserStyle>
+        <se:Name>network_metrics</se:Name>
+        <se:FeatureTypeStyle>')
 
-  sld_end <- '</se:FeatureTypeStyle>
+  sld_end <- '
+          </se:FeatureTypeStyle>
         </UserStyle>
       </NamedLayer>
     </StyledLayerDescriptor>'
@@ -202,7 +203,8 @@ sld_get_fluvialstyles <- function() {
       <se:Name>network_metrics</se:Name>
       <se:FeatureTypeStyle>')
 
-  sld_end <- '</se:FeatureTypeStyle>
+  sld_end <- '
+  </se:FeatureTypeStyle>
         </UserStyle>
       </NamedLayer>
     </StyledLayerDescriptor>'
@@ -240,12 +242,13 @@ sld_get_fluvialstyles <- function() {
         ')
     strahler_sld_rules <- c(strahler_sld_rules, strahler_sld_rule)
   }
+
   sld_strahler <- paste(strahler_sld_rules, collapse = "\n")
 
   # Topographie -------------------------------------------------------------
 
-  colors_topo <- c("#ff8fab", "#f4a261", "#90e0ef",
-                   "#6a040f", "#e36414", "#03045e") |>
+  colors_topo <- c( "#bb3e03", "#e9d8a6", "#a3b18a",
+               "#780000","#ee9b00", "#3a5a40") %>%
     setNames(
       c("Plaines de montagne",
         "Plaines de moyenne altitude",

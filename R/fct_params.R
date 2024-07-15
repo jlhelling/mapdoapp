@@ -360,12 +360,12 @@ params_classes <- function() {
       "Répresent la complexité du réseaux hydrographique. Le nombre de Strahler est de 1 pour tout cours d'eau entre sa source et sa première confluence et mont avec chaque confluence.",
       # topographie
       "Classification simple basée sur la pente et la hauteur du cours de la rivière :
-      - plaines de basse altitude (> 0 m & < 5 % pente)
-      - plaines de moyenne altitude (> 300 m & < 5 % pente)
-      - plaines de montagne (> 1000 m & < 5 % pente)
-      - pentes de basse altitude (> 0 m & > 5 % pente)
-      - pentes de moyenne altitude (> 300 m & > 5 % pente)
-      - pentes de montagne (> 1000 m & > 5 % pente)
+      - plaines de basse altitude (> 0 m & < 0.5 % pente)
+      - plaines de moyenne altitude (> 300 m & < 0.5 % pente)
+      - plaines de montagne (> 1000 m & < 0.5 % pente)
+      - pentes de basse altitude (> 0 m & > 0.5 % pente)
+      - pentes de moyenne altitude (> 300 m & > 0.5 % pente)
+      - pentes de montagne (> 1000 m & > 0.5 % pente)
       ",
       # dominant land use
       "Indique la classe d'utilisation des sols la plus dominante dans la zone du fond de vallée de chaque segment de cours d'eau :
