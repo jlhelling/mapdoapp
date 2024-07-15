@@ -284,7 +284,7 @@ params_metrics <- function(){
                           "Continuité latérale (%)", "Continuité latérale (ha)", "Continuité latérale (ha)", "Continuité latérale (ha)",
                           "Continuité latérale (ha)", "Continuité latérale (ha)", "Continuité latérale (ha)", "Indice"),
     metric_title = c("Elévation (m)", "Chenal actif (m)", "Corridor naturel (m)", "Corridor connecté (m)",
-                     "Fond de vallée (m)", "Pente talweg (%)", "Pente fond de vallée  (%)", "Surface en eau (%)",
+                     "Fond de vallée (m)", "Pente talweg (%)", "Pente fond de vallée (%)", "Surface en eau (%)",
                      "Banc sédimentaire (%)", "Espace naturel ouvert (%)", "Forêt (%)", "Prairie permanente (%)",
                      "Culture (%)", "Périurbain (%)", "Urbain dense (%)", "Infrastructure de transport (%)", "Surface en eau (ha)",
                      "Banc sédimentaire (ha)", "Espace naturel ouvert (ha)", "Forêt (ha)", "Prairie permanente (ha)",

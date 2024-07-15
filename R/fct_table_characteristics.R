@@ -114,7 +114,7 @@ fct_table_create_reactable <- function(df, unit, details = FALSE){
   # filter for ha or % units
   if (unit == "ha") {
     data <- df %>%
-      dplyr::filter(!grepl('(%)', metric_title))
+      dplyr::filter(metric_title %in% grep('(%)', metric_title, value = TRUE, invert = TRUE) | metric_title %in% c("Pente talweg (%)", "Pente fond de vallée (%)"))
   } else if (unit == "%") {
     data <- df %>%
       dplyr::filter(!grepl('(ha)', metric_title))

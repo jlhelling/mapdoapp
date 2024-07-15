@@ -87,21 +87,20 @@ mod_metric_overview_server <- function(id, r_val){
     })
 
     # cheack for changes in unit, or regional and axis network or selected dgo to create the df as basis for table
-    observeEvent(c(input$select_unit, r_val$network_region, r_val$dgo_axis, r_val$data_dgo_clicked), {
-      if (!is.null(input$select_unit)) {
+    observeEvent(c(r_val$network_region, r_val$dgo_axis, r_val$data_dgo_clicked), {
+
         if (!is.null(r_val$network_region) & !is.null(r_val$dgo_axis)) {
           # create data for table
           r_val_local$data_df <- fct_table_create_table_df(region_sf = r_val$network_region,
                                                            axis_sf = r_val$dgo_axis,
                                                            dgo_sf = r_val$data_dgo_clicked)
         }
-      }
     })
 
     # create new table each time when df changed
-    observeEvent(r_val_local$data_df, {
+    observeEvent(c(r_val_local$data_df, input$select_unit),{
 
-      if (!is.null(r_val_local$data_df)){
+      if (!is.null(r_val_local$data_df) & !is.null(input$select_unit)){
         # check which surface unit should be used for metrics
         if (input$select_unit == "surface relative (%)") {
           r_val_local$characteristics_table <- fct_table_create_reactable(r_val_local$data_df, "%")
