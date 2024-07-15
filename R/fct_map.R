@@ -560,15 +560,9 @@ map_class <- function(map, wms_params = params_wms()$class,
 map_dgo_axis <- function(map, selected_axis, region_axis, main_metric, second_metric) {
 
   # create HTML conditional tooltip labels
-  tooltip_label <- NULL
-  if (!is.null(main_metric) && is.null(second_metric)){
-    tooltip_label <- lapply(paste0('<span style="color:blue;"> <b>', selected_axis$toponyme, '</b> </span>'),
+  tooltip_label <- lapply(paste0('<span style="color:#212529;"> <b>', selected_axis$toponyme, '</b> </span> <br/>',
+                                   '<span style="color:#495057;"> <b>', round(selected_axis$measure, 2), ' km depuis l\'exutoire', '</b> </span>'),
                             htmltools::HTML)
-  } else if (!is.null(main_metric) && !is.null(second_metric)){
-    tooltip_label <- lapply(paste0('<span style="color:blue;"> <b>', selected_axis$toponyme, '</b> </span> <br/>',
-                                   '<span style="color:#FC9D5A;"> <b>', selected_axis$measure, ' m', '</b> </span>'),
-                            htmltools::HTML)
-  }
 
   map %>%
     clearGroup(params_map_group()$dgo_axis) %>%
