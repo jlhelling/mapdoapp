@@ -144,6 +144,7 @@ lg_add_trace <- function(data, y, y_label, yaxis = 'y1'){
     key = data$fid,  # the "id" column for hover text
     type = 'scatter',
     mode = 'lines',
+    line = list(color = "#7209b7"),
     name = y_label,
     yaxis = yaxis
   )
@@ -179,7 +180,7 @@ lg_profile_main <- function(data, y, y_label, y_label_category) {
   plot <- plot_ly(x = data$measure, y = y, yaxis = 'y1',
                   key = data$fid,  # the "id" column for hover text
                   type = 'scatter', mode = 'lines', name = y_label,
-                  source = 'L') %>%
+                  source = 'L', line = list(color = "#22223b")) %>%
     layout(
       xaxis = lg_xaxis_layout(data),
       yaxis = lg_yaxis_layout(y_label_category, y_label),

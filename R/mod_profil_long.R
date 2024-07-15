@@ -27,7 +27,8 @@ mod_profil_long_ui <- function(id){
           uiOutput(ns("profile_first_metricUI")),
           uiOutput(ns("add_sec_axeUI"),
                    style = "margin-top: 30px;"),
-          uiOutput(ns("profile_sec_metricUI")),
+          uiOutput(ns("profile_sec_metricUI"),
+                   style = "margin-left : 23px; margin-top: 10px"),
           uiOutput(ns("profileroeUI")),
           uiOutput(ns("profile_backgroundUI"))
         )
@@ -41,6 +42,7 @@ mod_profil_long_ui <- function(id){
 
 #' profil_long Server Functions
 #'
+#' @importFrom dplyr filter pull
 #' @importFrom plotly event_register plotlyOutput renderPlotly event_data
 #' @importFrom leaflet addPolylines clearGroup
 #'
@@ -86,12 +88,41 @@ mod_profil_long_server <- function(id, r_val){
 
     # selectinput for metric
     output$profile_first_metricUI <- renderUI({
-      r_val_local$profile_first_metric
+      if (!is.null(r_val_local$profile_first_metric)) {
+        div(
+          style = "display: flex; align-items: center",
+          r_val_local$profile_first_metric,
+          span(
+            style = "display: flex; margin-left: 10px; margin-top: 20px",
+            popover(
+              trigger = bsicons::bs_icon("info-circle"),
+              "",
+              placement = "right",
+              id = ns("popover_metric")
+            )
+          )
+        )
+      }
     })
 
     # add selectinput for additional metric
     output$profile_sec_metricUI <- renderUI({
-      r_val_local$profile_sec_metric
+
+      if (!is.null(r_val_local$profile_sec_metric)) {
+        div(
+          style = "display: flex; align-items: center",
+          r_val_local$profile_sec_metric,
+          span(
+            style = "margin-left: 10px; margin-top: -10px",
+            popover(
+              trigger = bsicons::bs_icon("info-circle"),
+              "",
+              placement = "right",
+              id = ns("popover_metric2")
+            )
+          )
+        )
+      }
     })
 
     # button to add second axe
@@ -127,8 +158,7 @@ mod_profil_long_server <- function(id, r_val){
         # build second axis input and add and remove buttons
         r_val_local$profile_first_metric = selectInput(ns("profile_first_metric"), label = "Métrique :",
                                                        choices = params_get_metric_choices(),
-                                                       selected  = params_get_metric_choices()[1],
-                                                       width = "100%")
+                                                       selected  = params_get_metric_choices()[1])
       }
     })
 
@@ -318,7 +348,29 @@ mod_profil_long_server <- function(id, r_val){
     })
 
 
-    ### EVENT MOUSEOVER ####
+    ### METRIC INFO ####
+
+    # update infobutton when metric selected changes for the first and second metric
+    observe({
+      if (!is.null(input$profile_first_metric)) {
+        update_popover("popover_metric",
+                       HTML(params_metrics() %>%
+                              filter(metric_name == input$profile_first_metric) %>%
+                              pull(metric_description)))
+      }
+    })
+
+    observe({
+      if (!is.null(input$profile_sec_metric)) {
+        update_popover("popover_metric2",
+                       HTML(params_metrics() %>%
+                              filter(metric_name == input$profile_sec_metric) %>%
+                              pull(metric_description)))
+      }
+    })
+
+
+    ### HOVER EVENTS ####
 
     #### plotly profile ####
 
