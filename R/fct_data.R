@@ -575,8 +575,8 @@ assign_classes_proposed <- function(data, proposed_class) {
   # topography --------------------------------------------------------------
   else if (proposed_class == "class_topographie") {
 
-    colors_topo <- c("#ff8fab", "#f4a261", "#90e0ef",
-                     "#6a040f", "#e36414", "#03045e") %>%
+    colors_topo <- c( "#bb3e03", "#e9d8a6", "#a3b18a",
+                      "#780000","#ee9b00", "#3a5a40") %>%
       setNames(
         c("Plaines de montagne",
           "Plaines de moyenne altitude",
