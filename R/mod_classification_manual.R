@@ -174,138 +174,152 @@ mod_classification_manual_server <- function(id, con, r_val){
     })
 
     #### metric change / re-calculation clicked ####
-    observeEvent(c(input$metric, input$recalculate_classes_button), {
+    observeEvent(c(input$metric, r_val$network_region), {
 
       # track input
       track_inputs(input = input)
 
       # check for valid selected metric
-      if (!is.null(input$metric)) {
+      if (!is.null(input$metric) &
+                   !is.null(r_val$network_region)) {
 
-        # apply to region if region selected
-        if (!is.null(r_val$network_region)) {
-
-          # create classes-table
-          r_val_local$initial_classes_table = create_df_input(
-            axis_data = r_val$network_region,
-            variable_name = input$metric,
-            no_classes = input$man_grouping_no_classes,
-            quantile = input$man_grouping_quantile
-          )
-        }
-
-        # apply to axis if axis selected
-        else if (input$man_grouping_scale_select == "Axe fluvial" &
-                 !is.null(r_val$dgo_axis) ) {
-
-          # create classes-table
-          r_val_local$initial_classes_table = create_df_input(
-            axis_data = r_val$dgo_axis,
-            variable_name = input$metric,
-            no_classes = input$man_grouping_no_classes,
-            quantile = input$man_grouping_quantile
-          )
-        }
-      }
-    })
-
-
-    #### UI classes creation ####
-    # update input fields for classification when setting the variables in the UI
-    observeEvent(r_val_local$initial_classes_table, {
-
-      if (!is.null(r_val_local$initial_classes_table)) {
-
-        # create classes UI
-        r_val_local$reactableUI =
-          renderUI({
-            # Start with a list to collect UI elements
-            ui_elements <- list()
-
-            # Add the first row of inputs
-            ui_elements[[1]] <- fluidRow(
-              column(width = 5, textInput(ns("class1"), label = "Classe", value = r_val_local$initial_classes_table$class[1])),
-              column(width = 3, colourInput(ns("color1"), label = "Couleur",
-                                            value = r_val_local$initial_classes_table$color[1],
-                                            showColour = "background", closeOnClick = TRUE)),
-              column(width = 4, numericInput(ns("greaterthan1"), label = "supérieur à", value = r_val_local$initial_classes_table$greaterthan[1]))
-            )
-
-            # Loop through the remaining rows and add inputs
-            for (row in 2:nrow(r_val_local$initial_classes_table)) {
-              ui_elements[[row]] <- fluidRow(
-                column(width = 5, textInput(ns(paste0("class", row)), label = NULL, value = r_val_local$initial_classes_table$class[row])),
-                column(width = 3, colourInput(ns(paste0("color", row)), label = NULL,
-                                              value = r_val_local$initial_classes_table$color[row],
-                                              showColour = "background", closeOnClick = TRUE)),
-                column(width = 4, numericInput(ns(paste0("greaterthan", row)), label = NULL, value = r_val_local$initial_classes_table$greaterthan[row]))
-              )
-            }
-
-            # Return the list of UI elements wrapped in tagList
-            do.call(tagList, ui_elements)
-          })
-      }
-    })
-
-    #### apply-to-map button clicked ####
-    observeEvent(input$apply_to_map_button,{
-
-      r_val$visualization = "manual"
-    })
-
-    #### visualisation switched to manual ####
-    observeEvent(c(r_val$visualization, r_val$region_click, input$apply_to_map_button), {
-
-      if (r_val$visualization == "manual") {
-
-        # create classes table from input
-        # Initialize an empty tibble
-        r_val$manual_classes_table <- tibble(variable = character(), class = character(), greaterthan = numeric(), color = character())
-
-        # Add rows to the tibble looping through number of classes
-        if (!is.null(input$man_grouping_no_classes)) {
-          for (row in 1:input$man_grouping_no_classes) {
-            r_val$manual_classes_table <- r_val$manual_classes_table %>%
-              add_row(variable = input$metric,
-                      class = input[[paste0("class", row)]],
-                      greaterthan = input[[paste0("greaterthan", row)]],
-                      color = input[[paste0("color", row)]])
-          }
-        } else {
-          for (row in 1:4) {
-            r_val$manual_classes_table <- r_val$manual_classes_table %>%
-              add_row(variable = input$metric,
-                      class = input[[paste0("class", row)]],
-                      greaterthan = input[[paste0("greaterthan", row)]],
-                      color = input[[paste0("color", row)]])
-          }
-        }
-
-
-        # sort classes
-        classes <- r_val$manual_classes_table %>%
-          dplyr::arrange(greaterthan) %>%
-          dplyr::mutate(greaterthan = round(greaterthan, 2))
-
-        # build SLD symbology
-        r_val$sld_body = sld_get_style(
-          breaks = classes$greaterthan,
-          colors = classes$color,
-          metric = classes$variable[1]
+        # create classes-table
+        r_val_local$initial_classes_table = create_df_input(
+          axis_data = r_val$network_region,
+          variable_name = input$metric,
+          no_classes = input$man_grouping_no_classes,
+          quantile = input$man_grouping_quantile
         )
+      }
+    })
 
-        # add classified network to map
-        r_val$map_proxy %>%
-          map_metric(wms_params = params_wms()$metric,
-                     cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
-                     sld_body = r_val$sld_body,
-                     data_axis = r_val$network_region_axis) %>%
-          addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
-                       position = "bottomright",
-                       layerId = "legend_metric")
+    #### re-calculate classes button clicked ####
+    observeEvent(input$recalculate_classes_button, {
+
+      # region selected
+      if (input$man_grouping_scale_select == "Région" &
+          !is.null(r_val$network_region)) {
+
+        # create classes-table
+        r_val_local$initial_classes_table = create_df_input(
+          axis_data = r_val$network_region,
+          variable_name = input$metric,
+          no_classes = input$man_grouping_no_classes,
+          quantile = input$man_grouping_quantile
+        )
+      }
+      # axis selected
+      else if (input$man_grouping_scale_select == "Axe fluvial" &
+               !is.null(r_val$dgo_axis) ) {
+
+        # create classes-table
+        r_val_local$initial_classes_table = create_df_input(
+          axis_data = r_val$dgo_axis,
+          variable_name = input$metric,
+          no_classes = input$man_grouping_no_classes,
+          quantile = input$man_grouping_quantile
+        )
       }
 
-    })
+      })
+
+
+      #### UI classes creation ####
+      # update input fields for classification when setting the variables in the UI
+      observeEvent(r_val_local$initial_classes_table, {
+
+        if (!is.null(r_val_local$initial_classes_table)) {
+
+          # create classes UI
+          r_val_local$reactableUI =
+            renderUI({
+              # Start with a list to collect UI elements
+              ui_elements <- list()
+
+              # Add the first row of inputs
+              ui_elements[[1]] <- fluidRow(
+                column(width = 5, textInput(ns("class1"), label = "Classe", value = r_val_local$initial_classes_table$class[1])),
+                column(width = 3, colourInput(ns("color1"), label = "Couleur",
+                                              value = r_val_local$initial_classes_table$color[1],
+                                              showColour = "background", closeOnClick = TRUE)),
+                column(width = 4, numericInput(ns("greaterthan1"), label = "supérieur à", value = r_val_local$initial_classes_table$greaterthan[1]))
+              )
+
+              # Loop through the remaining rows and add inputs
+              for (row in 2:nrow(r_val_local$initial_classes_table)) {
+                ui_elements[[row]] <- fluidRow(
+                  column(width = 5, textInput(ns(paste0("class", row)), label = NULL, value = r_val_local$initial_classes_table$class[row])),
+                  column(width = 3, colourInput(ns(paste0("color", row)), label = NULL,
+                                                value = r_val_local$initial_classes_table$color[row],
+                                                showColour = "background", closeOnClick = TRUE)),
+                  column(width = 4, numericInput(ns(paste0("greaterthan", row)), label = NULL, value = r_val_local$initial_classes_table$greaterthan[row]))
+                )
+              }
+
+              # Return the list of UI elements wrapped in tagList
+              do.call(tagList, ui_elements)
+            })
+        }
+      })
+
+      #### apply-to-map button clicked ####
+      observeEvent(input$apply_to_map_button,{
+
+        r_val$visualization = "manual"
+      })
+
+      #### visualisation switched to manual ####
+      observeEvent(c(r_val$visualization, r_val$region_click, input$apply_to_map_button), {
+
+        if (r_val$visualization == "manual") {
+
+          # create classes table from input
+          # Initialize an empty tibble
+          r_val$manual_classes_table <- tibble(variable = character(), class = character(), greaterthan = numeric(), color = character())
+
+          # Add rows to the tibble looping through number of classes
+          if (!is.null(input$man_grouping_no_classes)) {
+            for (row in 1:input$man_grouping_no_classes) {
+              r_val$manual_classes_table <- r_val$manual_classes_table %>%
+                add_row(variable = input$metric,
+                        class = input[[paste0("class", row)]],
+                        greaterthan = input[[paste0("greaterthan", row)]],
+                        color = input[[paste0("color", row)]])
+            }
+          } else {
+            for (row in 1:4) {
+              r_val$manual_classes_table <- r_val$manual_classes_table %>%
+                add_row(variable = input$metric,
+                        class = input[[paste0("class", row)]],
+                        greaterthan = input[[paste0("greaterthan", row)]],
+                        color = input[[paste0("color", row)]])
+            }
+          }
+
+
+          # sort classes
+          classes <- r_val$manual_classes_table %>%
+            dplyr::arrange(greaterthan) %>%
+            dplyr::mutate(greaterthan = round(greaterthan, 2))
+
+          # build SLD symbology
+          r_val$sld_body = sld_get_style(
+            breaks = classes$greaterthan,
+            colors = classes$color,
+            metric = classes$variable[1]
+          )
+
+          # add classified network to map
+          r_val$map_proxy %>%
+            map_metric(wms_params = params_wms()$metric,
+                       cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
+                       sld_body = r_val$sld_body,
+                       data_axis = r_val$network_region_axis) %>%
+            addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
+                         position = "bottomright",
+                         layerId = "legend_metric")
+        }
+
+      })
   })
 }
