@@ -76,7 +76,21 @@ mod_classification_manual_server <- function(id, con, r_val){
 
     # metric select input
     output$metric_selectUI <- renderUI({
-      r_val_local$ui_metric
+      if (!is.null(r_val_local$ui_metric)) {
+        div(
+          style = "display: flex; align-items: center; margin-left: 20px",
+          r_val_local$ui_metric,
+          span(
+            style = "display: flex; margin-left: 10px; margin-top: -10px",
+            popover(
+              trigger = bsicons::bs_icon("info-circle"),
+              "",
+              placement = "right",
+              id = ns("popover_metric")
+            )
+          )
+        )
+      }
     })
 
     # text displaying info of metric
@@ -101,6 +115,16 @@ mod_classification_manual_server <- function(id, con, r_val){
 
 
     ### EVENTS ####
+
+    # update infobutton when metric selected changes for the first and second metric
+    observe({
+      if (!is.null(input$metric)) {
+        update_popover("popover_metric",
+                       HTML(params_metrics() %>%
+                              filter(metric_name == input$metric) %>%
+                              pull(metric_description)))
+      }
+    })
 
     #### region selected ####
     observeEvent(r_val$region_clicked,{
