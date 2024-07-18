@@ -9,9 +9,9 @@ fct_table_create_table_df(region_pivot, axis_pivot, dgo_pivot)
 \arguments{
 \item{region_pivot}{pivoted df from selected regional network}
 
-\item{axis_sf}{sf object of dgos from selected axis network}
+\item{axis_pivot}{pivoted df from selected axis network}
 
-\item{dgo_sf}{sf object of selected dgo}
+\item{dgo_pivot}{pivoted df from selected dgo}
 }
 \value{
 dataframe with metrics as rows

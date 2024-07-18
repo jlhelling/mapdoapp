@@ -20,14 +20,11 @@ mod_classification_manual_ui <- function(id){
     golem_add_external_resources(),
     useShinyjs(),
     fluidRow(
-      style = "margin-top: 20px;",
+      style = "margin-top: 10px;",
       textOutput(ns("metric_placeholder_descriptionUI"))
     ),
     fluidRow(
       uiOutput(ns("metric_selectUI"))
-    ),
-    fluidRow(
-      textOutput(ns("metric_descriptionUI"))
     ),
     fluidRow(
       uiOutput(ns("classificationUI"))
@@ -59,7 +56,6 @@ mod_classification_manual_server <- function(id, con, r_val){
     r_val_local <- reactiveValues(
       metric_placeholder_description = "Cliquez sur une région hydrographique pour afficher la classification de métriques. ",
       ui_metric = NULL, # metric selection element
-      metric_description = NULL, # information on selected metric
 
       # classification
       classification_ui = NULL, # UI placeholder
@@ -91,11 +87,6 @@ mod_classification_manual_server <- function(id, con, r_val){
           )
         )
       }
-    })
-
-    # text displaying info of metric
-    output$metric_descriptionUI <- renderText({
-      r_val_local$metric_description
     })
 
     # classification UI enabling creation of different classes based on selected metric
@@ -139,9 +130,6 @@ mod_classification_manual_server <- function(id, con, r_val){
                                             choices = params_get_metric_choices(),
                                             selected  = params_get_metric_choices()[1],
                                             width = "100%")
-
-        # create metric description
-        r_val_local$metric_description = r_val$selected_metric_description
 
         # create classification UI
         r_val_local$classification_ui <- fluidPage(
