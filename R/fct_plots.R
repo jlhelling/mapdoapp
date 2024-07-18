@@ -16,14 +16,25 @@
 #'                         data_classified %>% filter(toponyme == "l'Isère"),
 #'                         "forest_pc")
 merge_regional_axis_dfs <- function(data_region, data_axis, var, classes = FALSE){
-  df <-
-    data_region %>%
-    mutate(scale = as.factor("Region")) %>%
-    add_row(
-      data_axis %>%
-        mutate(scale = as.factor("Axe fluvial"))
-    ) %>%
-    sf::st_drop_geometry()
+
+  # check if axis data exist
+  if (is.null(data_axis)) {
+    df <-
+      data_region %>%
+      mutate(scale = as.factor("Region")) %>%
+      sf::st_drop_geometry()
+  }
+  else {
+    df <-
+      data_region %>%
+      mutate(scale = as.factor("Region")) %>%
+      add_row(
+        data_axis %>%
+          mutate(scale = as.factor("Axe fluvial"))
+      ) %>%
+      sf::st_drop_geometry()
+  }
+
 
   if (classes == TRUE) {
     df <- df %>%

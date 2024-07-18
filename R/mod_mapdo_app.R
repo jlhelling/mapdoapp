@@ -170,7 +170,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
 
         # set axis and dgo values back to NULL
         r_val$network_region_classified = NULL
-        r_val$r_val$axis_name = NULL
+        r_val$axis_name = NULL
         r_val$axis_click = NULL
         r_val$axis_clicked = FALSE
         r_val$dgo_axis = NULL
