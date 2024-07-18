@@ -36,7 +36,8 @@ mod_classification_proposed_server <- function(id, r_val){
     r_val_local <- reactiveValues(
       classes_tbl = NULL,
       table = NULL,
-      placeholder_text = "Sélectionnez une région hydrographique sur la carte pour afficher la classification."
+      placeholder_text = "Sélectionnez une région hydrographique sur la carte pour afficher la classification.",
+      selected = NULL
     )
 
     # text placeholder
@@ -61,28 +62,35 @@ mod_classification_proposed_server <- function(id, r_val){
     # create table output and add classification to map when region changed or other variable selected
     observeEvent(c(input$table__reactable__selected, r_val$region_click), {
 
-      r_val$classes_proposed_selected <- getReactableState("table", "selected")
+      # get actual selected classification from table
+      selected <- getReactableState("table", "selected")
 
       # check if row is actually selected
-      if (!is.null(r_val$classes_proposed_selected)) {
-
-        # set visualisation to classes to tell app that proposed classes are selected
-        r_val$visualization = "classes"
+      if (!is.null(selected)) {
 
         # create map styling based on selected classification
-        r_val$sld_body = r_val_local$classes_tbl[r_val$classes_proposed_selected,]$class_sld
+        r_val$sld_body = r_val_local$classes_tbl[selected,]$class_sld
 
         # add styling to map
         r_val$map_proxy %>%
           map_class(wms_params = params_wms()$class,
                     cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
                     sld_body = r_val$sld_body,
-                    data_axis = r_val$network_region_axis) %>%
-          addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
-                       position = "bottomright",
-                       layerId = "legend_metric")
+                    data_axis = r_val$network_region_axis)
+
+        # set visualisation to classes to tell app that proposed classes are selected
+        r_val$visualization = "classes"
+
+        r_val_local$selected = selected
 
       }
+    })
+
+    observeEvent(r_val_local$selected, {
+      if (!is.null(r_val_local$selected)) {
+        r_val$classes_proposed_selected = r_val_local$selected
+      }
+
     })
 
 

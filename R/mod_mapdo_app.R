@@ -243,10 +243,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
             map_class(wms_params = params_wms()$class,
                       cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
                       sld_body = params_classes()[1,]$class_sld,
-                      data_axis = r_val$network_region_axis) %>%
-            addWMSLegend(uri = map_legend_metric(sld_body = params_classes()[1,]$class_sld),
-                         position = "bottomright",
-                         layerId = "legend_metric")
+                      data_axis = r_val$network_region_axis)
         }
         # map_metric(wms_params = params_wms()$metric,
         #            cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),

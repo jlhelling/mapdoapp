@@ -471,11 +471,8 @@ map_axis <- function(map, data_axis) {
 #'                          data_axis = network_region_axis)
 #' map_metric
 #'
-#' @importFrom leaflet leaflet
-#' @importFrom leaflet addTiles
-#' @importFrom leaflet setView
-#' @importFrom leaflet clearGroup
-#' @importFrom leaflet addWMSTiles
+#' @importFrom leaflet leaflet addTiles setView clearGroup addWMSTiles
+#' @importFrom leaflet.extras addWMSLegend
 #'
 #' @export
 map_metric <- function(map, wms_params = params_wms()$metric,
@@ -488,7 +485,10 @@ map_metric <- function(map, wms_params = params_wms()$metric,
     map_wms_metric(wms_params = wms_params,
                    cql_filter = cql_filter, sld_body = sld_body) %>%
     # add transparent axis
-    map_axis(data_axis = data_axis)
+    map_axis(data_axis = data_axis) %>%
+    addWMSLegend(uri = map_legend_metric(sld_body = sld_body),
+                 position = "bottomright",
+                 layerId = "legend_metric")
 }
 
 #' Add a metric layer with custom symbology to a map.
@@ -503,11 +503,8 @@ map_metric <- function(map, wms_params = params_wms()$metric,
 #'
 #' @return A leaflet map object with the metric layer added.
 #'
-#' @importFrom leaflet leaflet
-#' @importFrom leaflet addTiles
-#' @importFrom leaflet setView
-#' @importFrom leaflet clearGroup
-#' @importFrom leaflet addWMSTiles
+#' @importFrom leaflet leaflet addTiles setView clearGroup addWMSTiles
+#' @importFrom leaflet.extras addWMSLegend
 #'
 #' @export
 map_class <- function(map, wms_params = params_wms()$class,
@@ -520,7 +517,10 @@ map_class <- function(map, wms_params = params_wms()$class,
     map_wms_class(wms_params = wms_params,
                    cql_filter = cql_filter, sld_body = sld_body) %>%
     # add transparent axis
-    map_axis(data_axis = data_axis)
+    map_axis(data_axis = data_axis) %>%
+    addWMSLegend(uri = map_legend_metric(sld_body = sld_body),
+                 position = "bottomright",
+                 layerId = "legend_metric")
 }
 
 #' Add DGO axis to a Leaflet map

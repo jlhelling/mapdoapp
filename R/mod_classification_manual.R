@@ -326,10 +326,7 @@ mod_classification_manual_server <- function(id, con, r_val){
             map_metric(wms_params = params_wms()$metric,
                        cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
                        sld_body = r_val$sld_body,
-                       data_axis = r_val$network_region_axis) %>%
-            addWMSLegend(uri = map_legend_metric(sld_body = r_val$sld_body),
-                         position = "bottomright",
-                         layerId = "legend_metric")
+                       data_axis = r_val$network_region_axis)
         }
 
       })
