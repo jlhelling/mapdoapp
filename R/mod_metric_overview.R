@@ -38,7 +38,10 @@ mod_metric_overview_ui <- function(id){
 #' metric_overview Server Functions
 #'
 #' @import shiny
+#' @import dplyr
 #' @importFrom reactable renderReactable
+#' @importFrom sf st_drop_geometry
+#' @importFrom tidyr pivot_longer
 #'
 #' @noRd
 mod_metric_overview_server <- function(id, r_val){
@@ -46,11 +49,15 @@ mod_metric_overview_server <- function(id, r_val){
     ns <- session$ns
 
     r_val_local <- reactiveValues(
-      characteristics_table = NULL,
-      descriptionUI = NULL,
-      placeholder_text = "Cliquez sur un axe hydrographique pour afficher la comparaison régionale des métriques. ",
-      selectinputUI = NULL,
-      unit = NULL,
+      characteristics_table = NULL, # reactable table
+      descriptionUI = NULL, # Description/Title text
+      placeholder_text = "Cliquez sur un région hydrographique pour afficher la comparaison régionale des métriques. ",
+      selectinputUI = NULL, # select input for unit
+      unit = NULL, # unit for metrics
+
+      region_pivot = NULL, # pivoted df of region as input for data_df
+      axis_pivot = NULL, # pivoted df of region as input for data_df
+      dgo_pivot = NULL, # pivoted df of dgo as input for data_df
       data_df = NULL # df to create table
     )
 
@@ -71,9 +78,9 @@ mod_metric_overview_server <- function(id, r_val){
       r_val_local$selectinputUI
     )
 
-    # observe if axis clicked to create UI
+    # observe if region clicked to create UI
     observe({
-      if (r_val$axis_clicked == TRUE) {
+      if (r_val$region_clicked == TRUE) {
         # remove placeholder text
         r_val_local$placeholder_text = NULL
 
@@ -86,14 +93,49 @@ mod_metric_overview_server <- function(id, r_val){
       }
     })
 
-    # cheack for changes in unit, or regional and axis network or selected dgo to create the df as basis for table
-    observeEvent(c(r_val$network_region, r_val$dgo_axis, r_val$data_dgo_clicked), {
+    # create pivoted df for axis each time it changes
+    observe({
+      if (!is.null(r_val$network_region)) {
+        r_val_local$region_pivot <- fct_table_pivot_sf(r_val$network_region) %>%
+          dplyr::rename(mean_region = mean, distr_region = distr)
 
-        if (!is.null(r_val$network_region) & !is.null(r_val$dgo_axis)) {
+        # set axis and dgo to NULL
+        r_val_local$axis_pivot = NULL
+        r_val_local$dgo_pivot = NULL
+      }
+    })
+
+    # create pivoted df for axis each time it changes
+    observe({
+      if (!is.null(r_val$dgo_axis)) {
+        r_val_local$axis_pivot <- fct_table_pivot_sf(r_val$dgo_axis) %>%
+          dplyr::rename(mean_axis = mean, distr_axis = distr)
+
+        # set dgo_pivot to NULL
+        r_val_local$dgo_pivot = NULL
+      }
+    })
+
+    # create pivoted df for dgo each time it changes
+    observe({
+      if (!is.null(r_val$data_dgo_clicked)) {
+        # dgo data
+        r_val_local$dgo_pivot <- r_val$data_dgo_clicked %>%
+          sf::st_drop_geometry() %>%
+          dplyr::select(-c(fid, axis, measure, toponyme, strahler, gid_region)) %>%
+          tidyr::pivot_longer(-c(), names_to = "metric_name", values_to = "segment") %>%
+          dplyr::mutate(segment = round(segment, 2))
+      }
+    })
+
+    # check for changes in unit, or regional and axis network or selected dgo to create the df as basis for table
+    observeEvent(c(r_val_local$region_pivot, r_val_local$axis_pivot, r_val_local$dgo_pivot), {
+
+        if (!is.null(r_val_local$region_pivot)) {
           # create data for table
-          r_val_local$data_df <- fct_table_create_table_df(region_sf = r_val$network_region,
-                                                           axis_sf = r_val$dgo_axis,
-                                                           dgo_sf = r_val$data_dgo_clicked)
+          r_val_local$data_df <- fct_table_create_table_df(region_pivot = r_val_local$region_pivot,
+                                                           axis_pivot = r_val_local$axis_pivot,
+                                                           dgo_pivot = r_val_local$dgo_pivot)
         }
     })
 

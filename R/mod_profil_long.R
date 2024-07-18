@@ -153,7 +153,7 @@ mod_profil_long_server <- function(id, r_val){
       # track input
       track_inputs(input = input)
 
-      if (!is.null(r_val$dgo_axis) & r_val$axis_clicked == TRUE) {
+      if (!is.null(r_val$dgo_axis) & (r_val$axis_clicked == TRUE)) {
 
         # build second axis input and add and remove buttons
         r_val_local$profile_first_metric = selectInput(ns("profile_first_metric"), label = "Métrique :",
@@ -246,7 +246,7 @@ mod_profil_long_server <- function(id, r_val){
 
     observe({
 
-      if(!is.null(r_val$data_dgo_clicked)) {
+      if (!is.null(r_val$data_dgo_clicked)) {
         # remove the previous element
         r_val_local$shapes_dgo = NULL
 

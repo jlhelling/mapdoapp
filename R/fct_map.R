@@ -13,7 +13,7 @@
 #' map
 #'
 #' @importFrom leaflet leaflet setView addPolygons addScaleBar addLayersControl addControl
-#' @importFrom leaflet layersControlOptions addProviderTiles scaleBarOptions providers
+#' @importFrom leaflet layersControlOptions addProviderTiles scaleBarOptions providers leafletOptions
 #' @importFrom leaflet.extras addSearchOSM searchOptions addFullscreenControl
 #' @importFrom htmltools htmlEscape
 #' @importFrom shiny tags

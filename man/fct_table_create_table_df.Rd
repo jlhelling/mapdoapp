@@ -4,10 +4,10 @@
 \alias{fct_table_create_table_df}
 \title{Merge regional, axis, and dgo dataframes together for reactable table}
 \usage{
-fct_table_create_table_df(region_sf, axis_sf, dgo_sf)
+fct_table_create_table_df(region_pivot, axis_pivot, dgo_pivot)
 }
 \arguments{
-\item{region_sf}{sf object of dgos from selected regional network}
+\item{region_pivot}{pivoted df from selected regional network}
 
 \item{axis_sf}{sf object of dgos from selected axis network}
 

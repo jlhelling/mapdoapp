@@ -29,27 +29,32 @@ fct_table_pivot_sf <- function(df_sf) {
 #' @importFrom sf st_drop_geometry
 #' @importFrom tidyr pivot_longer
 #'
-#' @param region_sf sf object of dgos from selected regional network
-#' @param axis_sf sf object of dgos from selected axis network
-#' @param dgo_sf sf object of selected dgo
+#' @param region_pivot pivoted df from selected regional network
+#' @param axis_pivot pivoted df from selected axis network
+#' @param dgo_pivot pivoted df from selected dgo
 #'
 #' @return dataframe with metrics as rows
 #' @export
 #'
 #' @examples
 #' fct_table_create_table_df(network_dgo, network_dgo, network_dgo[1,])
-fct_table_create_table_df <- function(region_sf, axis_sf, dgo_sf){
+fct_table_create_table_df <- function(region_pivot, axis_pivot, dgo_pivot){
 
-  # regional data
-  region_pivot <- fct_table_pivot_sf(region_sf) %>%
-    dplyr::rename(mean_region = mean, distr_region = distr)
+  # region selected, but axis and dgo not
+  if (is.null(dgo_pivot) && is.null(axis_pivot)) {
+
+    # merge datasets
+    merged <-
+      dplyr::left_join(params_metrics() %>% select(metric_name, metric_title), region_pivot,
+                       by = join_by(metric_name)) %>%
+      dplyr::mutate(mean_axis = "", distr_axis = "", segment = "") %>%
+      dplyr::select(!metric_name) %>%
+      dplyr::relocate(metric_title, mean_region, distr_region, mean_axis, distr_axis, segment) %>%
+      dplyr::group_by(metric_title)
+  }
 
   # region and axis selected, but dgo not
-  if (is.null(dgo_sf)) {
-
-    # axis data
-    axis_pivot <- fct_table_pivot_sf(axis_sf) %>%
-      dplyr::rename(mean_axis = mean, distr_axis = distr)
+  else if (is.null(dgo_pivot) && !is.null(axis_pivot)) {
 
     # merge datasets
     merged <-
@@ -64,17 +69,6 @@ fct_table_create_table_df <- function(region_sf, axis_sf, dgo_sf){
   }
   # region, axis, and dgo selected
   else {
-
-    # axis data
-    axis_pivot <- fct_table_pivot_sf(axis_sf) %>%
-      dplyr::rename(mean_axis = mean, distr_axis = distr)
-
-    # dgo data
-    dgo_pivot <- dgo_sf %>%
-      sf::st_drop_geometry() %>%
-      dplyr::select(-c(fid, axis, measure, toponyme, strahler, gid_region)) %>%
-      tidyr::pivot_longer(-c(), names_to = "metric_name", values_to = "segment") %>%
-      dplyr::mutate(segment = round(segment, 2))
 
     # merge datasets
     merged <-

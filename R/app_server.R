@@ -67,8 +67,8 @@ app_server <- function(input, output, session) {
     sld_body = NULL,
 
     # longitudinal plot
-    plot_long_proxy = NULL,
-
+    plot_long_proxy = NULL
+,
     # others variables
     opacity = list(clickable = 0.01, not_clickable = 0.10) # opacity value to inform the user about available bassins and regions
 
@@ -79,7 +79,7 @@ app_server <- function(input, output, session) {
 
   # Your application server logic
   mod_mapdo_app_server("mapdo_app_1", con, r_val)
-  mod_explore_server("explore_1", con)
+  # mod_explore_server("explore_1", con)
   mod_documentation_server("documentation_1")
 
   ### server activation ####

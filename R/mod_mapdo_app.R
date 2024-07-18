@@ -12,6 +12,8 @@
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom bslib popover
 #' @importFrom bsicons bs_icon
+#' @importFrom leaflet leafletOutput
+#' @importFrom htmltools HTML div img
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
@@ -27,19 +29,23 @@ mod_mapdo_app_ui <- function(id){
       tags$head(
         tags$style(
           HTML("
-                 .form-group{margin-bottom: 10px} /* less space below selectInput metric_type */
-                 ")
+          .form-group{margin-bottom: 10px}
+          .leaflet-container {
+            overflow: hidden !important;
+            height: 500px; /* Ensure height is set to match the leafletOutput */
+            width: 100%;
+          }
+          ")
         )
       ), # head
-
       fluidRow(
         column(
-          width = 8,
+          width = 7,
           withSpinner(leafletOutput(ns("map"), height = 500)),
           textOutput(ns("selection_textUI"))
         ),
         column(
-          width = 4,
+          width = 5,
           tabsetPanel(
             id = "tabset",
             tabPanel("Classes proposées",
@@ -54,7 +60,6 @@ mod_mapdo_app_ui <- function(id){
           ) #tabsetpanel
         ) #column
       ), #row
-
       fluidRow(
         style = "margin-top: 10px;
         margin-bottom: 10px;",
@@ -108,7 +113,6 @@ mod_mapdo_app_server <- function(id, con, r_val){
       map_init_bassins(bassins_data = r_val$bassins,
                        id_logo_ign_remonterletemps = ns("logo_ign_remonterletemps"))
     })
-
     onclick(id = "logo_ign_remonterletemps", expr =
               runjs(sprintf("window.open('%s', '_blank')",
                             utils_url_remonterletemps(lng = input$map_center$lng,
@@ -234,7 +238,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
                              hydro_sites_region = r_val$hydro_sites_region)
 
         # add strahler-order network visualization to map when classes visualisation is selected (and not manual)
-        if ((r_val$visualization == "classes") & is.null(r_val$classes_proposed_selected)){
+        if ((r_val$visualization == "classes") && is.null(r_val$classes_proposed_selected)) {
           r_val$map_proxy %>%
             map_class(wms_params = params_wms()$class,
                       cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
@@ -296,8 +300,6 @@ mod_mapdo_app_server <- function(id, con, r_val){
 
       if (input$map_shape_click$group == params_map_group()$axis) {
 
-
-
         # set values back to NULL
         r_val$data_dgo_clicked = NULL
         r_val$data_section = NULL
@@ -305,6 +307,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
         r_val$merged_networks_classified = NULL
         r_val$leaflet_hover_measure = NULL
         r_val$roe_axis = NULL
+        r_val$dgo_axis = NULL
 
         # save the clicked axis values
         r_val$axis_click = input$map_shape_click
@@ -496,9 +499,3 @@ mod_mapdo_app_server <- function(id, con, r_val){
 
   })
 }
-
-## To be copied in the UI
-# mod_mapdo_app_ui("mapdo_app_1")
-
-## To be copied in the server
-# mod_mapdo_app_server("mapdo_app_1")

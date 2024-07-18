@@ -57,7 +57,7 @@ mod_classification_manual_server <- function(id, con, r_val){
 
     ### REACTIVES ####
     r_val_local <- reactiveValues(
-      metric_placeholder_description = "Cliquez sur une région pour afficher la classification de métriques. ",
+      metric_placeholder_description = "Cliquez sur une région hydrographique pour afficher la classification de métriques. ",
       ui_metric = NULL, # metric selection element
       metric_description = NULL, # information on selected metric
 
