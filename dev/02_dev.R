@@ -24,6 +24,7 @@ golem::run_dev()
 # load packages app
 pkgload::load_all()
 # run application
+# options(shiny.reactlog=TRUE)
 run_app()
 
 # check function examples
