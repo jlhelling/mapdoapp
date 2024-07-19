@@ -118,9 +118,11 @@ mod_classification_manual_server <- function(id, con, r_val){
     })
 
     #### region selected ####
-    observeEvent(r_val$region_clicked,{
+    observeEvent(c(r_val$region_clicked, r_val$tab_open1), {
 
-      if(r_val$region_clicked == TRUE){
+      if ((r_val$region_clicked == TRUE) &&
+          # check if tab is open
+          (r_val$tab_open1 == "Classification manuelle")) {
 
         # remove placeholder text
         r_val_local$metric_placeholder_description = NULL
@@ -165,20 +167,22 @@ mod_classification_manual_server <- function(id, con, r_val){
 
     })
 
-    observeEvent(r_val$region_click, {
+    observeEvent(c(r_val$region_click, r_val$tab_open1), {
+
+      if (r_val$tab_open1 == "Classification manuelle") {
 
         r_val_local$scale_selectUI = radioButtons(ns("man_grouping_scale_select"),
                                                   "Base de classification",
                                                   c("Région"),
                                                   selected = "Région",
                                                   inline = TRUE)
+      }
     })
-
 
     #### axis clicked first time ####
     observe({
 
-      if (r_val$axis_clicked == TRUE) {
+      if ((r_val$axis_clicked == TRUE) && (r_val$tab_open1 == "Classification manuelle")){
 
         r_val_local$scale_selectUI = radioButtons(ns("man_grouping_scale_select"),
                                                   "Base de classification",
@@ -189,32 +193,14 @@ mod_classification_manual_server <- function(id, con, r_val){
     })
 
     #### metric change / re-calculation clicked ####
-    observeEvent(c(r_val$region_clicked), {
+    observeEvent(c(r_val$region_clicked, r_val$tab_open1), {
 
-      # check for valid selected metric
-      if (!is.null(input$metric) &&
-          !is.null(r_val$network_region)
-          (r_val$region_clicked == TRUE)) {
+      if (r_val$tab_open1 == "Classification manuelle") {
 
-        # create classes-table
-        r_val_local$initial_classes_table = create_df_input(
-          axis_data = r_val$network_region,
-          variable_name = input$metric,
-          no_classes = input$man_grouping_no_classes,
-          quantile = input$man_grouping_quantile
-        )
-      }
-    })
-
-    #### re-calculate classes button clicked ####
-    observeEvent(c(input$metric, r_val$network_region, input$recalculate_classes_button), {
-
-      if (!is.null(input$metric) &&
-          !is.null(input$man_grouping_scale_select)) {
-
-        # region selected
-        if (input$man_grouping_scale_select == "Région" &&
-            !is.null(r_val$network_region)) {
+        # check for valid selected metric
+        if (!is.null(input$metric) &&
+            !is.null(r_val$network_region) &&
+            (r_val$region_clicked == TRUE)) {
 
           # create classes-table
           r_val_local$initial_classes_table = create_df_input(
@@ -224,17 +210,40 @@ mod_classification_manual_server <- function(id, con, r_val){
             quantile = input$man_grouping_quantile
           )
         }
-        # axis selected
-        else if (input$man_grouping_scale_select == "Axe fluvial" &&
-                 !is.null(r_val$dgo_axis) ) {
+      }
+    })
 
-          # create classes-table
-          r_val_local$initial_classes_table = create_df_input(
-            axis_data = r_val$dgo_axis,
-            variable_name = input$metric,
-            no_classes = input$man_grouping_no_classes,
-            quantile = input$man_grouping_quantile
-          )
+    #### changes affecting classes ####
+    observeEvent(c(input$metric, r_val$network_region, input$recalculate_classes_button), {
+
+      if (r_val$tab_open1 == "Classification manuelle") {
+        if (!is.null(input$metric) &&
+            !is.null(input$man_grouping_scale_select)) {
+
+          # region selected
+          if (input$man_grouping_scale_select == "Région" &&
+              !is.null(r_val$network_region)) {
+
+            # create classes-table
+            r_val_local$initial_classes_table = create_df_input(
+              axis_data = r_val$network_region,
+              variable_name = input$metric,
+              no_classes = input$man_grouping_no_classes,
+              quantile = input$man_grouping_quantile
+            )
+          }
+          # axis selected
+          else if (input$man_grouping_scale_select == "Axe fluvial" &&
+                   !is.null(r_val$dgo_axis) ) {
+
+            # create classes-table
+            r_val_local$initial_classes_table = create_df_input(
+              axis_data = r_val$dgo_axis,
+              variable_name = input$metric,
+              no_classes = input$man_grouping_no_classes,
+              quantile = input$man_grouping_quantile
+            )
+          }
         }
       }
 

@@ -30,13 +30,19 @@ mod_mapdo_app_ui <- function(id){
         tags$style(
           HTML("
           .form-group{margin-bottom: 10px}
-          .leaflet-container {
-            overflow: hidden !important;
-            height: 500px; /* Ensure height is set to match the leafletOutput */
-            width: 100%;
-          }
           ")
-        )
+        ),
+        tags$script(HTML(
+          paste0("
+          $(document).on('shiny:inputchanged', function(event) {
+            if (event.name === '", ns('tabset2'), "') {
+              $('html, body').animate({
+                scrollTop: $('.nav-tabs').offset().top
+              }, 0);
+            }
+          });
+        ")
+        ))
       ), # head
       fluidRow(
         column(
