@@ -31,18 +31,7 @@ mod_mapdo_app_ui <- function(id){
           HTML("
           .form-group{margin-bottom: 10px}
           ")
-        ),
-        tags$script(HTML(
-          paste0("
-          $(document).on('shiny:inputchanged', function(event) {
-            if (event.name === '", ns('tabset2'), "') {
-              $('html, body').animate({
-                scrollTop: $('.nav-tabs').offset().top
-              }, 0);
-            }
-          });
-        ")
-        ))
+        )
       ), # head
       fluidRow(
         column(
