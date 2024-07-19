@@ -47,7 +47,7 @@ mod_mapdo_app_ui <- function(id){
         column(
           width = 5,
           tabsetPanel(
-            id = "tabset",
+            id = ns("tabset"),
             tabPanel("Classes proposées",
                      mod_classification_proposed_ui("classification_proposed_1")
             ),
@@ -64,6 +64,7 @@ mod_mapdo_app_ui <- function(id){
         style = "margin-top: 10px;
         margin-bottom: 10px;",
         tabsetPanel(
+          id = ns("tabset2"),
           tabPanel(
             "Évolution longitudinale",
             mod_profil_long_ui("profil_long_1")
@@ -128,6 +129,18 @@ mod_mapdo_app_server <- function(id, con, r_val){
 
     observe({
       r_val$map_proxy <- leafletProxy("map")
+    })
+
+    ### TABSET LISTENERS ####
+
+    # save current tabs in reactive values
+
+    observeEvent(input$tabset, {
+      r_val$tab_open1 = input$tabset
+    })
+
+    observeEvent(input$tabset2, {
+      r_val$tab_open2 = input$tabset2
     })
 
     ### EVENT MAP CLICK ####

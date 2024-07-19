@@ -15,6 +15,9 @@ app_server <- function(input, output, session) {
   ### R_VAL ####
   r_val <- reactiveValues(
 
+    tab_open1 = NULL, # descriptor of the opened tab on right side
+    tab_open2 = NULL, # descriptor of the opened tab below
+
     # UI
     selection_text = "", # description text indicating basin, region, axis
 
@@ -74,23 +77,23 @@ app_server <- function(input, output, session) {
 
   )
 
-  # set database connection
+  ### DB connection ####
   con <- db_con()
 
-  # Your application server logic
+  ### Server activation ####
+  # main servers
   mod_mapdo_app_server("mapdo_app_1", con, r_val)
-  # mod_explore_server("explore_1", con)
   mod_documentation_server("documentation_1")
 
-  ### server activation ####
+  # tabs
   mod_classification_proposed_server("classification_proposed_1", r_val)
   mod_classification_manual_server("classification_manual_1", con, r_val)
   mod_metric_overview_server("metric_overview_1", r_val)
-  mod_profil_transverse_server("profil_transverse_1", r_val)
   mod_profil_long_server("profil_long_1", r_val)
+  mod_profil_transverse_server("profil_transverse_1", r_val)
   mod_classes_distribution_server("classes_distribution_1", r_val)
 
-  # disconnect database when closing session
+  ### DB disconnect when closing session ####
   onStop(function() {
     if (!is.null(con)) {
       DBI::dbDisconnect(con)

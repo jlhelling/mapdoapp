@@ -21,12 +21,12 @@ mod_metric_overview_ui <- function(id){
       }
     ")),
     fluidRow(style = "margin-top: 10px;",
-          textOutput(ns("placeholder_ui")),
-          column(width = 6,
-                 uiOutput(ns("description"))),
-          column(width = 6,
-                 uiOutput(ns("selectinput")))
-      ),
+             textOutput(ns("placeholder_ui")),
+             column(width = 6,
+                    uiOutput(ns("description"))),
+             column(width = 6,
+                    uiOutput(ns("selectinput")))
+    ),
     fluidRow(
       div(class = "reactable-table",
           reactableOutput(ns("table"), width = "100%")
@@ -94,8 +94,9 @@ mod_metric_overview_server <- function(id, r_val){
     })
 
     # create pivoted df for axis each time it changes
-    observe({
-      if (!is.null(r_val$network_region)) {
+    observeEvent(c(r_val$network_region, r_val$tab_open1), {
+      if (!is.null(r_val$network_region) && (r_val$tab_open1 == "Aperçu métriques")) {
+
         r_val_local$region_pivot <- fct_table_pivot_sf(r_val$network_region) %>%
           dplyr::rename(mean_region = mean, distr_region = distr)
 
@@ -106,30 +107,31 @@ mod_metric_overview_server <- function(id, r_val){
     })
 
     # create pivoted df for axis each time it changes
-    observe({
-      if (!is.null(r_val$dgo_axis)) {
-        r_val_local$axis_pivot <- fct_table_pivot_sf(r_val$dgo_axis) %>%
-          dplyr::rename(mean_axis = mean, distr_axis = distr)
+    observeEvent(c(r_val$dgo_axis, r_val$tab_open1), {
+      if (!is.null(r_val$dgo_axis) && (r_val$tab_open1 == "Aperçu métriques")) {
 
-        # set dgo_pivot to NULL
-        r_val_local$dgo_pivot = NULL
+          r_val_local$axis_pivot <- fct_table_pivot_sf(r_val$dgo_axis) %>%
+            dplyr::rename(mean_axis = mean, distr_axis = distr)
+
+          # set dgo_pivot to NULL
+          r_val_local$dgo_pivot = NULL
       }
     })
 
-    # create pivoted df for dgo each time it changes
-    observe({
-      if (!is.null(r_val$data_dgo_clicked)) {
-        # dgo data
-        r_val_local$dgo_pivot <- r_val$data_dgo_clicked %>%
-          sf::st_drop_geometry() %>%
-          dplyr::select(-c(fid, axis, measure, toponyme, strahler, gid_region)) %>%
-          tidyr::pivot_longer(-c(), names_to = "metric_name", values_to = "segment") %>%
-          dplyr::mutate(segment = round(segment, 2))
-      }
-    })
+      # create pivoted df for dgo each time it changes
+      observeEvent(c(r_val$data_dgo_clicked, r_val$tab_open1), {
+        if (!is.null(r_val$data_dgo_clicked) && (r_val$tab_open1 == "Aperçu métriques")) {
+          # dgo data
+          r_val_local$dgo_pivot <- r_val$data_dgo_clicked %>%
+            sf::st_drop_geometry() %>%
+            dplyr::select(-c(fid, axis, measure, toponyme, strahler, gid_region)) %>%
+            tidyr::pivot_longer(-c(), names_to = "metric_name", values_to = "segment") %>%
+            dplyr::mutate(segment = round(segment, 2))
+        }
+      })
 
-    # check for changes in unit, or regional and axis network or selected dgo to create the df as basis for table
-    observeEvent(c(r_val_local$region_pivot, r_val_local$axis_pivot, r_val_local$dgo_pivot), {
+      # check for changes in unit, or regional and axis network or selected dgo to create the df as basis for table
+      observeEvent(c(r_val_local$region_pivot, r_val_local$axis_pivot, r_val_local$dgo_pivot), {
 
         if (!is.null(r_val_local$region_pivot)) {
           # create data for table
@@ -137,20 +139,20 @@ mod_metric_overview_server <- function(id, r_val){
                                                            axis_pivot = r_val_local$axis_pivot,
                                                            dgo_pivot = r_val_local$dgo_pivot)
         }
-    })
+      })
 
-    # create new table each time when df changed
-    observeEvent(c(r_val_local$data_df, input$select_unit),{
+      # create new table each time when df changed
+      observeEvent(c(r_val_local$data_df, input$select_unit),{
 
-      if (!is.null(r_val_local$data_df) & !is.null(input$select_unit)){
-        # check which surface unit should be used for metrics
-        if (input$select_unit == "surface relative (%)") {
-          r_val_local$characteristics_table <- fct_table_create_reactable(r_val_local$data_df, "%")
-        } else {
-          r_val_local$characteristics_table <- fct_table_create_reactable(r_val_local$data_df, "ha")
+        if (!is.null(r_val_local$data_df) & !is.null(input$select_unit)){
+          # check which surface unit should be used for metrics
+          if (input$select_unit == "surface relative (%)") {
+            r_val_local$characteristics_table <- fct_table_create_reactable(r_val_local$data_df, "%")
+          } else {
+            r_val_local$characteristics_table <- fct_table_create_reactable(r_val_local$data_df, "ha")
+          }
         }
-      }
 
-    })
+      })
   })
 }

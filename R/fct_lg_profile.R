@@ -15,7 +15,7 @@
 #' @export
 lg_profile_empty <- function() {
   temp <- data.frame()
-  plot <- plot_ly(data = temp, source = "plot_pg") %>%
+  plot <- plot_ly(data = temp, source = "plot_pg", type = 'scatter', mode = 'lines') %>%
     layout(
       title = list(
         text = "Sélectionnez un cours d'eau sur la carte pour afficher le graphique",

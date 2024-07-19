@@ -50,51 +50,59 @@ mod_classes_distribution_server <- function(id, r_val){
     })
 
     # listen to network changes and classify if new one is selected
-    observeEvent(c(r_val$network_region, r_val$classes_proposed_selected, r_val$manual_classes_table), {
+    observeEvent(c(r_val$network_region, r_val$classes_proposed_selected, r_val$manual_classes_table, r_val$tab_open2), {
 
       if (!is.null(r_val$network_region)) {
 
-        # classes proposed
-        if ((r_val$visualization == "classes") && !is.null(r_val$classes_proposed_selected)) {
+        # check if tab is open
+        if (r_val$tab_open2 == "Distribution des classes") {
 
-          # Create classified network by adding the classes and colors
-          r_val$network_region_classified <- r_val$network_region %>%
-            na.omit() %>%
-            assign_classes_proposed(proposed_class = params_classes()[r_val$classes_proposed_selected,]$class_name)
+          # classes proposed
+          if ((r_val$visualization == "classes") && !is.null(r_val$classes_proposed_selected)) {
+
+            # Create classified network by adding the classes and colors
+            r_val$network_region_classified <- r_val$network_region %>%
+              na.omit() %>%
+              assign_classes_proposed(proposed_class = params_classes()[r_val$classes_proposed_selected,]$class_name)
+          }
+          # classes manually selected
+          else if ((r_val$visualization == "manual") && !is.null(r_val$manual_classes_table)) {
+
+            # Create classified network by adding the classes and colors
+            r_val$network_region_classified <- r_val$network_region %>%
+              na.omit() %>%
+              assign_classes_manual(classes = r_val$manual_classes_table)
+          }
+
+          r_val$dgo_axis_classified = NULL
         }
-        # classes manually selected
-        else if ((r_val$visualization == "manual") && !is.null(r_val$manual_classes_table)) {
-
-          # Create classified network by adding the classes and colors
-          r_val$network_region_classified <- r_val$network_region %>%
-            na.omit() %>%
-            assign_classes_manual(classes = r_val$manual_classes_table)
-        }
-
-        r_val$dgo_axis_classified = NULL
       }
     })
 
     # listen to axis changes and classify if new one is selected
-    observeEvent(c(r_val$dgo_axis, r_val$classes_proposed_selected, r_val$manual_classes_table), {
+    observeEvent(c(r_val$dgo_axis, r_val$classes_proposed_selected, r_val$manual_classes_table, r_val$tab_open2), {
 
       if (!is.null(r_val$dgo_axis)) {
 
-        # classes proposed
-        if ((r_val$visualization == "classes") && !is.null(r_val$classes_proposed_selected)){
+        # check if tab is open
+        if (r_val$tab_open2 == "Distribution des classes") {
 
-          # create classified axis network
-          r_val$dgo_axis_classified <- r_val$dgo_axis %>%
-            na.omit() %>%
-            assign_classes_proposed(proposed_class = params_classes()[r_val$classes_proposed_selected,]$class_name)
-        }
-        # classes manually selected
-        else if ((r_val$visualization == "manual") && !is.null(r_val$manual_classes_table)) {
+          # classes proposed
+          if ((r_val$visualization == "classes") && !is.null(r_val$classes_proposed_selected)){
 
-          # create classified axis network
-          r_val$dgo_axis_classified <- r_val$dgo_axis %>%
-            na.omit() %>%
-            assign_classes_manual(classes = r_val$manual_classes_table)
+            # create classified axis network
+            r_val$dgo_axis_classified <- r_val$dgo_axis %>%
+              na.omit() %>%
+              assign_classes_proposed(proposed_class = params_classes()[r_val$classes_proposed_selected,]$class_name)
+          }
+          # classes manually selected
+          else if ((r_val$visualization == "manual") && !is.null(r_val$manual_classes_table)) {
+
+            # create classified axis network
+            r_val$dgo_axis_classified <- r_val$dgo_axis %>%
+              na.omit() %>%
+              assign_classes_manual(classes = r_val$manual_classes_table)
+          }
         }
       }
     })
@@ -102,8 +110,11 @@ mod_classes_distribution_server <- function(id, r_val){
     # classify regional and axis network and merge them
     observeEvent(c(r_val$network_region_classified, r_val$dgo_axis_classified), {
 
-      # classes proposed
-      if (r_val$visualization == "classes") {
+      # check if tab is opend
+      if (r_val$tab_open2 == "Distribution des classes"){
+
+        # classes proposed
+        if (r_val$visualization == "classes") {
           # merge regional and axis network in one df
           r_val$merged_networks_classified <- merge_regional_axis_dfs(r_val$network_region_classified,
                                                                       r_val$dgo_axis_classified,
@@ -118,6 +129,7 @@ mod_classes_distribution_server <- function(id, r_val){
                                                                       r_val$manual_classes_table$variable[1],
                                                                       classes = TRUE)
         }
+      }
     })
 
     # create barplots of classes distribution

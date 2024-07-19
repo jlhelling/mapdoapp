@@ -175,8 +175,6 @@ mod_profil_long_server <- function(id, r_val){
           ) %>%
           event_register("plotly_hover")
 
-
-
         # build second axis input and add and remove buttons
         r_val_local$add_sec_axe = checkboxInput(ns("sec_axis"),
                                                 label = "Ajoutez 2éme métrique :",
@@ -279,7 +277,7 @@ mod_profil_long_server <- function(id, r_val){
       # track input
       track_inputs(input = input)
 
-      if (!is.null(input$background_profile)) {
+      if (!is.null(input$background_profile) && !is.null(r_val$dgo_axis)) {
 
         # add background classification shapes
         if (input$background_profile == TRUE) {
@@ -289,7 +287,7 @@ mod_profil_long_server <- function(id, r_val){
             r_val$dgo_axis_classified = r_val$dgo_axis %>%
               na.omit() %>%
               assign_classes_proposed(proposed_class = params_classes()[r_val$classes_proposed_selected,]$class_name)
-          }
+            }
 
           # manual classification applied
           else if (r_val$visualization == "manual" &
