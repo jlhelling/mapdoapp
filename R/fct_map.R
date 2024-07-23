@@ -113,7 +113,7 @@ map_add_regions_in_bassin <- function(map, bassins_data,
                                       bassin_click = bassin_click,
                                       regions_data = region_hydro) {
   map %>%
-    setView(lng = bassin_click$lng , lat = bassin_click$lat, zoom = 6.5) %>%
+    setView(lng = bassin_click$lng , lat = bassin_click$lat, zoom = 5.5) %>%
     clearGroup(params_map_group()[["bassin"]]) %>%
     addPolygons(data = bassins_data,
                 layerId = ~cdbh,
@@ -218,7 +218,7 @@ map_region_clicked <- function(map,
                                roe_region,
                                hydro_sites_region) {
   map %>%
-    setView(lng = region_click$lng , lat = region_click$lat, zoom = 7.5) %>%
+    setView(lng = region_click$lng , lat = region_click$lat, zoom = 6.5) %>%
     clearGroup(c(params_map_group()[["region"]],
                  params_map_group()[["roe"]],
                  params_map_group()[["hydro_sites"]],
