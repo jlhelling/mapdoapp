@@ -19,6 +19,8 @@ globalVariables(unique(c(
   "distance", "profile"
 )))
 
+metrics_params <<- params_metrics()
+
 # save classes once to be able to access it directly
 classes_proposed <<- params_classes()
 

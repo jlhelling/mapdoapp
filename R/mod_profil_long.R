@@ -170,8 +170,8 @@ mod_profil_long_server <- function(id, r_val){
           lg_profile_main(
             data = r_val$dgo_axis,
             y = r_val$dgo_axis[[input$profile_first_metric]],
-            y_label = params_metrics()[params_metrics()$metric_name == input$profile_first_metric,]$metric_title,
-            y_label_category = params_metrics()[params_metrics()$metric_name == input$profile_first_metric,]$metric_type_title
+            y_label = metrics_params[metrics_params$metric_name == input$profile_first_metric,]$metric_title,
+            y_label_category = metrics_params[metrics_params$metric_name == input$profile_first_metric,]$metric_type_title
           ) %>%
           event_register("plotly_hover")
 
@@ -212,9 +212,9 @@ mod_profil_long_server <- function(id, r_val){
       if (input$sec_axis == TRUE) {
         # get metric title and type
         r_val_local$sec_metric_name =
-          params_metrics() |> filter(metric_name == input$profile_sec_metric) |> pull(metric_title)
+          metrics_params |> filter(metric_name == input$profile_sec_metric) |> pull(metric_title)
         r_val_local$sec_metric_type =
-          params_metrics() |> filter(metric_name == input$profile_sec_metric) |> pull(metric_type_title)
+          metrics_params |> filter(metric_name == input$profile_sec_metric) |> pull(metric_type_title)
 
         # create the list to add trace and layout to change second axe plot
         r_val_local$proxy_second_axe <- lg_profile_second(data = r_val$dgo_axis,
@@ -356,7 +356,7 @@ mod_profil_long_server <- function(id, r_val){
     observe({
       if (!is.null(input$profile_first_metric)) {
         update_popover("popover_metric",
-                       HTML(params_metrics() %>%
+                       HTML(metrics_params %>%
                               filter(metric_name == input$profile_first_metric) %>%
                               pull(metric_description)))
       }
@@ -365,7 +365,7 @@ mod_profil_long_server <- function(id, r_val){
     observe({
       if (!is.null(input$profile_sec_metric)) {
         update_popover("popover_metric2",
-                       HTML(params_metrics() %>%
+                       HTML(metrics_params %>%
                               filter(metric_name == input$profile_sec_metric) %>%
                               pull(metric_description)))
       }

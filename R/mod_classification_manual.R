@@ -111,7 +111,7 @@ mod_classification_manual_server <- function(id, con, r_val){
     observe({
       if (!is.null(input$metric)) {
         update_popover("popover_metric",
-                       HTML(params_metrics() %>%
+                       HTML(metrics_params %>%
                               filter(metric_name == input$metric) %>%
                               pull(metric_description)))
       }
