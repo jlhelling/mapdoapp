@@ -82,7 +82,6 @@ mod_classification_proposed_server <- function(id, r_val){
         r_val$visualization = "classes"
 
         r_val_local$selected = selected
-
       }
     })
 

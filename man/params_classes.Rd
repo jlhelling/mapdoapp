@@ -2,7 +2,7 @@
 % Please edit documentation in R/fct_params.R
 \name{params_classes}
 \alias{params_classes}
-\title{Get classes names and description for fluvial styles}
+\title{Get names and description for proposed classifications}
 \usage{
 params_classes()
 }
@@ -10,5 +10,5 @@ params_classes()
 tibble with names of classes and their descriptions
 }
 \description{
-Get classes names and description for fluvial styles
+Get names and description for proposed classifications
 }

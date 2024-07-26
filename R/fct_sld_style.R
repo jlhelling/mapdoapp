@@ -212,7 +212,7 @@ sld_get_fluvialstyles <- function() {
 
   # strahler ----------------------------------------------------------------
 
-  colors_strahler <- c("#64b5f6", "#1e88e5", "#1976d2", "#1565c0", "#0d47a1", "#0a2472")
+  colors_strahler <- colors_classes_proposed$class_strahler
   strahler_sld_rules <- character(0)
 
   for (i in 1:6) {
@@ -247,18 +247,7 @@ sld_get_fluvialstyles <- function() {
 
   # Topographie -------------------------------------------------------------
 
-  colors_topo <- c( "#bb3e03", "#e9d8a6", "#a3b18a",
-               "#780000","#ee9b00", "#3a5a40") %>%
-    setNames(
-      c("Plaines de montagne",
-        "Plaines de moyenne altitude",
-        "Plaines de basse altitude",
-        "Pentes de montagne",
-        "Pentes de moyenne altitude",
-        "Pentes de basse altitude")
-    )
-
-
+  colors_topo <- colors_classes_proposed$class_topographie
 
   sld_topographie <- glue::glue('
       <se:Rule>
@@ -458,10 +447,7 @@ sld_get_fluvialstyles <- function() {
 
   # Dominant Land use -------------------------------------------------------
 
-  colors_lu_dominante <- c("#31572c", "#90be6d", "#ffbe0b", "#ae2012") %>%
-    setNames(
-      c("Forêt", "Praire", "Cultures", "Urbain et infrastructure")
-    )
+  colors_lu_dominante <- colors_classes_proposed$class_lu_dominante
 
 
   sld_lu_dominante  <- glue::glue('
@@ -614,11 +600,7 @@ sld_get_fluvialstyles <- function() {
 
   # Urban landuse -----------------------------------------------------------
 
-  colors_urban <- colors <- c("#6a040f", "#ba181b", "#ffdd00", "#74c69d") %>%
-    setNames(
-      c("Fortement urbanisé", "Urbanisé",
-        "Modérément urbanisé", "Presque pas/pas urbanisé")
-    )
+  colors_urban <- colors_classes_proposed$class_urban
 
   sld_urban  <- glue::glue('
       <se:Rule>
@@ -732,14 +714,7 @@ sld_get_fluvialstyles <- function() {
 
   # Agricultural landuse ----------------------------------------------------
 
-
-  sld_agriculture  <-
-
-    colors_agriculture <- colors <- c("#6a040f", "#ba181b", "#ffdd00", "#74c69d") %>%
-    setNames(
-      c("Forte impact agricole", "Impact agricole élevé",
-        "Impact agricole modéré", "Presque pas/pas Impact agricole")
-    )
+    colors_agriculture <- colors_classes_proposed$class_agriculture
 
   sld_agriculture  <- glue::glue('
       <se:Rule>
@@ -852,13 +827,7 @@ sld_get_fluvialstyles <- function() {
 
   # Natural landuse ---------------------------------------------------------
 
-  colors_nature <- colors <- c("#081c15", "#2d6a4f", "#74c69d", "#d8f3dc") %>%
-    setNames(
-      c("Très forte utilisation naturelle", "Forte utilisation naturelle",
-        "Utilisation naturelle modérée", "Presque pas/pas naturelle")
-    )
-
-
+  colors_nature <- colors_classes_proposed$class_nature
 
   sld_nature  <- glue::glue('
       <se:Rule>
@@ -999,10 +968,7 @@ sld_get_fluvialstyles <- function() {
 
   # Confinement -------------------------------------------------------------
 
-  colors_confinement <- c("#d9ed92", "#99d98c", "#168aad", "#184e77") %>%
-    setNames(
-      c("espace abondant", "modérement espace", "confiné", "très confiné")
-    )
+  colors_confinement <- colors_classes_proposed$class_confinement
 
   sld_confinement  <- glue::glue('
       <se:Rule>
@@ -1116,10 +1082,7 @@ sld_get_fluvialstyles <- function() {
 
   # Habitat -----------------------------------------------------------------
 
-  colors_habitat <- c("#2d6a4f", "#99d98c", "#fff3b0", "#ba181b") %>%
-    setNames(
-      c("très bien connecté", "bien connecté", "moyen connecté", "faible / absente")
-    )
+  colors_habitat <- colors_classes_proposed$class_habitat
 
   sld_habitat  <- glue::glue('
       <se:Rule>
@@ -1255,10 +1218,7 @@ sld_get_fluvialstyles <- function() {
   # Gravel bars -------------------------------------------------------------
 
 
-  colors_gravel <- c("#603808", "#e7bc91", "#0077b6") %>%
-    setNames(
-      c("abundant", "moyennement présente", "absent")
-    )
+  colors_gravel <- colors_classes_proposed$class_gravel
 
   sld_gravel  <- glue::glue('
       <se:Rule>
@@ -1360,17 +1320,11 @@ sld_get_fluvialstyles <- function() {
         ')
 
 
-  # Channel evolution -------------------------------------------------------
-
-
-  sld_channelevolution  <- NULL
-
-
   # join all together -------------------------------------------------------
 
   sld_final <- tibble(
     class_name = c("class_strahler", "class_topographie", "class_lu_dominante", "class_urban", "class_agriculture",
-                   "class_nature", "class_confinement", "class_habitat", "class_gravel", "class_channelevolution"),
+                   "class_nature", "class_confinement", "class_habitat", "class_gravel"),
     class_sld = c(paste0(sld_begin, sld_strahler, sld_end),
                   # "", "", "", ""
                   paste0(sld_begin, sld_topographie, sld_end),
@@ -1380,8 +1334,8 @@ sld_get_fluvialstyles <- function() {
                   paste0(sld_begin, sld_nature, sld_end),
                   paste0(sld_begin, sld_confinement, sld_end),
                   paste0(sld_begin, sld_habitat, sld_end),
-                  paste0(sld_begin, sld_gravel, sld_end),
-                  paste0(sld_begin, sld_channelevolution, sld_end))
+                  paste0(sld_begin, sld_gravel, sld_end)
+                  )
   )
 
   return(sld_final)

@@ -333,7 +333,7 @@ params_metrics <- function(){
 }
 
 
-#' Get classes names and description for fluvial styles
+#' Get names and description for proposed classifications
 #'
 #' @importFrom tibble tibble
 #'
@@ -435,3 +435,76 @@ params_classes <- function() {
 
   return(df)
 }
+
+#' Get classes names and colors for proposed classifications
+#'
+#' @return list with classes names and colors, identifiable by each classification-name
+#'
+#' @examples
+#' params_classes_colors()$class_habitat
+params_classes_colors <- function() {
+
+  df <- list()
+  # STRAHLER
+  df$class_strahler <- c("#64b5f6", "#1e88e5", "#1976d2", "#1565c0", "#0d47a1", "#0a2472") %>%
+    setNames(c(1,2,3,4,5,6))
+
+  # TOPOGRAPHY
+  df$class_topographie <- c( "#bb3e03", "#e9d8a6", "#a3b18a",
+                             "#780000","#ee9b00", "#3a5a40") %>%
+    setNames(
+      c("Plaines de montagne",
+        "Plaines de moyenne altitude",
+        "Plaines de basse altitude",
+        "Pentes de montagne",
+        "Pentes de moyenne altitude",
+        "Pentes de basse altitude")
+    )
+
+  # LU DOMINANT
+  df$class_lu_dominante <- c("#31572c", "#90be6d", "#ffbe0b", "#ae2012") %>%
+    setNames(c("forest_pc", "grassland_pc", "crops_pc", "built_environment_pc"))
+
+  # URBAN
+  df$class_urban <- c("#6a040f", "#ba181b", "#ffdd00", "#74c69d") %>%
+    setNames(
+      c("fortement urbanisé", "urbanisé", "modérément urbanisé", "Presque pas/pas urbanisé")
+    )
+
+  # AGRICULTURE
+  df$class_agriculture <- c("#6a040f", "#ba181b", "#ffdd00", "#74c69d") %>%
+    setNames(
+      c("Forte impact agricole", "Impact agricole élevé",
+        "Impact agricole modéré", "Presque pas/pas d'impact agricole")
+    )
+
+  # NATURE
+  df$class_nature <- c("#081c15", "#2d6a4f", "#74c69d", "#d8f3dc") %>%
+    setNames(
+      c("Très forte utilisation naturelle", "Forte utilisation naturelle",
+        "Utilisation naturelle modérée", "Presque pas/pas naturelle")
+    )
+
+  # GRAVEL BARS
+  df$class_gravel <- c("#603808", "#e7bc91", "#0077b6") %>%
+    setNames(
+      c("abundant", "moyennement présente", "absent")
+    )
+
+  # CONFINEMENT
+  df$class_confinement <- c("#2d6a4f", "#99d98c", "#fff3b0", "#ba181b") %>%
+    setNames(
+      c("espace abondant", "modérement espace", "confiné", "très confiné")
+    )
+
+  # HABITAT CONNECTIVITY
+  df$class_habitat <- c("#2d6a4f", "#99d98c", "#fff3b0", "#ba181b") %>%
+    setNames(
+      c("très bien connecté", "bien connecté", "moyen connecté", "faible / absente")
+    )
+
+  return(df)
+}
+
+# save classes colors once to be able to acces it directly
+colors_classes_proposed <- params_classes_colors()

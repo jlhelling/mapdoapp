@@ -563,20 +563,19 @@ assign_classes_proposed <- function(data, proposed_class) {
 
   # strahler ----------------------------------------------------------------
   if (proposed_class == "class_strahler") {
-    colors_strahler <- c("#64b5f6", "#1e88e5", "#1976d2", "#1565c0", "#0d47a1", "#0a2472") %>%
-      setNames(c(1,2,3,4,5,6))
+    colors_strahler <- colors_classes_proposed$class_strahler
 
     df <- data %>%
       rowwise() %>%
       mutate(
         class_name =
           case_when(
-            strahler == 1 ~ "1",
-            strahler == 2 ~ "2",
-            strahler == 3 ~ "3",
-            strahler == 4 ~ "4",
-            strahler == 5 ~ "5",
-            strahler == 6 ~ "6"
+            strahler == 1 ~ names(colors_strahler)[[1]],
+            strahler == 2 ~ names(colors_strahler)[[2]],
+            strahler == 3 ~ names(colors_strahler)[[3]],
+            strahler == 4 ~ names(colors_strahler)[[4]],
+            strahler == 5 ~ names(colors_strahler)[[5]],
+            strahler == 6 ~ names(colors_strahler)[[6]]
           ),
         color = colors_strahler[[class_name]]
       ) %>%
@@ -586,16 +585,7 @@ assign_classes_proposed <- function(data, proposed_class) {
   # topography --------------------------------------------------------------
   else if (proposed_class == "class_topographie") {
 
-    colors_topo <- c( "#bb3e03", "#e9d8a6", "#a3b18a",
-                      "#780000","#ee9b00", "#3a5a40") %>%
-      setNames(
-        c("Plaines de montagne",
-          "Plaines de moyenne altitude",
-          "Plaines de basse altitude",
-          "Pentes de montagne",
-          "Pentes de moyenne altitude",
-          "Pentes de basse altitude")
-      )
+    colors_topo <- colors_classes_proposed$class_topographie
 
     df <- data %>%
       rowwise() %>%
@@ -618,8 +608,7 @@ assign_classes_proposed <- function(data, proposed_class) {
   else if (proposed_class == "class_lu_dominante") {
 
     # variables among which to select the one with greatest value
-    colors_dom <- c("#31572c", "#90be6d", "#ffbe0b", "#ae2012") %>%
-      setNames(c("forest_pc", "grassland_pc", "crops_pc", "built_environment_pc"))
+    colors_dom <- colors_classes_proposed$class_lu_dominante
 
     # get variable with maximum values and save it as new variable metric_max
     df <- data %>%
@@ -642,10 +631,7 @@ assign_classes_proposed <- function(data, proposed_class) {
 
   # urban lu ----------------------------------------------------------------
   else if (proposed_class == "class_urban") {
-    colors_urban <- c("#6a040f", "#ba181b", "#ffdd00", "#74c69d") %>%
-      setNames(
-        c("fortement urbanisé", "urbanisé", "modérément urbanisé", "Presque pas/pas urbanisé")
-      )
+    colors_urban <- colors_classes_proposed$class_urban
 
     df <- data %>%
       rowwise() %>%
@@ -663,11 +649,7 @@ assign_classes_proposed <- function(data, proposed_class) {
 
   # agricultural lu ---------------------------------------------------------
   else if (proposed_class == "class_agriculture") {
-    colors_agriculture <- colors <- c("#6a040f", "#ba181b", "#ffdd00", "#74c69d") %>%
-      setNames(
-        c("Forte impact agricole", "Impact agricole élevé",
-          "Impact agricole modéré", "Presque pas/pas d'impact agricole")
-      )
+    colors_agriculture <- colors_classes_proposed$class_agriculture
 
     df <- data %>%
       rowwise() %>%
@@ -685,11 +667,7 @@ assign_classes_proposed <- function(data, proposed_class) {
 
   # natural landuse ---------------------------------------------------------
   else if (proposed_class == "class_nature") {
-    colors_nature <- colors <- c("#081c15", "#2d6a4f", "#74c69d", "#d8f3dc") %>%
-      setNames(
-        c("Très forte utilisation naturelle", "Forte utilisation naturelle",
-          "Utilisation naturelle modérée", "Presque pas/pas naturelle")
-      )
+    colors_nature <- colors_classes_proposed$class_nature
 
     df <- data %>%
       rowwise() %>%
@@ -707,10 +685,7 @@ assign_classes_proposed <- function(data, proposed_class) {
 
   # gravel bars -------------------------------------------------------------
   else if (proposed_class == "class_gravel") {
-    colors_gravel <- c("#603808", "#e7bc91", "#0077b6") %>%
-      setNames(
-        c("abundant", "moyennement présente", "absent")
-      )
+    colors_gravel <- colors_classes_proposed$class_gravel
 
     df <- data %>%
       rowwise() %>%
@@ -728,10 +703,7 @@ assign_classes_proposed <- function(data, proposed_class) {
 
   # Confinement -------------------------------------------------------------
   else if (proposed_class == "class_confinement") {
-    colors_confinement <- c("#d9ed92", "#99d98c", "#168aad", "#184e77") %>%
-      setNames(
-        c("espace abondant", "modérement espace", "confiné", "très confiné")
-      )
+    colors_confinement <- colors_classes_proposed$class_confinement
 
     df <- data %>%
       rowwise() %>%
@@ -750,10 +722,7 @@ assign_classes_proposed <- function(data, proposed_class) {
 
   # Habitat -----------------------------------------------------------------
   else if (proposed_class == "class_habitat") {
-    colors_habitat <- c("#2d6a4f", "#99d98c", "#fff3b0", "#ba181b") %>%
-      setNames(
-        c("très bien connecté", "bien connecté", "moyen connecté", "faible / absente")
-      )
+    colors_habitat <- colors_classes_proposed$class_habitat
 
     df <- data %>%
       rowwise() %>%
