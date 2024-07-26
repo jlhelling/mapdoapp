@@ -2,30 +2,36 @@
 % Please edit documentation in R/fct_map.R
 \name{map_class}
 \alias{map_class}
-\title{Add a metric layer with custom symbology to a map.}
+\title{Add a classified layer with proposed symbology to map}
 \usage{
 map_class(
   map,
   wms_params = params_wms()$class,
   cql_filter = "",
   sld_body = "",
+  style = "",
   data_axis
 )
 }
 \arguments{
-\item{map}{A leaflet map object to which the metric layer will be added.}
+\item{map}{A leaflet map object to which the network layer will be added.}
 
-\item{wms_params}{A list containing WMS parameters for the metric layer. If not provided, default parameters are retrieved using the \code{\link{params_wms}} function.}
+\item{wms_params}{A list containing WMS parameters for the network layer. If not provided, default parameters are retrieved using the \code{\link{params_wms}} function.}
 
-\item{cql_filter}{A character string representing a CQL filter to apply to the metric layer.}
+\item{cql_filter}{A character string representing a CQL filter to apply to the layer.}
 
-\item{sld_body}{A character string representing the SLD (Styled Layer Descriptor) body for custom styling of the metric layer.}
+\item{sld_body}{A character string representing the SLD (Styled Layer Descriptor) body for custom styling of the legend}
+
+\item{style}{character string specifying the name of the sld-styling to apply to the layer which is saved on geoserver}
 
 \item{data_axis}{A data axis to display on the map.}
 }
 \value{
-A leaflet map object with the metric layer added.
+A leaflet map object with the network layer added.
 }
 \description{
-This function adds a metric layer with custom symbology to a leaflet map. It allows you to specify custom parameters for the Web Map Service (WMS) request, apply a CQL (Common Query Language) filter, and provide a custom SLD (Styled Layer Descriptor) body for styling the layer. Additionally, you can specify the data axis to display on the map.
+This function adds the network layer with one of the proposed symbologys to a leaflet map.
+It allows to specify custom parameters for the Web Map Service (WMS) request, apply a CQL (Common Query Language) filter,
+and select a proposed SLD (Styled Layer Descriptor) body for styling the layer. Additionally, the data axis can be specified
+ to display on the map.
 }

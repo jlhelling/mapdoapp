@@ -32,7 +32,7 @@ params_wms <- function(){
                            url = Sys.getenv("GEOSERVER"),
                            language = "",
                            service = "WMS",
-                           version = "1.0.0",
+                           version = "1.1.0",
                            sld_version = "",
                            layer = "mapdo:network_metrics",
                            format = "image/png",
@@ -419,6 +419,17 @@ params_classes <- function() {
       "class_gravel",
       "class_confinement",
       "class_habitat"
+    ),
+    sld_style = c(
+      "classes_proposed_strahler",
+      "classes_proposed_topographie",
+      "classes_proposed_lu_dominante",
+      "classes_proposed_urban",
+      "classes_proposed_agriculture",
+      "classes_proposed_nature",
+      "classes_proposed_gravel",
+      "classes_proposed_confinement",
+      "classes_proposed_habitat"
     )
   ) %>%
     # join sld styles

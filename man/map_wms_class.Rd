@@ -8,7 +8,7 @@ map_wms_class(
   map,
   wms_params = params_wms()$class,
   cql_filter = "",
-  sld_body = ""
+  style = ""
 )
 }
 \arguments{
@@ -18,13 +18,15 @@ map_wms_class(
 
 \item{cql_filter}{A CQL filter to apply to the WMS request.}
 
+\item{style}{character string specifying the name of the sld-styling to apply to the layer which is saved on geoserver}
+
 \item{sld_body}{A custom SLD (Styled Layer Descriptor) body for symbology customization.}
 }
 \value{
 An updated Leaflet map with WMS tiles containing metric data added.
 }
 \description{
-This function adds WMS tiles with fluvial style to an existing Leaflet map, allowing for customization of style and filtering.
+This function adds WMS tiles with a proposed style to an existing Leaflet map, allowing for customization of style and filtering.
 }
 \examples{
 \dontrun{

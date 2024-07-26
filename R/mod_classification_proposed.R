@@ -75,6 +75,7 @@ mod_classification_proposed_server <- function(id, r_val){
           map_class(wms_params = params_wms()$class,
                     cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
                     sld_body = r_val$sld_body,
+                    style = paste0("mapdo:", classes_proposed[selected,]$sld_style),
                     data_axis = r_val$network_region_axis)
 
         # set visualisation to classes to tell app that proposed classes are selected

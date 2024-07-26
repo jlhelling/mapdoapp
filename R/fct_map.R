@@ -317,11 +317,12 @@ map_wms_metric <-function(map, wms_params = params_wms()$metric,
 
 #' Map WMS class
 #'
-#' This function adds WMS tiles with fluvial style to an existing Leaflet map, allowing for customization of style and filtering.
+#' This function adds WMS tiles with a proposed style to an existing Leaflet map, allowing for customization of style and filtering.
 #'
 #' @param map An existing Leaflet map to which WMS tiles will be added.
 #' @param wms_params A list of WMS parameters.
 #' @param cql_filter A CQL filter to apply to the WMS request.
+#' @param style character string specifying the name of the sld-styling to apply to the layer which is saved on geoserver
 #' @param sld_body A custom SLD (Styled Layer Descriptor) body for symbology customization.
 #'
 #' @return An updated Leaflet map with WMS tiles containing metric data added.
@@ -335,7 +336,7 @@ map_wms_metric <-function(map, wms_params = params_wms()$metric,
 #'
 #' @export
 map_wms_class <- function(map, wms_params = params_wms()$class,
-                          cql_filter = "", sld_body = "") {
+                          cql_filter = "", style = "") {
   map %>%
     addWMSTiles(
       baseUrl = wms_params$url,
@@ -345,9 +346,8 @@ map_wms_class <- function(map, wms_params = params_wms()$class,
         format = wms_params$format,
         request = "GetMap",
         transparent = TRUE,
-        styles = wms_params$style,
+        styles = style,
         cql_filter = cql_filter,
-        sld_body = sld_body,
         zIndex = 90
       ),
       group = params_map_group()[["class"]]
@@ -498,31 +498,35 @@ map_metric <- function(map, wms_params = params_wms()$metric,
                  layerId = "legend_metric")
 }
 
-#' Add a metric layer with custom symbology to a map.
+#' Add a classified layer with proposed symbology to map
 #'
-#' This function adds a metric layer with custom symbology to a leaflet map. It allows you to specify custom parameters for the Web Map Service (WMS) request, apply a CQL (Common Query Language) filter, and provide a custom SLD (Styled Layer Descriptor) body for styling the layer. Additionally, you can specify the data axis to display on the map.
+#' This function adds the network layer with one of the proposed symbologys to a leaflet map.
+#' It allows to specify custom parameters for the Web Map Service (WMS) request, apply a CQL (Common Query Language) filter,
+#' and select a proposed SLD (Styled Layer Descriptor) body for styling the layer. Additionally, the data axis can be specified
+#'  to display on the map.
 #'
-#' @param map A leaflet map object to which the metric layer will be added.
-#' @param wms_params A list containing WMS parameters for the metric layer. If not provided, default parameters are retrieved using the \code{\link{params_wms}} function.
-#' @param cql_filter A character string representing a CQL filter to apply to the metric layer.
-#' @param sld_body A character string representing the SLD (Styled Layer Descriptor) body for custom styling of the metric layer.
+#' @param map A leaflet map object to which the network layer will be added.
+#' @param wms_params A list containing WMS parameters for the network layer. If not provided, default parameters are retrieved using the \code{\link{params_wms}} function.
+#' @param cql_filter A character string representing a CQL filter to apply to the layer.
+#' @param sld_body A character string representing the SLD (Styled Layer Descriptor) body for custom styling of the legend
+#' @param style character string specifying the name of the sld-styling to apply to the layer which is saved on geoserver
 #' @param data_axis A data axis to display on the map.
 #'
-#' @return A leaflet map object with the metric layer added.
+#' @return A leaflet map object with the network layer added.
 #'
 #' @importFrom leaflet leaflet addTiles setView clearGroup addWMSTiles
 #' @importFrom leaflet.extras addWMSLegend
 #'
 #' @export
 map_class <- function(map, wms_params = params_wms()$class,
-                       cql_filter = "", sld_body = "", data_axis) {
+                       cql_filter = "", sld_body = "", style = "", data_axis) {
   map %>%
     clearGroup(params_map_group()[["axis"]]) %>%
     clearGroup(params_map_group()[["metric"]]) %>%
     clearGroup(params_map_group()[["class"]]) %>%
     # add metric with custom symbology
     map_wms_class(wms_params = wms_params,
-                   cql_filter = cql_filter, sld_body = sld_body) %>%
+                   cql_filter = cql_filter, style = style) %>%
     # add transparent axis
     map_axis(data_axis = data_axis) %>%
     addWMSLegend(uri = map_legend_metric(sld_body = sld_body),
