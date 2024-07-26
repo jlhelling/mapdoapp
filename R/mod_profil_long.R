@@ -285,7 +285,6 @@ mod_profil_long_server <- function(id, r_val){
           # proposed classification applied
           if (r_val$visualization == "classes") {
             r_val$dgo_axis_classified = r_val$dgo_axis %>%
-              na.omit() %>%
               assign_classes_proposed(proposed_class = params_classes()[r_val$classes_proposed_selected,]$class_name)
             }
 

@@ -126,7 +126,8 @@ data_get_network_region <- function(selected_region_id, con) {
   query <- sqlInterpolate(con, sql, selected_region_id = selected_region_id)
 
   data <- sf::st_read(dsn = con, query = query) %>%
-    dplyr::arrange(measure)
+    dplyr::arrange(measure) #%>%
+    # na.omit()
 
   return(data)
 }
@@ -304,7 +305,8 @@ data_get_network_axis <- function(selected_axis_id, con) {
   query <- sqlInterpolate(con, sql, selected_axis_id = selected_axis_id)
 
   data <- sf::st_read(dsn = con, query = query) %>%
-    dplyr::arrange(measure)
+    dplyr::arrange(measure) #%>%
+    # na.omit()
 
   return(data)
 }
@@ -468,28 +470,37 @@ data_get_elevation_profiles <- function(selected_dgo_fid, con){
 #'
 create_df_input <- function(axis_data, variable_name, no_classes = 4, quantile = 95){
 
-  # set upper and lower boundaries of quantile interval
-  q_low <- (1 - quantile/100)/2
+  # Set upper and lower boundaries of quantile interval
+  q_low <- (1 - quantile / 100) / 2
   q_high <- 1 - q_low
 
-  # calculate quantile values (max, min) and steps
+  # Calculate quantile values (min, max) and steps
   q_values <- quantile(axis_data[[variable_name]], probs = c(q_low, q_high), na.rm = TRUE)
-  q_steps <- (q_values[[2]] - q_values[[1]])/no_classes
+  q_min <- q_values[1]
+  q_max <- q_values[2]
+  q_steps <- (q_max - q_min) / (no_classes)
 
-  # empty dataframe to store class thresholds
-  classes <- rep(0, no_classes)
+  # Create class thresholds
+  classes <- seq(q_min, q_max, by = q_steps)
 
-  # set threshold values of all classes
-  for (i in 1:no_classes) {
-    classes[i] <- round(q_steps*(no_classes - i), 2)
+  # Ensure the first threshold is 0 and last is deleted
+  classes <- c(0, classes[2:no_classes])
+
+  # Create reversed RdBu color palette
+  color_palette <- if (no_classes == 2) {
+    c("#2166AC", "#B2182B")
+  } else {
+    rev(brewer.pal(no_classes, "RdBu"))
   }
 
-  # create dataframe
-  df <- data.frame(class = LETTERS[1:no_classes],
-                   variable = variable_name,
-                   greaterthan = classes,
-                   color = {if (no_classes == 2) {c("#B2182B", "#2166AC")} else {brewer.pal(no_classes, "RdBu")}},
-                   stringsAsFactors = FALSE)
+  # Create dataframe
+  df <- data.frame(
+    class = LETTERS[1:no_classes],
+    variable = variable_name,
+    greaterthan = round(classes, 2),
+    color = color_palette,
+    stringsAsFactors = FALSE
+  )
 
   return(df)
 }
