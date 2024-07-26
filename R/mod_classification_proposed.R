@@ -54,8 +54,7 @@ mod_classification_proposed_server <- function(id, r_val){
 
       if (!is.null(r_val$region_click)) {
         r_val_local$placeholder_text = NULL
-        r_val_local$classes_tbl <- params_classes()
-        r_val_local$table = create_table_fluvialstyles(r_val_local$classes_tbl)
+        r_val_local$table = create_table_fluvialstyles(classes_proposed)
       }
     })
 
@@ -69,7 +68,7 @@ mod_classification_proposed_server <- function(id, r_val){
       if (!is.null(selected)) {
 
         # create map styling based on selected classification
-        r_val$sld_body = r_val_local$classes_tbl[selected,]$class_sld
+        r_val$sld_body = classes_proposed[selected,]$class_sld
 
         # add styling to map
         r_val$map_proxy %>%

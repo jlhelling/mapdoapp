@@ -18,3 +18,9 @@ globalVariables(unique(c(
   # data_get_elevation_profiles:
   "distance", "profile"
 )))
+
+# save classes once to be able to access it directly
+classes_proposed <<- params_classes()
+
+# save classes colors once to be able to access it directly
+colors_classes_proposed <<- params_classes_colors()

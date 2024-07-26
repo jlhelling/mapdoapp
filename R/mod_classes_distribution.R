@@ -63,7 +63,7 @@ mod_classes_distribution_server <- function(id, r_val){
             # Create classified network by adding the classes and colors
             r_val$network_region_classified <- r_val$network_region %>%
               na.omit() %>%
-              assign_classes_proposed(proposed_class = params_classes()[r_val$classes_proposed_selected,]$class_name)
+              assign_classes_proposed(proposed_class = classes_proposed[r_val$classes_proposed_selected,]$class_name)
           }
           # classes manually selected
           else if ((r_val$visualization == "manual") && !is.null(r_val$manual_classes_table)) {
@@ -93,7 +93,7 @@ mod_classes_distribution_server <- function(id, r_val){
             # create classified axis network
             r_val$dgo_axis_classified <- r_val$dgo_axis %>%
               na.omit() %>%
-              assign_classes_proposed(proposed_class = params_classes()[r_val$classes_proposed_selected,]$class_name)
+              assign_classes_proposed(proposed_class = classes_proposed[r_val$classes_proposed_selected,]$class_name)
           }
           # classes manually selected
           else if ((r_val$visualization == "manual") && !is.null(r_val$manual_classes_table)) {

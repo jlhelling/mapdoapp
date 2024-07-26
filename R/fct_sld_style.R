@@ -195,6 +195,8 @@ sld_get_style <- function(breaks, colors, metric) {
 #'
 sld_get_fluvialstyles <- function() {
 
+  colors_classes_pro <- params_classes_colors()
+
   sld_begin <- glue::glue('<?xml version="1.0" encoding="UTF-8"?>
     <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:se="http://www.opengis.net/se" xmlns:ogc="http://www.opengis.net/ogc">
       <NamedLayer>
@@ -212,7 +214,7 @@ sld_get_fluvialstyles <- function() {
 
   # strahler ----------------------------------------------------------------
 
-  colors_strahler <- colors_classes_proposed$class_strahler
+  colors_strahler <- colors_classes_pro$class_strahler
   strahler_sld_rules <- character(0)
 
   for (i in 1:6) {
@@ -247,7 +249,7 @@ sld_get_fluvialstyles <- function() {
 
   # Topographie -------------------------------------------------------------
 
-  colors_topo <- colors_classes_proposed$class_topographie
+  colors_topo <- colors_classes_pro$class_topographie
 
   sld_topographie <- glue::glue('
       <se:Rule>
@@ -447,7 +449,7 @@ sld_get_fluvialstyles <- function() {
 
   # Dominant Land use -------------------------------------------------------
 
-  colors_lu_dominante <- colors_classes_proposed$class_lu_dominante
+  colors_lu_dominante <- colors_classes_pro$class_lu_dominante
 
 
   sld_lu_dominante  <- glue::glue('
@@ -600,7 +602,7 @@ sld_get_fluvialstyles <- function() {
 
   # Urban landuse -----------------------------------------------------------
 
-  colors_urban <- colors_classes_proposed$class_urban
+  colors_urban <- colors_classes_pro$class_urban
 
   sld_urban  <- glue::glue('
       <se:Rule>
@@ -714,7 +716,7 @@ sld_get_fluvialstyles <- function() {
 
   # Agricultural landuse ----------------------------------------------------
 
-    colors_agriculture <- colors_classes_proposed$class_agriculture
+    colors_agriculture <- colors_classes_pro$class_agriculture
 
   sld_agriculture  <- glue::glue('
       <se:Rule>
@@ -827,7 +829,7 @@ sld_get_fluvialstyles <- function() {
 
   # Natural landuse ---------------------------------------------------------
 
-  colors_nature <- colors_classes_proposed$class_nature
+  colors_nature <- colors_classes_pro$class_nature
 
   sld_nature  <- glue::glue('
       <se:Rule>
@@ -968,7 +970,7 @@ sld_get_fluvialstyles <- function() {
 
   # Confinement -------------------------------------------------------------
 
-  colors_confinement <- colors_classes_proposed$class_confinement
+  colors_confinement <- colors_classes_pro$class_confinement
 
   sld_confinement  <- glue::glue('
       <se:Rule>
@@ -1082,7 +1084,7 @@ sld_get_fluvialstyles <- function() {
 
   # Habitat -----------------------------------------------------------------
 
-  colors_habitat <- colors_classes_proposed$class_habitat
+  colors_habitat <- colors_classes_pro$class_habitat
 
   sld_habitat  <- glue::glue('
       <se:Rule>
@@ -1218,7 +1220,7 @@ sld_get_fluvialstyles <- function() {
   # Gravel bars -------------------------------------------------------------
 
 
-  colors_gravel <- colors_classes_proposed$class_gravel
+  colors_gravel <- colors_classes_pro$class_gravel
 
   sld_gravel  <- glue::glue('
       <se:Rule>

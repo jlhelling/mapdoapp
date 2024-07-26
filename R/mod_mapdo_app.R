@@ -250,7 +250,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
           r_val$map_proxy %>%
             map_class(wms_params = params_wms()$class,
                       cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
-                      sld_body = params_classes()[1,]$class_sld,
+                      sld_body = classes_proposed[1,]$class_sld,
                       data_axis = r_val$network_region_axis)
         }
         # map_metric(wms_params = params_wms()$metric,

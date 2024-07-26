@@ -353,7 +353,6 @@ params_classes <- function() {
       "Présence de bancs sédimentaires",
       "Confinement de la bande active",
       "Connectivité des habitats riverains"
-      # "Évolution de la taille du chenal de l'eau"
     ),
     description = c(
       # strahler
@@ -409,13 +408,6 @@ params_classes <- function() {
       - bien connecté (>= 40 %)
       - moyen connecté (>= 10 % )
       - faible / absente (< 10 %)"
-      # channel size evolution
-      # "indique une réduction de la taille des chenaux sur le réseau de cours d'eau vers le bas
-      # - grandissant
-      # - stable
-      # - diminuant
-      #
-      # NOT WORKING UNTIL NOW DUE TO SLD STYLING CONSTRAINTS"
     ),
     class_name = c(
       "class_strahler",
@@ -427,7 +419,6 @@ params_classes <- function() {
       "class_gravel",
       "class_confinement",
       "class_habitat"
-      # "class_channelevolution"
     )
   ) %>%
     # join sld styles
@@ -505,6 +496,3 @@ params_classes_colors <- function() {
 
   return(df)
 }
-
-# save classes colors once to be able to acces it directly
-colors_classes_proposed <- params_classes_colors()
