@@ -109,6 +109,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
       map_init_bassins(bassins_data = r_val$bassins,
                        id_logo_ign_remonterletemps = ns("logo_ign_remonterletemps"))
     })
+
     onclick(id = "logo_ign_remonterletemps", expr =
               runjs(sprintf("window.open('%s', '_blank')",
                             utils_url_remonterletemps(lng = input$map_center$lng,
@@ -170,7 +171,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
         r_val$selection_text = paste0("Bassin: ", r_val$bassin_name)
       }
 
-      ### region clicked ####
+      #### region clicked ####
       if (input$map_shape_click$group == params_map_group()$region){
 
         # register first selection of region
@@ -246,13 +247,13 @@ mod_mapdo_app_server <- function(id, con, r_val){
                              hydro_sites_region = r_val$hydro_sites_region)
 
         # add strahler-order network visualization to map when classes visualisation is selected (and not manual)
-        if ((r_val$visualization == "classes") && is.null(r_val$classes_proposed_selected)) {
-          r_val$map_proxy %>%
-            map_class(wms_params = params_wms()$class,
-                      cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
-                      sld_body = classes_proposed[1,]$class_sld,
-                      data_axis = r_val$network_region_axis)
-        }
+        # if ((r_val$visualization == "classes") && is.null(r_val$classes_proposed_selected)) {
+        #   r_val$map_proxy %>%
+        #     map_class(wms_params = params_wms()$class,
+        #               cql_filter = paste0("gid_region!=",r_val$selected_region_feature[["gid"]]),
+        #               style = "mapdo:",
+        #               data_axis = r_val$network_region_axis)
+        # }
         # map_metric(wms_params = params_wms()$metric,
         #            cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
         #            sld_body = r_val$sld_body,
@@ -301,7 +302,7 @@ mod_mapdo_app_server <- function(id, con, r_val){
                                       ", région: ", r_val$selected_region_feature$lbregionhy)
       }
 
-      ### axis clicked ####
+      #### axis clicked ####
 
       if (input$map_shape_click$group == params_map_group()$axis) {
 
@@ -355,9 +356,9 @@ mod_mapdo_app_server <- function(id, con, r_val){
         # inform the first axis has been clicked
         r_val$axis_clicked = TRUE
       }
-      #
-      # ### dgo clicked ####
-      #
+
+      #### dgo clicked ####
+
       if (input$map_shape_click$group == params_map_group()$dgo_axis) {
         # get data with dgo id
         r_val$data_section = data_get_elevation_profiles(selected_dgo_fid = input$map_shape_click$id,

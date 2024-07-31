@@ -8,7 +8,8 @@ map_wms_class(
   map,
   wms_params = params_wms()$class,
   cql_filter = "",
-  style = ""
+  style = "",
+  opacity = 1
 )
 }
 \arguments{

@@ -37,10 +37,23 @@ params_wms <- function(){
                            layer = "mapdo:network_metrics",
                            format = "image/png",
                            sld = "",
-                           style = "", # no style, sld_body define style and legend
+                           style = "", # no style, will be defined depending on selection
                            attribution = "CNRS - EVS",
                            basemap = FALSE,
                            overlayer = FALSE),
+              background = list(name = "Background",
+                                url = Sys.getenv("GEOSERVER"),
+                                language = "",
+                                service = "WMS",
+                                version = "1.1.0",
+                                sld_version = "",
+                                layer = "mapdo:network_metrics",
+                                format = "image/png",
+                                sld = "",
+                                style = "mapdo:classes_proposed_strahler",
+                                attribution = "CNRS - EVS",
+                                basemap = FALSE,
+                                overlayer = FALSE),
               carteign = list(name = "Plan IGN",
                               url = 'https://data.geopf.fr/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',
                               language = "",
@@ -197,6 +210,7 @@ params_map_group <- function(){
     select_region = "SELECT_REGION",
     metric = "METRIC",
     class = "CLASS",
+    background = "BACKGROUND",
     axis = "AXIS",
     dgo_axis = "DGOAXIS",
     dgo = "DGO",
@@ -464,17 +478,17 @@ params_classes_colors <- function() {
     )
 
   # LU DOMINANT
-  df$class_lu_dominante <- c("#31572c", "#90be6d", "#ffbe0b", "#ae2012") %>%
+  df$class_lu_dominante <- c("#2d6a4f", "#99d98c", "#ffdd00", "#ba181b") %>%
     setNames(c("forest_pc", "grassland_pc", "crops_pc", "built_environment_pc"))
 
   # URBAN
-  df$class_urban <- c("#6a040f", "#ba181b", "#ffdd00", "#74c69d") %>%
+  df$class_urban <- c("#6a040f", "#dc2f02", "#ffdd00", "#74c69d") %>%
     setNames(
       c("fortement urbanisé", "urbanisé", "modérément urbanisé", "Presque pas/pas urbanisé")
     )
 
   # AGRICULTURE
-  df$class_agriculture <- c("#6a040f", "#ba181b", "#ffdd00", "#74c69d") %>%
+  df$class_agriculture <- c("#6a040f", "#dc2f02", "#ffdd00", "#74c69d") %>%
     setNames(
       c("Forte impact agricole", "Impact agricole élevé",
         "Impact agricole modéré", "Presque pas/pas d'impact agricole")
@@ -494,13 +508,13 @@ params_classes_colors <- function() {
     )
 
   # CONFINEMENT
-  df$class_confinement <- c("#2d6a4f", "#99d98c", "#fff3b0", "#ba181b") %>%
+  df$class_confinement <- c("#2d6a4f", "#99d98c", "#ffdd00", "#ba181b") %>%
     setNames(
       c("espace abondant", "modérement espace", "confiné", "très confiné")
     )
 
   # HABITAT CONNECTIVITY
-  df$class_habitat <- c("#2d6a4f", "#99d98c", "#fff3b0", "#ba181b") %>%
+  df$class_habitat <- c("#2d6a4f", "#99d98c", "#ffdd00", "#ba181b") %>%
     setNames(
       c("très bien connecté", "bien connecté", "moyen connecté", "faible / absente")
     )

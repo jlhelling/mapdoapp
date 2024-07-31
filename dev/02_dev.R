@@ -29,7 +29,7 @@ run_app()
 
 # check function examples
 attachment::att_amend_desc()
-devtools::run_examples(run=FALSE, fresh = T)
+devtools::run_examples(run = FALSE, fresh = T)
 
 # show react log (run after run_app())
 shiny::reactlogShow()

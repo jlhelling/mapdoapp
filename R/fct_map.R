@@ -66,7 +66,8 @@ map_init_bassins <- function(bassins_data, id_logo_ign_remonterletemps) {
                       src = "www/logo_ign_remonterletemps.jpg",
                       width = 50, height = 50,
                       title="Vers le site IGN remonterletemps"))
-    )
+    ) %>%
+    map_background(wms_params = params_wms()$background)
 }
 
 #' Add hydrological Regions in a Bassin to an existing Leaflet Map
@@ -225,6 +226,7 @@ map_region_clicked <- function(map,
                  params_map_group()[["dgo_axis"]],
                  params_map_group()[["dgo"]],
                  params_map_group()[["axis_start_end"]],
+                 params_map_group()[["background"]],
                  unlist(sapply(params_wms(), function(x) if (x$overlayer) x$name else NULL), use.names = FALSE))) %>%
     # restyle the regions
     addPolygons(data = regions_data,
@@ -251,7 +253,7 @@ map_region_clicked <- function(map,
                      popup = ~nomprincip,
                      group = params_map_group()[["roe"]]
     ) %>%
-    # hydrometric sites layer hidden by default
+    # ROE layer hidden by default
     hideGroup(params_map_group()[["roe"]]) %>%
     addCircleMarkers(data = hydro_sites_region,
                      radius = 4.5,
@@ -273,7 +275,9 @@ map_region_clicked <- function(map,
       overlayGroups = c(params_map_group()[["roe"]],
                         params_map_group()[["hydro_sites"]],
                         unlist(sapply(params_wms(), function(x) if (x$overlayer) x$name else NULL), use.names = FALSE))
-    )
+    ) %>%
+    map_background(wms_params = params_wms()$background,
+                   cql_filter = paste0("gid_region <>", selected_region_feature[["gid"]]))
 }
 
 #' Map WMS metric
@@ -325,7 +329,7 @@ map_wms_metric <-function(map, wms_params = params_wms()$metric,
 #' @param style character string specifying the name of the sld-styling to apply to the layer which is saved on geoserver
 #' @param sld_body A custom SLD (Styled Layer Descriptor) body for symbology customization.
 #'
-#' @return An updated Leaflet map with WMS tiles containing metric data added.
+#' @return An updated Leaflet map with WMS tiles containing classes data added.
 #'
 #' @importFrom leaflet addWMSTiles WMSTileOptions
 #'
@@ -336,7 +340,7 @@ map_wms_metric <-function(map, wms_params = params_wms()$metric,
 #'
 #' @export
 map_wms_class <- function(map, wms_params = params_wms()$class,
-                          cql_filter = "", style = "") {
+                          cql_filter = "", style = "", opacity = 1) {
   map %>%
     addWMSTiles(
       baseUrl = wms_params$url,
@@ -348,9 +352,39 @@ map_wms_class <- function(map, wms_params = params_wms()$class,
         transparent = TRUE,
         styles = style,
         cql_filter = cql_filter,
+        opacity = opacity,
         zIndex = 90
       ),
       group = params_map_group()[["class"]]
+    )
+}
+
+#' Title
+#'
+#' @param map An existing Leaflet map to which WMS tiles will be added.
+#' @param wms_params A list of WMS parameters.
+#' @param cql_filter A CQL filter to apply to the WMS request.
+#'
+#' @return An updated Leaflet map with WMS tiles of the Strahler-styled network added.
+#'
+#' @examples
+map_background <- function(map, wms_params, cql_filter = "") {
+
+  map %>%
+    addWMSTiles(
+      baseUrl = wms_params$url,
+      layers = wms_params$layer,
+      attribution = wms_params$attribution,
+      options = WMSTileOptions(
+        format = wms_params$format,
+        request = "GetMap",
+        transparent = TRUE,
+        styles = wms_params$style,
+        cql_filter = cql_filter,
+        opacity = 0.7,
+        zIndex = 90
+      ),
+      group = params_map_group()[["background"]]
     )
 }
 
