@@ -1,3 +1,17 @@
+# example for statistics-derival from database
+# SELECT
+# AVG(talweg_elevation_min) AS average,
+# MIN(talweg_elevation_min) AS low_outlier,
+# percentile_cont(0.025) WITHIN GROUP (ORDER BY talweg_elevation_min) AS low_whisker,
+# percentile_cont(0.25) WITHIN GROUP (ORDER BY talweg_elevation_min) AS q1,
+# percentile_cont(0.5) WITHIN GROUP (ORDER BY talweg_elevation_min) AS median,
+# percentile_cont(0.75) WITHIN GROUP (ORDER BY talweg_elevation_min) AS q2,
+# percentile_cont(0.975) WITHIN GROUP (ORDER BY talweg_elevation_min) AS high_whisker,
+# MAX(talweg_elevation_min) AS high_outlier
+# FROM network_metrics
+
+
+
 #' convert sf to pivoted dataframe with variables as rows
 #'
 #' @import dplyr

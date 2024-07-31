@@ -24,7 +24,7 @@ map_wms_class(
 \item{sld_body}{A custom SLD (Styled Layer Descriptor) body for symbology customization.}
 }
 \value{
-An updated Leaflet map with WMS tiles containing metric data added.
+An updated Leaflet map with WMS tiles containing classes data added.
 }
 \description{
 This function adds WMS tiles with a proposed style to an existing Leaflet map, allowing for customization of style and filtering.

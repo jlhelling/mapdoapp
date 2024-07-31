@@ -2,13 +2,24 @@
 % Please edit documentation in R/fct_map.R
 \name{map_background}
 \alias{map_background}
-\title{Title}
+\title{Map WMS background with Strahler styling}
 \usage{
 map_background(map, wms_params, cql_filter = "")
 }
 \arguments{
-\item{cql_filter}{}
+\item{map}{An existing Leaflet map to which WMS tiles will be added.}
+
+\item{wms_params}{A list of WMS parameters.}
+
+\item{cql_filter}{A CQL filter to apply to the WMS request.}
+}
+\value{
+An updated Leaflet map with WMS tiles of the Strahler-styled network added.
 }
 \description{
-Title
+Map WMS background with Strahler styling
+}
+\examples{
+map \%>\%
+map_background(wms_params = params_wms()$background, cql_filter = "gid_region <> 11")
 }

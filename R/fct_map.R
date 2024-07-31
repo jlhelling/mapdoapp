@@ -359,7 +359,7 @@ map_wms_class <- function(map, wms_params = params_wms()$class,
     )
 }
 
-#' Title
+#' Map WMS background with Strahler styling
 #'
 #' @param map An existing Leaflet map to which WMS tiles will be added.
 #' @param wms_params A list of WMS parameters.
@@ -368,6 +368,8 @@ map_wms_class <- function(map, wms_params = params_wms()$class,
 #' @return An updated Leaflet map with WMS tiles of the Strahler-styled network added.
 #'
 #' @examples
+#' map %>%
+#' map_background(wms_params = params_wms()$background, cql_filter = "gid_region <> 11")
 map_background <- function(map, wms_params, cql_filter = "") {
 
   map %>%

@@ -15,7 +15,8 @@ create_table_fluvialstyles <- function(params_styles) {
                        class_title = colDef(name = "Style", sortable = FALSE),
                        description = colDef(show = FALSE),  # Hide column
                        class_name = colDef(show = FALSE),  # Hide column
-                       class_sld = colDef(show = FALSE)  # Hide column
+                       class_sld = colDef(show = FALSE),  # Hide column
+                       sld_style = colDef(show = FALSE)  # Hide column
                      ),
                      details = function(index) {
                        htmltools::div(
