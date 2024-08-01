@@ -558,6 +558,17 @@ assign_classes_manual <- function(data, classes) {
 #'
 assign_classes_proposed <- function(data, proposed_class) {
 
+  # Function to safely get color by class_name
+  get_color <- function(class_name, colors_df) {
+    if (class_name == "unvalid") {
+      return("#f8f8ff")
+    } else if (class_name %in% names(colors_df)) {
+      return(colors_df[[class_name]])
+    } else {
+      return("#f8f8ff") # Fallback color
+    }
+  }
+
   data <- data %>% sf::st_drop_geometry()
 
 
@@ -570,14 +581,16 @@ assign_classes_proposed <- function(data, proposed_class) {
       mutate(
         class_name =
           case_when(
+            is.na(strahler) ~ "unvalid",
             strahler == 1 ~ names(colors_strahler)[[1]],
             strahler == 2 ~ names(colors_strahler)[[2]],
             strahler == 3 ~ names(colors_strahler)[[3]],
             strahler == 4 ~ names(colors_strahler)[[4]],
             strahler == 5 ~ names(colors_strahler)[[5]],
             strahler == 6 ~ names(colors_strahler)[[6]]
-          ),
-        color = colors_strahler[[class_name]]
+          )) %>%
+      mutate(
+        color = get_color(class_name, colors_strahler)
       ) %>%
       ungroup()  # Ungroup after row-wise operation
   }
@@ -592,16 +605,18 @@ assign_classes_proposed <- function(data, proposed_class) {
       mutate(
         class_name =
           case_when(
+            (is.na(talweg_elevation_min) | is.na(talweg_slope)) ~ "unvalid",
             (talweg_elevation_min >= 1000 & talweg_slope >= 0.05) ~ names(colors_topo)[[4]],
             (talweg_elevation_min >= 1000 & talweg_slope < 0.05) ~ names(colors_topo)[[1]],
             (talweg_elevation_min >= 300 & talweg_slope >= 0.05) ~ names(colors_topo)[[5]],
             (talweg_elevation_min >= 300 & talweg_slope < 0.05) ~ names(colors_topo)[[2]],
             (talweg_elevation_min >= -50 & talweg_slope >= 0.05) ~ names(colors_topo)[[6]],
             (talweg_elevation_min >= -50 & talweg_slope < 0.05) ~ names(colors_topo)[[3]],
-          ),
-        color = colors_topo[[class_name]]
+          )) %>%
+      mutate(
+        color = get_color(class_name, colors_topo)
       ) %>%
-      ungroup()  # Ungroup after row-wise operation
+      ungroup()
   }
 
   # dominant lu class -------------------------------------------------------
@@ -610,22 +625,37 @@ assign_classes_proposed <- function(data, proposed_class) {
     # variables among which to select the one with greatest value
     colors_dom <- colors_classes_proposed$class_lu_dominante
 
-    # get variable with maximum values and save it as new variable metric_max
+    # Function to safely get the max metric and its corresponding color
+    get_max_metric <- function(...) {
+      values <- c(...)
+      max_idx <- which.max(values)
+      if (all(is.na(values))) {
+        return("unvalid")
+      } else {
+        return(names(colors_dom)[max_idx])
+      }
+    }
+
+    # Main processing
     df <- data %>%
       rowwise() %>%
       mutate(
-        metric_max = names(colors_dom)[which.max(c_across(names(colors_dom)))],
-        color = colors_dom[[metric_max]]
-      ) %>% # Assign land use class with maximum value and the corresponding color
-      ungroup() %>%  # Ungroup after row-wise operation
-      mutate(class_name = case_when(
-        metric_max == "forest_pc" ~ "Forêt",
-        metric_max == "grassland_pc" ~ "Prairies",
-        metric_max == "crops_pc" ~ "Cultures",
-        metric_max == "built_environment_pc" ~ "Espace construits"
-      )) %>% # Assign proper class names based on metric_max
-      select(!metric_max)  # Remove metric_max column
-
+        metric_max = get_max_metric(forest_pc, grassland_pc, crops_pc, built_environment_pc)
+      ) %>%
+      mutate(
+        color = get_color(metric_max, colors_dom)
+      ) %>%
+      ungroup() %>%
+      mutate(
+        class_name = case_when(
+          metric_max == "forest_pc" ~ "Forêt",
+          metric_max == "grassland_pc" ~ "Prairies",
+          metric_max == "crops_pc" ~ "Cultures",
+          metric_max == "built_environment_pc" ~ "Espace construits",
+          .default = "unvalid"
+        )
+      ) %>%
+      select(!metric_max) # Remove metric_max column
 
   }
 
@@ -637,12 +667,15 @@ assign_classes_proposed <- function(data, proposed_class) {
       rowwise() %>%
       mutate(class_name =
                case_when(
+                 is.na(built_environment_pc) ~ "unvalid",
                  built_environment_pc >= 70 ~ names(colors_urban)[[1]],
                  built_environment_pc >= 40 ~ names(colors_urban)[[2]],
                  built_environment_pc >= 10 ~ names(colors_urban)[[3]],
                  built_environment_pc >= 0 ~ names(colors_urban)[[4]],
-               ),
-             color = colors_urban[[class_name]]) %>%
+               )) %>%
+      mutate(
+        color = get_color(class_name, colors_urban)
+      ) %>%
       ungroup()  # Ungroup after row-wise operation
 
   }
@@ -655,12 +688,15 @@ assign_classes_proposed <- function(data, proposed_class) {
       rowwise() %>%
       mutate(class_name =
                case_when(
+                 is.na(crops_pc) ~ "unvalid",
                  crops_pc >= 70 ~ names(colors_agriculture)[[1]],
                  crops_pc >= 40 ~ names(colors_agriculture)[[2]],
                  crops_pc >= 10 ~ names(colors_agriculture)[[3]],
                  crops_pc >= 0 ~ names(colors_agriculture)[[4]],
-               ),
-             color = colors_agriculture[[class_name]]) %>%
+               )) %>%
+      mutate(
+        color = get_color(class_name, colors_agriculture)
+      ) %>%
       ungroup()  # Ungroup after row-wise operation
 
   }
@@ -674,12 +710,15 @@ assign_classes_proposed <- function(data, proposed_class) {
       mutate(
         class_name =
           case_when(
+            (is.na(natural_open_pc) | is.na(forest_pc) | is.na(grassland_pc)) ~ "unvalid",
             (natural_open_pc + forest_pc + grassland_pc >= 70) ~ names(colors_nature)[[1]],
             (natural_open_pc + forest_pc + grassland_pc >= 40) ~ names(colors_nature)[[2]],
             (natural_open_pc + forest_pc + grassland_pc >= 10) ~ names(colors_nature)[[3]],
             (natural_open_pc + forest_pc + grassland_pc >= 0) ~ names(colors_nature)[[4]],
-          ),
-        color = colors_nature[[class_name]]) %>%
+          )) %>%
+      mutate(
+        color = get_color(class_name, colors_nature)
+      ) %>%
       ungroup() # Ungroup after row-wise operation
   }
 
@@ -692,11 +731,14 @@ assign_classes_proposed <- function(data, proposed_class) {
       mutate(
         class_name =
           case_when(
+            (is.na(gravel_bars) | is.na(water_channel)) ~ "unvalid",
             (gravel_bars/(water_channel+0.00001) >= 0.5) ~ names(colors_gravel)[[1]],
             (gravel_bars/(water_channel+0.00001) > 0) ~ names(colors_gravel)[[2]],
             (gravel_bars/(water_channel+0.00001) == 0) ~ names(colors_gravel)[[3]]
-          ),
-        color = colors_gravel[[class_name]]) %>%
+          )) %>%
+      mutate(
+        color = get_color(class_name, colors_gravel)
+      ) %>%
       ungroup()  # Ungroup after row-wise operation
 
   }
@@ -710,12 +752,15 @@ assign_classes_proposed <- function(data, proposed_class) {
       mutate(
         class_name =
           case_when(
-            idx_confinement >= 0.75 ~ names(colors_confinement)[[1]],
-            idx_confinement >= 0.5 ~ names(colors_confinement)[[2]],
-            idx_confinement >= 0.25 ~ names(colors_confinement)[[3]],
+            (is.na(idx_confinement)) ~ "unvalid",
+            idx_confinement >= 0.7 ~ names(colors_confinement)[[1]],
+            idx_confinement >= 0.4 ~ names(colors_confinement)[[2]],
+            idx_confinement >= 0.1 ~ names(colors_confinement)[[3]],
             idx_confinement >= 0 ~ names(colors_confinement)[[4]]
-          ),
-        color = colors_confinement[[class_name]]) %>%
+          )) %>%
+      mutate(
+        color = get_color(class_name, colors_confinement)
+      ) %>%
       ungroup()  # Ungroup after row-wise operation
 
   }
@@ -729,14 +774,16 @@ assign_classes_proposed <- function(data, proposed_class) {
       mutate(
         class_name =
           case_when(
+            (is.na(riparian_corridor_pc) | is.na(semi_natural_pc)) ~ "unvalid",
             (riparian_corridor_pc+semi_natural_pc >= 70) ~ names(colors_habitat)[[1]],
             (riparian_corridor_pc+semi_natural_pc >= 40) ~ names(colors_habitat)[[2]],
             (riparian_corridor_pc+semi_natural_pc >= 10) ~ names(colors_habitat)[[3]],
             (riparian_corridor_pc+semi_natural_pc >= 0) ~ names(colors_habitat)[[4]]
-          ),
-        color = colors_habitat[[class_name]]) %>%
+          )) %>%
+      mutate(
+        color = get_color(class_name, colors_habitat)
+      ) %>%
       ungroup()  # Ungroup after row-wise operation
-
   }
 
   return(df)
