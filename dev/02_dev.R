@@ -49,7 +49,7 @@ usethis::edit_r_environ()
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*
-golem::add_fct("data", with_test = FALSE)
+golem::add_fct("utils", with_test = FALSE)
 golem::add_utils("helpers", with_test = TRUE)
 
 ## External resources

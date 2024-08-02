@@ -5,7 +5,7 @@
 #' @param params_wms parameters defining properties of wms maps to be added
 #' @param id_logo_ign_remonterletemps id of the IGN remonter le temps image.
 #'
-#' @importFrom leaflet leaflet setView addPolygons addScaleBar addLayersControl addControl hideGroup addCircleMarkers
+#' @importFrom leaflet leaflet leafletOptions setView addPolygons addScaleBar addLayersControl addControl hideGroup addCircleMarkers
 #' @importFrom leaflet layersControlOptions addProviderTiles scaleBarOptions providers leafletOptions pathOptions highlightOptions
 #' @importFrom leaflet.extras addSearchOSM searchOptions addFullscreenControl gpsOptions addControlGPS
 #' @importFrom htmltools htmlEscape
@@ -15,12 +15,12 @@
 #' @noRd
 map_initialize <- function(params_wms, params_map_group,
                            id_logo_ign_remonterletemps,
-                           basins_data, regions_data,
+                           basins_data, regions_data, axes_data,
                            roe_sites, hydro_sites) {
 
-  leaflet() %>%
+  leaflet(options = leafletOptions(zoomSnap = 0.25, zoomDelta = 0.75)) %>%
     # zoom on France
-    setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
+    setView(lng = 2.468697, lat = 46.603354, zoom = 5.5) %>%
     # scale bar
     addScaleBar(position = "bottomleft",
                 scaleBarOptions(metric = TRUE, imperial = FALSE)) %>%
@@ -54,6 +54,8 @@ map_initialize <- function(params_wms, params_map_group,
                 options = pathOptions(clickable = ~click),
                 group = params_map_group[["bassin"]]
     ) %>%
+    # Basin layer hidden by default
+    hideGroup(params_map_group[["bassin"]]) %>%
     addPolygons(data = regions_data,
                 layerId = ~gid,
                 smoothFactor = 2,
@@ -68,8 +70,6 @@ map_initialize <- function(params_wms, params_map_group,
                 options = pathOptions(clickable = ~click),
                 group = params_map_group[["region"]]
     ) %>%
-    # ROE layer hidden by default
-    hideGroup(params_map_group[["region"]]) %>%
     # add ROE overlayers from PostgreSQL
     addCircleMarkers(data = roe_sites,
                      radius = 4.5,
@@ -81,6 +81,8 @@ map_initialize <- function(params_wms, params_map_group,
                      popup = ~nomprincip,
                      group = params_map_group[["roe"]]
     ) %>%
+    # add transparent axis
+    map_add_axes(data_axis = axes_data, group = params_map_group[["axis"]]) %>%
     # ROE layer hidden by default
     hideGroup(params_map_group[["roe"]]) %>%
     addCircleMarkers(data = hydro_sites,
@@ -250,4 +252,32 @@ map_add_network <- function(map, wms_params_network,
       group = group
     )
 
+}
+
+#' Add Axis Data to an Existing Leaflet Map
+#'
+#' This function adds axis data as polylines to an existing Leaflet map. The axis are transparent,
+#' but when hovering over they appear red.
+#'
+#' @param map An existing Leaflet map to which axis data will be added.
+#' @param data_axis A sf data frame containing axis data.
+#'
+#' @importFrom leaflet addPolylines
+#'
+#' @return An updated Leaflet map with axis data added.
+#' @export
+map_add_axes <- function(map, data_axis, group) {
+  map %>%
+    addPolylines(data = data_axis,
+                 layerId = ~axis,
+                 weight = 5,
+                 color = "#ffffff00",
+                 opacity = 1,
+                 label = ~toponyme,
+                 highlightOptions = highlightOptions(
+                   color = "red",
+                   bringToFront = TRUE
+                 ),
+                 group = group
+    )
 }

@@ -34,12 +34,12 @@ mod_mapdo_app_ui <- function(id){
       ), # head
       fluidRow(
         column(
-          width = 7,
+          width = 8,
           leafletOutput(ns("map"), height = 500),
           textOutput(ns("selection_textUI"))
         ),
         column(
-          width = 5,
+          width = 4,
           tabsetPanel(
             id = ns("tabset"),
             tabPanel("Classes proposées",
@@ -100,6 +100,7 @@ mod_mapdo_app_server <- function(id, con, r_val, globals){
                      id_logo_ign_remonterletemps = ns("logo_ign_remonterletemps"),
                      basins_data = globals$basins(),
                      regions_data = globals$regions,
+                     axes_data = globals$axes(),
                      roe_sites = globals$roe_sites(),
                      hydro_sites = globals$hydro_sites()
       )
