@@ -6,21 +6,16 @@
 #' @importFrom bslib bs_theme
 #' @noRd
 app_ui <- function(request){
-  tagList(
-    tags$head(
-      tags$title("Mapd'O App")  # This sets the browser window/tab title
+  navbarPage(
+    theme = bs_theme(version = 5, bootswatch = "simplex"),
+    title =
+      img(src = "www/logos_mapdo_evs_ofb.png"),
+    tabPanel("Mapd'O App",
+             mod_mapdo_app_ui("mapdo_app_1")
     ),
-    navbarPage(
-      theme = bs_theme(version = 5, bootswatch = "simplex"),
-      title =
-        img(src = "www/logos_mapdo_evs_ofb.png"),
-      tabPanel("Mapd'O App",
-               mod_mapdo_app_ui("mapdo_app_1")
-      ),
-      tabPanel("Documentation",
-               icon = icon("info"),
-               mod_documentation_ui("documentation_1")
-      )
+    tabPanel("Documentation",
+             icon = icon("info"),
+             mod_documentation_ui("documentation_1")
     )
   )
 }

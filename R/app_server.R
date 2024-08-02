@@ -12,6 +12,9 @@ app_server <- function(input, output, session) {
   # track session
   track_session(session = session)
 
+  ### DB connection ####
+  con <- db_con()
+
   ### R_VAL ####
   r_val <- reactiveValues(
 
@@ -21,15 +24,48 @@ app_server <- function(input, output, session) {
     # map
     map_proxy = NULL,
     opacity_basins = list(clickable = 0.01, not_clickable = 0.10) # opacity value to inform the user about available bassins and regions
-
   )
 
-  ### DB connection ####
-  con <- db_con()
+  ### GLOBALS ####
+  # create empty list to store fixed global values which can be accessed by other modules
+  globals <- list()
+
+  # load regions sf data
+  globals$regions = data_get_regions(con)
+
+  # Create a unique key based on the regions_gids content
+  globals$regions_gids_key = paste(collapse = "_", sort(globals$regions$gid))
+
+  # load basins sf data (cached)
+  globals$basins <- reactive({
+    data_get_basins(con, opacity = list(clickable = 0.01, not_clickable = 0.10))
+  }) %>%
+    bindCache(globals$regions_gids_key)
+
+  # load axes sf data (cached)
+  globals$axes <- reactive({
+    data_get_axes(con)
+  }) %>%
+    bindCache(globals$regions_gids_key)
+
+  # load roe sf data (cached)
+  globals$roe_sites <- reactive({
+    data_get_roe_sites(con)
+  }) %>%
+    bindCache(globals$regions_gids_key)
+
+  # load discharge stations sf data (cached)
+  globals$hydro_sites <- reactive({
+    data_get_hydro_sites(con)
+  }) %>%
+    bindCache(globals$regions_gids_key)
+
+
+
 
   ### Server activation ####
   # main servers
-  mod_mapdo_app_server("mapdo_app_1", con, r_val)
+  mod_mapdo_app_server("mapdo_app_1", con, r_val, globals)
   mod_documentation_server("documentation_1")
 
   # tabs

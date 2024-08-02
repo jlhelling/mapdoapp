@@ -88,25 +88,18 @@ mod_mapdo_app_ui <- function(id){
 #' @importFrom sf st_write
 #' @importFrom shinyjs onclick runjs
 #' @noRd
-mod_mapdo_app_server <- function(id, con, r_val){
+mod_mapdo_app_server <- function(id, con, r_val, globals){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-
-    ### INITIALIZATION ####
-    regions <- data_get_regions(con)
-    regions_gids <- regions$gid
-    bassins <- data_get_basins(con, opacity = list(clickable = 0.01, not_clickable = 0.10))
-    axes <- data_get_axes(con)
-    roe_sites <- data_get_roe_sites(con)
-    hydro_sites <- data_get_hydro_sites(con)
-
     #### Map ####
+    # create mein map
     output$map <- renderLeaflet({
       map_initialize(params_wms = wms_params,
                        id_logo_ign_remonterletemps = ns("logo_ign_remonterletemps"))
     })
 
+    # add remonter-le-temps-button functionality
     onclick(id = "logo_ign_remonterletemps", expr =
               runjs(sprintf("window.open('%s', '_blank')",
                             utils_url_remonterletemps(lng = input$map_center$lng,
