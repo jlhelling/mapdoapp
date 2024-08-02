@@ -51,11 +51,13 @@ data_get_basins <- function(con, opacity) {
 #' @importFrom DBI sqlInterpolate
 #'
 #' @export
-data_get_regions <- function(con) {
+data_get_regions <- function(con, opacity) {
 
   query <- "SELECT * FROM region_hydrographique"
 
-  data <- sf::st_read(dsn = con, query = query)
+  data <- sf::st_read(dsn = con, query = query) %>%
+    mutate(click = if_else(display == TRUE, TRUE, FALSE)) %>%
+    mutate(opacity = if_else(display == TRUE, opacity$clickable, opacity$not_clickable))
 
   return(data)
 }

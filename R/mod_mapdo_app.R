@@ -95,9 +95,16 @@ mod_mapdo_app_server <- function(id, con, r_val, globals){
     #### Map ####
     # create mein map
     output$map <- renderLeaflet({
-      map_initialize(params_wms = wms_params,
-                       id_logo_ign_remonterletemps = ns("logo_ign_remonterletemps"))
-    })
+      map_initialize(params_wms = globals$wms_params,
+                     params_map_group = globals$map_group_params,
+                     id_logo_ign_remonterletemps = ns("logo_ign_remonterletemps"),
+                     basins_data = globals$basins(),
+                     regions_data = globals$regions,
+                     roe_sites = globals$roe_sites(),
+                     hydro_sites = globals$hydro_sites()
+      )
+    }) %>%
+      bindCache(globals$regions_gids_key)
 
     # add remonter-le-temps-button functionality
     onclick(id = "logo_ign_remonterletemps", expr =

@@ -28,10 +28,10 @@ app_server <- function(input, output, session) {
 
   ### GLOBALS ####
   # create empty list to store fixed global values which can be accessed by other modules
-  globals <- list()
+  # globals <- list()
 
   # load regions sf data
-  globals$regions = data_get_regions(con)
+  globals$regions = data_get_regions(con, opacity = list(clickable = 0.01, not_clickable = 0.10))
 
   # Create a unique key based on the regions_gids content
   globals$regions_gids_key = paste(collapse = "_", sort(globals$regions$gid))

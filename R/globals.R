@@ -19,4 +19,8 @@ globalVariables(unique(c(
   "distance", "profile"
 )))
 
-wms_params <<- params_wms()
+globals <<- list()
+
+globals$wms_params <<- params_wms()
+
+globals$map_group_params <<- params_map_group(wms_params)

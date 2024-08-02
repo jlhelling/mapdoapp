@@ -5,14 +5,18 @@
 #' @param params_wms parameters defining properties of wms maps to be added
 #' @param id_logo_ign_remonterletemps id of the IGN remonter le temps image.
 #'
-#' @importFrom leaflet leaflet setView addPolygons addScaleBar addLayersControl addControl
-#' @importFrom leaflet layersControlOptions addProviderTiles scaleBarOptions providers leafletOptions
+#' @importFrom leaflet leaflet setView addPolygons addScaleBar addLayersControl addControl hideGroup addCircleMarkers
+#' @importFrom leaflet layersControlOptions addProviderTiles scaleBarOptions providers leafletOptions pathOptions highlightOptions
 #' @importFrom leaflet.extras addSearchOSM searchOptions addFullscreenControl gpsOptions addControlGPS
+#' @importFrom htmltools htmlEscape
 #'
 #' @return The return value, if any, from executing the function.
 #'
 #' @noRd
-map_initialize <- function(params_wms, id_logo_ign_remonterletemps) {
+map_initialize <- function(params_wms, params_map_group,
+                           id_logo_ign_remonterletemps,
+                           basins_data, regions_data,
+                           roe_sites, hydro_sites) {
 
   leaflet() %>%
     # zoom on France
@@ -36,9 +40,72 @@ map_initialize <- function(params_wms, id_logo_ign_remonterletemps) {
     addFullscreenControl(pseudoFullscreen = TRUE) %>%
     # further basemaps
     map_add_basemaps(params_wms) %>%
+    addPolygons(data = basins_data,
+                layerId = ~cdbh,
+                fillColor = "black",
+                fillOpacity = ~opacity,
+                weight = 2,
+                color = "black",
+                opacity = 0.20,
+                highlightOptions = highlightOptions(
+                  fillColor = "#000000",
+                  fillOpacity = 0.5),
+                label = ~htmlEscape(lbbh),
+                options = pathOptions(clickable = ~click),
+                group = params_map_group[["bassin"]]
+    ) %>%
+    addPolygons(data = regions_data,
+                layerId = ~gid,
+                smoothFactor = 2,
+                fillColor = "black",
+                fillOpacity = ~opacity,
+                weight = 2,
+                color = "black",
+                highlightOptions = highlightOptions(
+                  fillColor = "#a8d1ff",
+                  fillOpacity = 0.5),
+                label = ~htmlEscape(lbregionhy),
+                options = pathOptions(clickable = ~click),
+                group = params_map_group[["region"]]
+    ) %>%
+    # ROE layer hidden by default
+    hideGroup(params_map_group[["region"]]) %>%
+    # add ROE overlayers from PostgreSQL
+    addCircleMarkers(data = roe_sites,
+                     radius = 4.5,
+                     weight = 0.5,
+                     opacity = 0.9,
+                     color = "#D0D0D0",
+                     fillColor = "#323232",
+                     fillOpacity = 0.9,
+                     popup = ~nomprincip,
+                     group = params_map_group[["roe"]]
+    ) %>%
+    # ROE layer hidden by default
+    hideGroup(params_map_group[["roe"]]) %>%
+    addCircleMarkers(data = hydro_sites,
+                     radius = 4.5,
+                     weight = 0.5,
+                     opacity = 0.9,
+                     color = "#E5F6FF",
+                     fillColor = "#33B1FF",
+                     fillOpacity = 0.9,
+                     popup = ~paste0("<a href=\"", url_site, "\",  target = \'_blank\'>", libelle_site, "</a>"),
+                     group = params_map_group[["hydro_sites"]]
+    ) %>%
+    # Hydrometric sites layer hidden by default
+    hideGroup(params_map_group[["hydro_sites"]]) %>%
+    # add WMS overlayers
+    map_add_wms_overlayers(params_wms) %>%
+    # add controller
     addLayersControl(
       baseGroups = c("CartoDB Positron", unlist(sapply(params_wms, function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),
-      options = layersControlOptions(collapsed = TRUE)
+      options = layersControlOptions(collapsed = TRUE),
+      overlayGroups = c(params_map_group[["bassin"]],
+                        params_map_group[["region"]],
+                        params_map_group[["roe"]],
+                        params_map_group[["hydro_sites"]],
+                        unlist(sapply(params_wms, function(x) if (x$overlayer) x$name else NULL), use.names = FALSE))
     ) %>%
     addControl(
       className = "img_div_ign_remonterletemps",
@@ -49,8 +116,7 @@ map_initialize <- function(params_wms, id_logo_ign_remonterletemps) {
                       src = "www/logo_ign_remonterletemps.jpg",
                       width = 50, height = 50,
                       title="Vers le site IGN remonterletemps"))
-    ) # %>%
-    # map_background(wms_params = params_wms$background)
+    )
 }
 
 
@@ -103,6 +169,43 @@ map_add_basemaps <- function(map, params_wms) {
           )
       }
 
+    }
+  }
+  return(map)
+}
+
+#' Add Overlayer Layers to an Existing Leaflet Map
+#'
+#' This function adds overlayer layers to an existing Leaflet map.
+#'
+#' @param map An existing Leaflet map to which overlayer layers will be added.
+#'
+#' @return An updated Leaflet map with overlayer layers added.
+#'
+#' @examples
+#' \dontrun{
+#'   # Used in map_region_clicked() function, its use is in the function
+#' }
+#'
+#' @importFrom leaflet addWMSTiles hideGroup WMSTileOptions
+#'
+#' @export
+map_add_wms_overlayers <- function(map, params_wms) {
+  for (i in params_wms) {
+    if (i$overlayer == TRUE){
+      map <- map %>%
+        addWMSTiles(
+          baseUrl = i$url,
+          layerId = i$name,
+          layers = i$layer,
+          attribution = i$attribution,
+          options = WMSTileOptions(
+            format = i$format,
+            transparent = TRUE
+          ),
+          group = i$name
+        ) %>%
+        hideGroup(i$name)
     }
   }
   return(map)

@@ -158,7 +158,7 @@ params_wms <- function(){
                                 attribution = "CNRS - EVS",
                                 basemap = FALSE,
                                 overlayer = TRUE),
-              inondation = list(name = "Zone inondable débordement centenale",
+              inondation = list(name = "Zone inondable centennale",
                                 url = "https://georisques.gouv.fr/services",
                                 language = "fre",
                                 service = "WMS",
@@ -186,4 +186,51 @@ params_wms <- function(){
                                         overlayer = TRUE)
   )
   return(wms)
+}
+
+
+#' Get Parameters for Map Layer Groups
+#'
+#' This function returns a list of parameters representing different map layer groups.
+#'
+#' @return A list of parameters including names for groups such as "BASSIN," "REGION," "SELECT_REGION," "METRIC," "AXIS," "LEGEND," and "ROE".
+#'
+#' @examples
+#' # all group available
+#' map_group_params <- params_map_group()
+#' # get specific group name
+#' map_metric_group <- params_map_group()$metric
+#' map_selected_region_group <- params_map_group()$select_region
+#'
+#' @export
+params_map_group <- function(wms_params){
+  params <- list(
+    bassin = "Bassins",
+    region = "Régions",
+    select_region = "SELECT_REGION",
+    metric = "METRIC",
+    class = "CLASS",
+    background = "BACKGROUND",
+    axis = "AXIS",
+    dgo_axis = "DGOAXIS",
+    dgo = "DGO",
+    axis_start_end = "AXIS_START_END",
+    axis_opacity = "AXIS_OPACITY",
+    legend = "LEGEND",
+    roe = "Obstacles à l'ecoulement",
+    hydro_sites = "Sites hydrométriques",
+    light = "LIGHT",
+    inondation = wms_params$inondation$name,
+    ouvrage_protection = wms_params$ouvrage_protection$name,
+    landuse = wms_params$landuse$name,
+    continuity = wms_params$continuity$name,
+    valley_bottom = wms_params$valley_bottom$name,
+    detrend_dem = wms_params$detrend_dem$name,
+    carteign = wms_params$carteign$name,
+    ortho = wms_params$ortho$name,
+    elevation = wms_params$elevation$name,
+    geologie = wms_params$geologie$name
+  )
+
+  return(params)
 }
