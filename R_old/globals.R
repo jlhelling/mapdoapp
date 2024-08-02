@@ -19,4 +19,10 @@ globalVariables(unique(c(
   "distance", "profile"
 )))
 
-wms_params <<- params_wms()
+metrics_params <<- params_metrics()
+
+# save classes once to be able to access it directly
+classes_proposed <<- params_classes()
+
+# save classes colors once to be able to access it directly
+colors_classes_proposed <<- params_classes_colors()
