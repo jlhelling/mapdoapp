@@ -23,4 +23,7 @@ globals <<- list()
 
 globals$wms_params <<- params_wms()
 
-globals$map_group_params <<- params_map_group(wms_params)
+globals$map_group_params <<- params_map_group(globals$wms_params)
+
+# save classes once to be able to access it directly
+globals$classes_proposed <<- params_classes()

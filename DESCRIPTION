@@ -23,10 +23,12 @@ Imports:
     leaflet.extras,
     magrittr,
     plotly,
+    reactable,
     RPostgres,
     sf,
     shiny (>= 1.7.4.1),
     shinyjs,
+    tibble,
     utils
 Suggests: 
     spelling,

@@ -99,7 +99,7 @@ map_initialize <- function(params_wms, params_map_group,
     hideGroup(params_map_group[["hydro_sites"]]) %>%
     # add WMS overlayers
     map_add_wms_overlayers(params_wms) %>%
-    map_add_network(params_wms$network, group = params_map_group[["network"]]) %>%
+    # map_add_network(params_wms$network, group = params_map_group[["network"]]) %>%
     # add controller
     addLayersControl(
       baseGroups = c("CartoDB Positron", unlist(sapply(params_wms, function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),

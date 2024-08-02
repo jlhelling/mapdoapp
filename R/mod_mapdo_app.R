@@ -43,7 +43,7 @@ mod_mapdo_app_ui <- function(id){
           tabsetPanel(
             id = ns("tabset"),
             tabPanel("Classes proposées",
-                     # mod_classification_proposed_ui("classification_proposed_1")
+                     mod_classification_proposed_ui("classification_proposed_1")
             ),
             tabPanel("Classification manuelle",
                      # mod_classification_manual_ui("classification_manual_1")
