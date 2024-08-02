@@ -97,6 +97,7 @@ map_initialize <- function(params_wms, params_map_group,
     hideGroup(params_map_group[["hydro_sites"]]) %>%
     # add WMS overlayers
     map_add_wms_overlayers(params_wms) %>%
+    map_add_network(params_wms$network, group = params_map_group[["network"]]) %>%
     # add controller
     addLayersControl(
       baseGroups = c("CartoDB Positron", unlist(sapply(params_wms, function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),
@@ -209,4 +210,44 @@ map_add_wms_overlayers <- function(map, params_wms) {
     }
   }
   return(map)
+}
+
+#' Map the hydrographique network
+#'
+#' @description
+#' Adds the hydrographique network with a custom styling and regional constraint to the map
+#'
+#'
+#' @param map An existing Leaflet map to which WMS tiles will be added.
+#' @param wms_params Netowrk-WMS parameters.
+#' @param cql_filter A CQL filter to apply to the WMS request.
+#'
+#' @return An updated Leaflet map with WMS tiles of the styled network. Standard styling
+#' according to strahler-order and standard regional constraint: whole France.
+#'
+#' @examples
+#' map %>%
+#' map_add_network(wms_params = params_wms()$network, cql_filter = "gid_region <> 11", style = "mapdo:classes_proposed_urban")
+map_add_network <- function(map, wms_params_network,
+                            group,
+                            cql_filter = "",
+                            style = "mapdo:classes_proposed_strahler") {
+
+  map %>%
+    addWMSTiles(
+      baseUrl = wms_params_network$url,
+      layers = wms_params_network$layer,
+      attribution = wms_params_network$attribution,
+      options = WMSTileOptions(
+        format = wms_params_network$format,
+        request = "GetMap",
+        transparent = TRUE,
+        styles = style,
+        cql_filter = cql_filter,
+        opacity = 0.7,
+        zIndex = 90
+      ),
+      group = group
+    )
+
 }
