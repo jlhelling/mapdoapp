@@ -118,7 +118,7 @@ data_get_roe_sites <- function(con) {
 #'
 #' This function retrieves the locations of the hydrometric sites from Hubeau.
 #'
-#' @param con PqConnection to Postgresql database.
+#' @param con Connection to Postgresql database.
 #'
 #' @return sf data frame containing the datapoints of the hydrometric sites available on the server
 #'
@@ -141,6 +141,92 @@ data_get_hydro_sites <- function(con){
 
   return(data)
 }
+
+#' Get statistics on network metrics for different levels (france, basin, region)
+#'
+#' @param con Connection to Postgresql database.
+#'
+#' @return Dataframe which contains the statistics for all metrics for different entities: France, Basins, Regions
+#'
+#' @examples
+data_get_stats_metrics <- function(con) {
+
+  variables <- c(
+    "talweg_elevation_min", "active_channel_width", "natural_corridor_width",
+    "connected_corridor_width", "valley_bottom_width", "talweg_slope", "floodplain_slope",
+    "water_channel", "gravel_bars", "natural_open", "forest",
+    "grassland", "crops", "diffuse_urban", "dense_urban",
+    "infrastructures", "active_channel", "riparian_corridor", "semi_natural",
+    "reversible", "disconnected", "built_environment", "water_channel_pc",
+    "gravel_bars_pc", "natural_open_pc", "forest_pc", "grassland_pc",
+    "crops_pc", "diffuse_urban_pc", "dense_urban_pc", "infrastructures_pc",
+    "active_channel_pc", "riparian_corridor_pc", "semi_natural_pc", "reversible_pc",
+    "disconnected_pc", "built_environment_pc", "idx_confinement"
+  )
+
+  query_stats <-
+    paste0(
+      paste(
+        lapply(variables, function(var) {
+          paste0(
+            "  AVG(", var, ") AS ", var, "_avg,\n",
+            "  MIN(", var, ") AS ", var, "_min,\n",
+            "  percentile_cont(0.025) WITHIN GROUP (ORDER BY ", var, ") AS ", var, "_0025,\n",
+            "  percentile_cont(0.25) WITHIN GROUP (ORDER BY ", var, ") AS ", var, "_025,\n",
+            "  percentile_cont(0.5) WITHIN GROUP (ORDER BY ", var, ") AS ", var, "_05,\n",
+            "  percentile_cont(0.75) WITHIN GROUP (ORDER BY ", var, ") AS ", var, "_075,\n",
+            "  percentile_cont(0.975) WITHIN GROUP (ORDER BY ", var, ") AS ", var, "_0975,\n",
+            "  MAX(", var, ") AS ", var, "_max"
+          )
+        }),
+        collapse = ",\n"
+      ),
+      "\nFROM network_metrics\n"
+    )
+
+  # Constructing the SQL query
+  query <- paste0(
+    "SELECT\n",
+    "'France' AS level_type,\n",
+    "'France' AS level_name,\n",
+    query_stats,
+    "WHERE network_metrics.gid_region IS NOT NULL\n",
+
+    "\nUNION ALL\n",
+
+    "SELECT\n",
+    "'Basin' AS level_type,\n",
+    "region_hydrographique.cdbh AS level_name,\n",
+    query_stats,
+    "LEFT JOIN region_hydrographique ON region_hydrographique.gid = network_metrics.gid_region\n",
+    "WHERE network_metrics.gid_region IS NOT NULL\n",
+    "GROUP BY region_hydrographique.cdbh\n",
+
+    "\nUNION ALL\n",
+
+    "SELECT\n",
+    "'Region' AS level_type,\n",
+    "CAST(network_metrics.gid_region as varchar(10)) AS level_name,\n",
+    query_stats,
+    "LEFT JOIN region_hydrographique ON region_hydrographique.gid = network_metrics.gid_region\n",
+    "WHERE network_metrics.gid_region IS NOT NULL\n",
+    "GROUP BY network_metrics.gid_region"
+  )
+
+  data <- DBI::dbGetQuery(conn = con, statement = query)
+
+  return(data)
+}
+
+
+
+# data_get_stats_classes_proposed <- function(con) {
+#
+# }
+#
+# data_get_stats_classes_manual <- function(con) {
+#
+# }
 
 # EVENT load --------------------------------------------------------------
 

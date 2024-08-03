@@ -7,7 +7,7 @@
 data_get_hydro_sites(con)
 }
 \arguments{
-\item{con}{PqConnection to Postgresql database.}
+\item{con}{Connection to Postgresql database.}
 }
 \value{
 sf data frame containing the datapoints of the hydrometric sites available on the server
