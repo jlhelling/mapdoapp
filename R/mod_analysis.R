@@ -15,54 +15,91 @@
 mod_analysis_ui <- function(id){
   ns <- NS(id)
   tagList(
-      useShinyjs(),
-      tags$head(
-        tags$style(
-          HTML("
+    useShinyjs(),
+    tags$head(
+      tags$style(
+        HTML("
           .form-group{margin-bottom: 10px}
           ")
-        )
-      ), # head
-      fluidRow(
-        column(
-          width = 4,
-          selectInput(
-            inputId = ns("level_select"),
-            label = "Level",
-            choices = c("France", "Bassins", "Régions", "Axe selectionné"),
-            multiple = TRUE,
-          )
-        ),
-        column(
-          width = 4,
-          selectInput(
-            inputId = ns("strahler_select"),
-            label = "Ordre de Strahler",
-            choices = c(6,5,4,3,2,1),
-            selected = c(6,5,4,3,2,1),
-            multiple = TRUE
-          )
-        ),
-        column(
-          width = 4,
-          multiInput(
-            inputId = ns("metric_select"),
-            label = "Métriques",
-            choices = c("one", "two"),
-            options = pickerOptions(
-              actionsBox = TRUE,
-              size = 10,
-              selectedTextFormat = "count > 3",
-              liveSearch = TRUE,
-              selectAllText = "Tout sélectionner",
-              deselectAllText = "Tout désélectionner",
-            )
-          )
-        )
+      )
+    ), # head
+
+    tabsetPanel(
+      id = ns("tabset"),
+      tabPanel("Sélection actuelle",
+               # show table with France, basin, region (+ same stats but just for the strahler order of selected axis),
+               # stats together with selected axis
+               # below show distribution plots of selection
+               fluidRow(
+                 column(
+                   width = 9,
+                   # table and plots here
+                 ),
+                 column(
+                   width = 3,
+                   multiInput(
+                     inputId = ns("metric_select"),
+                     label = "Métriques",
+                     choices = params_metrics()$metric_title
+                   )
+                 ))),
+      tabPanel("Régions",
+               fluidRow(
+                 column(
+                   width = 9,
+                   # table and plots here
+                 ),
+                 column(
+                   width = 3,
+                   selectInput(
+                     inputId = ns("strahler_select"),
+                     label = "Ordre de Strahler",
+                     choices = c(6,5,4,3,2,1),
+                     selected = c(6,5,4,3,2,1),
+                     multiple = TRUE
+                   ),
+                   multiInput(
+                     inputId = ns("metric_select"),
+                     label = "Métriques",
+                     choices = params_metrics()$metric_title
+                   )
+                 )
+               )
       ),
-      # fluidRow(
-      #   reactableOutput(ns("table"), width = "100%")
-      # )
+      tabPanel("Axes",
+               fluidRow(
+                 column(
+                   width = 9,
+                   # table and plots here
+                 ),
+                 column(
+                   width = 3,
+                   selectInput(
+                     inputId = ns("region_select"),
+                     label = "Régions",
+                     choices = c("one", "two"),
+                     selected = c("one", "two"),
+                     multiple = TRUE
+                   ),
+                   selectInput(
+                     inputId = ns("strahler_select"),
+                     label = "Ordre de Strahler",
+                     choices = c(6,5,4,3,2,1),
+                     selected = c(6,5,4,3,2,1),
+                     multiple = TRUE
+                   ),
+                   multiInput(
+                     inputId = ns("metric_select"),
+                     label = "Métriques",
+                     choices = params_metrics()$metric_title
+                   )
+                 )
+               )
+      ),
+      tabPanel("Classes",
+      ),
+      type = "pills"
+    ) #tabsetpanel
   )
 }
 

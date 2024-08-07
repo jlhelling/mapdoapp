@@ -226,6 +226,28 @@ data_get_stats_metrics <- function(con) {
 #
 # }
 
+
+
+# names -------------------------------------------------------------------
+
+#' Get the names of the hydrographic basins and regions
+#'
+#' @param con Connection to Postgresql database.
+data_get_levels_names <- function(con) {
+
+  query <- "SELECT DISTINCT *
+            FROM region_hydrographique
+            WHERE display = TRUE
+  "
+
+  data <- DBI::dbGetQuery(conn = con, statement = query)
+
+  return(data)
+
+}
+
+
+
 # EVENT load --------------------------------------------------------------
 
 
