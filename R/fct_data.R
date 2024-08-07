@@ -147,8 +147,6 @@ data_get_hydro_sites <- function(con){
 #' @param con Connection to Postgresql database.
 #'
 #' @return Dataframe which contains the statistics for all metrics for different entities: France, Basins, Regions
-#'
-#' @examples
 data_get_stats_metrics <- function(con) {
 
   variables <- c(

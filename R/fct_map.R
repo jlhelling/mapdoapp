@@ -63,6 +63,7 @@ map_initialize <- function(params_wms, params_map_group,
                 fillOpacity = ~opacity,
                 weight = 2,
                 color = "black",
+                opacity = 0.20,
                 highlightOptions = highlightOptions(
                   fillColor = "#a8d1ff",
                   fillOpacity = 0.5),
@@ -70,6 +71,8 @@ map_initialize <- function(params_wms, params_map_group,
                 options = pathOptions(clickable = ~click),
                 group = params_map_group[["region"]]
     ) %>%
+    # Basin layer hidden by default
+    hideGroup(params_map_group[["region"]]) %>%
     # add ROE overlayers from PostgreSQL
     addCircleMarkers(data = roe_sites,
                      radius = 4.5,

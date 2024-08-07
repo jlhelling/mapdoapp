@@ -29,6 +29,7 @@ Imports:
     sf,
     shiny (>= 1.7.4.1),
     shinyjs,
+    shinyWidgets,
     tibble,
     utils
 Suggests: 

@@ -7,7 +7,6 @@
 #' @noRd
 app_ui <- function(request){
     navbarPage(
-      theme = bs_theme(version = 5, bootswatch = "simplex"),
       title =
         img(src = "www/logos_mapdo_evs_ofb.png"),
       windowTitle = "Mapd'O App",
@@ -20,7 +19,8 @@ app_ui <- function(request){
       tabPanel("Documentation",
                icon = icon("info"),
                mod_documentation_ui("documentation_1")
-      )
+      ),
+      theme = bs_theme(version = 5, bootswatch = "simplex")
   )
 }
 
