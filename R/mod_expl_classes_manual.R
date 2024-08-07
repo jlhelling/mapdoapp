@@ -30,7 +30,7 @@
 
 # UI ----------------------------------------------------------------------
 
-#' classification_manual UI Function
+#' expl_classes_manual UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -43,7 +43,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_classification_manual_ui <- function(id){
+mod_expl_classes_manual_ui <- function(id){
   ns <- NS(id)
   tagList(
     golem_add_external_resources(),
@@ -64,7 +64,7 @@ mod_classification_manual_ui <- function(id){
 
 # SERVER ------------------------------------------------------------------
 
-#' classification_manual Server Functions
+#' expl_classes_manual Server Functions
 #'
 #' @import shiny
 #' @importFrom htmltools HTML div img
@@ -76,7 +76,7 @@ mod_classification_manual_ui <- function(id){
 #' @importFrom shinyjs onclick runjs
 #' @importFrom colourpicker colourInput
 #' @noRd
-mod_classification_manual_server <- function(id, con, r_val){
+mod_expl_classes_manual_server <- function(id, con, r_val){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 

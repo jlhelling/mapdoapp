@@ -1,4 +1,4 @@
-#' classification_proposed UI Function
+#' expl_classes_proposed UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -11,7 +11,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_classification_proposed_ui <- function(id){
+mod_expl_classes_proposed_ui <- function(id){
   ns <- NS(id)
   tagList(
     useShinyjs(),
@@ -23,13 +23,13 @@ mod_classification_proposed_ui <- function(id){
   )
 }
 
-#' classification_proposed Server Functions
+#' expl_classes_proposed Server Functions
 #'
 #' @import shiny
 #' @importFrom reactable renderReactable getReactableState updateReactable
 #'
 #' @noRd
-mod_classification_proposed_server <- function(id, r_val, globals){
+mod_expl_classes_proposed_server <- function(id, r_val, globals){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 

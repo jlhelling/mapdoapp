@@ -11,8 +11,11 @@ app_ui <- function(request){
       title =
         img(src = "www/logos_mapdo_evs_ofb.png"),
       windowTitle = "Mapd'O App",
-      tabPanel("Mapd'O App",
-               mod_mapdo_app_ui("mapdo_app_1")
+      tabPanel("Exploration",
+               mod_explore_ui("explore_1")
+      ),
+      tabPanel("Analyse",
+               mod_analysis_ui("analysis_1")
       ),
       tabPanel("Documentation",
                icon = icon("info"),

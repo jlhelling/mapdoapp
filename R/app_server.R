@@ -67,12 +67,13 @@ app_server <- function(input, output, session) {
 
   ### Server activation ####
   # main servers
-  mod_mapdo_app_server("mapdo_app_1", con, r_val, globals)
+  mod_explore_server("explore_1", con, r_val, globals)
+  mod_analysis_server("analysis_1", con, r_val, globals)
   mod_documentation_server("documentation_1")
 
   # tabs
-  mod_classification_proposed_server("classification_proposed_1", r_val, globals)
-  # mod_classification_manual_server("classification_manual_1", con, r_val)
+  mod_expl_classes_proposed_server("expl_classes_proposed_1", r_val, globals)
+  # mod_expl_classes_manual_server("expl_classes_manual_1", con, r_val)
   # mod_metric_overview_server("metric_overview_1", r_val)
   # mod_profil_long_server("profil_long_1", r_val)
   # mod_profil_transverse_server("profil_transverse_1", r_val)

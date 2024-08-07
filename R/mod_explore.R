@@ -3,7 +3,7 @@
 
 
 
-#' mapdo_app UI Function
+#' explore UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -19,7 +19,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_mapdo_app_ui <- function(id){
+mod_explore_ui <- function(id){
   ns <- NS(id)
   tagList(
     golem_add_external_resources(),
@@ -43,10 +43,10 @@ mod_mapdo_app_ui <- function(id){
           tabsetPanel(
             id = ns("tabset"),
             tabPanel("Classes proposées",
-                     mod_classification_proposed_ui("classification_proposed_1")
+                     mod_expl_classes_proposed_ui("expl_classes_proposed_1")
             ),
             tabPanel("Classification manuelle",
-                     # mod_classification_manual_ui("classification_manual_1")
+                     # mod_expl_classes_manual_ui("expl_classes_manual_1")
             ), type = "pills"
           ) #tabsetpanel
         ) #column
@@ -75,7 +75,7 @@ mod_mapdo_app_ui <- function(id){
 # SERVER ------------------------------------------------------------------
 
 
-#' mapdo_app Server Functions
+#' explore Server Functions
 #'
 #' @import shiny
 #' @importFrom leaflet leafletProxy clearGroup leafletOutput renderLeaflet removeControl addLegend addControl
@@ -88,7 +88,7 @@ mod_mapdo_app_ui <- function(id){
 #' @importFrom sf st_write
 #' @importFrom shinyjs onclick runjs
 #' @noRd
-mod_mapdo_app_server <- function(id, con, r_val, globals){
+mod_explore_server <- function(id, con, r_val, globals){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
