@@ -38,7 +38,7 @@ mod_analysis_ui <- function(id){
                  column(
                    width = 3,
                    multiInput(
-                     inputId = ns("metric_select"),
+                     inputId = ns("sel_metric_select"),
                      label = "Métriques",
                      choices = params_metrics()$metric_title
                    )
@@ -47,21 +47,23 @@ mod_analysis_ui <- function(id){
                fluidRow(
                  column(
                    width = 9,
+                   reactableOutput(ns("regions_table"), width = "100%")
                    # table and plots here
                  ),
                  column(
                    width = 3,
                    selectInput(
-                     inputId = ns("strahler_select"),
+                     inputId = ns("regions_strahler_select"),
                      label = "Ordre de Strahler",
                      choices = c(6,5,4,3,2,1),
                      selected = c(6,5,4,3,2,1),
                      multiple = TRUE
                    ),
                    multiInput(
-                     inputId = ns("metric_select"),
+                     inputId = ns("regions_metric_select"),
                      label = "Métriques",
-                     choices = params_metrics()$metric_title
+                     choices = params_metrics()$metric_title,
+                     selected = c(1,2,3,4,5)
                    )
                  )
                )
@@ -75,21 +77,21 @@ mod_analysis_ui <- function(id){
                  column(
                    width = 3,
                    selectInput(
-                     inputId = ns("region_select"),
+                     inputId = ns("axes_region_select"),
                      label = "Régions",
                      choices = c("one", "two"),
                      selected = c("one", "two"),
                      multiple = TRUE
                    ),
                    selectInput(
-                     inputId = ns("strahler_select"),
+                     inputId = ns("axes_strahler_select"),
                      label = "Ordre de Strahler",
                      choices = c(6,5,4,3,2,1),
                      selected = c(6,5,4,3,2,1),
                      multiple = TRUE
                    ),
                    multiInput(
-                     inputId = ns("metric_select"),
+                     inputId = ns("axes_metric_select"),
                      label = "Métriques",
                      choices = params_metrics()$metric_title
                    )
@@ -105,10 +107,27 @@ mod_analysis_ui <- function(id){
 
 #' analysis Server Functions
 #'
+#' @importFrom reactable renderReactable reactable
+#'
 #' @noRd
 mod_analysis_server <- function(id, con, r_val, globals){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+
+    r_val_local <- reactiveValues(
+      regions_table = NULL
+    )
+
+    # render table for regions
+    output$regions_table <- renderReactable({
+      r_val_local$regions_table
+    })
+
+    # listen to changes of inputs
+    # observeEvent(c(input$regions_metric_select, input$regions_strahler_select), {
+    #
+    #   r_val_local$regions_table <- reactable()
+    # })
 
   })
 }

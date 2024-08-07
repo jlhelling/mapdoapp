@@ -185,16 +185,29 @@ data_get_stats_metrics <- function(con) {
   # Constructing the SQL query
   query <- paste0(
     "SELECT\n",
-    "'France' AS level_type,\n",
+    "'France (total)' AS level_type,\n",
     "'France' AS level_name,\n",
+    "0 AS strahler, \n",
     query_stats,
     "WHERE network_metrics.gid_region IS NOT NULL\n",
 
     "\nUNION ALL\n",
 
     "SELECT\n",
-    "'Basin' AS level_type,\n",
+    "'France' AS level_type,\n",
+    "'France' AS level_name,\n",
+    "network_metrics.strahler AS strahler,\n",
+    query_stats,
+    "WHERE network_metrics.gid_region IS NOT NULL\n",
+    "GROUP BY network_metrics.strahler\n",
+
+    "\nUNION ALL\n",
+
+    # Basins
+    "SELECT\n",
+    "'Basin (total)' AS level_type,\n",
     "region_hydrographique.cdbh AS level_name,\n",
+    "0 AS strahler,\n",
     query_stats,
     "LEFT JOIN region_hydrographique ON region_hydrographique.gid = network_metrics.gid_region\n",
     "WHERE network_metrics.gid_region IS NOT NULL\n",
@@ -203,15 +216,40 @@ data_get_stats_metrics <- function(con) {
     "\nUNION ALL\n",
 
     "SELECT\n",
-    "'Region' AS level_type,\n",
-    "CAST(network_metrics.gid_region as varchar(10)) AS level_name,\n",
+    "'Basin' AS level_type,\n",
+    "region_hydrographique.cdbh AS level_name,\n",
+    "network_metrics.strahler AS strahler,\n",
     query_stats,
     "LEFT JOIN region_hydrographique ON region_hydrographique.gid = network_metrics.gid_region\n",
     "WHERE network_metrics.gid_region IS NOT NULL\n",
-    "GROUP BY network_metrics.gid_region"
+    "GROUP BY region_hydrographique.cdbh, network_metrics.strahler\n",
+
+    "\nUNION ALL\n",
+
+    # Regions
+    "SELECT\n",
+    "'Région (total)' AS level_type,\n",
+    "CAST(network_metrics.gid_region as varchar(10)) AS level_name,\n",
+    "0 AS strahler,\n",
+    query_stats,
+    "LEFT JOIN region_hydrographique ON region_hydrographique.gid = network_metrics.gid_region\n",
+    "WHERE network_metrics.gid_region IS NOT NULL\n",
+    "GROUP BY network_metrics.gid_region\n",
+
+    "\nUNION ALL\n",
+
+    "SELECT\n",
+    "'Région' AS level_type,\n",
+    "CAST(network_metrics.gid_region as varchar(10)) AS level_name,\n",
+    "network_metrics.strahler AS strahler,\n",
+    query_stats,
+    "LEFT JOIN region_hydrographique ON region_hydrographique.gid = network_metrics.gid_region\n",
+    "WHERE network_metrics.gid_region IS NOT NULL\n",
+    "GROUP BY network_metrics.gid_region, network_metrics.strahler"
   )
 
-  data <- DBI::dbGetQuery(conn = con, statement = query)
+  data <- DBI::dbGetQuery(conn = con, statement = query) %>%
+    na.omit()
 
   return(data)
 }
