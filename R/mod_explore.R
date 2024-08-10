@@ -141,7 +141,30 @@ mod_explore_server <- function(id, con, r_val, globals){
 
     ### CLICK EVENTS ####
 
+    observeEvent(input$map_shape_click, {
+
     #### Basin ####
+      if (input$map_shape_click$group == globals$map_group_params[["bassin"]]){
+
+        # check if basin not already selected
+        if (r_val$basin_id != input$map_shape_click$id) {
+
+          # get bassin name
+          r_val$basin_name = globals$basins() %>%
+            filter(cdbh == input$map_shape_click$id) %>%
+            pull(lbbh)
+
+          # get basin id
+          r_val$basin_id = input$map_shape_click$id
+
+          # reset others
+          r_val$region_name = NULL
+          r_val$region_id = NULL
+          r_val$axis_name = NULL
+          r_val$axis_id = NULL
+          r_val$swath_id = NULL
+        }
+      }
 
     #### Region ####
 
@@ -149,6 +172,7 @@ mod_explore_server <- function(id, con, r_val, globals){
 
     #### SWATH ####
 
+    })
 
   })
 }

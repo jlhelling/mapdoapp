@@ -22,10 +22,19 @@ app_server <- function(input, output, session) {
     selection_text = "", # description text indicating basin, region, axis
     visualization = "classes", # stating which visualization is currently active
     classes_proposed_selected = NULL,
+    tab_classes = NULL, # selected tab in classes tabset
+    tab_plots = NULL, # selected tab in plots tabset
 
     # map
     map_proxy = NULL,
-    opacity_basins = list(clickable = 0.01, not_clickable = 0.10) # opacity value to inform the user about available bassins and regions
+    opacity_basins = list(clickable = 0.01, not_clickable = 0.10), # opacity value to inform the user about available bassins and regions
+
+    # geo objects
+    basin_name = NULL,
+    basin_id = NULL,
+    region_name = NULL,
+    axis_name = NULL,
+    swath_name = NULL,
   )
 
   ### GLOBALS ####
