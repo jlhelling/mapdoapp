@@ -41,7 +41,7 @@ mod_explore_ui <- function(id){
         column(
           width = 4,
           tabsetPanel(
-            id = ns("tabset"),
+            id = ns("tabset_classes"),
             tabPanel("Classes proposées",
                      mod_expl_classes_proposed_ui("expl_classes_proposed_1")
             ),
@@ -55,7 +55,7 @@ mod_explore_ui <- function(id){
         style = "margin-top: 10px;
         margin-bottom: 10px;",
         tabsetPanel(
-          id = ns("tabset2"),
+          id = ns("tabset_plots"),
           tabPanel(
             "Évolution longitudinale",
             # mod_profil_long_ui("profil_long_1")
@@ -126,8 +126,29 @@ mod_explore_server <- function(id, con, r_val, globals){
     })
 
     ### TABSET LISTENERS ####
-
     # save current tabs in reactive values
+
+    # classification tab
+    observeEvent(input$tabset_classes, {
+      r_val$tab_classes = input$tabset_classes
+    })
+
+    # plots tab
+    observeEvent(input$tabset_plots, {
+      r_val$tab_plots = input$tabset_plots
+    })
+
+
+    ### CLICK EVENTS ####
+
+    #### Basin ####
+
+    #### Region ####
+
+    #### Axis ####
+
+    #### SWATH ####
+
 
   })
 }
