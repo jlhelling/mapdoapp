@@ -143,6 +143,8 @@ mod_explore_server <- function(id, con, r_val, globals){
 
     observeEvent(input$map_shape_click, {
 
+      browser()
+
       #### Basin ####
       if (input$map_shape_click$group == globals$map_group_params[["bassin"]]) {
 
@@ -167,6 +169,8 @@ mod_explore_server <- function(id, con, r_val, globals){
           r_val$axis_name = NULL
           r_val$axis_id = NULL
           r_val$swath_id = NULL
+          r_val$swath_data_section = NULL
+          r_val$swath_data_dgo = NULL
 
           # clean map
           r_val$map_proxy %>%
@@ -242,6 +246,8 @@ mod_explore_server <- function(id, con, r_val, globals){
 
           # reset others
           r_val$swath_id = NULL
+          r_val$swath_data_section = NULL
+          r_val$swath_data_dgo = NULL
 
           # load axis sf frame
           r_val$axis_data = data_get_axis_dgos(selected_axis_id = r_val$axis_id, con)
@@ -254,7 +260,7 @@ mod_explore_server <- function(id, con, r_val, globals){
             map_add_axes(globals$axes(), group = globals$params_map_group[["axis"]], selected_axis_id = r_val$axis_id) %>%
             map_add_axis_dgos(r_val$axis_data, group = globals$map_group_params[["dgo_axis"]]) %>%
             map_add_axis_start_end(axis_start_end = r_val$axis_start_end,
-                               group = globals$map_group_params[["axis_start_end"]]) %>%
+                                   group = globals$map_group_params[["axis_start_end"]]) %>%
             clearGroup(globals$map_group_params[["dgo"]])
 
           # check if axis is in other region than the one that is selected
@@ -295,6 +301,30 @@ mod_explore_server <- function(id, con, r_val, globals){
 
       #### SWATH ####
 
+      if (input$map_shape_click$group == globals$map_group_params[["dgo_axis"]]) {
+
+
+        # check if axis not already selected
+        if (!is.null(r_val$swath_id) && (r_val$swath_id == input$map_shape_click$id)) {
+
+        } else {
+
+          # get swath id
+          r_val$swath_id = input$map_shape_click$id
+
+          # get data with dgo id
+          r_val$swath_data_section = data_get_elevation_profiles(selected_dgo_fid = r_val$swath_id, con = con)
+
+          # get dgo clicked feature
+          r_val$swath_data_dgo = r_val$axis_data %>%
+            filter(fid == r_val$swath_id)
+
+          # Highlight clicked DGO
+          r_val$map_proxy %>%
+            map_dgo_cross_section(selected_dgo = r_val$swath_data_dgo, group = globals$map_group_params[["dgo"]])
+        }
+
+      }
 
       print(r_val$basin_id)
       print(r_val$basin_name)

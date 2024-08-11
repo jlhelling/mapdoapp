@@ -38,6 +38,8 @@ app_server <- function(input, output, session) {
     axis_id = NULL,
     axis_data = NULL,
     swath_id = NULL,
+    swath_data_section = NULL,
+    swath_data_dgo = NULL
   )
 
   ### GLOBALS ####

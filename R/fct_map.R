@@ -400,3 +400,27 @@ map_add_axis_start_end <- function(map, axis_start_end, group) {
       group = group
     )
 }
+
+#' Highlight DGO clicked for cross section.
+#'
+#' @param map A Leaflet map object.
+#' @param selected_dgo sf dgo clicked.
+#'
+#' @importFrom leaflet clearGroup addPolylines pathOptions
+#'
+#' @return Leaflet map
+#' @export
+map_dgo_cross_section <- function(map, selected_dgo, group){
+  map %>%
+    clearGroup(group) %>%
+    addPolylines(
+      data = selected_dgo,
+      layerId = ~fid,
+      weight = 8,
+      color = "purple",
+      opacity = 1,
+      group = group,
+      options = pathOptions(zIndex = 90)
+    )
+  return(map)
+}
