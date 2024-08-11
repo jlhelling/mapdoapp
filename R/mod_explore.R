@@ -93,7 +93,7 @@ mod_explore_server <- function(id, con, r_val, globals){
     ns <- session$ns
 
     #### Map ####
-    # create mein map
+    # create main map
     output$map <- renderLeaflet({
       map_initialize(params_wms = globals$wms_params,
                      params_map_group = globals$map_group_params,
@@ -143,13 +143,17 @@ mod_explore_server <- function(id, con, r_val, globals){
 
     observeEvent(input$map_shape_click, {
 
-    #### Basin ####
-      if (input$map_shape_click$group == globals$map_group_params[["bassin"]]){
+      #### Basin ####
+      if (input$map_shape_click$group == globals$map_group_params[["bassin"]]) {
+
+        print(input$map_shape_click$id)
 
         # check if basin not already selected
-        if (r_val$basin_id != input$map_shape_click$id) {
+        if (!is.null(r_val$basin_id) && (r_val$basin_id == input$map_shape_click$id)) {
 
-          # get bassin name
+        } else {
+
+          # get basin name
           r_val$basin_name = globals$basins() %>%
             filter(cdbh == input$map_shape_click$id) %>%
             pull(lbbh)
@@ -163,16 +167,142 @@ mod_explore_server <- function(id, con, r_val, globals){
           r_val$axis_name = NULL
           r_val$axis_id = NULL
           r_val$swath_id = NULL
+
+          # clean map
+          r_val$map_proxy %>%
+            clearGroup(globals$map_group_params[["dgo_axis"]]) %>%
+            clearGroup(globals$map_group_params[["axis_start_end"]]) %>%
+            clearGroup(globals$map_group_params[["dgo"]])
         }
       }
 
-    #### Region ####
+      #### Region ####
+      if (input$map_shape_click$group == globals$map_group_params[["region"]]) {
 
-    #### Axis ####
+        # check if region not already selected
+        if (!is.null(r_val$region_id) && (r_val$region_id == input$map_shape_click$id)) {
 
-    #### SWATH ####
+        } else {
 
+          # get region id
+          r_val$region_id = input$map_shape_click$id
+
+          # get region name
+          r_val$region_name = globals$regions %>%
+            filter(gid == r_val$region_id) %>%
+            pull(lbregionhy)
+
+          # check if region is in other basin than the one that is selected
+          if (!is.null(r_val$basin_id) && (r_val$basin_id == (globals$regions %>%
+                                                              filter(gid == input$map_shape_click$id) %>%
+                                                              pull(cdbh)))) {
+          } else {
+
+            r_val$basin_name = globals$basins() %>%
+              filter(cdbh == globals$regions %>%
+                       filter(gid == input$map_shape_click$id) %>%
+                       pull(cdbh)) %>%
+              pull(lbbh)
+
+            r_val$basin_id = globals$regions %>%
+              filter(gid == input$map_shape_click$id) %>%
+              pull(cdbh)
+          }
+
+          # reset others
+          r_val$axis_name = NULL
+          r_val$axis_id = NULL
+          r_val$swath_id = NULL
+
+          # clean map
+          r_val$map_proxy %>%
+            clearGroup(globals$map_group_params[["dgo_axis"]]) %>%
+            clearGroup(globals$map_group_params[["axis_start_end"]]) %>%
+            clearGroup(globals$map_group_params[["dgo"]])
+
+        }
+      }
+
+      #### Axis ####
+      if (input$map_shape_click$group == globals$map_group_params[["axis"]]) {
+
+
+        # check if axis not already selected
+        if (!is.null(r_val$axis_id) && (r_val$axis_id == input$map_shape_click$id)) {
+
+        } else {
+
+          # get axis id
+          r_val$axis_id = input$map_shape_click$id
+
+          # get axis name
+          r_val$axis_name = globals$axes() %>%
+            filter(axis == r_val$axis_id) %>%
+            pull(toponyme)
+
+          # reset others
+          r_val$swath_id = NULL
+
+          # load axis sf frame
+          r_val$axis_data = data_get_axis_dgos(selected_axis_id = r_val$axis_id, con)
+
+          # get start- and end-coordinates of axis
+          r_val$axis_start_end = data_get_axis_start_end(dgo_axis = r_val$axis_data)
+
+          # add axis to map
+          r_val$map_proxy %>%
+            map_add_axes(globals$axes(), group = globals$params_map_group[["axis"]], selected_axis_id = r_val$axis_id) %>%
+            map_add_axis_dgos(r_val$axis_data, group = globals$map_group_params[["dgo_axis"]]) %>%
+            map_add_axis_start_end(axis_start_end = r_val$axis_start_end,
+                               group = globals$map_group_params[["axis_start_end"]]) %>%
+            clearGroup(globals$map_group_params[["dgo"]])
+
+          # check if axis is in other region than the one that is selected
+          if (!is.null(r_val$region_id) && (r_val$region_id == (globals$axes() %>%
+                                                                filter(axis == r_val$axis_id) %>%
+                                                                pull(gid_region)))) {
+          } else {
+
+            # set region id
+            r_val$region_id = globals$axes() %>%
+              filter(axis == r_val$axis_id) %>%
+              pull(gid_region)
+
+            # set region name
+            r_val$region_name = globals$regions %>%
+              filter(gid == r_val$region_id) %>%
+              pull(lbregionhy)
+
+            # check if region is in other basin than the one that is selected
+            if (!is.null(r_val$basin_id) && (r_val$basin_id == (globals$regions %>%
+                                                                filter(gid == r_val$region_id) %>%
+                                                                pull(cdbh)))) {
+            } else {
+
+              r_val$basin_name = globals$basins() %>%
+                filter(cdbh == globals$regions %>%
+                         filter(gid == r_val$region_id) %>%
+                         pull(cdbh)) %>%
+                pull(lbbh)
+
+              r_val$basin_id = globals$regions %>%
+                filter(gid == r_val$region_id) %>%
+                pull(cdbh)
+            }
+          }
+        }
+      }
+
+      #### SWATH ####
+
+
+      print(r_val$basin_id)
+      print(r_val$basin_name)
+      print(r_val$region_id)
+      print(r_val$region_name)
+      print(r_val$axis_id)
+      print(r_val$axis_name)
+      print(r_val$swath_id)
     })
-
   })
 }

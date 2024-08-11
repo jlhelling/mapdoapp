@@ -290,8 +290,48 @@ data_get_levels_names <- function(con) {
 
 
 
-data_get_dgos_of_axis <- function() {
+#' Get Network Metrics Data for a Specific Network Axis
+#'
+#' This function retrieves data about network metrics for a specific network axis based on its ID.
+#'
+#' @param selected_axis_id The ID of the selected network axis.
+#' @param con Connection to Postgresql database.
+#'
+#' @return A sf data frame containing information about network metrics for the specified network axis.
+#'
+#' @examples
+#' con <- db_con()
+#' network_metrics_data <- data_get_axis_dgos(selected_axis_id = 2000796122, con = con)
+#' DBI::dbDisconnect(con)
+#'
+#' @importFrom sf st_read
+#' @importFrom dplyr arrange
+#' @importFrom DBI sqlInterpolate
+#'
+#' @export
+data_get_axis_dgos <- function(selected_axis_id, con) {
 
+  sql <- "
+      SELECT
+        network_metrics.fid, axis, measure, toponyme, strahler, talweg_elevation_min,
+        active_channel_width, natural_corridor_width,
+        connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
+        water_channel, gravel_bars, natural_open, forest, grassland, crops,
+        diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
+        semi_natural, reversible, disconnected, built_environment,
+        water_channel_pc, gravel_bars_pc, natural_open_pc, forest_pc, grassland_pc, crops_pc,
+        diffuse_urban_pc, dense_urban_pc, infrastructures_pc, active_channel_pc,
+        riparian_corridor_pc, semi_natural_pc, reversible_pc, disconnected_pc,
+        built_environment_pc, sum_area, idx_confinement, gid_region, network_metrics.geom
+      FROM network_metrics
+      WHERE  axis = ?selected_axis_id"
+  query <- sqlInterpolate(con, sql, selected_axis_id = selected_axis_id)
+
+  data <- sf::st_read(dsn = con, query = query) %>%
+    dplyr::arrange(measure) #%>%
+  # na.omit()
+
+  return(data)
 }
 
 #' Get the start and end coordinates of a spatial object's axis
@@ -304,7 +344,7 @@ data_get_dgos_of_axis <- function() {
 #' @return A data frame with two rows, where the first row contains the start
 #'         coordinates (x and y) and the second row contains the end coordinates (x and y).
 #'
-#' @importFrom sf st_coordinates st_cast st_sf st_linestring
+#' @importFrom sf st_coordinates st_cast st_sf st_linestring st_geometry st_sfc
 #' @importFrom utils tail head
 #'
 #' @examples
@@ -317,12 +357,15 @@ data_get_dgos_of_axis <- function() {
 #' @export
 data_get_axis_start_end <- function(dgo_axis) {
 
-  # Extract the start and end points of the axis
-  axis_point_start <- st_coordinates(head(st_cast(tail(dgo_axis, n = 1), "POINT")$geom, n = 1))
-  axis_point_end <- st_coordinates(tail(st_cast(head(dgo_axis, n = 1), "POINT")$geom, n = 1))
+  # Extract the first and last point coordinates of the LINESTRING
+  start_coords <- st_coordinates(st_geometry(dgo_axis)[[1]])[1, ]
+  end_coords <- st_coordinates(st_geometry(dgo_axis)[[length(st_geometry(dgo_axis))]])[nrow(st_coordinates(st_geometry(dgo_axis)[[length(st_geometry(dgo_axis))]])), ]
 
-  # Combine the coordinates into a data frame
-  axis_start_end <- data.frame(rbind(axis_point_start, axis_point_end))
+  # Combine the start and end coordinates into a data frame
+  axis_start_end <- data.frame(rbind(start_coords, end_coords))
+
+  # Assign meaningful column names
+  names(axis_start_end) <- c("X", "Y")
 
   return(axis_start_end)
 }

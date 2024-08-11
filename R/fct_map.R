@@ -84,8 +84,6 @@ map_initialize <- function(params_wms, params_map_group,
                      popup = ~nomprincip,
                      group = params_map_group[["roe"]]
     ) %>%
-    # add transparent axis
-    map_add_axes(data_axis = axes_data, group = params_map_group[["axis"]]) %>%
     # ROE layer hidden by default
     hideGroup(params_map_group[["roe"]]) %>%
     addCircleMarkers(data = hydro_sites,
@@ -102,7 +100,8 @@ map_initialize <- function(params_wms, params_map_group,
     hideGroup(params_map_group[["hydro_sites"]]) %>%
     # add WMS overlayers
     map_add_wms_overlayers(params_wms) %>%
-    # map_add_network(params_wms$network, group = params_map_group[["network"]]) %>%
+    # add transparent axis
+    map_add_axes(data_axis = axes_data, group = params_map_group[["axis"]]) %>%
     # add controller
     addLayersControl(
       baseGroups = c("CartoDB Positron", unlist(sapply(params_wms, function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),
@@ -259,6 +258,58 @@ map_add_network <- function(map, wms_params_network,
 
 #' Add Axis Data to an Existing Leaflet Map
 #'
+#' This function adds axis data as simplified polylines to an existing Leaflet map. The axis are transparent,
+#' but when hovering over they appear red.
+#'
+#' @param map An existing Leaflet map to which axis data will be added.
+#' @param data_axis A sf data frame containing axis data.
+#' @param selected_axis id of selected axis, so that it will not be included in mapping
+#'
+#' @importFrom leaflet addPolylines clearGroup pathOptions highlightOptions
+#' @importFrom sf st_is_empty
+#' @import dplyr
+#'
+#' @return An updated Leaflet map with axis data added.
+#' @export
+map_add_axes <- function(map, data_axis, group, selected_axis_id = NULL) {
+
+  # check if axis is selected - if yes, filter out axis
+  if (!is.null(selected_axis_id)) {
+
+    # filter out selected axis
+    data_axis <- data_axis %>%
+      filter(axis != selected_axis_id) %>%
+      filter(!st_is_empty(geom))
+
+  }
+
+    # add to map
+    map %>%
+      clearGroup(group) %>% # clear existing axis layer
+      addPolylines(data = data_axis,
+                   layerId = ~axis,
+                   weight = 5,
+                   color = "#ffffff00",
+                   opacity = 1,
+                   label = ~toponyme,
+                   highlightOptions = highlightOptions(
+                     color = "red",
+                     bringToFront = TRUE
+                   ),
+                   group = group
+      )
+
+  # Convert the 'axis' column from integer64 to character or numeric
+  # data_axis$axis <- as.character(data_axis$axis)
+
+  # print(class(data_axis$axis))
+
+
+
+}
+
+#' Add Axis Data to an Existing Leaflet Map
+#'
 #' This function adds axis data as polylines to an existing Leaflet map. The axis are transparent,
 #' but when hovering over they appear red.
 #'
@@ -269,18 +320,83 @@ map_add_network <- function(map, wms_params_network,
 #'
 #' @return An updated Leaflet map with axis data added.
 #' @export
-map_add_axes <- function(map, data_axis, group) {
+map_add_axis_dgos <- function(map, axis_data, group) {
+
+  # create HTML conditional tooltip labels
+  tooltip_label <- lapply(paste0('<span style="color:#212529;"> <b>', axis_data$toponyme, '</b> </span> <br/>',
+                                 '<span style="color:#495057;"> <b>', round(axis_data$measure/1000, 2), ' km depuis l\'exutoire', '</b> </span>'),
+                          htmltools::HTML)
+
   map %>%
-    addPolylines(data = data_axis,
-                 layerId = ~axis,
-                 weight = 5,
-                 color = "#ffffff00",
-                 opacity = 1,
-                 label = ~toponyme,
-                 highlightOptions = highlightOptions(
-                   color = "red",
-                   bringToFront = TRUE
-                 ),
-                 group = group
+    clearGroup(group) %>%
+    addPolylines(
+      data = axis_data,
+      layerId = ~fid,
+      weight = 5,
+      color = "#ffffff00",
+      label = tooltip_label,
+      opacity = 1,
+      highlightOptions = highlightOptions(
+        opacity = 1,
+        color = "red"
+      ),
+      options = pathOptions(zIndex = 100),
+      group = group
+    )
+
+}
+
+#' Add start and end markers to a leaflet map
+#'
+#' This function adds start and end markers to a Leaflet map based on the provided
+#' start and end coordinates.
+#'
+#' @param map A Leaflet map object created using the 'leaflet' package.
+#' @param axis_start_end A data frame containing start and end coordinates with
+#'        columns 'X' for longitude and 'Y' for latitude.
+#'
+#' @return A Leaflet map object with start and end markers added.
+#'
+#' @importFrom leaflet addMarkers clearGroup makeIcon pathOptions
+#' @importFrom dplyr filter
+#'
+#' @examples
+#' library(leaflet)
+#' library(dplyr)
+#'
+#' # Create a simple Leaflet map
+#' my_map <- leaflet() %>%
+#'   setView(lng = 4.968697, lat = 45.103354, zoom = 8) %>%
+#'   addProviderTiles(providers$CartoDB.Positron)
+#'
+#' # Create a data frame with start and end coordinates
+#' coordinates_df <- data_get_axis_start_end(network_axis %>%
+#'                                             filter(fid == 5))
+#'
+#' # Add start and end markers to the map
+#' my_map <- map_add_axis_start_end(my_map, axis_start_end = coordinates_df)
+#' my_map
+#'
+#' @export
+map_add_axis_start_end <- function(map, axis_start_end, group) {
+
+  # Define the start and end icon
+  start_end_icon <- makeIcon(
+    iconUrl = system.file("pin-sharp.png", package = "mapdoapp"),
+    iconWidth = 24,
+    iconHeight = 24,
+    iconAnchorX = 16,
+    iconAnchorY = 24
+  )
+
+  # add to map
+  map %>%
+    clearGroup(group) %>%
+    addMarkers(
+      lng = axis_start_end$X,
+      lat = axis_start_end$Y,
+      options = pathOptions(interactive = FALSE),
+      icon = start_end_icon,
+      group = group
     )
 }

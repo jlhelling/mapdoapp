@@ -33,8 +33,11 @@ app_server <- function(input, output, session) {
     basin_name = NULL,
     basin_id = NULL,
     region_name = NULL,
+    region_id = NULL,
     axis_name = NULL,
-    swath_name = NULL,
+    axis_id = NULL,
+    axis_data = NULL,
+    swath_id = NULL,
   )
 
   ### GLOBALS ####
