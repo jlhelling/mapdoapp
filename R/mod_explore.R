@@ -143,12 +143,8 @@ mod_explore_server <- function(id, con, r_val, globals){
 
     observeEvent(input$map_shape_click, {
 
-      browser()
-
       #### Basin ####
       if (input$map_shape_click$group == globals$map_group_params[["bassin"]]) {
-
-        print(input$map_shape_click$id)
 
         # check if basin not already selected
         if (!is.null(r_val$basin_id) && (r_val$basin_id == input$map_shape_click$id)) {
@@ -257,7 +253,7 @@ mod_explore_server <- function(id, con, r_val, globals){
 
           # add axis to map
           r_val$map_proxy %>%
-            map_add_axes(globals$axes(), group = globals$params_map_group[["axis"]], selected_axis_id = r_val$axis_id) %>%
+            map_add_axes(globals$axes(), group = globals$map_group_params[["axis"]], selected_axis_id = r_val$axis_id) %>%
             map_add_axis_dgos(r_val$axis_data, group = globals$map_group_params[["dgo_axis"]]) %>%
             map_add_axis_start_end(axis_start_end = r_val$axis_start_end,
                                    group = globals$map_group_params[["axis_start_end"]]) %>%
@@ -333,6 +329,8 @@ mod_explore_server <- function(id, con, r_val, globals){
       print(r_val$axis_id)
       print(r_val$axis_name)
       print(r_val$swath_id)
+      print(r_val$swath_data_section)
+      print(r_val$swath_data_dgo)
     })
   })
 }

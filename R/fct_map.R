@@ -298,14 +298,6 @@ map_add_axes <- function(map, data_axis, group, selected_axis_id = NULL) {
                    ),
                    group = group
       )
-
-  # Convert the 'axis' column from integer64 to character or numeric
-  # data_axis$axis <- as.character(data_axis$axis)
-
-  # print(class(data_axis$axis))
-
-
-
 }
 
 #' Add Axis Data to an Existing Leaflet Map
