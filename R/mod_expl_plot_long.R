@@ -43,6 +43,7 @@ mod_expl_plot_long_ui <- function(id){
 #' @importFrom dplyr filter pull
 #' @importFrom plotly event_register plotlyOutput renderPlotly event_data plotlyProxy
 #' @importFrom leaflet addPolylines clearGroup
+#' @importFrom bsicons bs_icon
 #'
 #' @noRd
 mod_expl_plot_long_server <- function(id, r_val, globals){
@@ -143,5 +144,82 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
     observe({
       r_val$plot_long_proxy <- plotlyProxy("long_profile")
     })
+
+
+    ##### Metric selectors ####
+
+    observeEvent(r_val$axis_clicked, {
+
+      if (!is.null(r_val$axis_data) & (r_val$axis_clicked == TRUE)) {
+
+        # build second axis input and add and remove buttons
+        r_val_local$profile_first_metric = selectInput(ns("profile_first_metric"), label = "Métrique :",
+                                                       choices = globals$metric_choices,
+                                                       selected  = globals$metric_choices[1])
+
+        # build second axis input and add and remove buttons
+        r_val_local$add_sec_axe = checkboxInput(ns("sec_axis"),
+                                                label = "Ajoutez 2éme métrique :",
+                                                value = FALSE)
+        r_val_local$profile_sec_metric = selectInput(ns("profile_sec_metric"), label = NULL,
+                                                     choices = globals$metric_choices,
+                                                     selected  = globals$metric_choices[[2]][1],
+                                                     width = "100%")
+      }
+    })
+
+
+    ##### Metric info ####
+
+    # update infobutton when metric selected changes for the first and second metric
+    observe({
+      if (!is.null(input$profile_first_metric)) {
+        update_popover("popover_metric",
+                       HTML(globals$metrics_params %>%
+                              filter(metric_name == input$profile_first_metric) %>%
+                              pull(metric_description)))
+      }
+    })
+
+    observe({
+      if (!is.null(input$profile_sec_metric)) {
+        update_popover("popover_metric2",
+                       HTML(globals$metrics_params %>%
+                              filter(metric_name == input$profile_sec_metric) %>%
+                              pull(metric_description)))
+      }
+    })
+
+    ##### plot 1st metric ####
+
+    #### build longitudinal profile plot ####
+    observeEvent(c(input$profile_first_metric, r_val$axis_data), {
+
+      if (!is.null(input$profile_first_metric) & !is.null(r_val$axis_data)) {
+        r_val_local$plot <-
+          lg_profile_main(
+            data = r_val$axis_data,
+            y = r_val$axis_data[[input$profile_first_metric]],
+            y_label = globals$metrics_params[globals$metrics_params$metric_name == input$profile_first_metric,]$metric_title,
+            y_label_category = globals$metrics_params[globals$metrics_params$metric_name == input$profile_first_metric,]$metric_type_title
+          ) %>%
+          event_register("plotly_hover")
+
+        # build ROE checkboxInput
+        r_val_local$ui_roe_profile = NULL # delete checkbox before creating new one
+        r_val_local$ui_roe_profile = checkboxInput(ns("roe_profile"),
+                                                   label = "Obstacles à l'Ecoulement",
+                                                   value = FALSE)
+
+        # build background classification checkboxInput
+        r_val_local$ui_background_profile = NULL # delete checkbox before creating new one
+        r_val_local$ui_background_profile = checkboxInput(ns("background_profile"),
+                                                          label = "Classifications en arrière-plan",
+                                                          value = FALSE)
+      } else {
+        r_val_local$plot = lg_profile_empty()
+      }
+    })
+
   })
 }

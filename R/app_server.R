@@ -39,7 +39,10 @@ app_server <- function(input, output, session) {
     axis_data = NULL,
     swath_id = NULL,
     swath_data_section = NULL,
-    swath_data_dgo = NULL
+    swath_data_dgo = NULL,
+
+    # first time clicked
+    axis_clicked = FALSE,
   )
 
   ### GLOBALS ####

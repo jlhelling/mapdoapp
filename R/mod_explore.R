@@ -226,6 +226,8 @@ mod_explore_server <- function(id, con, r_val, globals){
       #### Axis ####
       if (input$map_shape_click$group == globals$map_group_params[["axis"]]) {
 
+        # signal that axis is clicked for first time
+        r_val$axis_clicked = TRUE
 
         # check if axis not already selected
         if (!is.null(r_val$axis_id) && (r_val$axis_id == input$map_shape_click$id)) {
@@ -295,7 +297,7 @@ mod_explore_server <- function(id, con, r_val, globals){
         }
       }
 
-      #### SWATH ####
+      #### Swath ####
 
       if (input$map_shape_click$group == globals$map_group_params[["dgo_axis"]]) {
 
@@ -321,16 +323,6 @@ mod_explore_server <- function(id, con, r_val, globals){
         }
 
       }
-
-      print(r_val$basin_id)
-      print(r_val$basin_name)
-      print(r_val$region_id)
-      print(r_val$region_name)
-      print(r_val$axis_id)
-      print(r_val$axis_name)
-      print(r_val$swath_id)
-      print(r_val$swath_data_section)
-      print(r_val$swath_data_dgo)
     })
   })
 }
