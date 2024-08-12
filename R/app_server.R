@@ -87,6 +87,9 @@ app_server <- function(input, output, session) {
 
   # tabs
   mod_expl_classes_proposed_server("expl_classes_proposed_1", r_val, globals)
+
+  mod_expl_plot_long_server("expl_plot_long_1", r_val, globals)
+
   # mod_expl_classes_manual_server("expl_classes_manual_1", con, r_val)
   # mod_metric_overview_server("metric_overview_1", r_val)
   # mod_profil_long_server("profil_long_1", r_val)

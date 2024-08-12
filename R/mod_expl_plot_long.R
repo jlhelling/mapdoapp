@@ -45,7 +45,7 @@ mod_expl_plot_long_ui <- function(id){
 #' @importFrom leaflet addPolylines clearGroup
 #'
 #' @noRd
-mod_expl_plot_long_server <- function(id){
+mod_expl_plot_long_server <- function(id, r_val, globals){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -81,7 +81,8 @@ mod_expl_plot_long_server <- function(id){
 
     output$long_profile <- renderPlotly({
       return(r_val_local$plot)
-    })
+    }) %>%
+      bindCache(r_val_local$plot)
 
     # selectinput for metric
     output$profile_first_metricUI <- renderUI({
@@ -142,7 +143,5 @@ mod_expl_plot_long_server <- function(id){
     observe({
       r_val$plot_long_proxy <- plotlyProxy("long_profile")
     })
-
-
   })
 }
