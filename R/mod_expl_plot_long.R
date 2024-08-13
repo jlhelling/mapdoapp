@@ -150,7 +150,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
 
     observeEvent(r_val$axis_clicked, {
 
-      if (!is.null(r_val$axis_data) & (r_val$axis_clicked == TRUE)) {
+      if (!is.null(globals$axis_data()) & (r_val$axis_clicked == TRUE)) {
 
         # build second axis input and add and remove buttons
         r_val_local$profile_first_metric = selectInput(ns("profile_first_metric"), label = "Métrique :",
@@ -191,13 +191,13 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
     })
 
     #### plot 1st metric ####
-    observeEvent(c(input$profile_first_metric, r_val$axis_data), {
+    observeEvent(c(input$profile_first_metric, globals$axis_data()), {
 
-      if (!is.null(input$profile_first_metric) & !is.null(r_val$axis_data)) {
+      if (!is.null(input$profile_first_metric) & !is.null(globals$axis_data())) {
         r_val_local$plot <-
           lg_profile_main(
-            data = r_val$axis_data,
-            y = r_val$axis_data[[input$profile_first_metric]],
+            data = globals$axis_data(),
+            y = globals$axis_data()[[input$profile_first_metric]],
             y_label = globals$metrics_params[globals$metrics_params$metric_name == input$profile_first_metric,]$metric_title,
             y_label_category = globals$metrics_params[globals$metrics_params$metric_name == input$profile_first_metric,]$metric_type_title
           ) %>%
@@ -232,8 +232,8 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
           globals$metrics_params |> filter(metric_name == input$profile_sec_metric) |> pull(metric_type_title)
 
         # create the list to add trace and layout to change second axe plot
-        r_val_local$proxy_second_axe <- lg_profile_second(data = r_val$axis_data,
-                                                          y = r_val$axis_data[[input$profile_sec_metric]],
+        r_val_local$proxy_second_axe <- lg_profile_second(data = globals$axis_data(),
+                                                          y = globals$axis_data()[[input$profile_sec_metric]],
                                                           y_label = r_val_local$sec_metric_name,
                                                           y_label_category = r_val_local$sec_metric_type)
         # add second metric to plot
@@ -271,7 +271,8 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
 
         # get ROE when axis clicked
         r_val_local$axis_roe = globals$roe_sites() %>%
-          filter(axis == r_val$axis_id)
+          filter(axis == r_val$axis_id) %>%
+          select(distance_axis)
 
         # create the vertical line from ROE distance_axis
         r_val_local$shapes_roe = lg_roe_vertical_line(r_val_local$axis_roe$distance_axis)
@@ -315,7 +316,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
         # add line to map and plot
         if (!is.null(hover_event)) {
           hover_fid <- hover_event$key[1]
-          highlighted_feature <- r_val$axis_data[r_val$axis_data$fid == hover_fid, ]
+          highlighted_feature <- globals$axis_data()[globals$axis_data()$fid == hover_fid, ]
           r_val$map_proxy %>%
             addPolylines(data = highlighted_feature, color = "red", weight = 10,
                          group = globals$map_group_params$light)

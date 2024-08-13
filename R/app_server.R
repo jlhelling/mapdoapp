@@ -81,6 +81,11 @@ app_server <- function(input, output, session) {
     bindCache(globals$regions_gids_key)
 
 
+  #### Axis data caching ####
+  globals$axis_data <- reactive({
+    data_get_axis_dgos(selected_axis_id = r_val$axis_id, con)
+  }) %>%
+    bindCache(r_val$axis_id)
 
 
   ### Server activation ####

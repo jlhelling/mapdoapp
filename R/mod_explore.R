@@ -247,16 +247,14 @@ mod_explore_server <- function(id, con, r_val, globals){
           r_val$swath_data_section = NULL
           r_val$swath_data_dgo = NULL
 
-          # load axis sf frame (with caching)
-          r_val$axis_data = data_get_axis_dgos(selected_axis_id = r_val$axis_id, con)
 
           # get start- and end-coordinates of axis
-          r_val$axis_start_end = data_get_axis_start_end(dgo_axis = r_val$axis_data)
+          r_val$axis_start_end = data_get_axis_start_end(dgo_axis = globals$axis_data())
 
           # add axis to map
           r_val$map_proxy %>%
             map_add_axes(globals$axes(), group = globals$map_group_params[["axis"]], selected_axis_id = r_val$axis_id) %>%
-            map_add_axis_dgos(r_val$axis_data, group = globals$map_group_params[["dgo_axis"]]) %>%
+            map_add_axis_dgos(globals$axis_data(), group = globals$map_group_params[["dgo_axis"]]) %>%
             map_add_axis_start_end(axis_start_end = r_val$axis_start_end,
                                    group = globals$map_group_params[["axis_start_end"]]) %>%
             clearGroup(globals$map_group_params[["dgo"]])
@@ -314,7 +312,7 @@ mod_explore_server <- function(id, con, r_val, globals){
           r_val$swath_data_section = data_get_elevation_profiles(selected_dgo_fid = r_val$swath_id, con = con)
 
           # get dgo clicked feature
-          r_val$swath_data_dgo = r_val$axis_data %>%
+          r_val$swath_data_dgo = globals$axis_data() %>%
             filter(fid == r_val$swath_id)
 
           # Highlight clicked DGO
@@ -331,7 +329,7 @@ mod_explore_server <- function(id, con, r_val, globals){
       if (input$map_shape_mouseover$group == globals$map_group_params$dgo_axis && !is.null(input$map_shape_mouseover)){
 
         # extract dgo axis fid from map
-        r_val$leaflet_hover_measure = r_val$axis_data %>%
+        r_val$leaflet_hover_measure = globals$axis_data() %>%
           filter(fid == input$map_shape_mouseover$id) %>%
           pull(measure)
       } else {
