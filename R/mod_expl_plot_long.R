@@ -190,9 +190,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
       }
     })
 
-    ##### plot 1st metric ####
-
-    #### build longitudinal profile plot ####
+    #### plot 1st metric ####
     observeEvent(c(input$profile_first_metric, r_val$axis_data), {
 
       if (!is.null(input$profile_first_metric) & !is.null(r_val$axis_data)) {
@@ -218,6 +216,38 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
                                                           value = FALSE)
       } else {
         r_val_local$plot = lg_profile_empty()
+      }
+    })
+
+    #### add / remove 2nd axis ####
+
+    observeEvent(c(input$sec_axis, input$profile_sec_metric), {
+
+      # add second axis
+      if (input$sec_axis == TRUE) {
+        # get metric title and type
+        r_val_local$sec_metric_name =
+          globals$metrics_params |> filter(metric_name == input$profile_sec_metric) |> pull(metric_title)
+        r_val_local$sec_metric_type =
+          globals$metrics_params |> filter(metric_name == input$profile_sec_metric) |> pull(metric_type_title)
+
+        # create the list to add trace and layout to change second axe plot
+        r_val_local$proxy_second_axe <- lg_profile_second(data = r_val$axis_data,
+                                                          y = r_val$axis_data[[input$profile_sec_metric]],
+                                                          y_label = r_val_local$sec_metric_name,
+                                                          y_label_category = r_val_local$sec_metric_type)
+        # add second metric to plot
+        plotlyProxy("long_profile") %>%
+          plotlyProxyInvoke("deleteTraces", 1) %>%
+          plotlyProxyInvoke("addTraces", r_val_local$proxy_second_axe$trace, 1) %>%
+          plotlyProxyInvoke("relayout", r_val_local$proxy_second_axe$layout)
+      }
+      # remove second axis
+      else {
+        plotlyProxy("long_profile") %>%
+          plotlyProxyInvoke("deleteTraces", 1)
+
+        r_val_local$proxy_second_axe = NULL
       }
     })
 

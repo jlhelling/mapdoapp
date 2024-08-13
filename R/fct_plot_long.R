@@ -129,3 +129,68 @@ lg_annotations_layout <- function(data){
   )
   return(annotations)
 }
+
+#' Create a dual-axis longitudinal profile plot for selected axis data
+#'
+#' This function generates a dual-axis longitudinal profile plot using the 'plot_ly'
+#' function from the 'plotly' package. It allows you to visualize two different
+#' metrics along the selected axis.
+#'
+#' @param data A data frame containing the selected axis data.
+#' @param y The primary metric to be plotted on the left y-axis.
+#' @param y_label The name of the metric plotted.
+#' @param y_label_category The metric category name.
+#'
+#' @return A dual-axis longitudinal profile plot with the specified metrics.
+#'
+#' @examples
+#' \dontrun{
+#' # like lg_profile_update_main function, see example in documentation
+#'}
+#'
+#' @export
+lg_profile_second <- function(data, y, y_label, y_label_category){
+
+  proxy_trace <- lg_add_trace(data, y, y_label, yaxis = 'y2')
+
+  proxy_layout <- list(
+    yaxis2 = list(
+      title = list(text = paste0( y_label_category, " - ",
+                                  y_label)
+      ),
+      overlaying = 'y',
+      side = 'right',
+      showgrid = FALSE,  # Hide the gridlines for the second y-axis
+      zeroline = FALSE,
+      showline = FALSE  # Hide the axis line for the second y-axis
+    )
+  )
+  proxy <- list("trace" = proxy_trace,
+                "layout" = proxy_layout)
+  return(proxy)
+}
+
+
+#' plotly add trace.
+#'
+#' @param data data frame containing the selected axis data.
+#' @param y text metric to be plotted on the y-axis.
+#' @param y_label text name of the metric plotted.
+#' @param yaxis text axis id.
+#'
+#' @return list
+#' @export
+lg_add_trace <- function(data, y, y_label, yaxis = 'y1'){
+  trace <- list(
+    x = data$measure,
+    y = y,
+    key = data$fid,  # the "id" column for hover text
+    type = 'scatter',
+    mode = 'lines',
+    line = list(color = "#7209b7"),
+    name = y_label,
+    yaxis = yaxis
+  )
+  return(trace)
+}
+

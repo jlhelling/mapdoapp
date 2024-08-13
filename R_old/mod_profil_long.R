@@ -234,8 +234,6 @@ mod_profil_long_server <- function(id, r_val){
 
         r_val_local$proxy_second_axe = NULL
       }
-
-
     })
 
     ### SHAPES Plotly ####
