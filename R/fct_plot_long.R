@@ -230,7 +230,7 @@ lg_vertical_line <- function(x = 0, color = "purple") {
 #' @export
 lg_roe_vertical_line <- function(roe_distance_axis){
   shapes_list <- lapply(roe_distance_axis, function(x) {
-    lg_vertical_line(x = x/1000, color = "#323232")
+    lg_vertical_line(x = x, color = "#323232")
   })
   return (shapes_list)
 }

@@ -253,23 +253,26 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
 
     #### ROE ####
 
+    # obtain data
+    # observeEvent(c(r_val$axis_id, r_val$tab_plots), {
+    #
+    #   if (!is.null(input$roe_profile)) {
+    #     if (input$roe_profile == TRUE && !is.null(r_val$axis_id) && (r_val$tab_plots == "Évolution longitudinale")) {
+    #
+    #
+    #     }
+    #   }
+    # })
 
-    observeEvent(c(r_val$axis_id, r_val$tab_plots), {
-
-      if (!is.null(input$roe_profile)) {
-        if (input$roe_profile == TRUE && !is.null(r_val$axis_id) && (r_val$tab_plots == "Évolution longitudinale")) {
-
-          # get ROE when axis clicked
-          r_val_local$axis_roe = globals$roe_sites() %>%
-            filter(axis == r_val$axis_id)
-        }
-      }
-    })
-
-
+    # observe the checkbox to display ROE obstacles
     observeEvent(input$roe_profile, {
 
       if (input$roe_profile == TRUE) {
+
+        # get ROE when axis clicked
+        r_val_local$axis_roe = globals$roe_sites() %>%
+          filter(axis == r_val$axis_id)
+
         # create the vertical line from ROE distance_axis
         r_val_local$shapes_roe = lg_roe_vertical_line(r_val_local$axis_roe$distance_axis)
 
@@ -362,10 +365,10 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
         shapes_list <- c(shapes_list, r_val_local$shapes_dgo)
       }
 
-      # if (!is.null(r_val_local$shapes_roe)) {
-      #   shapes_list <- c(shapes_list, r_val_local$shapes_roe)
-      # }
-      #
+      if (!is.null(r_val_local$shapes_roe)) {
+        shapes_list <- c(shapes_list, r_val_local$shapes_roe)
+      }
+
       # if (!is.null(r_val_local$shapes_background)) {
       #   shapes_list <- c(shapes_list, r_val_local$shapes_background)
       # }
