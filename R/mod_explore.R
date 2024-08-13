@@ -61,7 +61,7 @@ mod_explore_ui <- function(id){
             mod_expl_plot_long_ui("expl_plot_long_1")
           ),
           tabPanel("Profil transversal",
-                   # mod_profil_transverse_ui("profil_transverse_1")
+                   mod_expl_plot_crosssection_ui("expl_plot_crosssection_1")
           ), type = "pills"
         )
       )
