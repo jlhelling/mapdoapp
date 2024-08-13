@@ -57,6 +57,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
       ui_roe_profile = NULL, # UI placeholder for ROE checkbox
       ui_background_profile = NULL, # UI placeholder for background classes checkbox
       roe_vertical_line = NULL, # list with verticale line to plot on longitudinal profile
+      axis_roe = NULL, # ROE data of axis
 
       # first metric
       profile_first_metric = NULL,
@@ -82,8 +83,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
 
     output$long_profile <- renderPlotly({
       return(r_val_local$plot)
-    }) %>%
-      bindCache(r_val_local$plot)
+    })
 
     # selectinput for metric
     output$profile_first_metricUI <- renderUI({
@@ -251,5 +251,145 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
       }
     })
 
+    #### ROE ####
+
+
+    observeEvent(c(r_val$axis_id, r_val$tab_plots), {
+
+      if (!is.null(input$roe_profile)) {
+        if (input$roe_profile == TRUE && !is.null(r_val$axis_id) && (r_val$tab_plots == "Évolution longitudinale")) {
+
+          # get ROE when axis clicked
+          r_val_local$axis_roe = globals$roe_sites() %>%
+            filter(axis == r_val$axis_id)
+        }
+      }
+    })
+
+
+    observeEvent(input$roe_profile, {
+
+      if (input$roe_profile == TRUE) {
+        # create the vertical line from ROE distance_axis
+        r_val_local$shapes_roe = lg_roe_vertical_line(r_val_local$axis_roe$distance_axis)
+
+      } else {
+        # remove the previous ROE vertical lines if exist
+        r_val_local$shapes_roe = NULL
+      }
+    })
+
+
+
+    #### SHAPES Plotly ####
+
+    ##### clicked dgo ####
+
+    observe({
+
+      if (!is.null(r_val$swath_data_dgo)) {
+        # remove the previous element
+        r_val_local$shapes_dgo = NULL
+
+        # get new shapes-element for longitudinal plot marker of clicked dgo for
+        r_val_local$shapes_dgo <- list(lg_vertical_line(r_val$swath_data_dgo %>% pull(measure)))
+      } else if (is.null(r_val$swath_data_dgo)) {
+        r_val_local$shapes_dgo = NULL
+      }
+    })
+
+    #### HOVER EVENTS ####
+
+    ##### plotly profile ####
+
+    # capture hover events on profile-plot to display dgo on map
+    observeEvent(event_data("plotly_hover", source = 'L'), {
+
+      if(!is.null(r_val_local$plot)) {
+        # event data
+        hover_event <- event_data("plotly_hover", source = 'L')
+
+        # add line to map and plot
+        if (!is.null(hover_event)) {
+          hover_fid <- hover_event$key[1]
+          highlighted_feature <- r_val$axis_data[r_val$axis_data$fid == hover_fid, ]
+          r_val$map_proxy %>%
+            addPolylines(data = highlighted_feature, color = "red", weight = 10,
+                         group = globals$map_group_params$light)
+        }
+      }
+
+    })
+
+    # clear previous point on map when moving along profile to not display all the point move over
+    observe({
+      if (!is.null(r_val_local$plot)) {
+        if (is.null(event_data("plotly_hover", source = 'L'))) {
+          r_val$map_proxy %>%
+            clearGroup(globals$map_group_params$light)
+        }
+      }
+    })
+
+
+    ##### leaflet map dgo mouseover ####
+
+    observe({
+
+      if (!is.null(r_val$leaflet_hover_measure)) {
+        if (!is.null(r_val_local$plot)) {
+          # remove the first element (hover dgo vertical line)
+          r_val_local$leaflet_hover_shapes = NULL
+          # add the new hover dgo vertical line
+          r_val_local$leaflet_hover_shapes = list(lg_vertical_line(r_val$leaflet_hover_measure, color = "red"))
+        }
+      } else if (is.null(r_val$leaflet_hover_measure)) {
+        r_val_local$leaflet_hover_shapes = NULL
+      }
+    })
+
+
+    #### COMBINE shapes ####
+
+    # reactive that listens to all changes in shapes and returns a combined list of them
+    combined_shapes <- reactive({
+
+      # create always new an empty list to store only shapes which are really activated
+      shapes_list <- list()
+
+      # Swath/dgo clicked
+      if (!is.null(r_val_local$shapes_dgo)) {
+        shapes_list <- c(shapes_list, r_val_local$shapes_dgo)
+      }
+
+      # if (!is.null(r_val_local$shapes_roe)) {
+      #   shapes_list <- c(shapes_list, r_val_local$shapes_roe)
+      # }
+      #
+      # if (!is.null(r_val_local$shapes_background)) {
+      #   shapes_list <- c(shapes_list, r_val_local$shapes_background)
+      # }
+
+      # hovered over swath/dgo
+      if (!is.null(r_val_local$leaflet_hover_shapes)) {
+        shapes_list <- c(shapes_list, r_val_local$leaflet_hover_shapes)
+      }
+
+      shapes_list
+    })
+
+
+    # observe the combined shapes and update the plotly plot
+    observe({
+
+      if (!is.null(combined_shapes())) {
+
+        shapes <- combined_shapes()
+
+        # update profile with changed shapes
+        plotlyProxy("long_profile") %>%
+          plotlyProxyInvoke("relayout", list(shapes = shapes))
+      }
+    })
   })
 }

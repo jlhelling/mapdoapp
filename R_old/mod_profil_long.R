@@ -406,7 +406,7 @@ mod_profil_long_server <- function(id, r_val){
 
     #### leaflet map dgo mouseover ####
 
-    observe( {
+    observe({
 
       if (!is.null(r_val$leaflet_hover_measure)) {
         if (!is.null(r_val_local$plot)) {

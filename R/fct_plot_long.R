@@ -194,3 +194,44 @@ lg_add_trace <- function(data, y, y_label, yaxis = 'y1'){
   return(trace)
 }
 
+#' Create a vertical dashed line annotation for longitudinal profile plots
+#'
+#' This function generates a vertical dashed line annotation for longitudinal profile
+#' plots using the 'plotly' package.
+#'
+#' @param x The x-coordinate where the vertical line should be positioned.
+#' @param color The color of the vertical dashed line (default is "green").
+#'
+#' @return A list object representing a vertical dashed line annotation.
+#'
+#' @examples
+#' # see lg_profile_main() function to use it in a plotly graph
+#' # Create a vertical dashed line annotation at x = 10 with a red color
+#' vertical_line_annotation <- lg_vertical_line(x = 10, color = "red")
+#'
+#' @export
+lg_vertical_line <- function(x = 0, color = "purple") {
+  list(
+    type = "line",
+    y0 = 0,
+    y1 = 1,
+    yref = "paper",
+    x0 = x,
+    x1 = x,
+    line = list(color = color, dash="dot")
+  )
+}
+
+#' Create the ROE vertical lines for plotly shapes
+#'
+#' @param roe_distance_axis vector ROE distance on axis.
+#'
+#' @return list of each vertical lines
+#' @export
+lg_roe_vertical_line <- function(roe_distance_axis){
+  shapes_list <- lapply(roe_distance_axis, function(x) {
+    lg_vertical_line(x = x/1000, color = "#323232")
+  })
+  return (shapes_list)
+}
+

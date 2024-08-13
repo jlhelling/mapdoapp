@@ -247,7 +247,7 @@ mod_explore_server <- function(id, con, r_val, globals){
           r_val$swath_data_section = NULL
           r_val$swath_data_dgo = NULL
 
-          # load axis sf frame
+          # load axis sf frame (with caching)
           r_val$axis_data = data_get_axis_dgos(selected_axis_id = r_val$axis_id, con)
 
           # get start- and end-coordinates of axis
@@ -321,7 +321,21 @@ mod_explore_server <- function(id, con, r_val, globals){
           r_val$map_proxy %>%
             map_dgo_cross_section(selected_dgo = r_val$swath_data_dgo, group = globals$map_group_params[["dgo"]])
         }
+      }
+    })
 
+    #### DGO Mouseover ####
+
+    # check for hover over dgo event
+    observeEvent(input$map_shape_mouseover, {
+      if (input$map_shape_mouseover$group == globals$map_group_params$dgo_axis && !is.null(input$map_shape_mouseover)){
+
+        # extract dgo axis fid from map
+        r_val$leaflet_hover_measure = r_val$axis_data %>%
+          filter(fid == input$map_shape_mouseover$id) %>%
+          pull(measure)
+      } else {
+        r_val$leaflet_hover_measure = NULL
       }
     })
   })

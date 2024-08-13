@@ -28,6 +28,7 @@ app_server <- function(input, output, session) {
     # map
     map_proxy = NULL,
     opacity_basins = list(clickable = 0.01, not_clickable = 0.10), # opacity value to inform the user about available bassins and regions
+    leaflet_hover_measure = NULL, # measure to be displayed in the leaflet hover
 
     # geo objects
     basin_name = NULL,

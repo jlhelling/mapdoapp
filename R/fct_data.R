@@ -328,8 +328,7 @@ data_get_axis_dgos <- function(selected_axis_id, con) {
   query <- sqlInterpolate(con, sql, selected_axis_id = selected_axis_id)
 
   data <- sf::st_read(dsn = con, query = query) %>%
-    dplyr::arrange(measure) #%>%
-  # na.omit()
+    dplyr::arrange(measure)
 
   return(data)
 }
