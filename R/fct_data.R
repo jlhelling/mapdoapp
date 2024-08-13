@@ -336,7 +336,7 @@ data_get_axis_dgos <- function(selected_axis_id, con) {
           WHEN strahler = 5 THEN '5'
           WHEN strahler = 6 THEN '6'
           ELSE 'unvalid'
-        END AS classes_proposed_strahler,
+        END AS class_strahler,
 
         -- Topography Classification
         CASE
@@ -348,7 +348,7 @@ data_get_axis_dgos <- function(selected_axis_id, con) {
           WHEN talweg_elevation_min >= -50 AND talweg_slope >= 0.05 THEN 'Pentes de basse altitude'
           WHEN talweg_elevation_min >= -50 AND talweg_slope < 0.05 THEN 'Plaines de basse altitude'
           ELSE 'unvalid'
-        END AS classes_proposed_topographie,
+        END AS class_topographie,
 
         -- Dominant Land Use Classification
         CASE
@@ -358,7 +358,7 @@ data_get_axis_dgos <- function(selected_axis_id, con) {
           WHEN crops_pc >= GREATEST(forest_pc, grassland_pc, crops_pc, built_environment_pc) THEN 'crops_pc'
           WHEN built_environment_pc >= GREATEST(forest_pc, grassland_pc, crops_pc, built_environment_pc) THEN 'built_environment_pc'
           ELSE 'unvalid'
-        END AS classes_proposed_lu_dominante,
+        END AS class_lu_dominante,
 
         -- Urban Land Use Classification
         CASE
@@ -368,7 +368,7 @@ data_get_axis_dgos <- function(selected_axis_id, con) {
           WHEN built_environment_pc >= 10 THEN 'modérément urbanisé'
           WHEN built_environment_pc >= 0 THEN 'Presque pas/pas urbanisé'
           ELSE 'unvalid'
-        END AS classes_proposed_urban,
+        END AS class_urban,
 
         -- Agricultural Land Use Classification
         CASE
@@ -378,7 +378,7 @@ data_get_axis_dgos <- function(selected_axis_id, con) {
           WHEN crops_pc >= 10 THEN 'Impact agricole modéré'
           WHEN crops_pc >= 0 THEN 'Presque pas/pas d''impact agricole'
           ELSE 'unvalid'
-        END AS classes_proposed_agriculture,
+        END AS class_agriculture,
 
         -- Natural Land Use Classification
         CASE
@@ -388,7 +388,7 @@ data_get_axis_dgos <- function(selected_axis_id, con) {
           WHEN (natural_open_pc + forest_pc + grassland_pc) >= 10 THEN 'Utilisation naturelle modérée'
           WHEN (natural_open_pc + forest_pc + grassland_pc) >= 0 THEN 'Presque pas/pas naturelle'
           ELSE 'unvalid'
-        END AS classes_proposed_nature,
+        END AS class_nature,
 
         -- Gravel Bars Classification
         CASE
@@ -397,7 +397,7 @@ data_get_axis_dgos <- function(selected_axis_id, con) {
           WHEN (gravel_bars / NULLIF(water_channel, 0)) > 0 THEN 'moyennement présente'
           WHEN (gravel_bars / NULLIF(water_channel, 0)) = 0 THEN 'absent'
           ELSE 'unvalid'
-        END AS classes_proposed_gravel,
+        END AS class_gravel,
 
         -- Confinement Classification
         CASE
@@ -417,7 +417,7 @@ data_get_axis_dgos <- function(selected_axis_id, con) {
           WHEN (riparian_corridor_pc + semi_natural_pc) >= 10 THEN 'moyen connecté'
           WHEN (riparian_corridor_pc + semi_natural_pc) >= 0 THEN 'faible / absente'
           ELSE 'unvalid'
-        END AS classes_proposed_habitat
+        END AS class_habitat
       FROM network_metrics
       WHERE  axis = ?selected_axis_id"
   query <- sqlInterpolate(con, sql, selected_axis_id = selected_axis_id)

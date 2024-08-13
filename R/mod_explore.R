@@ -121,6 +121,8 @@ mod_explore_server <- function(id, con, r_val, globals){
       r_val$selection_text
     })
 
+
+    #### Map Proxy ####
     observe({
       r_val$map_proxy <- leafletProxy("map")
     })

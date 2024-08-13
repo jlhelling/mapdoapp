@@ -232,6 +232,81 @@ lg_roe_vertical_line <- function(roe_distance_axis){
   shapes_list <- lapply(roe_distance_axis, function(x) {
     lg_vertical_line(x = x, color = "#323232")
   })
-  return (shapes_list)
+  return(shapes_list)
 }
 
+#' Assign classification with colors to network dgos
+#'
+#' @param data dataframe or sf object containing all dgos of an axis
+#' @param proposed_class string indicating the type of classification which should be applied to the data
+#'
+#' @return classified dataframe/sf object with additional variables: class_name and color
+#'
+#' @importFrom dplyr mutate case_when left_join join_by rowwise ungroup c_across select
+#' @importFrom tidyr replace_na
+#' @importFrom sf st_drop_geometry
+#'
+#' @examples
+#' classified_network <- network_dgo %>%
+#'     assign_classes(proposed_class = "class_strahler",
+#'     colors_df = globals$classes_proposed_colors)
+#'
+assign_classes_proposed <- function(data, proposed_class, colors_df) {
+
+  # Extract the relevant color mapping for the main_class
+  color_mapping <- colors_df[[proposed_class]]
+
+  # Add color column based on the class_name
+  df <- data %>%
+    sf::st_drop_geometry() %>%
+    mutate(
+      class_name = data[[proposed_class]],
+      color = color_mapping[as.character(data[[proposed_class]])]) %>%
+    replace_na(list(color = "#f8f8ff"))  # Default color for unvalid classes or NAs
+
+  return(df)
+}
+
+#' Create background-layout of  classes for longitudinal profile
+#'
+#' @param classified_axis
+#'
+#' @return list ready to be used for plotly::layout()-function
+create_classes_background <- function(classified_axis) {
+
+  # Create empty list to store shapes in
+  shapes <- list()
+
+  for (i in 1:(nrow(classified_axis) - 1)) {
+
+    # set x-axis limits
+    start <- classified_axis$measure[i]
+    if (!is.na(classified_axis$measure[i + 1])) {
+      end <- classified_axis$measure[i + 1]
+    } else {
+      end <- start + 200
+    }
+
+    # set color
+    color <- classified_axis$color[i]
+
+    # create unique shape for each step
+    shapes <- append(shapes, list(
+      list(
+        type = "rect",
+        fillcolor = color,
+        line = list(color = color, width = 0),
+        opacity = 0.4,
+        x0 = start,
+        x1 = end,
+        xref = "x",
+        y0 = 0,
+        y1 = 1,
+        yref = "paper",
+        layer = "below"
+      )
+    ))
+  }
+
+  return(shapes)
+}

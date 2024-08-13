@@ -251,18 +251,24 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
       }
     })
 
-    #### ROE ####
+    #### SHAPES Plotly ####
 
-    # obtain data
-    # observeEvent(c(r_val$axis_id, r_val$tab_plots), {
-    #
-    #   if (!is.null(input$roe_profile)) {
-    #     if (input$roe_profile == TRUE && !is.null(r_val$axis_id) && (r_val$tab_plots == "Évolution longitudinale")) {
-    #
-    #
-    #     }
-    #   }
-    # })
+    ##### clicked dgo ####
+
+    observe({
+
+      if (!is.null(r_val$swath_data_dgo)) {
+        # remove the previous element
+        r_val_local$shapes_dgo = NULL
+
+        # get new shapes-element for longitudinal plot marker of clicked dgo for
+        r_val_local$shapes_dgo <- list(lg_vertical_line(r_val$swath_data_dgo %>% pull(measure)))
+      } else if (is.null(r_val$swath_data_dgo)) {
+        r_val_local$shapes_dgo = NULL
+      }
+    })
+
+    ##### ROE ####
 
     # observe the checkbox to display ROE obstacles
     observeEvent(input$roe_profile, {
@@ -284,23 +290,50 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
     })
 
 
+    ##### background classes ####
 
-    #### SHAPES Plotly ####
+    # check for proposed and manual classifications
+    # proposed:
+    # - detect selected class and set as class
+    # - add colors
+    #
+    # manual
 
-    ##### clicked dgo ####
+    observeEvent(c(input$background_profile, r_val$classes_proposed_selected),  {
+      # r_val$manual_classes_table),  {
 
-    observe({
+      if (!is.null(input$background_profile) && !is.null(globals$axis_data())) {
 
-      if (!is.null(r_val$swath_data_dgo)) {
-        # remove the previous element
-        r_val_local$shapes_dgo = NULL
+        # add background classification shapes
+        if (input$background_profile == TRUE) {
 
-        # get new shapes-element for longitudinal plot marker of clicked dgo for
-        r_val_local$shapes_dgo <- list(lg_vertical_line(r_val$swath_data_dgo %>% pull(measure)))
-      } else if (is.null(r_val$swath_data_dgo)) {
-        r_val_local$shapes_dgo = NULL
+          # proposed classification applied
+          if (r_val$visualization == "classes") {
+            r_val$dgo_axis_classified = globals$axis_data() %>%
+              assign_classes_proposed(proposed_class = globals$classes_proposed[r_val$classes_proposed_selected,]$class_name,
+                                      colors_df = globals$classes_proposed_colors)
+          }
+
+          # manual classification applied
+          # else if (r_val$visualization == "manual" &
+          #          !is.null(r_val$manual_classes_table)) {
+          #   r_val$dgo_axis_classified <- r_val$dgo_axis %>%
+          #     na.omit() %>%
+          #     assign_classes_manual(classes = r_val$manual_classes_table)
+          # }
+
+          if (!is.null(r_val$dgo_axis_classified)) {
+            r_val_local$shapes_background = create_classes_background(r_val$dgo_axis_classified)
+          }
+
+        }
+        # remove background classification
+        else if (input$background_profile == FALSE) {
+          r_val_local$shapes_background = NULL
+        }
       }
     })
+
 
     #### HOVER EVENTS ####
 
@@ -366,13 +399,15 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
         shapes_list <- c(shapes_list, r_val_local$shapes_dgo)
       }
 
+      # ROE sites
       if (!is.null(r_val_local$shapes_roe)) {
         shapes_list <- c(shapes_list, r_val_local$shapes_roe)
       }
 
-      # if (!is.null(r_val_local$shapes_background)) {
-      #   shapes_list <- c(shapes_list, r_val_local$shapes_background)
-      # }
+      # classes
+      if (!is.null(r_val_local$shapes_background)) {
+        shapes_list <- c(shapes_list, r_val_local$shapes_background)
+      }
 
       # hovered over swath/dgo
       if (!is.null(r_val_local$leaflet_hover_shapes)) {

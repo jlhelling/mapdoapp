@@ -57,9 +57,6 @@ mod_expl_classes_proposed_server <- function(id, r_val, globals){
       # check if row is actually selected
       if (!is.null(selected)) {
 
-        # create map styling based on selected classification
-        # r_val$sld_body = globals$classes_proposed[selected,]$class_sld
-
 
         # add styling to map
         r_val$map_proxy %>%
