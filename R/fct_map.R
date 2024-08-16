@@ -268,23 +268,78 @@ map_add_network <- function(map, wms_params_network,
 #'
 #' @return A leaflet map object with the metric layer added.
 #'
+#' @importFrom leaflet addWMSTiles clearGroup WMSTileOptions
+#'
 #' @export
-# map_add_network_metric <- function(map, wms_params = params_wms()$metric,
-#                        cql_filter = "", sld_body = "", data_axis) {
-#   map %>%
-#     clearGroup(params_map_group()[["axis"]]) %>%
-#     clearGroup(params_map_group()[["metric"]]) %>%
-#     clearGroup(params_map_group()[["class"]]) %>%
-#     # add metric with custom symbology
-#     map_wms_metric(wms_params = wms_params,
-#                    cql_filter = cql_filter, sld_body = sld_body) %>%
-#     # add transparent axis
-#     map_axis(data_axis = data_axis) %>%
-#     addWMSLegend(uri = map_legend_metric(sld_body = sld_body),
-#                  position = "bottomright",
-#                  layerId = "legend_metric")
-# }
-# TODO
+map_add_network_metric <- function(map, wms_params = globals$wms_params$metric,
+                                   sld_body = "", group = "Réseau hydrographique") {
+  map %>%
+    clearGroup(group) %>%
+    # add metric with custom symbology
+    addWMSTiles(
+      baseUrl = wms_params$url,
+      layers = wms_params$layer,
+      attribution = wms_params$attribution,
+      options = WMSTileOptions(
+        format = wms_params$format,
+        request = "GetMap",
+        transparent = TRUE,
+        sld_body = sld_body,
+        zIndex = 90
+      ),
+      group = group
+    ) %>%
+    addWMSLegend(uri = map_legend_metric(sld_body = sld_body, wms_params),
+                 position = "bottomright",
+                 layerId = "legend_metric")
+}
+
+#' Generate and display a legend for a map layer using a provided SLD (Styled Layer Descriptor) body.
+#'
+#' This function constructs a legend for a map layer by sending a GetLegendGraphic request to a WMS (Web Map Service) server.
+#'
+#' @param sld_body A character string containing the SLD (Styled Layer Descriptor) body that defines the map layer's styling.
+#'
+#' @return An HTML img tag representing the legend for the specified map layer.
+#'
+#' @importFrom httr modify_url
+#' @importFrom htmltools tags
+#'
+#' @examples
+#' con <- db_con()
+#' # Define an SLD body for a map layer
+#' sld_body <- sld_get_style(breaks = sld_get_quantile_metric(
+#'                                      selected_region_id = 11,
+#'                                      selected_metric = "active_channel_width",
+#'                                      con = con),
+#'                           colors = sld_get_quantile_colors(
+#'                                      quantile_breaks = sld_get_quantile_metric(
+#'                                                          selected_region_id = 11,
+#'                                                          selected_metric = "active_channel_width",
+#'                                                          con = con)),
+#'                           metric = "active_channel_width")
+#' DBI::dbDisconnect(con)
+#'
+#' # Generate and display the legend for the map layer
+#' legend <- map_legend_metric(sld_body)
+#'
+#' @export
+map_legend_metric <- function(sld_body, wms_params){
+
+  # Construct the query parameters for legend
+  query_params <- list(
+    REQUEST = "GetLegendGraphic",
+    VERSION = wms_params$version,
+    FORMAT = wms_params$format,
+    SLD_BODY = sld_body,
+    LAYER = wms_params$layer
+  )
+
+  # Build the legend URL
+  legend_url <- modify_url(wms_params$url, query = query_params)
+
+  return(legend_url)
+}
 
 #' Add Axis Data to an Existing Leaflet Map
 #'
@@ -313,21 +368,21 @@ map_add_axes <- function(map, data_axis, group, selected_axis_id = NULL) {
 
   }
 
-    # add to map
-    map %>%
-      clearGroup(group) %>% # clear existing axis layer
-      addPolylines(data = data_axis,
-                   layerId = ~axis,
-                   weight = 5,
-                   color = "#ffffff00",
-                   opacity = 1,
-                   label = ~toponyme,
-                   highlightOptions = highlightOptions(
-                     color = "red",
-                     bringToFront = TRUE
-                   ),
-                   group = group
-      )
+  # add to map
+  map %>%
+    clearGroup(group) %>% # clear existing axis layer
+    addPolylines(data = data_axis,
+                 layerId = ~axis,
+                 weight = 5,
+                 color = "#ffffff00",
+                 opacity = 1,
+                 label = ~toponyme,
+                 highlightOptions = highlightOptions(
+                   color = "red",
+                   bringToFront = TRUE
+                 ),
+                 group = group
+    )
 }
 
 #' Add Axis Data to an Existing Leaflet Map

@@ -2,7 +2,7 @@
 % Please edit documentation in R/fct_map.R
 \name{map_add_axes}
 \alias{map_add_axes}
-\title{Add a metric layer with custom symbology to a map.}
+\title{Add Axis Data to an Existing Leaflet Map}
 \usage{
 map_add_axes(map, data_axis, group, selected_axis_id = NULL)
 }
@@ -11,19 +11,12 @@ map_add_axes(map, data_axis, group, selected_axis_id = NULL)
 
 \item{data_axis}{A sf data frame containing axis data.}
 
-\item{wms_params}{A list containing WMS parameters for the metric layer. If not provided, default parameters are retrieved using the \code{\link{params_wms}} function.}
-
-\item{cql_filter}{A character string representing a CQL filter to apply to the metric layer.}
-
-\item{sld_body}{A character string representing the SLD (Styled Layer Descriptor) body for custom styling of the metric layer.}
-
 \item{selected_axis}{id of selected axis, so that it will not be included in mapping}
 }
 \value{
-A leaflet map object with the metric layer added.
-
 An updated Leaflet map with axis data added.
 }
 \description{
-This function adds a metric layer with custom symbology to a leaflet map. It allows you to specify custom parameters for the Web Map Service (WMS) request, apply a CQL (Common Query Language) filter, and provide a custom SLD (Styled Layer Descriptor) body for styling the layer. Additionally, you can specify the data axis to display on the map.
+This function adds axis data as simplified polylines to an existing Leaflet map. The axis are transparent,
+but when hovering over they appear red.
 }

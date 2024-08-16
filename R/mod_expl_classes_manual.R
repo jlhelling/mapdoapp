@@ -77,8 +77,6 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    browser()
-
 
     ### REACTIVES ####
     r_val_local <- reactiveValues(
@@ -257,17 +255,23 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
             input$man_grouping_scale_select == "Région" ~ "Région (total)"
           )
 
+          name <- case_when(
+            scale == "France (total)" ~ "France",
+            scale == "Basin (total)" ~ as.character(r_val$basin_id),
+            scale == "Région (total)" ~ as.character(r_val$region_id)
+          )
+
 
           # create classes-table to initialize classes UI
           r_val_local$initial_classes_table = create_df_input(
             variable_name = input$metric,
             q_0025 =
               globals$metric_stats() %>%
-              dplyr::filter(level_type == scale) %>%
+              dplyr::filter(level_type == scale & level_name == name) %>%
               dplyr::pull(paste0(input$metric, "_0025")),
             q_0975 =
               globals$metric_stats() %>%
-              dplyr::filter(level_type == scale) %>%
+              dplyr::filter(level_type == scale & level_name == name) %>%
               dplyr::pull(paste0(input$metric, "_0975"))  ,
             no_classes = input$man_grouping_no_classes,
             quantile = input$man_grouping_quantile
@@ -275,7 +279,7 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
         }
         # when scale selection not created
         else if (!is.null(input$metric) &&
-                 is.null(input$man_grouping_scale_select)) {
+                 is.null(input$man_grouping_scale_select)){
 
           # create classes-table to initialize classes UI
           r_val_local$initial_classes_table = create_df_input(
@@ -337,61 +341,62 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
 
 
     # TODO
-    # #### apply-to-map button clicked ####
-    # observeEvent(input$apply_to_map_button,{
-    #
-    #   r_val$visualization = "manual"
-    # })
-    #
-    # #### visualisation switched to manual ####
-    # observeEvent(c(r_val$visualization, input$apply_to_map_button), {
-    #
-    #   if (r_val$visualization == "manual") {
-    #
-    #     # create classes table from input
-    #     # Initialize an empty tibble
-    #     r_val$manual_classes_table <- tibble(variable = character(), class = character(), greaterthan = numeric(), color = character())
-    #
-    #     # Add rows to the tibble looping through number of classes
-    #     if (!is.null(input$man_grouping_no_classes)) {
-    #       for (row in 1:input$man_grouping_no_classes) {
-    #         r_val$manual_classes_table <- r_val$manual_classes_table %>%
-    #           add_row(variable = input$metric,
-    #                   class = input[[paste0("class", row)]],
-    #                   greaterthan = input[[paste0("greaterthan", row)]],
-    #                   color = input[[paste0("color", row)]])
-    #       }
-    #     } else {
-    #       for (row in 1:4) {
-    #         r_val$manual_classes_table <- r_val$manual_classes_table %>%
-    #           add_row(variable = input$metric,
-    #                   class = input[[paste0("class", row)]],
-    #                   greaterthan = input[[paste0("greaterthan", row)]],
-    #                   color = input[[paste0("color", row)]])
-    #       }
-    #     }
-    #
-    #
-    #     # sort classes
-    #     classes <- r_val$manual_classes_table %>%
-    #       dplyr::arrange(greaterthan) %>%
-    #       dplyr::mutate(greaterthan = round(greaterthan, 2))
-    #
-    #     # build SLD symbology
-    #     r_val$sld_body = sld_get_style(
-    #       breaks = classes$greaterthan,
-    #       colors = classes$color,
-    #       metric = classes$variable[1]
-    #     )
-    #
-    #     # add classified network to map
-    #     r_val$map_proxy %>%
-    #       map_metric(wms_params = globals$wms_params$metric,
-    #                  cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
-    #                  sld_body = r_val$sld_body,
-    #                  data_axis = r_val$network_region_axis)
-    #   }
-    # })
+    #### apply-to-map button clicked ####
+    observeEvent(input$apply_to_map_button,{
+
+      r_val$visualization = "manual"
+    })
+
+    #### visualisation switched to manual ####
+    observeEvent(c(r_val$visualization, input$apply_to_map_button), {
+
+      browser()
+
+      if (r_val$visualization == "manual") {
+
+        # create classes table from input
+        # Initialize an empty tibble
+        r_val$manual_classes_table <- tibble(variable = character(), class = character(), greaterthan = numeric(), color = character())
+
+        # Add rows to the tibble looping through number of classes
+        if (!is.null(input$man_grouping_no_classes)) {
+          for (row in 1:input$man_grouping_no_classes) {
+            r_val$manual_classes_table <- r_val$manual_classes_table %>%
+              add_row(variable = input$metric,
+                      class = input[[paste0("class", row)]],
+                      greaterthan = input[[paste0("greaterthan", row)]],
+                      color = input[[paste0("color", row)]])
+          }
+        } else {
+          for (row in 1:4) {
+            r_val$manual_classes_table <- r_val$manual_classes_table %>%
+              add_row(variable = input$metric,
+                      class = input[[paste0("class", row)]],
+                      greaterthan = input[[paste0("greaterthan", row)]],
+                      color = input[[paste0("color", row)]])
+          }
+        }
+
+
+        # sort classes
+        classes <- r_val$manual_classes_table %>%
+          dplyr::arrange(greaterthan) %>%
+          dplyr::mutate(greaterthan = round(greaterthan, 2))
+
+        # build SLD symbology
+        r_val$sld_body = sld_get_style(
+          breaks = classes$greaterthan,
+          colors = classes$color,
+          metric = classes$variable[1]
+        )
+
+        # add classified network to map
+        r_val$map_proxy %>%
+          map_add_network_metric(wms_params = globals$wms_params$metric,
+                                 sld_body = r_val$sld_body,
+                                 group = globals$map_group_params[["network"]])
+      }
+    })
 
   })
 }
