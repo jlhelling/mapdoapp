@@ -36,7 +36,7 @@ shiny::reactlogShow()
 
 ## Add modules ----
 ## Create a module infrastructure in R/
-golem::add_module(name = "expl_plot_crosssection", with_test = TRUE) # Name of the module
+golem::add_module(name = "expl_classes_manual", with_test = TRUE) # Name of the module
 golem::add_module(name = "documentation", with_test = TRUE) # Name of the module
 
 ## Add dependencies
@@ -49,7 +49,7 @@ usethis::edit_r_environ()
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*
-golem::add_fct("plot_crosssection", with_test = FALSE)
+golem::add_fct("classes_manual", with_test = FALSE)
 golem::add_utils("helpers", with_test = TRUE)
 
 ## External resources

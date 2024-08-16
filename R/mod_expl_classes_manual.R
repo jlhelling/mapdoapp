@@ -50,9 +50,6 @@ mod_expl_classes_manual_ui <- function(id){
     useShinyjs(),
     fluidRow(
       style = "margin-top: 10px;",
-      textOutput(ns("metric_placeholder_descriptionUI"))
-    ),
-    fluidRow(
       uiOutput(ns("metric_selectUI"))
     ),
     fluidRow(
@@ -76,14 +73,15 @@ mod_expl_classes_manual_ui <- function(id){
 #' @importFrom shinyjs onclick runjs
 #' @importFrom colourpicker colourInput
 #' @noRd
-mod_expl_classes_manual_server <- function(id, con, r_val){
+mod_expl_classes_manual_server <- function(id, con, r_val, globals){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+
+    browser()
 
 
     ### REACTIVES ####
     r_val_local <- reactiveValues(
-      metric_placeholder_description = "Cliquez sur une région hydrographique pour afficher la classification de métriques. ",
       ui_metric = NULL, # metric selection element
 
       # classification
@@ -94,10 +92,17 @@ mod_expl_classes_manual_server <- function(id, con, r_val){
       reactableUI = NULL # reactable table
     )
 
+    ### check if stats exists ####
+    # observe({
+    #   if (!exists("metric_stats", envir = globals)) {
+    #     globals$metric_stats <- reactive({
+    #       data_get_stats_metrics(con)
+    #     }) %>%
+    #       bindCache(globals$regions_gids_key)
+    #   }
+    # })
+
     ### OUTPUTS ####
-    output$metric_placeholder_descriptionUI <- renderText({
-      r_val_local$metric_placeholder_description
-    })
 
     # metric select input
     output$metric_selectUI <- renderUI({
@@ -140,26 +145,22 @@ mod_expl_classes_manual_server <- function(id, con, r_val){
     observe({
       if (!is.null(input$metric)) {
         update_popover("popover_metric",
-                       HTML(metrics_params %>%
+                       HTML(globals$metrics_params %>%
                               filter(metric_name == input$metric) %>%
                               pull(metric_description)))
       }
     })
 
-    #### region clicked first time ####
-    observeEvent(c(r_val$region_clicked, r_val$tab_open1), {
+    #### build UI selectors and initial table ####
+    observeEvent(r_val$tab_classes, {
 
-      if ((r_val$region_clicked == TRUE) &&
-          # check if tab is open
-          (r_val$tab_open1 == "Classification manuelle")) {
-
-        # remove placeholder text
-        r_val_local$metric_placeholder_description = NULL
+      # check if tab is open and classification UI is not created
+      if (r_val$tab_classes == "Classification manuelle" && is.null(r_val_local$classification_ui)) {
 
         # create elements of manual grouping pane
         r_val_local$ui_metric = selectInput(ns("metric"), NULL,
-                                            choices = params_get_metric_choices(),
-                                            selected  = params_get_metric_choices()[1],
+                                            choices = globals$metric_choices,
+                                            selected  = globals$metric_choices[1],
                                             width = "100%")
 
         # create classification UI
@@ -187,8 +188,15 @@ mod_expl_classes_manual_server <- function(id, con, r_val){
 
         # create classes-table to initialize classes UI
         r_val_local$initial_classes_table = create_df_input(
-          axis_data = r_val$network_region,
-          variable_name = params_get_metric_choices()[[1]],
+          variable_name = globals$metric_choices[[1]],
+          q_0025 =
+            globals$metric_stats() %>%
+            dplyr::filter(level_type == "France (total)") %>%
+            dplyr::pull(paste0(globals$metric_choices[[1]], "_0025")),
+          q_0975 =
+            globals$metric_stats() %>%
+            dplyr::filter(level_type == "France (total)") %>%
+            dplyr::pull(paste0(globals$metric_choices[[1]], "_0975"))  ,
           no_classes = 4,
           quantile = 95
         )
@@ -196,96 +204,90 @@ mod_expl_classes_manual_server <- function(id, con, r_val){
 
     })
 
-    #### region selected ####
-    observeEvent(c(r_val$region_click, r_val$tab_open1), {
+    #### scale selector ####
+    observeEvent(c(r_val$basin_id, r_val$region_id, r_val$axis_id, r_val$tab_classes), {
 
-      if (r_val$tab_open1 == "Classification manuelle") {
+      # france, basin, region, axis as basis possible !
+      # add info-button
 
-        # change scale selection UI
-        r_val_local$scale_selectUI = radioButtons(ns("man_grouping_scale_select"),
-                                                  "Base de classification",
-                                                  c("Région"),
-                                                  selected = "Région",
-                                                  inline = TRUE)
-      }
-    })
+      if (r_val$tab_classes == "Classification manuelle") {
 
-    #### axis clicked first time ####
-    observe({
+        if (is.null(r_val$basin_id)) {
+          r_val_local$scale_selectUI = selectInput(ns("man_grouping_scale_select"),
+                                                   "Base de classification",
+                                                   choices = c("France"),
+                                                   selected = "France")
 
-      if ((r_val$axis_clicked == TRUE) && (r_val$tab_open1 == "Classification manuelle")){
-
-        # change scale selection UI
-        r_val_local$scale_selectUI = radioButtons(ns("man_grouping_scale_select"),
-                                                  "Base de classification",
-                                                  c("Région", "Axe fluvial"),
-                                                  selected = "Région",
-                                                  inline = TRUE)
+        }
+        # France, Basin
+        else if (!is.null(r_val$basin_id) && is.null(r_val$region_id) && is.null(r_val$axis_id)) {
+          r_val_local$scale_selectUI = selectInput(ns("man_grouping_scale_select"),
+                                                   "Base de classification",
+                                                   choices = c("France", "Bassin"),
+                                                   selected = "France")
+        }
+        # France, basin, region
+        else if (!is.null(r_val$basin_id) && !is.null(r_val$region_id) && is.null(r_val$axis_id)) {
+          r_val_local$scale_selectUI = selectInput(ns("man_grouping_scale_select"),
+                                                   "Base de classification",
+                                                   choices = c("France", "Bassin", "Région"),
+                                                   selected = "France")
+        }
+        # France, Basin, Region, Axis
+        else if (!is.null(r_val$basin_id) && !is.null(r_val$region_id) && !is.null(r_val$axis_id)) {
+          r_val_local$scale_selectUI = selectInput(ns("man_grouping_scale_select"),
+                                                   "Base de classification",
+                                                   choices = c("France", "Bassin", "Région", "Axe"),
+                                                   selected = "France")
+        }
       }
     })
 
     #### metric change / re-calculation clicked ####
-    observeEvent(c(r_val$region_clicked, r_val$tab_open1), {
+    #### changes affecting classes ####
+    observeEvent(c(input$metric, input$recalculate_classes_button), {
 
-      if (r_val$tab_open1 == "Classification manuelle") {
-
-        # check for valid selected metric
+      if (r_val$tab_classes == "Classification manuelle") {
         if (!is.null(input$metric) &&
-            !is.null(r_val$network_region) &&
-            (r_val$region_clicked == TRUE)) {
+            !is.null(input$man_grouping_scale_select)) {
 
-          # create classes-table
+          scale <- case_when(
+            input$man_grouping_scale_select == "France" ~ "France (total)",
+            input$man_grouping_scale_select == "Bassin" ~ "Basin (total)",
+            input$man_grouping_scale_select == "Région" ~ "Région (total)"
+          )
+
+
+          # create classes-table to initialize classes UI
           r_val_local$initial_classes_table = create_df_input(
-            axis_data = r_val$network_region,
             variable_name = input$metric,
+            q_0025 =
+              globals$metric_stats() %>%
+              dplyr::filter(level_type == scale) %>%
+              dplyr::pull(paste0(input$metric, "_0025")),
+            q_0975 =
+              globals$metric_stats() %>%
+              dplyr::filter(level_type == scale) %>%
+              dplyr::pull(paste0(input$metric, "_0975"))  ,
             no_classes = input$man_grouping_no_classes,
             quantile = input$man_grouping_quantile
           )
         }
-      }
-    })
-
-    #### changes affecting classes ####
-    observeEvent(c(input$metric, r_val$network_region, input$recalculate_classes_button), {
-
-      if (r_val$tab_open1 == "Classification manuelle") {
-        if (!is.null(input$metric) &&
-            !is.null(input$man_grouping_scale_select)) {
-
-          # region selected
-          if (input$man_grouping_scale_select == "Région" &&
-              !is.null(r_val$network_region)) {
-
-            # create classes-table
-            r_val_local$initial_classes_table = create_df_input(
-              axis_data = r_val$network_region,
-              variable_name = input$metric,
-              no_classes = input$man_grouping_no_classes,
-              quantile = input$man_grouping_quantile
-            )
-          }
-          # axis selected
-          else if (input$man_grouping_scale_select == "Axe fluvial" &&
-                   !is.null(r_val$dgo_axis) ) {
-
-            # create classes-table
-            r_val_local$initial_classes_table = create_df_input(
-              axis_data = r_val$dgo_axis,
-              variable_name = input$metric,
-              no_classes = input$man_grouping_no_classes,
-              quantile = input$man_grouping_quantile
-            )
-          }
-        }
         # when scale selection not created
         else if (!is.null(input$metric) &&
-                   is.null(input$man_grouping_scale_select) &&
-                 !is.null(r_val$network_region)) {
+                 is.null(input$man_grouping_scale_select)) {
 
-          # create classes-table
+          # create classes-table to initialize classes UI
           r_val_local$initial_classes_table = create_df_input(
-            axis_data = r_val$network_region,
             variable_name = input$metric,
+            q_0025 =
+              globals$metric_stats() %>%
+              dplyr::filter(level_type == "France (total)") %>%
+              dplyr::pull(paste0(input$metric, "_0025")),
+            q_0975 =
+              globals$metric_stats() %>%
+              dplyr::filter(level_type == "France (total)") %>%
+              dplyr::pull(paste0(input$metric, "_0975"))  ,
             no_classes = 4,
             quantile = 95
           )
@@ -333,61 +335,63 @@ mod_expl_classes_manual_server <- function(id, con, r_val){
       }
     })
 
-    #### apply-to-map button clicked ####
-    observeEvent(input$apply_to_map_button,{
 
-      r_val$visualization = "manual"
-    })
+    # TODO
+    # #### apply-to-map button clicked ####
+    # observeEvent(input$apply_to_map_button,{
+    #
+    #   r_val$visualization = "manual"
+    # })
+    #
+    # #### visualisation switched to manual ####
+    # observeEvent(c(r_val$visualization, input$apply_to_map_button), {
+    #
+    #   if (r_val$visualization == "manual") {
+    #
+    #     # create classes table from input
+    #     # Initialize an empty tibble
+    #     r_val$manual_classes_table <- tibble(variable = character(), class = character(), greaterthan = numeric(), color = character())
+    #
+    #     # Add rows to the tibble looping through number of classes
+    #     if (!is.null(input$man_grouping_no_classes)) {
+    #       for (row in 1:input$man_grouping_no_classes) {
+    #         r_val$manual_classes_table <- r_val$manual_classes_table %>%
+    #           add_row(variable = input$metric,
+    #                   class = input[[paste0("class", row)]],
+    #                   greaterthan = input[[paste0("greaterthan", row)]],
+    #                   color = input[[paste0("color", row)]])
+    #       }
+    #     } else {
+    #       for (row in 1:4) {
+    #         r_val$manual_classes_table <- r_val$manual_classes_table %>%
+    #           add_row(variable = input$metric,
+    #                   class = input[[paste0("class", row)]],
+    #                   greaterthan = input[[paste0("greaterthan", row)]],
+    #                   color = input[[paste0("color", row)]])
+    #       }
+    #     }
+    #
+    #
+    #     # sort classes
+    #     classes <- r_val$manual_classes_table %>%
+    #       dplyr::arrange(greaterthan) %>%
+    #       dplyr::mutate(greaterthan = round(greaterthan, 2))
+    #
+    #     # build SLD symbology
+    #     r_val$sld_body = sld_get_style(
+    #       breaks = classes$greaterthan,
+    #       colors = classes$color,
+    #       metric = classes$variable[1]
+    #     )
+    #
+    #     # add classified network to map
+    #     r_val$map_proxy %>%
+    #       map_metric(wms_params = globals$wms_params$metric,
+    #                  cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
+    #                  sld_body = r_val$sld_body,
+    #                  data_axis = r_val$network_region_axis)
+    #   }
+    # })
 
-    #### visualisation switched to manual ####
-    observeEvent(c(r_val$visualization, r_val$region_click, input$apply_to_map_button), {
-
-      if (r_val$visualization == "manual") {
-
-        # create classes table from input
-        # Initialize an empty tibble
-        r_val$manual_classes_table <- tibble(variable = character(), class = character(), greaterthan = numeric(), color = character())
-
-        # Add rows to the tibble looping through number of classes
-        if (!is.null(input$man_grouping_no_classes)) {
-          for (row in 1:input$man_grouping_no_classes) {
-            r_val$manual_classes_table <- r_val$manual_classes_table %>%
-              add_row(variable = input$metric,
-                      class = input[[paste0("class", row)]],
-                      greaterthan = input[[paste0("greaterthan", row)]],
-                      color = input[[paste0("color", row)]])
-          }
-        } else {
-          for (row in 1:4) {
-            r_val$manual_classes_table <- r_val$manual_classes_table %>%
-              add_row(variable = input$metric,
-                      class = input[[paste0("class", row)]],
-                      greaterthan = input[[paste0("greaterthan", row)]],
-                      color = input[[paste0("color", row)]])
-          }
-        }
-
-
-        # sort classes
-        classes <- r_val$manual_classes_table %>%
-          dplyr::arrange(greaterthan) %>%
-          dplyr::mutate(greaterthan = round(greaterthan, 2))
-
-        # build SLD symbology
-        r_val$sld_body = sld_get_style(
-          breaks = classes$greaterthan,
-          colors = classes$color,
-          metric = classes$variable[1]
-        )
-
-        # add classified network to map
-        r_val$map_proxy %>%
-          map_metric(wms_params = params_wms()$metric,
-                     cql_filter = paste0("gid_region=",r_val$selected_region_feature[["gid"]]),
-                     sld_body = r_val$sld_body,
-                     data_axis = r_val$network_region_axis)
-      }
-
-    })
   })
 }

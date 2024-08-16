@@ -87,6 +87,12 @@ app_server <- function(input, output, session) {
   }) %>%
     bindCache(r_val$axis_id)
 
+  #### Metric stats caching ####
+  globals$metric_stats <- reactive({
+    data_get_stats_metrics(con)
+  }) %>%
+    bindCache(globals$regions_gids_key)
+
 
   ### Server activation ####
   # main servers
@@ -96,14 +102,13 @@ app_server <- function(input, output, session) {
 
   # tabs
   mod_expl_classes_proposed_server("expl_classes_proposed_1", r_val, globals)
+  mod_expl_classes_manual_server("expl_classes_manual_1", con, r_val, globals)
 
   mod_expl_plot_long_server("expl_plot_long_1", r_val, globals)
   mod_expl_plot_crosssection_server("expl_plot_crosssection_1", r_val)
 
-  # mod_expl_classes_manual_server("expl_classes_manual_1", con, r_val)
+
   # mod_metric_overview_server("metric_overview_1", r_val)
-  # mod_profil_long_server("profil_long_1", r_val)
-  # mod_profil_transverse_server("profil_transverse_1", r_val)
   # mod_classes_distribution_server("classes_distribution_1", r_val)
 
   ### DB disconnect when closing session ####

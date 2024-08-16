@@ -38,8 +38,6 @@ mod_expl_plot_crosssection_server <- function(id, r_val){
     # plot cross section when dgo clicked
     observe({
 
-      browser()
-
       # check if tab is open
       if (r_val$tab_plots == "Profil transversal") {
         # check if dgo is selected

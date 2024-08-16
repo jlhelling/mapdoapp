@@ -46,7 +46,7 @@ mod_explore_ui <- function(id){
                      mod_expl_classes_proposed_ui("expl_classes_proposed_1")
             ),
             tabPanel("Classification manuelle",
-                     # mod_expl_classes_manual_ui("expl_classes_manual_1")
+                     mod_expl_classes_manual_ui("expl_classes_manual_1")
             ), type = "pills"
           ) #tabsetpanel
         ) #column
