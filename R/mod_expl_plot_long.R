@@ -315,12 +315,12 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
           }
 
           # manual classification applied
-          # else if (r_val$visualization == "manual" &
-          #          !is.null(r_val$manual_classes_table)) {
-          #   r_val$dgo_axis_classified <- r_val$dgo_axis %>%
-          #     na.omit() %>%
-          #     assign_classes_manual(classes = r_val$manual_classes_table)
-          # }
+          else if (r_val$visualization == "manual" &
+                   !is.null(r_val$manual_classes_table)) {
+            r_val$dgo_axis_classified <- globals$axis_data() %>%
+              # na.omit() %>%
+              assign_classes_manual(classes = r_val$manual_classes_table)
+          }
 
           if (!is.null(r_val$dgo_axis_classified)) {
             r_val_local$shapes_background = create_classes_background(r_val$dgo_axis_classified)

@@ -267,6 +267,47 @@ assign_classes_proposed <- function(data, proposed_class, colors_df) {
   return(df)
 }
 
+#' Assign classes to network dgos
+#'
+#' @param data dataframe or sf object which contains dgos of axis or region
+#' @param classes df containing columns variables, greater_thans, class_names, colors which define the classification of the network
+#'
+#' @return classified dataframe/sf object with additional variables: class_name and color
+#' @importFrom rlang parse_exprs
+#' @importFrom dplyr mutate case_when left_join join_by
+#' @importFrom sf st_as_sf
+#'
+#' @examples
+#' classified_network <- network_dgo %>%
+#'     assign_classes(variables = as.character(r_val$grouping_table_data$variable),
+#'     greater_thans = r_val$grouping_table_data$greaterthan,
+#'     class_names = r_val$grouping_table_data$class)
+#'
+assign_classes_manual <- function(data, classes) {
+
+  classes <- classes %>%
+    arrange(desc(greaterthan))
+
+  variables <- as.character(classes$variable)
+  greater_thans <- classes$greaterthan
+  class_names <- classes$class
+  colors <- classes %>% select(class, color)
+
+  df <-
+    data %>%
+    sf::st_drop_geometry() %>%
+    mutate(
+      class_name = case_when(
+        !!!parse_exprs(paste0(variables, ' >= ', greater_thans, ' ~ "', class_names, '"')
+        ))
+    ) %>%
+    left_join(colors, by = join_by(class_name == class)) %>%
+    replace_na(list(color = "#f8f8ff"))  # Default color for unvalid classes or NAs
+
+  return(df)
+}
+
+
 #' Create background-layout of  classes for longitudinal profile
 #'
 #' @param classified_axis

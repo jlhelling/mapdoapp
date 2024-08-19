@@ -106,7 +106,6 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
       r_val_local$reactableUI
     })
 
-
     ### EVENTS ####
 
     # update infobutton when metric selected changes for the first and second metric
@@ -132,8 +131,7 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
                                             width = "100%")
 
         # create classification UI
-        r_val_local$classification_ui <- fluidPage(
-          fluidRow(
+        r_val_local$classification_ui <- fluidRow(
             page_sidebar(
               sidebar = sidebar(
                 fluidRow(
@@ -152,7 +150,6 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
               uiOutput(ns("reactable_classes")),
               actionButton(inputId = ns("apply_to_map_button"), "Ajouter à la carte")
             ))
-        )
 
         # create classes-table to initialize classes UI
         r_val_local$initial_classes_table = create_df_input(
@@ -296,6 +293,7 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
             # Loop through the remaining rows and add inputs
             for (row in 2:nrow(r_val_local$initial_classes_table)) {
               ui_elements[[row]] <- fluidRow(
+                style = "margin-bottom: 0px; padding-bottom: 0px;",
                 column(width = 5, textInput(ns(paste0("class", row)), label = NULL, value = r_val_local$initial_classes_table$class[row])),
                 column(width = 3, colourInput(ns(paste0("color", row)), label = NULL,
                                               value = r_val_local$initial_classes_table$color[row],

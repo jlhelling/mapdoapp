@@ -62,42 +62,6 @@ create_df_input <- function(variable_name, q_0025, q_0975, quantile = 95, no_cla
 }
 
 
-#' Assign classes to network dgos
-#'
-#' @param data dataframe or sf object which contains dgos of axis or region
-#' @param classes df containing columns variables, greater_thans, class_names, colors which define the classification of the network
-#'
-#' @return classified dataframe/sf object with additional variables: class_name and color
-#' @importFrom rlang parse_exprs
-#' @importFrom dplyr mutate case_when left_join join_by
-#' @importFrom sf st_as_sf
-#'
-#' @examples
-#' classified_network <- network_dgo %>%
-#'     assign_classes(variables = as.character(r_val$grouping_table_data$variable),
-#'     greater_thans = r_val$grouping_table_data$greaterthan,
-#'     class_names = r_val$grouping_table_data$class)
-#'
-assign_classes_manual <- function(data, classes) {
-
-  variables <- as.character(classes$variable)
-  greater_thans <- classes$greaterthan
-  class_names <- classes$class
-  colors <- classes %>% select(class, color)
-
-  df <-
-    data %>%
-    mutate(
-      class_name = case_when(
-        !!!parse_exprs(paste0(variables, ' >= ', greater_thans, ' ~ "', class_names, '"')
-        )
-      )
-    ) %>%
-    left_join(colors, by = join_by(class_name == class))
-
-  return(df)
-}
-
 #' Get Styled Layer Descriptor (SLD) for network metric layer
 #'
 #' This function generates a Styled Layer Descriptor (SLD) XML for styling network metric layer based on quantile breaks colors.

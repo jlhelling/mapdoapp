@@ -358,7 +358,7 @@ data_get_axis_dgos <- function(selected_axis_id, con) {
           WHEN crops_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'crops_pc'
           WHEN built_environment_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'built_environment_pc'
           ELSE 'unvalid'
-        END AS class_lu_dominante
+        END AS class_lu_dominante,
 
 
         -- Urban Land Use Classification
