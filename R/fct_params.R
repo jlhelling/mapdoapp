@@ -285,7 +285,7 @@ params_classes <- function() {
       # dominant land use
       "Indique la classe d'utilisation des sols la plus dominante dans la zone du fond de vallée de chaque segment de cours d'eau :
       - Forêt
-      - Prairies
+      - Prairies (et sols nus)
       - Cultures
       - Espaces construits (zones urbaines et infrastructures)
       ",
