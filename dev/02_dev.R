@@ -50,7 +50,7 @@ usethis::edit_r_environ()
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*
-golem::add_fct("classes_manual", with_test = FALSE)
+golem::add_fct("analysis_tables", with_test = FALSE)
 golem::add_utils("helpers", with_test = TRUE)
 
 ## External resources

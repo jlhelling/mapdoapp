@@ -23,6 +23,7 @@ mod_expl_classes_manual_ui <- function(id){
       uiOutput(ns("metric_selectUI"))
     ),
     fluidRow(
+      style = "margin-bottom: 0px; padding-bottom: 0px;",
       uiOutput(ns("classificationUI"))
     )
   )

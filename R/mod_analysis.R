@@ -33,7 +33,8 @@ mod_analysis_ui <- function(id){
                fluidRow(
                  column(
                    width = 9,
-                   # table and plots here
+                   uiOutput(ns("selact_tableUI")), # overview table
+                   uiOutput(ns("selact_plotUI")), # distribution plot
                  ),
                  column(
                    width = 3,
@@ -41,7 +42,8 @@ mod_analysis_ui <- function(id){
                      inputId = ns("sel_metric_select"),
                      label = "Métriques",
                      choices = params_metrics()$metric_title
-                   )
+                   ),
+                   actionButton(inputId = ns("selact_apply_button"), "Actualiser")
                  ))),
       tabPanel("Régions",
                fluidRow(
@@ -115,8 +117,23 @@ mod_analysis_server <- function(id, con, r_val, globals){
     ns <- session$ns
 
     r_val_local <- reactiveValues(
+      # actual selection
+      selact_table = NULL,
+      selact_plot = NULL,
+
+      # regions
       regions_table = NULL
     )
+
+    # current selection table
+    output$selact_tableUI <- renderUI({
+      r_val_local$selact_table
+    })
+
+    # current selection distribution plot
+    output$selact_plotUI <- renderUI({
+      r_val_local$selact_plot
+    })
 
     # render table for regions
     output$regions_table <- renderReactable({
