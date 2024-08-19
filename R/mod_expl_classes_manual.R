@@ -1,33 +1,3 @@
-
-# CONCEPT -----------------------------------------------------------------
-#|
-#| -
-#|
-#| - load (and cache) in beginning for whole France, basins, and regions the
-#| retrieve maximum and minimum values of each metric for France via SQL query
-#| - check if the same procedure for each region and basin takes long to load
-#| -
-#| - create initial df of classification with 95% quantile and 4 classes
-#| - create UI for manual classification
-#| - if tab open and
-#|
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # UI ----------------------------------------------------------------------
 
 #' expl_classes_manual UI Function
@@ -232,12 +202,12 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
                                                    selected = "France")
         }
         # France, Basin, Region, Axis
-        else if (!is.null(r_val$basin_id) && !is.null(r_val$region_id) && !is.null(r_val$axis_id)) {
-          r_val_local$scale_selectUI = selectInput(ns("man_grouping_scale_select"),
-                                                   "Base de classification",
-                                                   choices = c("France", "Bassin", "Région", "Axe"),
-                                                   selected = "France")
-        }
+        # else if (!is.null(r_val$basin_id) && !is.null(r_val$region_id) && !is.null(r_val$axis_id)) {
+        #   r_val_local$scale_selectUI = selectInput(ns("man_grouping_scale_select"),
+        #                                            "Base de classification",
+        #                                            choices = c("France", "Bassin", "Région", "Axe"),
+        #                                            selected = "France")
+        # }
       }
     })
 
@@ -252,15 +222,16 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
           scale <- case_when(
             input$man_grouping_scale_select == "France" ~ "France (total)",
             input$man_grouping_scale_select == "Bassin" ~ "Basin (total)",
-            input$man_grouping_scale_select == "Région" ~ "Région (total)"
+            input$man_grouping_scale_select == "Région" ~ "Région (total)",
+            TRUE ~ NA_character_  # Fallback to NA if none of the conditions match
           )
 
           name <- case_when(
             scale == "France (total)" ~ "France",
-            scale == "Basin (total)" ~ as.character(r_val$basin_id),
-            scale == "Région (total)" ~ as.character(r_val$region_id)
+            scale == "Basin (total)" ~ ifelse(!is.null(r_val$basin_id), as.character(r_val$basin_id), NA_character_),
+            scale == "Région (total)" ~ ifelse(!is.null(r_val$region_id), as.character(r_val$region_id), NA_character_),
+            TRUE ~ NA_character_  # Fallback to NA if none of the conditions match
           )
-
 
           # create classes-table to initialize classes UI
           r_val_local$initial_classes_table = create_df_input(
@@ -349,8 +320,6 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
 
     #### visualisation switched to manual ####
     observeEvent(c(r_val$visualization, input$apply_to_map_button), {
-
-      browser()
 
       if (r_val$visualization == "manual") {
 

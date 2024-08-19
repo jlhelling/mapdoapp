@@ -25,7 +25,8 @@ golem::run_dev()
 pkgload::load_all()
 # run application
 # options(shiny.reactlog=TRUE)
-run_app()
+
+run_app(options = options(shiny.reactlog=TRUE))
 
 # check function examples
 attachment::att_amend_desc()
