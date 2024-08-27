@@ -4,10 +4,12 @@
 \alias{prepare_stats_df}
 \title{Prepare metrics-statistics dataframe for reactable table}
 \usage{
-prepare_stats_df(data)
+prepare_stats_df(data, type = c("Région (total)", "Région"))
 }
 \arguments{
 \item{data}{metrics-statistics dataframe}
+
+\item{type}{type of level_type to be included in the dataframe, default is c("Région (total)", "Région")}
 }
 \value{
 metrics-statistics dataframe with *_distr-columns

@@ -4,12 +4,14 @@
 \alias{create_table}
 \title{Create reactable table for metrics-statistics}
 \usage{
-create_table(df, vars)
+create_table(df, vars, strahler_sel = 0)
 }
 \arguments{
 \item{df}{metric-statistics dataframe with *_distr-columns}
 
 \item{vars}{metric names to be included in table}
+
+\item{strahler_sel}{selected Strahler order, default is 0 which represents an aggregate of the whole entity}
 }
 \value{
 reactable table with variables and sparklines

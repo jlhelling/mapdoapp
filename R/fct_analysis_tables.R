@@ -1,19 +1,23 @@
 #' Prepare metrics-statistics dataframe for reactable table
 #'
 #' @param data metrics-statistics dataframe
+#' @param type type of level_type to be included in the dataframe, default is c("Région (total)", "Région")
+#'
+#' @import dplyr
+#' @importFrom purrr map
 #'
 #' @return metrics-statistics dataframe with *_distr-columns
-prepare_stats_df <- function(data) {
+prepare_stats_df <- function(data, type = c("Région (total)", "Région")) {
   suffixes <- c("_min", "_0025", "_025", "_05", "_075", "_0975", "_max")
 
   df <- data %>%
-    filter(level_type %in% c("Région (total)", "Région")) |>
+    filter(level_type %in% type) %>%
     rowwise() %>%
     mutate(across(ends_with("_avg"),
                   ~ list(map(suffixes, ~ round(get(paste0(sub("_avg$", "", cur_column()), .))), 2)),
                   .names = "{.col}_distr")) %>%
     rename_with(~ sub("_avg_distr$", "_distr", .), ends_with("_avg_distr")) %>%
-    ungroup() |>
+    ungroup() %>%
     mutate(across(ends_with("_avg"), ~ round(., 2)))
 }
 
@@ -23,6 +27,7 @@ prepare_stats_df <- function(data) {
 #'
 #' @param df metric-statistics dataframe with *_distr-columns
 #' @param vars metric names to be included in table
+#' @param strahler_sel selected Strahler order, default is 0 which represents an aggregate of the whole entity
 #'
 #' @importFrom reactable colDef reactable
 #' @importFrom sparkline sparkline
@@ -31,7 +36,7 @@ prepare_stats_df <- function(data) {
 #'
 #' @examples
 #' create_table(df, vars = c("crops_pc", "dense_urban_pc", "dense_urban"))
-create_table <- function(df, vars) {
+create_table <- function(df, vars, strahler_sel = 0) {
 
   # extract column names from metric variables
   col_names <- c(paste0(vars, "_avg"), paste0(vars, "_distr")) %>%
@@ -39,13 +44,22 @@ create_table <- function(df, vars) {
 
   # filter the columns
   df <- df %>%
-    select(level_name, strahler, col_names)
+    select(level_name, strahler, col_names) %>%
+    filter(strahler %in% strahler_sel)
 
   # Initialize the list of column definitions
   columns_list <- list(
-    level_name = colDef(name = "Région", width = 60),
-    strahler = colDef(name = "No. Strahler", width = 60)
+    level_name = colDef(name = "Région", width = 80),
+    strahler = colDef(name = "No. Strahler", width = 80)
   )
+
+  # deactivate showing of column when only whole region-aggregated values are selected (strahler==0)
+  if (length(strahler_sel) == 1) {
+    if (strahler_sel == 0) {
+      columns_list$strahler$show = FALSE
+    }
+  }
+
 
   # Add column definitions dynamically based on the selected metrics (vars)
   for (var in vars) {
@@ -56,12 +70,12 @@ create_table <- function(df, vars) {
 
     columns_list[[avg_col_name]] <- colDef(
       name = gsub("_", " ", var),  # Replace _ with space for column names
-      width = 100
+      minWidth = 100
     )
 
     columns_list[[distr_col_name]] <- colDef(
       name = "",  # No name for the sparkline column
-      width = 80,
+      minWidth = 80,
       cell = function(value, index, distr_col_name) {
         sparkline(df[[distr_col_name]][[index]], type = "box",
                   chartRangeMin = range(df[[distr_col_name]], na.rm = TRUE)[1],

@@ -61,15 +61,7 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
       reactableUI = NULL # reactable table
     )
 
-    ### check if stats exists ####
-    # observe({
-    #   if (!exists("metric_stats", envir = globals)) {
-    #     globals$metric_stats <- reactive({
-    #       data_get_stats_metrics(con)
-    #     }) %>%
-    #       bindCache(globals$regions_gids_key)
-    #   }
-    # })
+
 
     ### OUTPUTS ####
 

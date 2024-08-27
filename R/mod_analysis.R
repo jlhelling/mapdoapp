@@ -58,15 +58,17 @@ mod_analysis_ui <- function(id){
                      inputId = ns("regions_strahler_select"),
                      label = "Ordre de Strahler",
                      choices = c(6,5,4,3,2,1),
-                     selected = c(6,5,4,3,2,1),
+                     selected = NULL,
                      multiple = TRUE
                    ),
                    multiInput(
                      inputId = ns("regions_metric_select"),
                      label = "Métriques",
-                     choices = params_metrics()$metric_title,
+                     choiceNames = params_metrics()$metric_title,
+                     choiceValues = params_metrics()$metric_name,
                      selected = c(1,2,3,4,5)
-                   )
+                   ),
+                   actionButton(inputId = ns("regions_apply_button"), "Actualiser")
                  )
                )
       ),
@@ -116,15 +118,19 @@ mod_analysis_server <- function(id, con, r_val, globals){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
+
     r_val_local <- reactiveValues(
       # actual selection
       selact_table = NULL,
       selact_plot = NULL,
 
       # regions
-      regions_table = NULL
+      regions_table = NULL, # reactable
+      region_stats_prep = NULL # prepared stats for reactable
     )
 
+
+    ### UI ####
     # current selection table
     output$selact_tableUI <- renderUI({
       r_val_local$selact_table
@@ -140,11 +146,36 @@ mod_analysis_server <- function(id, con, r_val, globals){
       r_val_local$regions_table
     })
 
-    # listen to changes of inputs
-    # observeEvent(c(input$regions_metric_select, input$regions_strahler_select), {
-    #
-    #   r_val_local$regions_table <- reactable()
-    # })
+
+    ### Regions tab ####
+    # listen to opening of tab --> load stats if not already loaded, prepare them for reactable
+    observe({
+      if (exists("metric_stats", where = globals)) {
+        # prepare stats for reactable
+        r_val_local$region_stats_prep = prepare_stats_df(globals$metric_stats(), type = c("Région (total)", "Région"))
+      }
+    })
+
+
+    # listen to actualisation button --> create reactable with selected metric and strahler order
+    observeEvent(input$regions_apply_button, {
+
+
+      # check if stats are already loaded and if metric is selected
+      if (!is.null(r_val_local$region_stats_prep) && !is.null(input$regions_metric_select)){
+
+        # check if strahler order is selected or whole region should be shown
+        if (is.null(input$regions_strahler_select)){
+          strahler_sel <- 0
+        } else {
+          strahler_sel <- input$regions_strahler_select
+        }
+
+        # create reactable table
+        r_val_local$regions_table = create_table(r_val_local$region_stats_prep, input$regions_metric_select, strahler_sel)
+      }
+
+    })
 
   })
 }

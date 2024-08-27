@@ -25,6 +25,7 @@ Imports:
     leaflet.extras,
     magrittr,
     plotly,
+    purrr,
     RColorBrewer,
     reactable,
     rlang,
