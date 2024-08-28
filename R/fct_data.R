@@ -408,7 +408,7 @@ data_get_axis_dgos <- function(selected_axis_id, con) {
           WHEN idx_confinement >= 0.1 THEN 'confiné'
           WHEN idx_confinement >= 0 THEN 'très confiné'
           ELSE 'unvalid'
-        END AS classes_proposed_confinement,
+        END AS class_confinement,
 
         -- Habitat Classification
         CASE
