@@ -351,3 +351,138 @@ create_classes_background <- function(classified_axis) {
 
   return(shapes)
 }
+
+
+#' Smoothing of classified df
+#'
+#' @param df classified axis data
+#' @param n_smooth integer number of values to smooth out
+#'
+#' @import dplyr
+#'
+#' @return df_smooth smoothed classified axis data
+#'
+smoothen_classes <- function(df, n_smooth) {
+
+  # get colors for classes
+  df_colors <- tibble(class_name = unique(df$class_name), color = unique(df$color))
+
+  # 1 - smooth out one value if surrounded by group of at least 3 equal values
+  if (n_smooth == 1) {
+
+    df_smooth <- df %>%
+      mutate(
+        lag = lag(class_name),
+        lead = lead(class_name),
+        lag2 = lag(class_name, n = 2),
+        lead2 = lead(class_name, n = 2),
+        lag3 = lag(class_name, n = 3),
+        lead3 = lead(class_name, n = 3),
+        # condition1 - two equal before and one equal after one unequal (B) in middle, e.g. AABA -> AAAA
+        condition1 = (lag != "unvalid") & (lag2 != "unvalid") & (lead != "unvalid") &
+          (lag != class_name) &
+          (lag == lead) &
+          (lag2 == lag),
+        # condition2 - one equal before and two equal after one unequal (B) in middle, e.g. CABAA -> CAAAA
+        condition2 = (lag != "unvalid") & (lead != "unvalid") & (lead2 != "unvalid") &
+          (lag != class_name) &
+          (lag == lead) &
+          (lead2 == lead) &
+          !condition1,
+        # condition3 - three equal before (A) and one or more unequal (C) after one unequal (B) in middle, e.g. AAABCC -> AAAACC
+        condition3 = (lag != "unvalid") & (lag2 != "unvalid") & (lag3 != "unvalid") &
+          (lag != class_name) &
+          (lag != lead) &
+          (lead != class_name) &
+          (lag2 == lag) &
+          (lag3 == lag) &
+          !condition1 & !condition2,
+        # condition4 - one or more unequal (C) before and three equal (A) after one unequal (B) in middle, e.g. CCBAAA -> CCAAAA
+        condition4 = (lead != "unvalid") & (lead2 != "unvalid") & (lead3 != "unvalid") &
+          (lag != class_name) &
+          (lag != lead) &
+          (lead != class_name) &
+          (lead2 == lead) &
+          (lead3 == lead) &
+          !condition1 & !condition2 & !condition3,
+      ) %>%
+      mutate(
+        group = case_when(condition1 ~ lag2,
+                          condition2 ~ lead2,
+                          condition3 ~ lag2,
+                          condition4 ~ lead2,
+                          .default = class_name)
+      ) %>%
+      select(-condition4)
+  }
+
+
+  # 2 - smooth out two unequal values if surrounded by group of at least 4 equal values
+  else if (n_smooth == 2) {
+
+    df_smooth <- df %>%
+      mutate(
+        lag = lag(class_name),
+        lead = lead(class_name),
+        lag2 = lag(class_name, n = 2),
+        lead2 = lead(class_name, n = 2),
+        lag3 = lag(class_name, n = 3),
+        lead3 = lead(class_name, n = 3),
+        lag4 = lag(class_name, n = 4),
+        lead4 = lead(class_name, n = 4),
+        # condition1 - 3 equal (A) before and 1 equal after two unequal (B, C) in middle, e.g. AAABCA -> AAAAAA
+        condition1 = (lag != "unvalid") & (lag2 != "unvalid") & (lead2 != "unvalid") & (lag3 != "unvalid") &
+          (lag != class_name) &
+          (lag == lag2) &
+          (lag2 == lag3) &
+          (lag == lead2),
+        condition1_2 = (lag2 != "unvalid") & (lag3 != "unvalid") & (lag4 != "unvalid") & (lead != "unvalid") &
+          (lag2 != class_name) &
+          (lag2 == lag3) &
+          (lag3 == lag4) &
+          (lag2 == lead) & !condition1,
+        # condition2 - 1 equal (A) before and 3 equal after two unequal (B, C) in middle, e.g. CABCAAA -> CAAAAAA
+        condition2 = (lag != "unvalid") & (lead2 != "unvalid") & (lead3 != "unvalid") & (lead4 != "unvalid") &
+          (lag != class_name) &
+          (lead2 == lag) &
+          (lead3 == lag) &
+          (lead4 == lag) & !condition1 & !condition1_2,
+        condition2_2 = (lag2 != "unvalid") & (lead != "unvalid") & (lead2 != "unvalid") & (lead3 != "unvalid") &
+          (lag2 != class_name) &
+          (lead == lag2) &
+          (lead2 == lag2) &
+          (lead3 == lag2) &
+          !condition1 & !condition1_2 & !condition2,
+        # condition3 - 2 equal (A) before and 2 equal after two unequal (B, C) in middle, e.g. CAABCAA -> CAAAAAA
+        condition3 = (lag != "unvalid") & (lag2 != "unvalid") & (lead2 != "unvalid") & (lead3 != "unvalid") &
+          (lag != class_name) &
+          (lag2 == lag) &
+          (lead2 == lag) &
+          (lead3 == lag) &
+          !condition1 & !condition2 & !condition1_2 & !condition2_2,
+        condition3_2 = (lag2 != "unvalid") & (lag3 != "unvalid") & (lead != "unvalid") & (lead2 != "unvalid") &
+          (lag2 != class_name) &
+          (lag3 == lag2) &
+          (lead == lag2) &
+          (lead2 == lag2) &
+          !condition1 & !condition2 & !condition1_2 & !condition2_2 & !condition3,
+      ) %>%
+      mutate(
+        group = case_when(condition1 ~ lag2,
+                          condition1_2 ~ lag2,
+                          condition2 ~ lead2,
+                          condition2_2 ~ lead2,
+                          condition3 ~ lag2,
+                          condition3_2 ~ lag2,
+                          .default = class_name)
+      ) %>%
+      select(-lag4, -lead4, -condition1_2, -condition2_2, -condition3_2)
+  }
+
+  df_smooth <- df_smooth %>%
+    select(-lag, -lag2, -lag3, -lead, -lead2, -lead3, -condition1, -condition2, -condition3, -color) %>%
+    left_join(df_colors, by = join_by(group == class_name)) %>%
+    select(-group)
+
+  return(df_smooth)
+}

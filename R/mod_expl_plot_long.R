@@ -59,6 +59,8 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
       leaflet_hover_shapes = NULL, # list to store vertical lines to display on longitudinal profile
       ui_roe_profile = NULL, # UI placeholder for ROE checkbox
       ui_background_profile = NULL, # UI placeholder for background classes checkbox
+      ui_background_smooth = NULL, # UI placeholder for background classification smoothing checkbox
+      ui_background_smooth_sel = NULL, # UI placeholder for background classification smoothing selectInput
       roe_vertical_line = NULL, # list with verticale line to plot on longitudinal profile
       axis_roe = NULL, # ROE data of axis
 
@@ -79,9 +81,8 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
       shapes_dgo = NULL, # list with shapes to plot clicked dgo element as line
       shapes_roe = NULL, # list with shapes to plot ROE obstacles as lines
       shapes_background = NULL, # list with shapes to plot classes in background
-      ui_background_smooth = NULL, # UI placeholder for background classification smoothing checkbox
-      ui_background_smooth_sel = NULL # UI placeholder for background classification smoothing selectInput
 
+      dgo_axis_classified_smoothed = NULL # smoothed classes df
     )
 
     #### UI ####
@@ -365,6 +366,22 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
           r_val_local$ui_background_smooth = NULL
           r_val_local$ui_background_smooth_sel = NULL
         }
+      }
+    })
+
+    # observe the smoothing of the background classification
+    observeEvent(input$background_smooth, {
+
+      if (input$background_smooth == TRUE) {
+        # add background classification shapes
+        if (input$background_profile == TRUE && !is.null(r_val$dgo_axis_classified)) {
+          r_val_local$dgo_axis_classified_smoothed = smoothen_classes(r_val$dgo_axis_classified, input$background_smooth_sel)
+          r_val_local$shapes_background = create_classes_background(r_val_local$dgo_axis_classified_smoothed)
+        }
+      }
+      else if(!is.null(r_val_local$dgo_axis_classified_smoothed)) {
+        r_val_local$shapes_background = create_classes_background(r_val$dgo_axis_classified)
+        r_val_local$dgo_axis_classified_smoothed = NULL
       }
     })
 
