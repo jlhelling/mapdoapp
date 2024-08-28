@@ -26,11 +26,14 @@ mod_expl_plot_long_ui <- function(id){
           style = "margin-top: 20px;",
           uiOutput(ns("profile_first_metricUI")),
           uiOutput(ns("add_sec_axeUI"),
-                   style = "margin-top: 30px;"),
+                   style = "margin-top: 10px;"),
           uiOutput(ns("profile_sec_metricUI"),
-                   style = "margin-left : 23px; margin-top: 10px"),
+                   style = "margin-left : 23px;"),
           uiOutput(ns("profile_roeUI")),
-          uiOutput(ns("profile_backgroundUI"))
+          uiOutput(ns("profile_backgroundUI")),
+          uiOutput(ns("profile_background_smoothUI")),
+          uiOutput(ns("profile_background_smooth_selUI"),
+                   style = "margin-left : 23px;")
         )
       )
     )
@@ -76,6 +79,8 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
       shapes_dgo = NULL, # list with shapes to plot clicked dgo element as line
       shapes_roe = NULL, # list with shapes to plot ROE obstacles as lines
       shapes_background = NULL, # list with shapes to plot classes in background
+      ui_background_smooth = NULL, # UI placeholder for background classification smoothing checkbox
+      ui_background_smooth_sel = NULL # UI placeholder for background classification smoothing selectInput
 
     )
 
@@ -138,6 +143,18 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
     output$profile_backgroundUI <- renderUI({
       r_val_local$ui_background_profile
     })
+
+    # checkbox for background classification smoothing
+    output$profile_background_smoothUI <- renderUI({
+      r_val_local$ui_background_smooth
+    })
+
+    # selectinput for background classification smoothing
+    output$profile_background_smooth_selUI <- renderUI({
+      r_val_local$ui_background_smooth_sel
+    })
+
+
 
 
     # make plot available to other
@@ -214,6 +231,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
         r_val_local$ui_background_profile = checkboxInput(ns("background_profile"),
                                                           label = "Classifications en arrière-plan",
                                                           value = FALSE)
+
       } else {
         r_val_local$plot = lg_profile_empty()
       }
@@ -326,10 +344,26 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
             r_val_local$shapes_background = create_classes_background(r_val$dgo_axis_classified)
           }
 
+          # build smoothing of classification option
+          if (is.null(r_val_local$ui_background_smooth)) {
+            # checkbox
+            r_val_local$ui_background_smooth  = checkboxInput(ns("background_smooth"),
+                                                              label = "Appliquer algorithme de lissage :",
+                                                              value = FALSE)
+
+            # selectinput
+            r_val_local$ui_background_smooth_sel = selectInput(ns("background_smooth_sel"),
+                                                               label = NULL,
+                                                               choices = c("1", "2", "Automatique"),
+                                                               selected = "1")
+          }
+
         }
         # remove background classification
         else if (input$background_profile == FALSE) {
           r_val_local$shapes_background = NULL
+          r_val_local$ui_background_smooth = NULL
+          r_val_local$ui_background_smooth_sel = NULL
         }
       }
     })
