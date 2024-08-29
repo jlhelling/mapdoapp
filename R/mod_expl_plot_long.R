@@ -349,13 +349,13 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
           if (is.null(r_val_local$ui_background_smooth)) {
             # checkbox
             r_val_local$ui_background_smooth  = checkboxInput(ns("background_smooth"),
-                                                              label = "Appliquer algorithme de lissage :",
+                                                              label = "Homogénéisation des classifications",
                                                               value = FALSE)
 
             # selectinput
             r_val_local$ui_background_smooth_sel = selectInput(ns("background_smooth_sel"),
-                                                               label = NULL,
-                                                               choices = c("1", "2", "Automatique"),
+                                                               label = "supprimer les inégaux :",
+                                                               choices = c("singuliers", "en paires", "Automatique"),
                                                                selected = "1")
           }
 
@@ -375,7 +375,13 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
       if (input$background_smooth == TRUE) {
         # add background classification shapes
         if (input$background_profile == TRUE && !is.null(r_val$dgo_axis_classified)) {
-          r_val_local$dgo_axis_classified_smoothed = smoothen_classes(r_val$dgo_axis_classified, input$background_smooth_sel)
+            n_smooth <- case_when(
+              input$background_smooth_sel == "singuliers" ~ 1,
+              input$background_smooth_sel == "en paires" ~ 2,
+              .default = 1,
+            )
+
+          r_val_local$dgo_axis_classified_smoothed = smoothen_classes(r_val$dgo_axis_classified, n_smooth)
           r_val_local$shapes_background = create_classes_background(r_val_local$dgo_axis_classified_smoothed)
         }
       }
