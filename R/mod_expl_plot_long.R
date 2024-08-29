@@ -375,6 +375,8 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
       if (input$background_smooth == TRUE) {
         # add background classification shapes
         if (input$background_profile == TRUE && !is.null(r_val$dgo_axis_classified)) {
+
+          # get number of unequals to b
             n_smooth <- case_when(
               input$background_smooth_sel == "singuliers" ~ 1,
               input$background_smooth_sel == "en paires" ~ 2,
