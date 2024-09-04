@@ -141,6 +141,18 @@ mod_explore_server <- function(id, con, r_val, globals){
     })
 
 
+    ### description text ####
+    observe({
+
+      r_val$selection_text = dplyr::case_when(
+        !is.null(r_val$basin_name) & is.null(r_val$region_name) & is.null(r_val$axis_name) ~ paste("Bassin :", r_val$basin_name),
+        !is.null(r_val$basin_name) & !is.null(r_val$region_name) & is.null(r_val$axis_name) ~ paste("Bassin :", r_val$basin_name, " |  Région :", r_val$region_name),
+        !is.null(r_val$basin_name) & !is.null(r_val$region_name) & !is.null(r_val$axis_name) ~ paste("Bassin :", r_val$basin_name, " |  Région :", r_val$region_name, " |  Axe :", r_val$axis_name),
+        .default = NULL
+      )
+    })
+
+
     ### CLICK EVENTS ####
 
     observeEvent(input$map_shape_click, {
