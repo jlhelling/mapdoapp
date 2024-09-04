@@ -31,6 +31,7 @@ mod_analysis_ui <- function(id){
                # stats together with selected axis
                # below show distribution plots of selection
                fluidRow(
+                 textOutput(ns("selection_textUI")),
                  column(
                    width = 9,
                    uiOutput(ns("selact_tableUI")), # overview table
@@ -129,6 +130,11 @@ mod_analysis_server <- function(id, con, r_val, globals){
       region_stats_prep = NULL # prepared stats for reactable
     )
 
+    #### Description Text ####
+
+    output$selection_textUI <- renderText({
+      r_val$selection_text
+    })
 
     ### UI ####
     # current selection table

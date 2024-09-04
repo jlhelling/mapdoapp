@@ -328,7 +328,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
 
           # proposed classification applied
           if (r_val$visualization == "classes") {
-            r_val$dgo_axis_classified = globals$axis_data() %>%
+            r_val$axis_data_classified = globals$axis_data() %>%
               assign_classes_proposed(proposed_class = globals$classes_proposed[r_val$classes_proposed_selected,]$class_name,
                                       colors_df = globals$classes_proposed_colors)
           }
@@ -336,7 +336,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
           # manual classification applied
           else if (r_val$visualization == "manual" &
                    !is.null(r_val$manual_classes_table)) {
-            r_val$dgo_axis_classified <- globals$axis_data() %>%
+            r_val$axis_data_classified <- globals$axis_data() %>%
               # na.omit() %>%
               assign_classes_manual(classes = r_val$manual_classes_table)
           }

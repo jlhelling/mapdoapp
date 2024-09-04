@@ -38,6 +38,8 @@ app_server <- function(input, output, session) {
     axis_name = NULL,
     axis_id = NULL,
     axis_data = NULL,
+    axis_data_classified = NULL,
+    axis_strahler = NULL,
     swath_id = NULL,
     swath_data_section = NULL,
     swath_data_dgo = NULL,

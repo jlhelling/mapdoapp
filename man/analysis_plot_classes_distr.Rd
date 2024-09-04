@@ -4,7 +4,16 @@
 \alias{analysis_plot_classes_distr}
 \title{Create interactive stacked barplots of class-distribution for region and axis}
 \usage{
-analysis_plot_classes_distr(data)
+analysis_plot_classes_distr(
+  data,
+  france = NULL,
+  france_strahler = c(6:0),
+  basin_id = NULL,
+  basin_strahler = 0,
+  region_id = NULL,
+  region_strahler = 0,
+  axis_data = NULL
+)
 }
 \arguments{
 \item{data}{classified network data with entries for regional and axis dgos}

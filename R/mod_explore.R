@@ -145,9 +145,12 @@ mod_explore_server <- function(id, con, r_val, globals){
     observe({
 
       r_val$selection_text = dplyr::case_when(
-        !is.null(r_val$basin_name) & is.null(r_val$region_name) & is.null(r_val$axis_name) ~ paste("Bassin :", r_val$basin_name),
-        !is.null(r_val$basin_name) & !is.null(r_val$region_name) & is.null(r_val$axis_name) ~ paste("Bassin :", r_val$basin_name, " |  Région :", r_val$region_name),
-        !is.null(r_val$basin_name) & !is.null(r_val$region_name) & !is.null(r_val$axis_name) ~ paste("Bassin :", r_val$basin_name, " |  Région :", r_val$region_name, " |  Axe :", r_val$axis_name),
+        !is.null(r_val$basin_name) & is.null(r_val$region_name) & is.null(r_val$axis_name) ~ paste0("Bassin : ", r_val$basin_name),
+        !is.null(r_val$basin_name) & !is.null(r_val$region_name) & is.null(r_val$axis_name) ~ paste0("Bassin : ", r_val$basin_name,
+                                                                                                    "  |  Région : ", r_val$region_name),
+        !is.null(r_val$basin_name) & !is.null(r_val$region_name) & !is.null(r_val$axis_name) ~ paste0("Bassin : ", r_val$basin_name,
+                                                                                                     "  |  Région : ", r_val$region_name,
+                                                                                                     "  |  Axe : ", r_val$axis_name, " (Ordre de Strahler : ", r_val$axis_strahler, ")"),
         .default = NULL
       )
     })
@@ -178,6 +181,7 @@ mod_explore_server <- function(id, con, r_val, globals){
           r_val$region_id = NULL
           r_val$axis_name = NULL
           r_val$axis_id = NULL
+          r_val$axis_strahler = NULL
           r_val$swath_id = NULL
           r_val$swath_data_section = NULL
           r_val$swath_data_dgo = NULL
@@ -225,6 +229,7 @@ mod_explore_server <- function(id, con, r_val, globals){
 
           # reset others
           r_val$axis_name = NULL
+          r_val$axis_strahler = NULL
           r_val$axis_id = NULL
           r_val$swath_id = NULL
 
@@ -255,6 +260,9 @@ mod_explore_server <- function(id, con, r_val, globals){
           r_val$axis_name = globals$axes() %>%
             filter(axis == r_val$axis_id) %>%
             pull(toponyme)
+
+          # get axis strahler order
+          r_val$axis_strahler = max(globals$axis_data() |> pull(strahler))
 
           # reset others
           r_val$swath_id = NULL
