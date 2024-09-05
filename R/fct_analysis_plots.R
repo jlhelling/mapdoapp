@@ -102,7 +102,7 @@ prepare_selact_data_for_plot <- function(data,
     mutate(scale = case_when(
       # Handle the "France" cases
       grepl("France \\(total\\)_France_0", scale) ~ "France",
-      grepl("France \\(total\\)_France_\\d+", scale) ~ paste0("France, Ordre ", sub(".*_.*_(\\d+)", "\\1", scale)),
+      grepl("France_France_\\d+", scale) ~ paste0("France, Ordre ", sub(".*_.*_(\\d+)", "\\1", scale)),
 
       # Handle the "Basin" cases
       grepl("Basin \\(total\\)_\\d+_0", scale) ~ "Bassin",

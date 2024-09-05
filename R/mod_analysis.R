@@ -28,7 +28,7 @@ mod_analysis_ui <- function(id){
 
     tabsetPanel(
       id = ns("tabset"),
-      tabPanel("Sélection actuelle",
+      tabPanel("Comparaison Sélection actuelle",
                # show table with France, basin, region (+ same stats but just for the strahler order of selected axis),
                # stats together with selected axis
                # below show distribution plots of selection
@@ -59,7 +59,7 @@ mod_analysis_ui <- function(id){
                    ),
                    actionButton(inputId = ns("selact_apply_button"), "Actualiser")
                  ))),
-      tabPanel("Régions",
+      tabPanel("Comparaison des Régions",
                fluidRow(
                  style = "margin-top: 10px; margin-bottom: 10px; margin-left: 10px;",
                  column(
@@ -88,38 +88,6 @@ mod_analysis_ui <- function(id){
                    actionButton(inputId = ns("regions_apply_button"), "Actualiser")
                  )
                )
-      ),
-      tabPanel("Axes",
-               fluidRow(
-                 column(
-                   width = 9,
-                   # table and plots here
-                 ),
-                 column(
-                   width = 3,
-                   selectInput(
-                     inputId = ns("axes_region_select"),
-                     label = "Régions",
-                     choices = c("one", "two"),
-                     selected = c("one", "two"),
-                     multiple = TRUE
-                   ),
-                   selectInput(
-                     inputId = ns("axes_strahler_select"),
-                     label = "Ordre de Strahler",
-                     choices = c(6,5,4,3,2,1),
-                     selected = c(6,5,4,3,2,1),
-                     multiple = TRUE
-                   ),
-                   multiInput(
-                     inputId = ns("axes_metric_select"),
-                     label = "Métriques",
-                     choices = params_metrics()$metric_title
-                   )
-                 )
-               )
-      ),
-      tabPanel("Classes",
       ),
       type = "pills"
     ) #tabsetpanel
@@ -185,20 +153,25 @@ mod_analysis_server <- function(id, con, r_val, globals){
 
     ##### Current Selection ####
 
-    observeEvent(c(globals$classes_stats(), r_val$basin_id, r_val$axis_strahler, r_val$region_id, r_val$axis_data_classified), {
+    observeEvent(c(globals$classes_stats(), r_val$basin_id, r_val$axis_strahler,
+                   r_val$region_id, r_val$axis_data_classified, input$sel_strahler_switch), {
 
-      if (exists("classes_stats", where = globals)) {
-        # current selection
-        r_val_local$selact_plot = analysis_plot_classes_distr(
-          df = prepare_selact_data_for_plot(globals$classes_stats(),
-                                             basin_id = r_val$basin_id,
-                                             basin_strahler = r_val$axis_strahler,
-                                             region_id = r_val$region_id,
-                                             region_strahler = r_val$axis_strahler,
-                                             axis_data = r_val$axis_data_classified)
-        )
-      }
-    })
+                     if (exists("classes_stats", where = globals) && !is.null(input$sel_strahler_switch)) {
+                       if (!is.null(globals$classes_stats())) {
+                         strahler <- case_when(input$sel_strahler_switch ~ c(0, r_val$axis_strahler),
+                                               .default = 0)
+                         # current selection
+                         r_val_local$selact_plot = analysis_plot_classes_distr(
+                           df = prepare_selact_data_for_plot(globals$classes_stats(),
+                                                             basin_id = r_val$basin_id,
+                                                             basin_strahler = strahler,
+                                                             region_id = r_val$region_id,
+                                                             region_strahler = strahler,
+                                                             axis_data = r_val$axis_data_classified)
+                         )
+                       }
+                     }
+                   })
 
 
 
