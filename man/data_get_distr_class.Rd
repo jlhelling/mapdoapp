@@ -2,13 +2,18 @@
 % Please edit documentation in R/fct_data.R
 \name{data_get_distr_class}
 \alias{data_get_distr_class}
-\title{Title}
+\title{Get statistics on classes distributions for different levels (france, basin, region) and a specified class}
 \usage{
 data_get_distr_class(con, class_name)
 }
 \arguments{
-\item{class_name}{}
+\item{con}{Connection to Postgresql database.}
+
+\item{class_name}{Name of the proposed class for which stats should be generated}
+}
+\value{
+Dataframe which contains the statistics for the specified class for different entities: France, Basins, Regions available on the server
 }
 \description{
-Title
+Get statistics on classes distributions for different levels (france, basin, region) and a specified class
 }

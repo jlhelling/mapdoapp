@@ -58,8 +58,8 @@ mod_analysis_ui <- function(id){
                fluidRow(
                  column(
                    width = 9,
-                   reactableOutput(ns("regions_table"), width = "100%")
-                   # table and plots here
+                   reactableOutput(ns("regions_table"), width = "100%"),
+                   plotlyOutput(ns("regions_plotUI"), width = "100%")
                  ),
                  column(
                    width = 3,
@@ -135,7 +135,8 @@ mod_analysis_server <- function(id, con, r_val, globals){
 
       # regions
       regions_table = NULL, # reactable
-      region_stats_prep = NULL # prepared stats for reactable
+      region_stats_prep = NULL, # prepared stats for reactable
+      regions_plot = NULL
     )
 
     #### Description Text ####
@@ -145,29 +146,46 @@ mod_analysis_server <- function(id, con, r_val, globals){
     })
 
     ### UI ####
+
+    ##### Selection tab ####
+
     # current selection table
     output$selact_tableUI <- renderUI({
       r_val_local$selact_table
     })
 
     # current selection distribution plot
-    output$selact_plotUI <- renderUI({
+    output$selact_plotUI <- renderPlotly({
       r_val_local$selact_plot
     })
 
+    ##### Regions tab ####
     # render table for regions
     output$regions_table <- renderReactable({
       r_val_local$regions_table
     })
 
+    # render regions plot
+    output$regions_plotUI <- renderPlotly({
+      r_val_local$regions_plot
+    })
 
-    ### Regions tab ####
+
+    ### Observers ####
+
+    ##### Regions tab ####
     # listen to opening of tab --> load stats if not already loaded, prepare them for reactable
     observe({
       if (exists("metric_stats", where = globals)) {
+
         # prepare stats for reactable
         r_val_local$region_stats_prep = prepare_stats_df(globals$metric_stats(), type = c("Région (total)", "Région"))
         r_val_local$regions_table = create_table(r_val_local$region_stats_prep, params_metrics()$metric_name[1:5], 0)
+        if (!is.null(globals$classes_stats())) {
+          r_val_local$regions_plot = analysis_plot_classes_distr(data = globals$classes_stats(),
+                                                                 region_id = globals$regions[globals$regions$click==TRUE,]$gid,
+                                                                 region_names = globals$regions)
+        }
       }
     })
 

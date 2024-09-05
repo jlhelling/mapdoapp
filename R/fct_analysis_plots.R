@@ -173,7 +173,7 @@ analysis_plot_classes_distr <- function(data,
     plotly::layout(
       barmode = 'stack',
       bargap = 0.5,
-      title = "Proportion de classes",
+      title = "Proportions des classes",
       xaxis = list(title = "", showgrid = F, categoryorder = "array", categoryarray = df$scale),
       yaxis = list(title = "Pourcentage", showgrid = T, showticklabels = T),
       showlegend = TRUE

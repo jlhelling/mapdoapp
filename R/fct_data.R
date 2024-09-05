@@ -255,25 +255,23 @@ data_get_stats_metrics <- function(con) {
 }
 
 
-#' Title
+#' Get statistics on classes distributions for different levels (france, basin, region) and a specified class
 #'
-#' @param con
-#' @param class_name
+#' @param con Connection to Postgresql database.
+#' @param class_name Name of the proposed class for which stats should be generated
 #'
 #' @importFrom dplyr case_when
 #' @importFrom DBI dbGetQuery
 #'
 #' @return
-#' @export
-#'
-#' @examples
+#' Dataframe which contains the statistics for the specified class for different entities: France, Basins, Regions available on the server
 data_get_distr_class <- function(con, class_name) {
 
-  # browser()
+  if (!is.null(class_name)) {
 
-  classification_query <- case_when(
-    class_name == "class_strahler" ~
-      "CASE
+    classification_query <- case_when(
+      class_name == "class_strahler" ~
+        "CASE
           WHEN strahler IS NULL THEN 'unvalid'
           WHEN strahler = 1 THEN '1'
           WHEN strahler = 2 THEN '2'
@@ -283,8 +281,8 @@ data_get_distr_class <- function(con, class_name) {
           WHEN strahler = 6 THEN '6'
           ELSE 'unvalid'
         END AS class_name",
-    class_name == "class_topographie" ~
-      "CASE
+      class_name == "class_topographie" ~
+        "CASE
         WHEN talweg_elevation_min IS NULL OR talweg_slope IS NULL THEN 'unvalid'
         WHEN talweg_elevation_min >= 1000 AND talweg_slope >= 0.05 THEN 'Pentes de montagne'
         WHEN talweg_elevation_min >= 1000 AND talweg_slope < 0.05 THEN 'Plaines de montagne'
@@ -294,8 +292,8 @@ data_get_distr_class <- function(con, class_name) {
         WHEN talweg_elevation_min >= -50 AND talweg_slope < 0.05 THEN 'Plaines de basse altitude'
         ELSE 'unvalid'
       END AS class_name",
-    class_name == "class_lu_dominante" ~
-      "CASE
+      class_name == "class_lu_dominante" ~
+        "CASE
           WHEN forest_pc IS NULL OR grassland_pc IS NULL OR natural_open_pc IS NULL OR crops_pc IS NULL OR built_environment_pc IS NULL THEN 'unvalid'
           WHEN forest_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'forest_pc'
           WHEN grassland_pc + natural_open_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'grassland_pc'
@@ -303,8 +301,8 @@ data_get_distr_class <- function(con, class_name) {
           WHEN built_environment_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'built_environment_pc'
           ELSE 'unvalid'
         END AS class_name",
-    class_name == "class_urban" ~
-      "CASE
+      class_name == "class_urban" ~
+        "CASE
           WHEN built_environment_pc IS NULL THEN 'unvalid'
           WHEN built_environment_pc >= 70 THEN 'fortement urbanisé'
           WHEN built_environment_pc >= 40 THEN 'urbanisé'
@@ -312,8 +310,8 @@ data_get_distr_class <- function(con, class_name) {
           WHEN built_environment_pc >= 0 THEN 'Presque pas/pas urbanisé'
           ELSE 'unvalid'
         END AS class_name",
-    class_name == "class_agriculture" ~
-      "CASE
+      class_name == "class_agriculture" ~
+        "CASE
           WHEN crops_pc IS NULL THEN 'unvalid'
           WHEN crops_pc >= 70 THEN 'Forte impact agricole'
           WHEN crops_pc >= 40 THEN 'Impact agricole élevé'
@@ -321,8 +319,8 @@ data_get_distr_class <- function(con, class_name) {
           WHEN crops_pc >= 0 THEN 'Presque pas/pas d''impact agricole'
           ELSE 'unvalid'
         END AS class_name",
-    class_name == "class_nature" ~
-      "CASE
+      class_name == "class_nature" ~
+        "CASE
           WHEN natural_open_pc IS NULL OR forest_pc IS NULL OR grassland_pc IS NULL THEN 'unvalid'
           WHEN (natural_open_pc + forest_pc + grassland_pc) >= 70 THEN 'Très forte utilisation naturelle'
           WHEN (natural_open_pc + forest_pc + grassland_pc) >= 40 THEN 'Forte utilisation naturelle'
@@ -330,16 +328,16 @@ data_get_distr_class <- function(con, class_name) {
           WHEN (natural_open_pc + forest_pc + grassland_pc) >= 0 THEN 'Presque pas/pas naturelle'
           ELSE 'unvalid'
         END AS class_name",
-    class_name == "class_gravel" ~
-      "CASE
+      class_name == "class_gravel" ~
+        "CASE
           WHEN gravel_bars IS NULL OR water_channel IS NULL THEN 'unvalid'
           WHEN (gravel_bars / NULLIF(water_channel, 0)) >= 0.5 THEN 'abundant'
           WHEN (gravel_bars / NULLIF(water_channel, 0)) > 0 THEN 'moyennement présente'
           WHEN (gravel_bars / NULLIF(water_channel, 0)) = 0 THEN 'absent'
           ELSE 'unvalid'
         END AS class_name",
-    class_name == "class_confinement" ~
-      "CASE
+      class_name == "class_confinement" ~
+        "CASE
           WHEN idx_confinement IS NULL THEN 'unvalid'
           WHEN idx_confinement >= 0.7 THEN 'espace abondant'
           WHEN idx_confinement >= 0.4 THEN 'modérement espace'
@@ -347,8 +345,8 @@ data_get_distr_class <- function(con, class_name) {
           WHEN idx_confinement >= 0 THEN 'très confiné'
           ELSE 'unvalid'
         END AS class_name",
-    class_name == "class_habitat" ~
-      "CASE
+      class_name == "class_habitat" ~
+        "CASE
           WHEN riparian_corridor_pc IS NULL OR semi_natural_pc IS NULL THEN 'unvalid'
           WHEN (riparian_corridor_pc + semi_natural_pc) >= 70 THEN 'très bien connecté'
           WHEN (riparian_corridor_pc + semi_natural_pc) >= 40 THEN 'bien connecté'
@@ -356,38 +354,17 @@ data_get_distr_class <- function(con, class_name) {
           WHEN (riparian_corridor_pc + semi_natural_pc) >= 0 THEN 'faible / absente'
           ELSE 'unvalid'
         END AS class_name",
-  )
+      .default = NULL
+    )
 
-
-
-  # query <- paste0(
-  #   "SELECT\n",
-  #   "'France (total)' AS level_type,\n",
-  #   "'France' AS level_name,\n",
-  #   "0 AS strahler, \n",
-  #   "class_name, \n",
-  #   "COUNT(class_name) AS class_count\n",
-  #   "FROM (\n",
-  #   "SELECT\n",
-  #   "'France (total)' AS level_type,\n",
-  #   "'France' AS level_name,\n",
-  #   "0 AS strahler, \n",
-  #   classification_query, "\n",
-  #   "FROM network_metrics\n",
-  #   "WHERE network_metrics.gid_region IS NOT NULL\n",
-  #   ") AS subquery\n",
-  #   "GROUP BY class_name;"
-  # )
-
-
-  query <- paste0(
-    "SELECT\n",
-    "'France (total)' AS level_type,\n",
-    "'France' AS level_name,\n",
-    "0 AS strahler, \n",
-    "class_name, \n",
-    "COUNT(class_name) AS class_count\n",
-    "FROM (\n",
+    query <- paste0(
+      "SELECT\n",
+      "'France (total)' AS level_type,\n",
+      "'France' AS level_name,\n",
+      "0 AS strahler, \n",
+      "class_name, \n",
+      "COUNT(class_name) AS class_count\n",
+      "FROM (\n",
       "SELECT\n",
       "'France (total)' AS level_type,\n",
       "'France' AS level_name,\n",
@@ -396,17 +373,17 @@ data_get_distr_class <- function(con, class_name) {
       "FROM network_metrics\n",
       "WHERE network_metrics.gid_region IS NOT NULL\n",
       ") AS subquery\n",
-    "GROUP BY class_name",
+      "GROUP BY class_name",
 
-    "\nUNION ALL\n",
+      "\nUNION ALL\n",
 
-    "SELECT\n",
-    "'France' AS level_type,\n",
-    "'France' AS level_name,\n",
-    "strahler,\n",
-    "class_name, \n",
-    "COUNT(class_name) AS class_count\n",
-    "FROM (\n",
+      "SELECT\n",
+      "'France' AS level_type,\n",
+      "'France' AS level_name,\n",
+      "strahler,\n",
+      "class_name, \n",
+      "COUNT(class_name) AS class_count\n",
+      "FROM (\n",
       "SELECT\n",
       "'France' AS level_type,\n",
       "'France' AS level_name,\n",
@@ -415,18 +392,18 @@ data_get_distr_class <- function(con, class_name) {
       "FROM network_metrics\n",
       "WHERE network_metrics.gid_region IS NOT NULL\n",
       ") AS subquery\n",
-    "GROUP BY strahler, class_name",
+      "GROUP BY strahler, class_name",
 
-    "\nUNION ALL\n",
+      "\nUNION ALL\n",
 
-    # Basins
-    "SELECT\n",
-    "'Basin (total)' AS level_type,\n",
-    "level_name,\n",
-    "0 AS strahler,\n",
-    "class_name, \n",
-    "COUNT(class_name) AS class_count\n",
-    "FROM (\n",
+      # Basins
+      "SELECT\n",
+      "'Basin (total)' AS level_type,\n",
+      "level_name,\n",
+      "0 AS strahler,\n",
+      "class_name, \n",
+      "COUNT(class_name) AS class_count\n",
+      "FROM (\n",
       "SELECT\n",
       "'Basin (total)' AS level_type,\n",
       "region_hydrographique.cdbh AS level_name,\n",
@@ -436,17 +413,17 @@ data_get_distr_class <- function(con, class_name) {
       "LEFT JOIN region_hydrographique ON region_hydrographique.gid = network_metrics.gid_region\n",
       "WHERE network_metrics.gid_region IS NOT NULL\n",
       ") AS subquery\n",
-    "GROUP BY level_name, class_name\n",
+      "GROUP BY level_name, class_name\n",
 
-    "\nUNION ALL\n",
+      "\nUNION ALL\n",
 
-    "SELECT\n",
-    "'Basin' AS level_type,\n",
-    "level_name,\n",
-    "strahler,\n",
-    "class_name, \n",
-    "COUNT(class_name) AS class_count\n",
-    "FROM (\n",
+      "SELECT\n",
+      "'Basin' AS level_type,\n",
+      "level_name,\n",
+      "strahler,\n",
+      "class_name, \n",
+      "COUNT(class_name) AS class_count\n",
+      "FROM (\n",
       "SELECT\n",
       "'Basin' AS level_type,\n",
       "region_hydrographique.cdbh AS level_name,\n",
@@ -456,18 +433,18 @@ data_get_distr_class <- function(con, class_name) {
       "LEFT JOIN region_hydrographique ON region_hydrographique.gid = network_metrics.gid_region\n",
       "WHERE network_metrics.gid_region IS NOT NULL\n",
       ") AS subquery\n",
-    "GROUP BY level_name, strahler, class_name\n",
+      "GROUP BY level_name, strahler, class_name\n",
 
-    "\nUNION ALL\n",
+      "\nUNION ALL\n",
 
-    # Regions
-    "SELECT\n",
-    "'Région (total)' AS level_type,\n",
-    "level_name,\n",
-    "0 AS strahler,\n",
-    "class_name, \n",
-    "COUNT(class_name) AS class_count\n",
-    "FROM (\n",
+      # Regions
+      "SELECT\n",
+      "'Région (total)' AS level_type,\n",
+      "level_name,\n",
+      "0 AS strahler,\n",
+      "class_name, \n",
+      "COUNT(class_name) AS class_count\n",
+      "FROM (\n",
       "SELECT\n",
       "'Région (total)' AS level_type,\n",
       "CAST(network_metrics.gid_region as varchar(10)) AS level_name,\n",
@@ -477,17 +454,17 @@ data_get_distr_class <- function(con, class_name) {
       "LEFT JOIN region_hydrographique ON region_hydrographique.gid = network_metrics.gid_region\n",
       "WHERE network_metrics.gid_region IS NOT NULL\n",
       ") AS subquery\n",
-    "GROUP BY level_name, class_name\n",
+      "GROUP BY level_name, class_name\n",
 
-    "\nUNION ALL\n",
+      "\nUNION ALL\n",
 
-    "SELECT\n",
-    "'Région' AS level_type,\n",
-    "level_name,\n",
-    "strahler,\n",
-    "class_name, \n",
-    "COUNT(class_name) AS class_count\n",
-    "FROM (\n",
+      "SELECT\n",
+      "'Région' AS level_type,\n",
+      "level_name,\n",
+      "strahler,\n",
+      "class_name, \n",
+      "COUNT(class_name) AS class_count\n",
+      "FROM (\n",
       "SELECT\n",
       "'Région' AS level_type,\n",
       "CAST(network_metrics.gid_region as varchar(10)) AS level_name,\n",
@@ -497,13 +474,17 @@ data_get_distr_class <- function(con, class_name) {
       "LEFT JOIN region_hydrographique ON region_hydrographique.gid = network_metrics.gid_region\n",
       "WHERE network_metrics.gid_region IS NOT NULL\n",
       ") AS subquery\n",
-    "GROUP BY level_name, strahler, class_name;\n"
-  )
+      "GROUP BY level_name, strahler, class_name;\n"
+    )
 
-  data <- DBI::dbGetQuery(conn = con, statement = query) %>%
-    na.omit()
+    data <- DBI::dbGetQuery(conn = con, statement = query) %>%
+      na.omit()
 
-  return(data)
+    return(data)
+  } else {
+    return(NULL)
+  }
+
 }
 
 

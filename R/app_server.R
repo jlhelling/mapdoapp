@@ -95,6 +95,17 @@ app_server <- function(input, output, session) {
   }) %>%
     bindCache(globals$regions_gids_key)
 
+  #### Classes stats caching ####
+  globals$classes_stats <- reactive({
+    if (!is.null(r_val$classes_proposed_selected)) {
+      data_get_distr_class(con = con, class_name = globals$classes_proposed[r_val$classes_proposed_selected,]$class_name)
+    } else {
+      NULL
+    }
+
+  }) %>%
+    bindCache(globals$regions_gids_key, r_val$classes_proposed_selected)
+
 
   ### Server activation ####
   # main servers
