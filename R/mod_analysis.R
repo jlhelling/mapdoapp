@@ -189,12 +189,14 @@ mod_analysis_server <- function(id, con, r_val, globals){
 
       if (exists("classes_stats", where = globals)) {
         # current selection
-        r_val_local$selact_plot = analysis_plot_classes_distr(globals$classes_stats(),
-                                                              basin_id = r_val$basin_id,
-                                                              basin_strahler = r_val$axis_strahler,
-                                                              region_id = r_val$region_id,
-                                                              region_strahler = r_val$axis_strahler,
-                                                              axis_data = r_val$axis_data_classified)
+        r_val_local$selact_plot = analysis_plot_classes_distr(
+          df = prepare_selact_data_for_plot(globals$classes_stats(),
+                                             basin_id = r_val$basin_id,
+                                             basin_strahler = r_val$axis_strahler,
+                                             region_id = r_val$region_id,
+                                             region_strahler = r_val$axis_strahler,
+                                             axis_data = r_val$axis_data_classified)
+        )
       }
     })
 
@@ -212,9 +214,11 @@ mod_analysis_server <- function(id, con, r_val, globals){
         if (exists("classes_stats", where = globals)) {
           if (!is.null(globals$classes_stats())) {
             # regions plot
-            r_val_local$regions_plot = analysis_plot_classes_distr(data = globals$classes_stats(),
-                                                                   region_id = globals$regions[globals$regions$click == TRUE,]$gid,
-                                                                   region_names = globals$regions)
+            r_val_local$regions_plot = analysis_plot_classes_distr(
+              df = prepare_regions_data_for_plot(globals$classes_stats(),
+                                                 region_id = globals$regions[globals$regions$click == TRUE,]$gid,
+                                                 region_names = globals$regions)
+            )
 
           }
         }
@@ -237,10 +241,12 @@ mod_analysis_server <- function(id, con, r_val, globals){
 
         # update reactable table and plot
         r_val_local$regions_table = create_table(r_val_local$region_stats_prep, input$regions_metric_select, strahler_sel)
-        r_val_local$regions_plot = analysis_plot_classes_distr(data = globals$classes_stats(),
-                                                               region_id = globals$regions[globals$regions$click == TRUE,]$gid,
-                                                               region_strahler = strahler_sel,
-                                                               region_names = globals$regions)
+        r_val_local$regions_plot = analysis_plot_classes_distr(
+          df = prepare_regions_data_for_plot(globals$classes_stats(),
+                                             region_id = globals$regions[globals$regions$click == TRUE,]$gid,
+                                             region_strahler = strahler_sel,
+                                             region_names = globals$regions)
+        )
       }
 
     })

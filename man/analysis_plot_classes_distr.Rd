@@ -4,36 +4,11 @@
 \alias{analysis_plot_classes_distr}
 \title{Create interactive stacked bar plots of class distribution for various scales}
 \usage{
-analysis_plot_classes_distr(
-  data,
-  france = NULL,
-  france_strahler = c(6:0),
-  basin_id = NULL,
-  basin_strahler = 0,
-  region_id = NULL,
-  region_strahler = 0,
-  region_names = NULL,
-  axis_data = NULL
-)
+analysis_plot_classes_distr(df)
 }
 \arguments{
-\item{data}{A dataframe containing classified network data with regional and axis information.}
-
-\item{france}{Numeric vector for France Strahler order. Default is NULL.}
-
-\item{france_strahler}{Numeric vector representing Strahler orders for France. Default is c(6:0).}
-
-\item{basin_id}{Integer specifying the basin ID. Default is NULL.}
-
-\item{basin_strahler}{Integer for Strahler order of the basin. Default is 0.}
-
-\item{region_id}{Integer specifying the region ID. Default is NULL.}
-
-\item{region_strahler}{Integer for Strahler order of the region. Default is 0.}
-
-\item{region_names}{Dataframe containing region names and corresponding IDs.}
-
-\item{axis_data}{Dataframe containing axis data (optional). Default is NULL.}
+\item{df}{A dataframe prepared by the `prepare_selact_data_for_plot` or `prepare_regions_data_for_plot` functions,
+containing the processed data ready for plotting.}
 }
 \value{
 Interactive stacked bar plot with class distribution percentages.
@@ -45,6 +20,6 @@ and the distribution is shown as percentages.
 }
 \examples{
 \dontrun{
-analysis_plot_classes_distr(data = classified_data, basin_id = 3, region_id = 1)
+plot <- analysis_plot_classes_distr(df)
 }
 }
