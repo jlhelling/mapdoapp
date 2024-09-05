@@ -6,7 +6,7 @@
 #'
 #' @import shiny
 #' @importFrom shinyjs useShinyjs
-#' @importFrom shinyWidgets pickerInput pickerOptions multiInput
+#' @importFrom shinyWidgets pickerInput pickerOptions multiInput materialSwitch
 #' @importFrom htmltools HTML div img
 #'
 #' @noRd
@@ -42,7 +42,15 @@ mod_analysis_ui <- function(id){
                    multiInput(
                      inputId = ns("sel_metric_select"),
                      label = "Métriques",
-                     choices = params_metrics()$metric_title
+                     choices = params_metrics()$metric_title,
+                     selected = params_metrics()$metric_title[1:5]
+                   ),
+                   materialSwitch(
+                     inputId = ns("sel_strahler_switch"),
+                     label = "Statistiques de l'ordre de Strahler selon l'axe",
+                     value = FALSE,
+                     status = "primary",
+                     inline = TRUE
                    ),
                    actionButton(inputId = ns("selact_apply_button"), "Actualiser")
                  ))),
@@ -67,7 +75,7 @@ mod_analysis_ui <- function(id){
                      label = "Métriques",
                      choiceNames = params_metrics()$metric_title,
                      choiceValues = params_metrics()$metric_name,
-                     selected = c(1,2,3,4,5)
+                     selected = params_metrics()$metric_name[1:5]
                    ),
                    actionButton(inputId = ns("regions_apply_button"), "Actualiser")
                  )
@@ -159,6 +167,7 @@ mod_analysis_server <- function(id, con, r_val, globals){
       if (exists("metric_stats", where = globals)) {
         # prepare stats for reactable
         r_val_local$region_stats_prep = prepare_stats_df(globals$metric_stats(), type = c("Région (total)", "Région"))
+        r_val_local$regions_table = create_table(r_val_local$region_stats_prep, params_metrics()$metric_name[1:5], 0)
       }
     })
 

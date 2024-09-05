@@ -2,7 +2,7 @@
 % Please edit documentation in R/fct_analysis_plots.R
 \name{analysis_plot_classes_distr}
 \alias{analysis_plot_classes_distr}
-\title{Create interactive stacked barplots of class-distribution for region and axis}
+\title{Create interactive stacked bar plots of class distribution for various scales}
 \usage{
 analysis_plot_classes_distr(
   data,
@@ -12,17 +12,39 @@ analysis_plot_classes_distr(
   basin_strahler = 0,
   region_id = NULL,
   region_strahler = 0,
+  region_names = NULL,
   axis_data = NULL
 )
 }
 \arguments{
-\item{data}{classified network data with entries for regional and axis dgos}
+\item{data}{A dataframe containing classified network data with regional and axis information.}
 
-\item{colors}{color vector}
+\item{france}{Numeric vector for France Strahler order. Default is NULL.}
+
+\item{france_strahler}{Numeric vector representing Strahler orders for France. Default is c(6:0).}
+
+\item{basin_id}{Integer specifying the basin ID. Default is NULL.}
+
+\item{basin_strahler}{Integer for Strahler order of the basin. Default is 0.}
+
+\item{region_id}{Integer specifying the region ID. Default is NULL.}
+
+\item{region_strahler}{Integer for Strahler order of the region. Default is 0.}
+
+\item{region_names}{Dataframe containing region names and corresponding IDs.}
+
+\item{axis_data}{Dataframe containing axis data (optional). Default is NULL.}
 }
 \value{
-interactive stacked barplot with class distribution in % for each scale-group (region and axis)
+Interactive stacked bar plot with class distribution percentages.
 }
 \description{
-Create interactive stacked barplots of class-distribution for region and axis
+This function generates an interactive stacked bar plot showing the class distribution
+for various scales (France, Basin, Region, and Axis). The plot is colored based on class names,
+and the distribution is shown as percentages.
+}
+\examples{
+\dontrun{
+analysis_plot_classes_distr(data = classified_data, basin_id = 3, region_id = 1)
+}
 }

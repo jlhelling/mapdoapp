@@ -35,6 +35,7 @@ Imports:
     shinyjs,
     shinyWidgets,
     sparkline,
+    stringr,
     tibble,
     tidyr,
     utils

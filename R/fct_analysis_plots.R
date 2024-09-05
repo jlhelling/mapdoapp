@@ -1,34 +1,45 @@
-#' Create interactive stacked barplots of class-distribution for region and axis
+#' Create interactive stacked bar plots of class distribution for various scales
 #'
-#' @param data classified network data with entries for regional and axis dgos
-#' @param colors color vector
+#' This function generates an interactive stacked bar plot showing the class distribution
+#' for various scales (France, Basin, Region, and Axis). The plot is colored based on class names,
+#' and the distribution is shown as percentages.
 #'
-#' @importFrom dplyr count group_by mutate ungroup filter arrange rowwise left_join summarise
-#' @importFrom plotly plot_ly layout event_register
+#' @param data A dataframe containing classified network data with regional and axis information.
+#' @param france Numeric vector for France Strahler order. Default is NULL.
+#' @param france_strahler Numeric vector representing Strahler orders for France. Default is c(6:0).
+#' @param basin_id Integer specifying the basin ID. Default is NULL.
+#' @param basin_strahler Integer for Strahler order of the basin. Default is 0.
+#' @param region_id Integer specifying the region ID. Default is NULL.
+#' @param region_strahler Integer for Strahler order of the region. Default is 0.
+#' @param region_names Dataframe containing region names and corresponding IDs.
+#' @param axis_data Dataframe containing axis data (optional). Default is NULL.
+#'
+#' @importFrom dplyr filter mutate left_join summarise group_by ungroup arrange
+#' @importFrom plotly plot_ly layout
 #' @importFrom tidyr unite
 #' @importFrom stringr str_extract
-#'
-#' @return interactive stacked barplot with class distribution in % for each scale-group (region and axis)
-#'
+#' @return Interactive stacked bar plot with class distribution percentages.
+#' @examples
+#' \dontrun{
+#' analysis_plot_classes_distr(data = classified_data, basin_id = 3, region_id = 1)
+#' }
+#' @export
 analysis_plot_classes_distr <- function(data,
                                         france = NULL, france_strahler = c(6:0),
                                         basin_id = NULL, basin_strahler = 0,
                                         region_id = NULL, region_strahler = 0, region_names = NULL,
                                         axis_data = NULL){
 
-  browser()
-
-
   # create filter to select scales ------------------------------------------
 
   # France-Basin scale stats
-  if (!is.null(basin_id) & is.null(region_id) & is.null(axis_id)) {
+  if (!is.null(basin_id) & is.null(region_id) & is.null(axis_data)) {
     filter <- c("France (total)_France_0",
                 paste0("Basin (total)_", basin_id, "_0"))
   }
 
   # France-Basin-Region scale stats
-  else if (!is.null(basin_id) & !is.null(region_id) & is.null(axis_id)) {
+  else if (!is.null(basin_id) & !is.null(region_id) & is.null(axis_data)) {
     filter <- c("France (total)_France_0",
                 paste0("Basin (total)_", basin_id, "_0"),
                 paste0("Région (total)_", region_id, "_0"))
@@ -47,9 +58,9 @@ analysis_plot_classes_distr <- function(data,
     # create axis stats
     axis_data <- axis_data %>%
       filter(class_name != "unvalid") %>%
-      dplyr::count(class_name) %>%
-      dplyr::mutate(share = round((n / sum(n) * 100), 2)) %>%
-      dplyr::ungroup() %>%
+      count(class_name) %>%
+      mutate(share = round((n / sum(n) * 100), 2)) %>%
+      ungroup() %>%
       rename(class_count = n) %>%
       rowwise() %>%
       mutate(scale = "Axe", color = get_color_by_class(class_name, colors_list = params_classes_colors()))
@@ -57,8 +68,12 @@ analysis_plot_classes_distr <- function(data,
 
   # Only regions
   else if (is.null(basin_id) & !is.null(region_id) & is.null(axis_data)) {
-    filter <- c(paste0("Région (total)_", region_id, "_0"),
-                paste0("Région_", region_id, "_", region_strahler))
+
+    filter <- c(paste0("Région (total)_", region_id, "_0"))
+    for (i in region_strahler[region_strahler > 0]) {
+      filter <- c(filter,
+                  paste0("Région_", region_id, "_", i))
+    }
   }
 
   # default and only France-scale stats
@@ -85,8 +100,14 @@ analysis_plot_classes_distr <- function(data,
     tidyr::unite(scale, c("level_type", "level_name", "strahler")) %>%
     filter(scale %in% filter) %>%
     arrange(match(scale, filter)) %>%
-    select(-count_tot) %>%
-    add_row(axis_data)
+    select(-count_tot)
+
+  # add axis data if available
+  if (!is.null(axis_data)) {
+    df <- bind_rows(df, axis_data)
+  }
+
+  # Rename scale levels -----------------------------------------------------
 
   # change names according to scale
   if (!is.null(basin_id) & !is.null(region_id) & !is.null(axis_data)) {
@@ -110,7 +131,7 @@ analysis_plot_classes_distr <- function(data,
   }
 
   else if (is.null(basin_id) & !is.null(region_id) & !is.null(region_names) & is.null(axis_data)) {
-    r_names <- setNames(region_names$lbregionhy, region_names$cdbh)
+    r_names <- setNames(region_names$lbregionhy, region_names$gid)
 
 
     df <- df %>%
@@ -120,10 +141,9 @@ analysis_plot_classes_distr <- function(data,
         grepl("France \\(total\\)_France_\\d+", scale) ~ paste0("France, Ordre ", sub(".*_.*_(\\d+)", "\\1", scale)),
 
         # Handle the "Région" cases
-        grepl("Région \\(total\\)_\\d+_0", scale) ~ paste0("Région ", r_names[sub(".*_(\\d+)_0", "\\1", scale)]),
-        grepl("Région_\\d+_\\d+", scale) ~ paste0(
-          "Région ", r_names[sub(".*_(\\d+)_\\d+", "\\1", scale)],
-          ", Ordre ", sub(".*_(\\d+)$", "\\1", scale)),
+        grepl("Région \\(total\\)_\\d+_0", scale) ~ r_names[sub(".*_(\\d+)_0", "\\1", scale)],
+        grepl("Région_\\d+_\\d+", scale) ~ paste0(r_names[sub(".*_(\\d+)_\\d+", "\\1", scale)],
+                                                  ", Ordre ", sub(".*_(\\d+)$", "\\1", scale)),
 
         # Default case to keep any other values unchanged
         .default = scale

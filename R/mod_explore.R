@@ -151,7 +151,7 @@ mod_explore_server <- function(id, con, r_val, globals){
         !is.null(r_val$basin_name) & !is.null(r_val$region_name) & !is.null(r_val$axis_name) ~ paste0("Bassin : ", r_val$basin_name,
                                                                                                      "  |  Région : ", r_val$region_name,
                                                                                                      "  |  Axe : ", r_val$axis_name, " (Ordre de Strahler : ", r_val$axis_strahler, ")"),
-        .default = NULL
+        .default = ""
       )
     })
 
