@@ -4,7 +4,7 @@
 \alias{prepare_stats_df}
 \title{Prepare metrics-statistics dataframe for reactable table}
 \usage{
-prepare_stats_df(data, type = c("Région (total)", "Région"))
+prepare_stats_df(data, type = c("Région (total)", "Région"), region_names)
 }
 \arguments{
 \item{data}{metrics-statistics dataframe}

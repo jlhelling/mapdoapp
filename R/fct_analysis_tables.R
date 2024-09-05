@@ -7,7 +7,10 @@
 #' @importFrom purrr map
 #'
 #' @return metrics-statistics dataframe with *_distr-columns
-prepare_stats_df <- function(data, type = c("Région (total)", "Région")) {
+prepare_stats_df <- function(data, type = c("Région (total)", "Région"), region_names) {
+
+  r_names <- setNames(region_names$lbregionhy, region_names$gid)
+
   suffixes <- c("_min", "_0025", "_025", "_05", "_075", "_0975", "_max")
 
   df <- data %>%
@@ -18,7 +21,8 @@ prepare_stats_df <- function(data, type = c("Région (total)", "Région")) {
                   .names = "{.col}_distr")) %>%
     rename_with(~ sub("_avg_distr$", "_distr", .), ends_with("_avg_distr")) %>%
     ungroup() %>%
-    mutate(across(ends_with("_avg"), ~ round(., 2)))
+    mutate(name = r_names[level_name],
+           across(ends_with("_avg"), ~ round(., 2)))
 }
 
 
@@ -44,13 +48,13 @@ create_table <- function(df, vars, strahler_sel = 0) {
 
   # filter the columns
   df <- df %>%
-    select(level_name, strahler, col_names) %>%
+    select(name, strahler, col_names) %>%
     filter(strahler %in% strahler_sel)
 
   # Initialize the list of column definitions
   columns_list <- list(
-    level_name = colDef(name = "Région", width = 80),
-    strahler = colDef(name = "No. Strahler", width = 80)
+    name = colDef(name = "Région", width = 140),
+    strahler = colDef(name = "Ordre Strahler", width = 85)
   )
 
   # deactivate showing of column when only whole region-aggregated values are selected (strahler==0)
@@ -92,7 +96,9 @@ create_table <- function(df, vars, strahler_sel = 0) {
     height = 420,
     defaultPageSize = 9,
     highlight = TRUE,  # highlight rows on hover
-    compact = TRUE
+    compact = TRUE,
+    pagination = FALSE,
+    striped = TRUE
   )
 
   return(table)

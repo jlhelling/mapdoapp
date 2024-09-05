@@ -311,15 +311,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
 
     ##### background classes ####
 
-    # check for proposed and manual classifications
-    # proposed:
-    # - detect selected class and set as class
-    # - add colors
-    #
-    # manual
-
     observeEvent(c(input$background_profile, r_val$classes_proposed_selected),  {
-      # r_val$manual_classes_table),  {
 
       if (!is.null(input$background_profile) && !is.null(globals$axis_data())) {
 
@@ -341,8 +333,8 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
               assign_classes_manual(classes = r_val$manual_classes_table)
           }
 
-          if (!is.null(r_val$dgo_axis_classified)) {
-            r_val_local$shapes_background = create_classes_background(r_val$dgo_axis_classified)
+          if (!is.null(r_val$axis_data_classified)) {
+            r_val_local$shapes_background = create_classes_background(r_val$axis_data_classified)
           }
 
           # build smoothing of classification option
@@ -374,7 +366,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
 
       if (input$background_smooth == TRUE) {
         # add background classification shapes
-        if (input$background_profile == TRUE && !is.null(r_val$dgo_axis_classified)) {
+        if (input$background_profile == TRUE && !is.null(r_val$axis_data_classified)) {
 
           # get number of unequals to b
             n_smooth <- case_when(
@@ -383,12 +375,12 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
               .default = 1,
             )
 
-          r_val_local$dgo_axis_classified_smoothed = smoothen_classes(r_val$dgo_axis_classified, n_smooth)
+          r_val_local$dgo_axis_classified_smoothed = smoothen_classes(r_val$axis_data_classified, n_smooth)
           r_val_local$shapes_background = create_classes_background(r_val_local$dgo_axis_classified_smoothed)
         }
       }
       else if(!is.null(r_val_local$dgo_axis_classified_smoothed)) {
-        r_val_local$shapes_background = create_classes_background(r_val$dgo_axis_classified)
+        r_val_local$shapes_background = create_classes_background(r_val$axis_data_classified)
         r_val_local$dgo_axis_classified_smoothed = NULL
       }
     })
