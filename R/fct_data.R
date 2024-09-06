@@ -146,6 +146,10 @@ data_get_hydro_sites <- function(con){
 #'
 #' @param con Connection to Postgresql database.
 #'
+#' @import dplyr
+#' @importFrom DBI dbGetQuery
+#' @importFrom purrr pmap
+#'
 #' @return Dataframe which contains the statistics for all metrics for different entities: France, Basins, Regions
 data_get_stats_metrics <- function(con) {
 
@@ -248,8 +252,19 @@ data_get_stats_metrics <- function(con) {
     "GROUP BY network_metrics.gid_region, network_metrics.strahler"
   )
 
+  suffixes <- c("_min", "_0025", "_025", "_05", "_075", "_0975", "_max")
+
   data <- DBI::dbGetQuery(conn = con, statement = query) %>%
-    na.omit()
+    na.omit() %>%
+    mutate(across(ends_with("_avg"),
+                  .fns = list(distr = function(x) {
+                    suffix_base <- sub("_avg$", "", cur_column())
+                    suffix_cols <- paste0(suffix_base, suffixes)
+                    pmap(select(cur_data(), all_of(suffix_cols)), ~ as.numeric(round(c(...), 2)))  # Strip names and return as numeric
+                  }),
+                  .names = "{.col}_distr")) %>%
+    rename_with(~ sub("_avg_distr$", "_distr", .), ends_with("_avg_distr")) %>%
+    mutate(across(ends_with("_avg"), ~ round(., 2)))
 
   return(data)
 }

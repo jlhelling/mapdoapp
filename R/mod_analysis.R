@@ -181,23 +181,32 @@ mod_analysis_server <- function(id, con, r_val, globals){
       if (exists("metric_stats", where = globals)) {
 
         # prepare stats for reactable
-        r_val_local$region_stats_prep = prepare_stats_df(globals$metric_stats(), type = c("Région (total)", "Région"), region_names = globals$regions)
+        r_val_local$region_stats_prep = prepare_regions_stats_for_table(globals$metric_stats(), region_names = globals$regions)
         r_val_local$regions_table = create_table(r_val_local$region_stats_prep, params_metrics()$metric_name[1:5], 0)
-
-        if (exists("classes_stats", where = globals)) {
-          if (!is.null(globals$classes_stats())) {
-            # regions plot
-            r_val_local$regions_plot = analysis_plot_classes_distr(
-              df = prepare_regions_data_for_plot(globals$classes_stats(),
-                                                 region_id = globals$regions[globals$regions$click == TRUE,]$gid,
-                                                 region_names = globals$regions)
-            )
-
-          }
-        }
       }
     })
 
+    # plot initialisation
+    observeEvent(globals$classes_stats(), {
+        if (!is.null(globals$classes_stats())) {
+
+          # check if strahler order is selected or whole region should be shown
+          if (is.null(input$regions_strahler_select)) {
+            strahler_sel <- 0
+          } else {
+            strahler_sel <- input$regions_strahler_select
+          }
+
+          dfset <- prepare_regions_data_for_plot(globals$classes_stats(),
+                                                 region_id = globals$regions[globals$regions$click == TRUE,]$gid,
+                                                 region_strahler = strahler_sel,
+                                                 region_names = globals$regions)
+          # regions plot
+          r_val_local$regions_plot = analysis_plot_classes_distr(
+            df = dfset
+          )
+      }
+    })
 
     # listen to actualisation button --> create reactable with selected metric and strahler order
     observeEvent(input$regions_apply_button, {

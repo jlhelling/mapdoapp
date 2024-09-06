@@ -7,22 +7,43 @@
 #' @importFrom purrr map
 #'
 #' @return metrics-statistics dataframe with *_distr-columns
-prepare_stats_df <- function(data, type = c("Région (total)", "Région"), region_names) {
+# prepare_metric_stats_for_table <- function(data, type = c("Région (total)", "Région")) {
+#   r_names <- setNames(region_names$lbregionhy, region_names$gid)
+#
+#   suffixes <- c("_min", "_0025", "_025", "_05", "_075", "_0975", "_max")
+#
+#   df <- data %>%
+#     filter(level_type %in% type) %>%
+#     rowwise() %>%
+#     mutate(across(ends_with("_avg"),
+#                   ~ list(map(suffixes, ~ round(get(paste0(sub("_avg$", "", cur_column()), .))), 2)),
+#                   .names = "{.col}_distr")) %>%
+#     rename_with(~ sub("_avg_distr$", "_distr", .), ends_with("_avg_distr")) %>%
+#     ungroup() %>%
+#     mutate(name = r_names[level_name],
+#            across(ends_with("_avg"), ~ round(., 2))) %>%
+#     select(-ends_with(suffixes))
+# }
 
+#' Prepare metrics-statistics dataframe for reactable table
+#'
+#' @param data metrics-statistics dataframe
+#' @param type type of level_type to be included in the dataframe, default is c("Région (total)", "Région")
+#'
+#' @import dplyr
+#' @importFrom purrr map
+#'
+#' @return metrics-statistics dataframe with *_distr-columns
+prepare_regions_stats_for_table <- function(data, region_names = NULL) {
   r_names <- setNames(region_names$lbregionhy, region_names$gid)
-
   suffixes <- c("_min", "_0025", "_025", "_05", "_075", "_0975", "_max")
 
   df <- data %>%
-    filter(level_type %in% type) %>%
-    rowwise() %>%
-    mutate(across(ends_with("_avg"),
-                  ~ list(map(suffixes, ~ round(get(paste0(sub("_avg$", "", cur_column()), .))), 2)),
-                  .names = "{.col}_distr")) %>%
-    rename_with(~ sub("_avg_distr$", "_distr", .), ends_with("_avg_distr")) %>%
-    ungroup() %>%
-    mutate(name = r_names[level_name],
-           across(ends_with("_avg"), ~ round(., 2)))
+    select(-ends_with(suffixes)) %>%
+    filter(level_type %in% c("Région (total)", "Région")) %>%
+    mutate(name = r_names[level_name])
+
+  return(df)
 }
 
 
@@ -53,8 +74,8 @@ create_table <- function(df, vars, strahler_sel = 0) {
 
   # Initialize the list of column definitions
   columns_list <- list(
-    name = colDef(name = "Région", width = 140),
-    strahler = colDef(name = "Ordre Strahler", width = 85)
+    name = colDef(name = "Région", width = 140, style = list(fontWeight = "bold")),
+    strahler = colDef(name = "Ordre Strahler", width = 85, style = list(fontWeight = "bold"))
   )
 
   # deactivate showing of column when only whole region-aggregated values are selected (strahler==0)
