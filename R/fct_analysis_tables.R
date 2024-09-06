@@ -41,12 +41,10 @@ prepare_regions_stats_for_table <- function(data, region_names = NULL) {
   df <- data %>%
     select(-ends_with(suffixes)) %>%
     filter(level_type %in% c("Région (total)", "Région")) %>%
-    mutate(name = r_names[level_name],
-           strahler = if_else(strahler == 0, "tous", strahler)) %>%
+    mutate(name = r_names[level_name])
 
   return(df)
 }
-
 
 
 #' Create reactable table for metrics-statistics
@@ -64,19 +62,22 @@ prepare_regions_stats_for_table <- function(data, region_names = NULL) {
 #' create_table(df, vars = c("crops_pc", "dense_urban_pc", "dense_urban"))
 create_table <- function(df, vars, strahler_sel = 0) {
 
+  browser()
+
   # extract column names from metric variables
   col_names <- c(paste0(vars, "_avg"), paste0(vars, "_distr")) %>%
     sort()
 
-  # filter the columns
+  # filter the columns and rename metrics
   df <- df %>%
     select(name, strahler, col_names) %>%
-    filter(strahler %in% strahler_sel)
+    filter(strahler %in% strahler_sel) %>%
+    mutate(strahler = if_else(strahler == 0, "tous", as.character(strahler)))
 
   # Initialize the list of column definitions
   columns_list <- list(
-    name = colDef(name = "Région", width = 140, style = list(fontWeight = "bold")),
-    strahler = colDef(name = "Ordre Strahler", width = 85, style = list(fontWeight = "bold"))
+    name = colDef(name = "Région", width = 140, style = list(fontWeight = "bold"), sticky = "left"),
+    strahler = colDef(name = "Ordre Strahler", width = 85, style = list(fontWeight = "bold"), sticky = "left")
   )
 
   # deactivate showing of column when only whole region-aggregated values are selected (strahler==0)
@@ -87,6 +88,8 @@ create_table <- function(df, vars, strahler_sel = 0) {
   }
 
 
+  metric_names <- setNames(params_metrics()$metric_title, params_metrics()$metric_name)
+
   # Add column definitions dynamically based on the selected metrics (vars)
   for (var in vars) {
 
@@ -95,7 +98,7 @@ create_table <- function(df, vars, strahler_sel = 0) {
     distr_col_name <- paste0(var, "_distr")
 
     columns_list[[avg_col_name]] <- colDef(
-      name = gsub("_", " ", var),  # Replace _ with space for column names
+      name = metric_names[[var]],  # replace column names
       minWidth = 100
     )
 
