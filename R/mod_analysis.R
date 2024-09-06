@@ -74,8 +74,8 @@ mod_analysis_ui <- function(id){
                    selectInput(
                      inputId = ns("regions_strahler_select"),
                      label = "Ordre de Strahler",
-                     choices = c(6,5,4,3,2,1),
-                     selected = NULL,
+                     choices = setNames(c(6,5,4,3,2,1,0), c("6","5","4","3","2","1","France entière")),
+                     selected = 0,
                      multiple = TRUE
                    ),
                    multiInput(
@@ -206,7 +206,7 @@ mod_analysis_server <- function(id, con, r_val, globals){
       if (!is.null(r_val_local$region_stats_prep) && !is.null(input$regions_metric_select)){
 
         # check if strahler order is selected or whole region should be shown
-        if (is.null(input$regions_strahler_select)){
+        if (is.null(input$regions_strahler_select)) {
           strahler_sel <- 0
         } else {
           strahler_sel <- input$regions_strahler_select

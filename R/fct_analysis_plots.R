@@ -140,10 +140,15 @@ prepare_selact_data_for_plot <- function(data,
 prepare_regions_data_for_plot <- function(data,
                                           region_id = NULL, region_strahler = 0, region_names = NULL) {
 
-  filter <- c(paste0("Région (total)_", region_id, "_0"))
+  # create filter to select scales ------------------------------------------
+  if (0 %in% region_strahler) {
+    filter <- c(paste0("Région (total)_", "region_id", "_0"))
+  } else {
+    filter <- c()
+  }
   for (i in region_strahler[region_strahler > 0]) {
     filter <- c(filter,
-                paste0("Région_", region_id, "_", i))
+                paste0("Région_", "region_id", "_", i))
   }
 
   # prepare data ------------------------------------------------------------
