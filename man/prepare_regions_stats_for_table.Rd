@@ -2,21 +2,15 @@
 % Please edit documentation in R/fct_analysis_tables.R
 \name{prepare_regions_stats_for_table}
 \alias{prepare_regions_stats_for_table}
-\title{Prepare metrics-statistics dataframe for reactable table}
+\title{Prepare metrics-statistics dataframe for reactable table for regions}
 \usage{
 prepare_regions_stats_for_table(data, region_names = NULL)
 }
 \arguments{
 \item{data}{metrics-statistics dataframe}
 
-\item{type}{type of level_type to be included in the dataframe, default is c("Région (total)", "Région")}
-}
-\value{
-metrics-statistics dataframe with *_distr-columns
-Prepare metrics-statistics dataframe for reactable table
-
-metrics-statistics dataframe with *_distr-columns
+\item{region_names}{df with ids and names of regions}
 }
 \description{
-Prepare metrics-statistics dataframe for reactable table
+Prepare metrics-statistics dataframe for reactable table for regions
 }

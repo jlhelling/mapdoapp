@@ -8,9 +8,8 @@ prepare_selact_data_for_plot(
   data,
   france_strahler = c(6:0),
   basin_id = NULL,
-  basin_strahler = 0,
   region_id = NULL,
-  region_strahler = 0,
+  strahler = 0,
   region_names = NULL,
   axis_data = NULL
 )
@@ -22,11 +21,9 @@ prepare_selact_data_for_plot(
 
 \item{basin_id}{Integer specifying the basin ID. Default is NULL.}
 
-\item{basin_strahler}{Integer for Strahler order of the basin. Default is 0.}
-
 \item{region_id}{Integer specifying the region ID. Default is NULL.}
 
-\item{region_strahler}{Integer for Strahler order of the region. Default is 0.}
+\item{strahler}{Integer for Strahler order. Default is 0.}
 
 \item{region_names}{Dataframe containing region names and corresponding IDs.}
 

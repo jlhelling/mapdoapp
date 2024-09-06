@@ -7,9 +7,8 @@
 #' @param data A dataframe containing classified network data with regional and axis information.
 #' @param france_strahler Numeric vector representing Strahler orders for France. Default is c(6:0).
 #' @param basin_id Integer specifying the basin ID. Default is NULL.
-#' @param basin_strahler Integer for Strahler order of the basin. Default is 0.
 #' @param region_id Integer specifying the region ID. Default is NULL.
-#' @param region_strahler Integer for Strahler order of the region. Default is 0.
+#' @param strahler Integer for Strahler order. Default is 0.
 #' @param region_names Dataframe containing region names and corresponding IDs.
 #' @param axis_data Dataframe containing axis data (optional). Default is NULL.
 #'
@@ -24,8 +23,8 @@
 #' @export
 prepare_selact_data_for_plot <- function(data,
                                          france_strahler = c(6:0),
-                                         basin_id = NULL, basin_strahler = 0,
-                                         region_id = NULL, region_strahler = 0, region_names = NULL,
+                                         basin_id = NULL,
+                                         region_id = NULL, strahler = 0, region_names = NULL,
                                          axis_data = NULL) {
 
   # create filter to select scales ------------------------------------------
@@ -47,10 +46,10 @@ prepare_selact_data_for_plot <- function(data,
   else if (!is.null(basin_id) & !is.null(region_id) & !is.null(axis_data)) {
 
     filter <- c("France (total)_France_0",
-                paste0("Basin (total)_", basin_id, "_", basin_strahler),
-                paste0("Basin_", basin_id, "_", basin_strahler),
-                paste0("Région (total)_", region_id, "_", region_strahler),
-                paste0("Région_", region_id, "_", region_strahler),
+                paste0("Basin (total)_", basin_id, "_", strahler),
+                paste0("Basin_", basin_id, "_", strahler),
+                paste0("Région (total)_", region_id, "_", strahler),
+                paste0("Région_", region_id, "_", strahler),
                 "Axe")
 
     # create axis stats

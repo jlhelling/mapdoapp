@@ -4,36 +4,109 @@
 #' @param type type of level_type to be included in the dataframe, default is c("Région (total)", "Région")
 #'
 #' @import dplyr
-#' @importFrom purrr map
-#'
-#' @return metrics-statistics dataframe with *_distr-columns
-# prepare_metric_stats_for_table <- function(data, type = c("Région (total)", "Région")) {
-#   r_names <- setNames(region_names$lbregionhy, region_names$gid)
-#
-#   suffixes <- c("_min", "_0025", "_025", "_05", "_075", "_0975", "_max")
-#
-#   df <- data %>%
-#     filter(level_type %in% type) %>%
-#     rowwise() %>%
-#     mutate(across(ends_with("_avg"),
-#                   ~ list(map(suffixes, ~ round(get(paste0(sub("_avg$", "", cur_column()), .))), 2)),
-#                   .names = "{.col}_distr")) %>%
-#     rename_with(~ sub("_avg_distr$", "_distr", .), ends_with("_avg_distr")) %>%
-#     ungroup() %>%
-#     mutate(name = r_names[level_name],
-#            across(ends_with("_avg"), ~ round(., 2))) %>%
-#     select(-ends_with(suffixes))
-# }
+prepare_selact_stats_for_table <- function(data,
+                                           basin_id = NULL, region_id = NULL,
+                                           axis_data = NULL) {
 
-#' Prepare metrics-statistics dataframe for reactable table
+  # create filter to select scales ------------------------------------------
+
+  # France-Basin scale stats
+  if (!is.null(basin_id)) {
+    filter <- c("France (total)_France", paste0("Basin (total)_", basin_id))
+  }
+
+  # France-Basin-Region scale stats
+  if (!is.null(region_id)) {
+    filter <- c(filter, paste0("Région (total)_", region_id))
+  }
+
+  # France-Basin-Region-Axis scale stats
+  if (!is.null(axis_data)) {
+
+    filter <- c(filter, "France_France",
+                paste0("Basin_", basin_id),
+                paste0("Région_", region_id),
+                "Axe")
+
+
+    # Select the numeric variables to compute stats
+    numeric_vars <- axis_data %>%
+      select(where(is.numeric), -c(fid:strahler,gid_region, sum_area)) %>%
+      sf::st_drop_geometry() %>%
+      na.omit()
+
+
+
+    # Function to compute the quantiles for each variable
+    compute_quantiles <- function(x) {
+      quantiles <- quantile(x, probs = c(0, 0.025, 0.25, 0.5, 0.75, 0.975, 1), na.rm = TRUE)
+      as.list(round(as.numeric(quantiles), 2))  # Return only the values, rounded to 2 decimals
+    }
+
+    # Compute the average and quantiles for each numeric variable
+    axis_stats <- numeric_vars %>%
+      summarise(across(everything(),
+                       list(
+                         avg = ~ mean(.x, na.rm = TRUE),
+                         distr = ~ list(compute_quantiles(.x))
+                       ),
+                       .names = "{.col}_{.fn}")) %>%
+      mutate(scale = "Axe",
+             strahler = max(axis_data$strahler))  # Add the scale and strahler column
+  }
+
+  # default and only France-scale stats
+  if (is.null(basin_id) & is.null(region_id) & is.null(axis_data)) {
+    filter <- c("France (total)_France", "France_France")
+  }
+
+
+  # Prepare dataset ---------------------------------------------------------
+
+  suffixes <- c("_min", "_0025", "_025", "_05", "_075", "_0975", "_max")
+
+
+
+  df <- data %>%
+    select(-ends_with(suffixes)) %>%
+    tidyr::unite(scale, c("level_type", "level_name")) %>%
+    filter(scale %in% filter) %>%
+    arrange(match(scale, filter))
+
+  # add axis data if available
+  if (!is.null(axis_data)) {
+    df <- bind_rows(df, axis_stats )
+  }
+
+  # Rename scale levels -----------------------------------------------------
+
+  # change names according to scale
+  df <- df %>%
+    mutate(name = case_when(
+      # Handle the "France" cases
+      grepl("France \\(total\\)_France_0", scale) ~ "France",
+      grepl("France_France_\\d+", scale) ~ paste0("France, Ordre ", sub(".*_.*_(\\d+)", "\\1", scale)),
+
+      # Handle the "Basin" cases
+      grepl("Basin \\(total\\)_\\d+_0", scale) ~ "Bassin",
+      grepl("Basin_\\d+_\\d+", scale) ~ paste0("Bassin, Ordre ", sub(".*_(\\d+)$", "\\1", scale)),
+
+      # Handle the "Région" cases
+      grepl("Région \\(total\\)_\\d+_0", scale) ~ "Région",
+      grepl("Région_\\d+_\\d+", scale) ~ paste0("Région, Ordre ", sub(".*_(\\d+)$", "\\1", scale)),
+
+      # Default case to keep any other values unchanged
+      .default = scale
+    )) %>%
+    select(-scale)
+}
+
+#' Prepare metrics-statistics dataframe for reactable table for regions
 #'
 #' @param data metrics-statistics dataframe
-#' @param type type of level_type to be included in the dataframe, default is c("Région (total)", "Région")
+#' @param region_names df with ids and names of regions
 #'
 #' @import dplyr
-#' @importFrom purrr map
-#'
-#' @return metrics-statistics dataframe with *_distr-columns
 prepare_regions_stats_for_table <- function(data, region_names = NULL) {
   r_names <- setNames(region_names$lbregionhy, region_names$gid)
   suffixes <- c("_min", "_0025", "_025", "_05", "_075", "_0975", "_max")
@@ -60,9 +133,7 @@ prepare_regions_stats_for_table <- function(data, region_names = NULL) {
 #'
 #' @examples
 #' create_table(df, vars = c("crops_pc", "dense_urban_pc", "dense_urban"))
-create_table <- function(df, vars, strahler_sel = 0) {
-
-  browser()
+create_analysis_table <- function(df, vars, strahler_sel = 0, scale_name = "") {
 
   # extract column names from metric variables
   col_names <- c(paste0(vars, "_avg"), paste0(vars, "_distr")) %>%
@@ -76,7 +147,7 @@ create_table <- function(df, vars, strahler_sel = 0) {
 
   # Initialize the list of column definitions
   columns_list <- list(
-    name = colDef(name = "Région", width = 140, style = list(fontWeight = "bold"), sticky = "left"),
+    name = colDef(name = scale_name, width = 140, style = list(fontWeight = "bold"), sticky = "left"),
     strahler = colDef(name = "Ordre Strahler", width = 85, style = list(fontWeight = "bold"), sticky = "left")
   )
 

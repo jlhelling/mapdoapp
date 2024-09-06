@@ -108,6 +108,7 @@ mod_analysis_server <- function(id, con, r_val, globals){
 
     r_val_local <- reactiveValues(
       # actual selection
+      selact_stats_prep = NULL,
       selact_table = NULL,
       selact_plot = NULL,
 
@@ -156,22 +157,56 @@ mod_analysis_server <- function(id, con, r_val, globals){
     observeEvent(c(globals$classes_stats(), r_val$basin_id, r_val$axis_strahler,
                    r_val$region_id, r_val$axis_data_classified, input$sel_strahler_switch), {
 
-                     if (exists("classes_stats", where = globals) && !is.null(input$sel_strahler_switch)) {
-                       if (!is.null(globals$classes_stats())) {
+                     if (exists("classes_stats", where = globals) && !is.null(input$sel_strahler_switch) && exists("metric_stats", where = globals)) {
+                       if (!is.null(globals$classes_stats()) && !is.null(globals$metric_stats())) {
                          strahler <- case_when(input$sel_strahler_switch ~ c(0, r_val$axis_strahler),
                                                .default = 0)
+                         r_val_local$selact_stats_prep = prepare_selact_stats_for_table(globals$metric_stats(),
+                                                                                       basin_id = r_val$basin_id,
+                                                                                       region_id = r_val$region_id,
+                                                                                       axis_data = r_val$axis_data_classified)
+                         r_val_local$selact_table = create_analysis_table(
+                           r_val_local$selact_stats_prep,
+                           params_metrics()$metric_name[1:5], strahler, scale_name = "Sélection"
+                         )
+
                          # current selection
                          r_val_local$selact_plot = analysis_plot_classes_distr(
                            df = prepare_selact_data_for_plot(globals$classes_stats(),
                                                              basin_id = r_val$basin_id,
-                                                             basin_strahler = strahler,
                                                              region_id = r_val$region_id,
-                                                             region_strahler = strahler,
+                                                             strahler = strahler,
                                                              axis_data = r_val$axis_data_classified)
                          )
                        }
                      }
                    })
+
+
+    # listen to actualization button --> create reactable with selected metric and strahler order
+    observeEvent(input$selact_apply_button, {
+
+      # check if stats are already loaded and if metric is selected
+      if (!is.null(r_val_local$selact_stats_prep) && !is.null(input$selact_metric_select)){
+
+
+        strahler <- case_when(input$sel_strahler_switch ~ c(0, r_val$axis_strahler),
+                              .default = 0)
+
+        # update reactable table and plot
+        r_val_local$selact_table = create_analysis_table(r_val_local$selact_stats_prep,
+                                                         input$selact_metric_select, strahler, scale_name = "Sélection")
+        # current selection
+        r_val_local$selact_plot = analysis_plot_classes_distr(
+          df = prepare_selact_data_for_plot(globals$classes_stats(),
+                                            basin_id = r_val$basin_id,
+                                            region_id = r_val$region_id,
+                                            strahler = strahler,
+                                            axis_data = r_val$axis_data_classified)
+        )
+      }
+
+    })
 
 
 
@@ -182,7 +217,7 @@ mod_analysis_server <- function(id, con, r_val, globals){
 
         # prepare stats for reactable
         r_val_local$region_stats_prep = prepare_regions_stats_for_table(globals$metric_stats(), region_names = globals$regions)
-        r_val_local$regions_table = create_table(r_val_local$region_stats_prep, params_metrics()$metric_name[1:5], 0)
+        r_val_local$regions_table = create_analysis_table(r_val_local$region_stats_prep, params_metrics()$metric_name[1:5], 0, scale_name = "Région")
       }
     })
 
@@ -222,7 +257,7 @@ mod_analysis_server <- function(id, con, r_val, globals){
         }
 
         # update reactable table and plot
-        r_val_local$regions_table = create_table(r_val_local$region_stats_prep, input$regions_metric_select, strahler_sel)
+        r_val_local$regions_table = create_analysis_table(r_val_local$region_stats_prep, input$regions_metric_select, strahler_sel, scale_name = "Région")
         r_val_local$regions_plot = analysis_plot_classes_distr(
           df = prepare_regions_data_for_plot(globals$classes_stats(),
                                              region_id = globals$regions[globals$regions$click == TRUE,]$gid,
