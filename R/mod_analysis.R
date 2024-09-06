@@ -74,7 +74,7 @@ mod_analysis_ui <- function(id){
                    selectInput(
                      inputId = ns("regions_strahler_select"),
                      label = "Ordre de Strahler",
-                     choices = setNames(c(6,5,4,3,2,1,0), c("6","5","4","3","2","1","France entière")),
+                     choices = setNames(c(6,5,4,3,2,1,0), c("6","5","4","3","2","1","tous ensemble")),
                      selected = 0,
                      multiple = TRUE
                    ),

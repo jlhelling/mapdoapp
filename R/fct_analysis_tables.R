@@ -41,7 +41,8 @@ prepare_regions_stats_for_table <- function(data, region_names = NULL) {
   df <- data %>%
     select(-ends_with(suffixes)) %>%
     filter(level_type %in% c("Région (total)", "Région")) %>%
-    mutate(name = r_names[level_name])
+    mutate(name = r_names[level_name],
+           strahler = if_else(strahler == 0, "tous", strahler)) %>%
 
   return(df)
 }
