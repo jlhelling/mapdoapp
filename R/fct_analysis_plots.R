@@ -32,14 +32,17 @@ prepare_selact_data_for_plot <- function(data,
   # France-Basin scale stats
   if (!is.null(basin_id) & is.null(region_id) & is.null(axis_data)) {
     filter <- c("France (total)_France_0",
-                paste0("Basin (total)_", basin_id, "_0"))
+                paste0("Basin (total)_", basin_id, "_", strahler),
+                paste0("Basin_", basin_id, "_", strahler))
   }
 
   # France-Basin-Region scale stats
   else if (!is.null(basin_id) & !is.null(region_id) & is.null(axis_data)) {
     filter <- c("France (total)_France_0",
-                paste0("Basin (total)_", basin_id, "_0"),
-                paste0("Région (total)_", region_id, "_0"))
+                paste0("Basin (total)_", basin_id, "_", strahler),
+                paste0("Basin_", basin_id, "_", strahler),
+                paste0("Région (total)_", region_id, "_", strahler),
+                paste0("Région_", region_id, "_", strahler))
   }
 
   # France-Basin-Region-Axis scale stats
@@ -237,7 +240,7 @@ analysis_plot_classes_distr <- function(df){
       xaxis = list(title = "", showgrid = F, categoryorder = "array", categoryarray = df$scale),
       yaxis = list(title = "Pourcentage", showgrid = T, showticklabels = T),
       showlegend = TRUE,
-      margin = list(b = 70)
+      margin = list(b = 70, autoexpand = FALSE)
     )
 
   return(plot)

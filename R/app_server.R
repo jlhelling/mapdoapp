@@ -111,7 +111,6 @@ app_server <- function(input, output, session) {
   # navbarPage identifier
   observeEvent(input$navbarPage, {
     r_val$tab_page = input$navbarPage
-    print(r_val$tab_page)
   })
 
   ### Server activation ####

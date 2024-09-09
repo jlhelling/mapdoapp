@@ -157,40 +157,43 @@ mod_analysis_server <- function(id, con, r_val, globals){
     ##### Current Selection ####
 
     observeEvent(c(globals$classes_stats(), r_val$basin_id, r_val$axis_strahler,
-                   r_val$region_id, r_val$axis_data_classified), {
+                   r_val$region_id, r_val$axis_data_classified, r_val$tab_page), {
 
-                     if (exists("classes_stats", where = globals) && exists("metric_stats", where = globals)) {
-                       if (!is.null(globals$classes_stats()) && !is.null(globals$metric_stats())) {
+                     if (r_val$tab_page == "Analyse") {
 
-                         # check if strahler order is selected or whole dataset should be shown
-                         if (!is.null(input$selact_strahler_select)  && !is.null(r_val$basin_id)) {
-                           strahler_sel <- input$selact_strahler_select }
-                         else if (!is.null(input$selact_strahler_select) && is.null(r_val$basin_id)) {
-                           strahler_sel <- c("6", "5", "4", "3", "2", "1", "0") }
-                         else { strahler_sel <- "0" }
+                       if (exists("classes_stats", where = globals) && exists("metric_stats", where = globals)) {
+                         if (!is.null(globals$classes_stats()) && !is.null(globals$metric_stats())) {
 
-                         # get dataset of actual selection
-                         r_val_local$selact_stats_prep = prepare_selact_stats_for_table(globals$metric_stats(),
-                                                                                        basin_id = r_val$basin_id,
-                                                                                        region_id = r_val$region_id,
-                                                                                        axis_data = r_val$axis_data_classified)
+                           # check if strahler order is selected or whole dataset should be shown
+                           if (!is.null(input$selact_strahler_select)  && !is.null(r_val$basin_id)) {
+                             strahler_sel <- input$selact_strahler_select }
+                           else if (!is.null(input$selact_strahler_select) && is.null(r_val$basin_id)) {
+                             strahler_sel <- c("6", "5", "4", "3", "2", "1", "0") }
+                           else { strahler_sel <- "0" }
 
-                         # create table
-                         r_val_local$selact_table = create_analysis_table(
-                           r_val_local$selact_stats_prep  %>%
-                             filter(strahler %in% strahler_sel),
-                           params_metrics()$metric_name[1:5],
-                           scale_name = "Sélection"
-                         )
+                           # get dataset of actual selection
+                           r_val_local$selact_stats_prep = prepare_selact_stats_for_table(globals$metric_stats(),
+                                                                                          basin_id = r_val$basin_id,
+                                                                                          region_id = r_val$region_id,
+                                                                                          axis_data = r_val$axis_data_classified)
 
-                         # current selection
-                         r_val_local$selact_plot = analysis_plot_classes_distr(
-                           df = prepare_selact_data_for_plot(globals$classes_stats(),
-                                                             basin_id = r_val$basin_id,
-                                                             region_id = r_val$region_id,
-                                                             strahler = strahler_sel,
-                                                             axis_data = r_val$axis_data_classified)
-                         )
+                           # create table
+                           r_val_local$selact_table = create_analysis_table(
+                             r_val_local$selact_stats_prep  %>%
+                               filter(strahler %in% strahler_sel),
+                             params_metrics()$metric_name[1:5],
+                             scale_name = "Sélection"
+                           )
+
+                           # current selection
+                           r_val_local$selact_plot = analysis_plot_classes_distr(
+                             df = prepare_selact_data_for_plot(globals$classes_stats(),
+                                                               basin_id = r_val$basin_id,
+                                                               region_id = r_val$region_id,
+                                                               strahler = strahler_sel,
+                                                               axis_data = r_val$axis_data_classified)
+                           )
+                         }
                        }
                      }
                    })
@@ -228,10 +231,7 @@ mod_analysis_server <- function(id, con, r_val, globals){
     ##### Regions tab ####
     # listen to opening of tab --> load stats if not already loaded, prepare them for reactable
     observe({
-      if (exists("metric_stats", where = globals)) {
-
-
-
+      if (r_val$tab_page == "Analyse" && exists("metric_stats", where = globals)) {
         # prepare stats for reactable
         r_val_local$region_stats_prep = prepare_regions_stats_for_table(globals$metric_stats(),
                                                                         region_names = globals$regions)
@@ -243,8 +243,8 @@ mod_analysis_server <- function(id, con, r_val, globals){
     })
 
     # plot initialisation
-    observeEvent(globals$classes_stats(), {
-      if (!is.null(globals$classes_stats())) {
+    observeEvent(c(globals$classes_stats(), r_val$tab_page), {
+      if (r_val$tab_page == "Analyse" && !is.null(globals$classes_stats())) {
 
         # check if strahler order is selected or whole region should be shown
         if (is.null(input$regions_strahler_select) ) { strahler_sel <- 0 }
@@ -288,9 +288,3 @@ mod_analysis_server <- function(id, con, r_val, globals){
 
   })
 }
-
-## To be copied in the UI
-# mod_analysis_ui("analysis_1")
-
-## To be copied in the server
-# mod_analysis_server("analysis_1")
