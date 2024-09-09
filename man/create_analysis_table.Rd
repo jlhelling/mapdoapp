@@ -4,7 +4,7 @@
 \alias{create_analysis_table}
 \title{Create reactable table for metrics-statistics}
 \usage{
-create_analysis_table(df, vars, strahler_sel = 0, scale_name = "")
+create_analysis_table(df, vars, scale_name = "")
 }
 \arguments{
 \item{df}{metric-statistics dataframe with *_distr-columns}

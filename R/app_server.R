@@ -22,6 +22,7 @@ app_server <- function(input, output, session) {
     selection_text = "", # description text indicating basin, region, axis
     visualization = "classes", # stating which visualization is currently active
     classes_proposed_selected = NULL,
+    tab_page = NULL, # selected tab in main navbarpage
     tab_classes = NULL, # selected tab in classes tabset
     tab_plots = NULL, # selected tab in plots tabset
 
@@ -87,7 +88,7 @@ app_server <- function(input, output, session) {
   globals$axis_data <- reactive({
     data_get_axis_dgos(selected_axis_id = r_val$axis_id, con)
   }) %>%
-    bindCache(r_val$axis_id)
+    bindCache(c(r_val$axis_id, globals$regions_gids_key))
 
   #### Metric stats caching ####
   globals$metric_stats <- reactive({
@@ -106,6 +107,12 @@ app_server <- function(input, output, session) {
   }) %>%
     bindCache(globals$regions_gids_key, r_val$classes_proposed_selected)
 
+
+  # navbarPage identifier
+  observeEvent(input$navbarPage, {
+    r_val$tab_page = input$navbarPage
+    print(r_val$tab_page)
+  })
 
   ### Server activation ####
   # main servers

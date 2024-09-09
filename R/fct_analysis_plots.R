@@ -236,7 +236,8 @@ analysis_plot_classes_distr <- function(df){
       title = "Proportions des classes",
       xaxis = list(title = "", showgrid = F, categoryorder = "array", categoryarray = df$scale),
       yaxis = list(title = "Pourcentage", showgrid = T, showticklabels = T),
-      showlegend = TRUE
+      showlegend = TRUE,
+      margin = list(b = 70)
     )
 
   return(plot)

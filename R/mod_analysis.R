@@ -37,25 +37,27 @@ mod_analysis_ui <- function(id){
                  textOutput(ns("selection_textUI")),
                  column(
                    width = 9,
+                   hr(), # horizontal line
                    uiOutput(ns("selact_tableUI")), # overview table
-                   hr(),
+                   hr(), # horizontal line
                    fluidRow(style = "margin-top: 20px;"),
                    plotlyOutput(ns("selact_plotUI")), # distribution plot
                  ),
                  column(
                    width = 3,
                    multiInput(
-                     inputId = ns("sel_metric_select"),
+                     inputId = ns("selact_metric_select"),
                      label = "Métriques",
-                     choices = params_metrics()$metric_title,
-                     selected = params_metrics()$metric_title[1:5]
+                     choiceNames = params_metrics()$metric_title,
+                     choiceValues = params_metrics()$metric_name,
+                     selected = params_metrics()$metric_name[1:5]
                    ),
-                   materialSwitch(
-                     inputId = ns("sel_strahler_switch"),
-                     label = "Statistiques de l'ordre de Strahler selon l'axe",
-                     value = FALSE,
-                     status = "primary",
-                     inline = TRUE
+                   selectInput(
+                     inputId = ns("selact_strahler_select"),
+                     label = "Ordre de Strahler",
+                     choices = setNames(c(6,5,4,3,2,1,0), c("6","5","4","3","2","1","tous ensemble")),
+                     selected = 0,
+                     multiple = TRUE
                    ),
                    actionButton(inputId = ns("selact_apply_button"), "Actualiser")
                  ))),
@@ -64,6 +66,7 @@ mod_analysis_ui <- function(id){
                  style = "margin-top: 10px; margin-bottom: 10px; margin-left: 10px;",
                  column(
                    width = 9,
+                   hr(), # horizontal line
                    reactableOutput(ns("regions_table"), width = "100%"),
                    hr(),
                    fluidRow(style = "margin-top: 20px;"),
@@ -71,19 +74,19 @@ mod_analysis_ui <- function(id){
                  ),
                  column(
                    width = 3,
-                   selectInput(
-                     inputId = ns("regions_strahler_select"),
-                     label = "Ordre de Strahler",
-                     choices = setNames(c(6,5,4,3,2,1,0), c("6","5","4","3","2","1","tous ensemble")),
-                     selected = 0,
-                     multiple = TRUE
-                   ),
                    multiInput(
                      inputId = ns("regions_metric_select"),
                      label = "Métriques",
                      choiceNames = params_metrics()$metric_title,
                      choiceValues = params_metrics()$metric_name,
                      selected = params_metrics()$metric_name[1:5]
+                   ),
+                   selectInput(
+                     inputId = ns("regions_strahler_select"),
+                     label = "Ordre de Strahler",
+                     choices = setNames(c(6,5,4,3,2,1,0), c("6","5","4","3","2","1","tous ensemble")),
+                     selected = 0,
+                     multiple = TRUE
                    ),
                    actionButton(inputId = ns("regions_apply_button"), "Actualiser")
                  )
@@ -104,7 +107,6 @@ mod_analysis_ui <- function(id){
 mod_analysis_server <- function(id, con, r_val, globals){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
-
 
     r_val_local <- reactiveValues(
       # actual selection
@@ -155,19 +157,30 @@ mod_analysis_server <- function(id, con, r_val, globals){
     ##### Current Selection ####
 
     observeEvent(c(globals$classes_stats(), r_val$basin_id, r_val$axis_strahler,
-                   r_val$region_id, r_val$axis_data_classified, input$sel_strahler_switch), {
+                   r_val$region_id, r_val$axis_data_classified), {
 
-                     if (exists("classes_stats", where = globals) && !is.null(input$sel_strahler_switch) && exists("metric_stats", where = globals)) {
+                     if (exists("classes_stats", where = globals) && exists("metric_stats", where = globals)) {
                        if (!is.null(globals$classes_stats()) && !is.null(globals$metric_stats())) {
-                         strahler <- case_when(input$sel_strahler_switch ~ c(0, r_val$axis_strahler),
-                                               .default = 0)
+
+                         # check if strahler order is selected or whole dataset should be shown
+                         if (!is.null(input$selact_strahler_select)  && !is.null(r_val$basin_id)) {
+                           strahler_sel <- input$selact_strahler_select }
+                         else if (!is.null(input$selact_strahler_select) && is.null(r_val$basin_id)) {
+                           strahler_sel <- c("6", "5", "4", "3", "2", "1", "0") }
+                         else { strahler_sel <- "0" }
+
+                         # get dataset of actual selection
                          r_val_local$selact_stats_prep = prepare_selact_stats_for_table(globals$metric_stats(),
-                                                                                       basin_id = r_val$basin_id,
-                                                                                       region_id = r_val$region_id,
-                                                                                       axis_data = r_val$axis_data_classified)
+                                                                                        basin_id = r_val$basin_id,
+                                                                                        region_id = r_val$region_id,
+                                                                                        axis_data = r_val$axis_data_classified)
+
+                         # create table
                          r_val_local$selact_table = create_analysis_table(
-                           r_val_local$selact_stats_prep,
-                           params_metrics()$metric_name[1:5], strahler, scale_name = "Sélection"
+                           r_val_local$selact_stats_prep  %>%
+                             filter(strahler %in% strahler_sel),
+                           params_metrics()$metric_name[1:5],
+                           scale_name = "Sélection"
                          )
 
                          # current selection
@@ -175,7 +188,7 @@ mod_analysis_server <- function(id, con, r_val, globals){
                            df = prepare_selact_data_for_plot(globals$classes_stats(),
                                                              basin_id = r_val$basin_id,
                                                              region_id = r_val$region_id,
-                                                             strahler = strahler,
+                                                             strahler = strahler_sel,
                                                              axis_data = r_val$axis_data_classified)
                          )
                        }
@@ -184,24 +197,26 @@ mod_analysis_server <- function(id, con, r_val, globals){
 
 
     # listen to actualization button --> create reactable with selected metric and strahler order
-    observeEvent(input$selact_apply_button, {
+    observeEvent(c(input$selact_apply_button, r_val_local$selact_stats_prep),{
 
       # check if stats are already loaded and if metric is selected
-      if (!is.null(r_val_local$selact_stats_prep) && !is.null(input$selact_metric_select)){
+      if (!is.null(r_val_local$selact_stats_prep) && !is.null(input$selact_metric_select)) {
 
+        # check if strahler order is selected or whole dataset should be shown
+        if (is.null(input$selact_strahler_select) ) { strahler_sel <- "0" }
+        else { strahler_sel <- input$selact_strahler_select}
 
-        strahler <- case_when(input$sel_strahler_switch ~ c(0, r_val$axis_strahler),
-                              .default = 0)
 
         # update reactable table and plot
-        r_val_local$selact_table = create_analysis_table(r_val_local$selact_stats_prep,
-                                                         input$selact_metric_select, strahler, scale_name = "Sélection")
+        r_val_local$selact_table = create_analysis_table(r_val_local$selact_stats_prep %>%
+                                                           filter(strahler %in% strahler_sel | name == "Axe"),
+                                                         input$selact_metric_select, scale_name = "Sélection")
         # current selection
         r_val_local$selact_plot = analysis_plot_classes_distr(
           df = prepare_selact_data_for_plot(globals$classes_stats(),
                                             basin_id = r_val$basin_id,
                                             region_id = r_val$region_id,
-                                            strahler = strahler,
+                                            strahler = strahler_sel,
                                             axis_data = r_val$axis_data_classified)
         )
       }
@@ -215,31 +230,34 @@ mod_analysis_server <- function(id, con, r_val, globals){
     observe({
       if (exists("metric_stats", where = globals)) {
 
+
+
         # prepare stats for reactable
-        r_val_local$region_stats_prep = prepare_regions_stats_for_table(globals$metric_stats(), region_names = globals$regions)
-        r_val_local$regions_table = create_analysis_table(r_val_local$region_stats_prep, params_metrics()$metric_name[1:5], 0, scale_name = "Région")
+        r_val_local$region_stats_prep = prepare_regions_stats_for_table(globals$metric_stats(),
+                                                                        region_names = globals$regions)
+        r_val_local$regions_table = create_analysis_table(r_val_local$region_stats_prep %>%
+                                                            filter(strahler == 0),
+                                                          params_metrics()$metric_name[1:5],
+                                                          scale_name = "Région")
       }
     })
 
     # plot initialisation
     observeEvent(globals$classes_stats(), {
-        if (!is.null(globals$classes_stats())) {
+      if (!is.null(globals$classes_stats())) {
 
-          # check if strahler order is selected or whole region should be shown
-          if (is.null(input$regions_strahler_select)) {
-            strahler_sel <- 0
-          } else {
-            strahler_sel <- input$regions_strahler_select
-          }
+        # check if strahler order is selected or whole region should be shown
+        if (is.null(input$regions_strahler_select) ) { strahler_sel <- 0 }
+        else { strahler_sel <- input$regions_strahler_select}
 
-          dfset <- prepare_regions_data_for_plot(globals$classes_stats(),
-                                                 region_id = globals$regions[globals$regions$click == TRUE,]$gid,
-                                                 region_strahler = strahler_sel,
-                                                 region_names = globals$regions)
-          # regions plot
-          r_val_local$regions_plot = analysis_plot_classes_distr(
-            df = dfset
-          )
+        dfset <- prepare_regions_data_for_plot(globals$classes_stats(),
+                                               region_id = globals$regions[globals$regions$click == TRUE,]$gid,
+                                               region_strahler = strahler_sel,
+                                               region_names = globals$regions)
+        # regions plot
+        r_val_local$regions_plot = analysis_plot_classes_distr(
+          df = dfset
+        )
       }
     })
 
@@ -249,15 +267,15 @@ mod_analysis_server <- function(id, con, r_val, globals){
       # check if stats are already loaded and if metric is selected
       if (!is.null(r_val_local$region_stats_prep) && !is.null(input$regions_metric_select)){
 
-        # check if strahler order is selected or whole region should be shown
-        if (is.null(input$regions_strahler_select)) {
-          strahler_sel <- 0
-        } else {
-          strahler_sel <- input$regions_strahler_select
-        }
+        # check if strahler order is selected or whole dataset should be shown
+        if (is.null(input$regions_strahler_select) ) { strahler_sel <- "0" }
+        else { strahler_sel <- input$regions_strahler_select }
 
         # update reactable table and plot
-        r_val_local$regions_table = create_analysis_table(r_val_local$region_stats_prep, input$regions_metric_select, strahler_sel, scale_name = "Région")
+        r_val_local$regions_table = create_analysis_table(r_val_local$region_stats_prep %>%
+                                                            filter(strahler %in% strahler_sel),
+                                                          input$regions_metric_select,
+                                                          scale_name = "Région")
         r_val_local$regions_plot = analysis_plot_classes_distr(
           df = prepare_regions_data_for_plot(globals$classes_stats(),
                                              region_id = globals$regions[globals$regions$click == TRUE,]$gid,

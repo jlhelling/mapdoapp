@@ -12,12 +12,16 @@ prepare_selact_stats_for_table <- function(data,
 
   # France-Basin scale stats
   if (!is.null(basin_id)) {
-    filter <- c("France (total)_France", paste0("Basin (total)_", basin_id))
+    filter <- c("France (total)_France", "France_France",
+                paste0("Basin (total)_", basin_id),
+                paste0("Basin_", basin_id))
   }
 
   # France-Basin-Region scale stats
   if (!is.null(region_id)) {
-    filter <- c(filter, paste0("Région (total)_", region_id))
+    filter <- c(filter,
+                paste0("Région (total)_", region_id),
+                paste0("Région_", region_id))
   }
 
   # France-Basin-Region-Axis scale stats
@@ -47,7 +51,7 @@ prepare_selact_stats_for_table <- function(data,
     axis_stats <- numeric_vars %>%
       summarise(across(everything(),
                        list(
-                         avg = ~ mean(.x, na.rm = TRUE),
+                         avg = ~ round(mean(.x, na.rm = TRUE), 2),
                          distr = ~ list(compute_quantiles(.x))
                        ),
                        .names = "{.col}_{.fn}")) %>%
@@ -64,8 +68,6 @@ prepare_selact_stats_for_table <- function(data,
   # Prepare dataset ---------------------------------------------------------
 
   suffixes <- c("_min", "_0025", "_025", "_05", "_075", "_0975", "_max")
-
-
 
   df <- data %>%
     select(-ends_with(suffixes)) %>%
@@ -84,16 +86,16 @@ prepare_selact_stats_for_table <- function(data,
   df <- df %>%
     mutate(name = case_when(
       # Handle the "France" cases
-      grepl("France \\(total\\)_France_0", scale) ~ "France",
-      grepl("France_France_\\d+", scale) ~ paste0("France, Ordre ", sub(".*_.*_(\\d+)", "\\1", scale)),
+      grepl("France \\(total\\)_France", scale) ~ "France",
+      grepl("France_France", scale) & strahler != 0 ~ "France", # paste0("France, Ordre ", strahler),
 
       # Handle the "Basin" cases
-      grepl("Basin \\(total\\)_\\d+_0", scale) ~ "Bassin",
-      grepl("Basin_\\d+_\\d+", scale) ~ paste0("Bassin, Ordre ", sub(".*_(\\d+)$", "\\1", scale)),
+      grepl("Basin \\(total\\)", scale) ~ "Bassin",
+      grepl("Basin_\\d+", scale) & strahler != 0 ~ "Bassin", # paste0("Bassin, Ordre ", strahler),
 
       # Handle the "Région" cases
-      grepl("Région \\(total\\)_\\d+_0", scale) ~ "Région",
-      grepl("Région_\\d+_\\d+", scale) ~ paste0("Région, Ordre ", sub(".*_(\\d+)$", "\\1", scale)),
+      grepl("Région \\(total\\)_\\d+", scale) ~ "Région",
+      grepl("Région_\\d+", scale) & strahler != 0 ~ "Région", # paste0("Région, Ordre ", strahler),
 
       # Default case to keep any other values unchanged
       .default = scale
@@ -115,6 +117,9 @@ prepare_regions_stats_for_table <- function(data, region_names = NULL) {
     select(-ends_with(suffixes)) %>%
     filter(level_type %in% c("Région (total)", "Région")) %>%
     mutate(name = r_names[level_name])
+             # if_else(strahler != 0,
+             #              paste0(r_names[level_name], ", Ordre ", strahler),
+             #              r_names[level_name]))
 
   return(df)
 }
@@ -133,32 +138,29 @@ prepare_regions_stats_for_table <- function(data, region_names = NULL) {
 #'
 #' @examples
 #' create_table(df, vars = c("crops_pc", "dense_urban_pc", "dense_urban"))
-create_analysis_table <- function(df, vars, strahler_sel = 0, scale_name = "") {
+create_analysis_table <- function(df, vars, scale_name = "") {
 
   # extract column names from metric variables
   col_names <- c(paste0(vars, "_avg"), paste0(vars, "_distr")) %>%
     sort()
 
-  # filter the columns and rename metrics
-  df <- df %>%
-    select(name, strahler, col_names) %>%
-    filter(strahler %in% strahler_sel) %>%
-    mutate(strahler = if_else(strahler == 0, "tous", as.character(strahler)))
-
   # Initialize the list of column definitions
   columns_list <- list(
-    name = colDef(name = scale_name, width = 140, style = list(fontWeight = "bold"), sticky = "left"),
-    strahler = colDef(name = "Ordre Strahler", width = 85, style = list(fontWeight = "bold"), sticky = "left")
+    name = colDef(name = scale_name, width = 130, style = list(fontWeight = "bold"), sticky = "left"),
+    strahler = colDef(name = "Ordre Strahler", width = 85, align = "right", style = list(fontWeight = "italic"), sticky = "left")
   )
 
   # deactivate showing of column when only whole region-aggregated values are selected (strahler==0)
-  if (length(strahler_sel) == 1) {
-    if (strahler_sel == 0) {
+  if (length(unique(df[df$name != "Axe",]$strahler)) == 1 && unique(df[df$name != "Axe",]$strahler) == 0) {
       columns_list$strahler$show = FALSE
-    }
   }
 
+  # rename strahler column, filter metrics
+  df <- df %>%
+    select(name, strahler, col_names) %>%
+    mutate(strahler = if_else(strahler == 0, "tous", as.character(strahler)))
 
+  # get names of metrics
   metric_names <- setNames(params_metrics()$metric_title, params_metrics()$metric_name)
 
   # Add column definitions dynamically based on the selected metrics (vars)
@@ -175,7 +177,7 @@ create_analysis_table <- function(df, vars, strahler_sel = 0, scale_name = "") {
 
     columns_list[[distr_col_name]] <- colDef(
       name = "",  # No name for the sparkline column
-      minWidth = 80,
+      minWidth = 75,
       cell = function(value, index, distr_col_name) {
         sparkline(df[[distr_col_name]][[index]], type = "box",
                   chartRangeMin = range(df[[distr_col_name]], na.rm = TRUE)[1],

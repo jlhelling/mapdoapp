@@ -36,38 +36,45 @@ mod_explore_ui <- function(id){
         column(
           width = 8,
           leafletOutput(ns("map"), height = 500),
-          textOutput(ns("selection_textUI"))
-        ),
-        column(
-          width = 4,
-          tabsetPanel(
-            id = ns("tabset_classes"),
-            tabPanel("Classes proposées",
-                     mod_expl_classes_proposed_ui("expl_classes_proposed_1")
-            ),
-            tabPanel("Classification manuelle",
-                     mod_expl_classes_manual_ui("expl_classes_manual_1")
-            ), type = "pills"
-          ) #tabsetpanel
-        ) #column
-      ), #row
-      fluidRow(
-        style = "margin-top: 10px;
+          fluidRow(
+            column(
+              width = 10,
+              textOutput(ns("selection_textUI"))),
+            column(
+              width = 2,
+              div(class = "text-right",
+                  uiOutput(ns("deselect_buttonUI"))))
+          )),
+          column(
+            width = 4,
+            tabsetPanel(
+              id = ns("tabset_classes"),
+              tabPanel("Classes proposées",
+                       mod_expl_classes_proposed_ui("expl_classes_proposed_1")
+              ),
+              tabPanel("Classification manuelle",
+                       mod_expl_classes_manual_ui("expl_classes_manual_1")
+              ), type = "pills"
+            ) #tabsetpanel
+          ) #column
+        ), #row
+        fluidRow(
+          style = "margin-top: 10px;
         margin-bottom: 10px;",
-        tabsetPanel(
-          id = ns("tabset_plots"),
-          tabPanel(
-            "Évolution longitudinale",
-            mod_expl_plot_long_ui("expl_plot_long_1")
-          ),
-          tabPanel("Profil transversal",
-                   mod_expl_plot_crosssection_ui("expl_plot_crosssection_1")
-          ), type = "pills"
+          tabsetPanel(
+            id = ns("tabset_plots"),
+            tabPanel(
+              "Évolution longitudinale",
+              mod_expl_plot_long_ui("expl_plot_long_1")
+            ),
+            tabPanel("Profil transversal",
+                     mod_expl_plot_crosssection_ui("expl_plot_crosssection_1")
+            ), type = "pills"
+          )
         )
-      )
-    ) #page
+      ) #page
 
-  )
+    )
 }
 
 
@@ -91,6 +98,11 @@ mod_explore_ui <- function(id){
 mod_explore_server <- function(id, con, r_val, globals){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+
+    #### REACTIVES ####
+    r_val_local <- reactiveValues(
+      deselect_button = NULL
+    )
 
     #### Map ####
     # create main map
@@ -121,6 +133,10 @@ mod_explore_server <- function(id, con, r_val, globals){
       r_val$selection_text
     })
 
+    output$deselect_buttonUI <- renderUI({
+      r_val_local$deselect_button
+    })
+
 
     #### Map Proxy ####
     observe({
@@ -147,12 +163,40 @@ mod_explore_server <- function(id, con, r_val, globals){
       r_val$selection_text = dplyr::case_when(
         !is.null(r_val$basin_name) & is.null(r_val$region_name) & is.null(r_val$axis_name) ~ paste0("Bassin : ", r_val$basin_name),
         !is.null(r_val$basin_name) & !is.null(r_val$region_name) & is.null(r_val$axis_name) ~ paste0("Bassin : ", r_val$basin_name,
-                                                                                                    "  |  Région : ", r_val$region_name),
+                                                                                                     "  |  Région : ", r_val$region_name),
         !is.null(r_val$basin_name) & !is.null(r_val$region_name) & !is.null(r_val$axis_name) ~ paste0("Bassin : ", r_val$basin_name,
-                                                                                                     "  |  Région : ", r_val$region_name,
-                                                                                                     "  |  Axe : ", r_val$axis_name, " (Ordre de Strahler : ", r_val$axis_strahler, ")"),
+                                                                                                      "  |  Région : ", r_val$region_name,
+                                                                                                      "  |  Axe : ", r_val$axis_name, " (Ordre de Strahler : ", r_val$axis_strahler, ")"),
         .default = ""
       )
+    })
+
+    # deselect button
+    observeEvent(r_val$selection_text, {
+      if (r_val$selection_text != "") {
+        r_val_local$deselect_button = actionButton(ns("deselect_button"), "Désélectionner")
+      } else {
+        r_val_local$deselect_button = NULL
+      }
+    })
+
+    observeEvent(input$deselect_button, {
+      r_val$basin_name = NULL
+      r_val$basin_id = NULL
+      r_val$region_name = NULL
+      r_val$region_id = NULL
+      r_val$axis_name = NULL
+      r_val$axis_id = NULL
+      r_val$axis_strahler = NULL
+      r_val$axis_data_classified = NULL
+      r_val$swath_id = NULL
+      r_val$swath_data_section = NULL
+      r_val$swath_data_dgo = NULL
+      r_val$selection_text = NULL
+      r_val$map_proxy %>%
+        clearGroup(globals$map_group_params[["dgo_axis"]]) %>%
+        clearGroup(globals$map_group_params[["axis_start_end"]]) %>%
+        clearGroup(globals$map_group_params[["dgo"]])
     })
 
 

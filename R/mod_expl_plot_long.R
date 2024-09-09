@@ -311,22 +311,15 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
 
     ##### background classes ####
 
-    observeEvent(c(input$background_profile, r_val$classes_proposed_selected),  {
+    observeEvent(c(input$background_profile, r_val$axis_data_classified),  {
 
       if (!is.null(input$background_profile) && !is.null(globals$axis_data())) {
 
         # add background classification shapes
-        if (input$background_profile == TRUE) {
-
-          # proposed classification applied
-          if (r_val$visualization == "classes") {
-            r_val$axis_data_classified = globals$axis_data() %>%
-              assign_classes_proposed(proposed_class = globals$classes_proposed[r_val$classes_proposed_selected,]$class_name,
-                                      colors_df = globals$classes_proposed_colors)
-          }
+        if (input$background_profile == TRUE && !is.null(r_val$axis_data_classified)) {
 
           # manual classification applied
-          else if (r_val$visualization == "manual" &
+          if (r_val$visualization == "manual" &
                    !is.null(r_val$manual_classes_table)) {
             r_val$axis_data_classified <- globals$axis_data() %>%
               # na.omit() %>%

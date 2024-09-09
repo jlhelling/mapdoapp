@@ -45,6 +45,7 @@ mod_expl_classes_proposed_server <- function(id, r_val, globals){
     ) %>%
       bindCache(globals$classes_proposed$sld_style)
 
+    ### OBSERVERS ####
 
     # create table output and add classification to map when other variable selected
     observeEvent(input$table__reactable__selected, {
@@ -76,5 +77,16 @@ mod_expl_classes_proposed_server <- function(id, r_val, globals){
         updateReactable("table", selected = NA)
       }
     })
+
+
+    observeEvent(c(globals$axis_data(), r_val$classes_proposed_selected), {
+      # proposed classification applied
+      if (r_val$visualization == "classes" && !is.null(globals$axis_data())) {
+        r_val$axis_data_classified = globals$axis_data() %>%
+          assign_classes_proposed(proposed_class = globals$classes_proposed[r_val$classes_proposed_selected,]$class_name,
+                                  colors_df = globals$classes_proposed_colors)
+      }
+    })
+
   })
 }

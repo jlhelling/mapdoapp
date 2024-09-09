@@ -7,6 +7,7 @@
 #' @noRd
 app_ui <- function(request){
     navbarPage(
+      id = "navbarPage",
       title =
         img(src = "www/logos_mapdo_evs_ofb.png"),
       windowTitle = "Mapd'O App",
