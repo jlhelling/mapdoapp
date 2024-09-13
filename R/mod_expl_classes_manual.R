@@ -130,11 +130,11 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
                 fluidRow(
                   column(width = 7,
                          numericInput(inputId = ns("man_grouping_quantile"),
-                                      "Quantile [%]", value = 95, min = 0, max = 100)
+                                      "Incl. valeurs aberrantes [%]", value = 95, min = 0, max = 100)
                   ),
                   column(width = 5,
                          numericInput(inputId = ns("man_grouping_no_classes"),
-                                      "Classes", value = 4, min = 2, max = 10, step = 1)
+                                      "No. classes", value = 4, min = 2, max = 10, step = 1)
                   ),
                   uiOutput(ns("scale_select_UI")),
                   actionButton(inputId = ns("recalculate_classes_button"), "Recalculer classes")
@@ -359,6 +359,14 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
                                  metric = classes$variable[1],
                                  sld_legend = r_val$sld_body,
                                  group = globals$map_group_params[["network"]])
+      }
+    })
+
+    observeEvent(c(globals$axis_data(), r_val$manual_classes_table), {
+      # proposed classification applied
+      if (r_val$visualization == "manual" && !is.null(globals$axis_data())) {
+        r_val$axis_data_classified = globals$axis_data() %>%
+        assign_classes_manual(classes = r_val$manual_classes_table)
       }
     })
 

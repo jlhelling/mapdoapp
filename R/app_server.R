@@ -47,6 +47,8 @@ app_server <- function(input, output, session) {
 
     # first time clicked
     axis_clicked = FALSE,
+
+    manual_classes_table = NULL, # values of classes and assigned colors from manual classification
   )
 
   ### GLOBALS ####

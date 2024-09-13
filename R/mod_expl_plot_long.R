@@ -318,14 +318,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
         # add background classification shapes
         if (input$background_profile == TRUE && !is.null(r_val$axis_data_classified)) {
 
-          # manual classification applied
-          if (r_val$visualization == "manual" &
-                   !is.null(r_val$manual_classes_table)) {
-            r_val$axis_data_classified <- globals$axis_data() %>%
-              # na.omit() %>%
-              assign_classes_manual(classes = r_val$manual_classes_table)
-          }
-
+          # create bckground shapes based on classified axis data
           if (!is.null(r_val$axis_data_classified)) {
             r_val_local$shapes_background = create_classes_background(r_val$axis_data_classified)
           }

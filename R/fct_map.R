@@ -295,7 +295,7 @@ map_add_network_metric <- function(map,
 
 
   # Construct the `env` parameter with class names, breaks, colors, and opacities
-  env_params <- character(0)
+  env_params <- glue::glue('metric:{metric};')
   for (i in 1:length(breaks)) {
     if(i<length(breaks)) {
     vars_i <- glue::glue('classname_{i}:{breaks[i]} - {breaks[i+1]};color_{i}:{colors[i]};break_{i}:{breaks[i]};opacity_{i}:1;')
