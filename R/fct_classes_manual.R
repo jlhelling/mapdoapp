@@ -62,9 +62,9 @@ create_df_input <- function(variable_name, q_0025, q_0975, quantile = 95, no_cla
 }
 
 
-#' Get Styled Layer Descriptor (SLD) for network metric layer
+#' Get Styled Layer Descriptor (SLD) for legend of manually classified network_metrics layer
 #'
-#' This function generates a Styled Layer Descriptor (SLD) XML for styling network metric layer based on quantile breaks colors.
+#' This function generates a Styled Layer Descriptor (SLD) XML for the legend of the network metric layer which is manually classified based on quantile breaks colors.
 #'
 #' @param breaks A numeric vector containing quantile breaks.
 #' @param colors A character vector of colors generated based on quantile breaks.
@@ -72,32 +72,17 @@ create_df_input <- function(variable_name, q_0025, q_0975, quantile = 95, no_cla
 #'
 #' @return A character string containing the SLD XML for styling data visualization.
 #'
-#' @examples
-#' con <- db_con()
-#' # get quantiles from active_channel_width metric
-#' quantile_metrics <- sld_get_quantile_metric(selected_region_id = 11,
-#'                                             selected_metric = "active_channel_width",
-#'                                             con = con)
-#' DBI::dbDisconnect(con)
-#'
-#' # get color from quantile
-#' quantile_colors <- sld_get_quantile_colors(quantile_breaks = quantile_metrics)
-#' # create sld style
-#' sld_style <- sld_get_style(breaks = quantile_metrics,
-#'                            colors = quantile_colors,
-#'                            metric = "active_channel_width")
-#' sld_style
-#'
 #' @importFrom glue glue
 #'
 #' @export
-sld_get_style <- function(breaks, colors, metric) {
+sld_get_style_legend <- function(breaks, colors, metric) {
   sld_begin <- glue::glue('<?xml version="1.0" encoding="UTF-8"?>
     <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:se="http://www.opengis.net/se" xmlns:ogc="http://www.opengis.net/ogc">
       <NamedLayer>
       <se:Name>network_metrics</se:Name>
         <UserStyle>
         <se:Name>network_metrics</se:Name>
+        <se:Title>network_metrics</se:Title>
         <se:FeatureTypeStyle>')
 
   sld_end <- '
@@ -134,10 +119,7 @@ sld_get_style <- function(breaks, colors, metric) {
             <se:Stroke>
               <se:SvgParameter name="stroke">{colors[i]}</se:SvgParameter>
               <se:SvgParameter name="stroke-width">2</se:SvgParameter>
-              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
-              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
               <CssParameter name="stroke">{colors[i]}</CssParameter>
-              <CssParameter name="stroke-width">2</CssParameter>
             </se:Stroke>
           </se:LineSymbolizer>
         </se:Rule>
@@ -159,10 +141,7 @@ sld_get_style <- function(breaks, colors, metric) {
             <se:Stroke>
               <se:SvgParameter name="stroke">{colors[i]}</se:SvgParameter>
               <se:SvgParameter name="stroke-width">2</se:SvgParameter>
-              <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
-              <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
               <CssParameter name="stroke">{colors[i]}</CssParameter>
-              <CssParameter name="stroke-width">2</CssParameter>
             </se:Stroke>
           </se:LineSymbolizer>
         </se:Rule>

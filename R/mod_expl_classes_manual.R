@@ -178,14 +178,14 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
 
         }
         # France, Basin
-        else if (!is.null(r_val$basin_id) && is.null(r_val$region_id) && is.null(r_val$axis_id)) {
+        else if (!is.null(r_val$basin_id)) {
           r_val_local$scale_selectUI = selectInput(ns("man_grouping_scale_select"),
                                                    "Base de classification",
                                                    choices = c("France", "Bassin"),
                                                    selected = "France")
         }
         # France, basin, region
-        else if (!is.null(r_val$basin_id) && !is.null(r_val$region_id) && is.null(r_val$axis_id)) {
+        else if (!is.null(r_val$basin_id) && !is.null(r_val$region_id)) {
           r_val_local$scale_selectUI = selectInput(ns("man_grouping_scale_select"),
                                                    "Base de classification",
                                                    choices = c("France", "Bassin", "Région"),
@@ -344,7 +344,7 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
           dplyr::mutate(greaterthan = round(greaterthan, 2))
 
         # build SLD symbology
-        r_val$sld_body = sld_get_style(
+        r_val$sld_body = sld_get_style_legend(
           breaks = classes$greaterthan,
           colors = classes$color,
           metric = classes$variable[1]
@@ -353,7 +353,10 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
         # add classified network to map
         r_val$map_proxy %>%
           map_add_network_metric(wms_params = globals$wms_params$metric,
-                                 sld_body = r_val$sld_body,
+                                 breaks = classes$greaterthan,
+                                 colors = classes$color,
+                                 metric = classes$variable[1],
+                                 sld_legend = r_val$sld_body,
                                  group = globals$map_group_params[["network"]])
       }
     })

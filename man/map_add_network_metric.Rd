@@ -2,12 +2,15 @@
 % Please edit documentation in R/fct_map.R
 \name{map_add_network_metric}
 \alias{map_add_network_metric}
-\title{Add a metric layer with custom symbology to a map.}
+\title{Add a metric layer with custom symbology to the map.}
 \usage{
 map_add_network_metric(
   map,
   wms_params = globals$wms_params$metric,
-  sld_body = "",
+  breaks = c(0, 531.39),
+  colors = c("#67A9CF", "#BDD1BA"),
+  metric = "talweg_elevation_min",
+  sld_legend = "",
   group = "Réseau hydrographique"
 )
 }
@@ -16,15 +19,20 @@ map_add_network_metric(
 
 \item{wms_params}{A list containing WMS parameters for the metric layer. If not provided, default parameters are retrieved using the \code{\link{params_wms}} function.}
 
-\item{sld_body}{A character string representing the SLD (Styled Layer Descriptor) body for custom styling of the metric layer.}
+\item{breaks}{A numeric vector containing quantile breaks.}
 
-\item{cql_filter}{A character string representing a CQL filter to apply to the metric layer.}
+\item{colors}{A character vector of colors generated based on quantile breaks.}
 
-\item{data_axis}{A data axis to display on the map.}
+\item{metric}{The name of the selected metric.}
+
+\item{sld_legend}{A character string representing the SLD (Styled Layer Descriptor) body for creation of the legend.}
+
+\item{group}{The name of the group to which the metric layer will be added.}
 }
 \value{
-A leaflet map object with the metric layer added.
+A leaflet map object with the metric layer and its legend added.
 }
 \description{
-This function adds a metric layer with custom symbology to a leaflet map. It allows you to specify custom parameters for the Web Map Service (WMS) request, apply a CQL (Common Query Language) filter, and provide a custom SLD (Styled Layer Descriptor) body for styling the layer. Additionally, you can specify the data axis to display on the map.
+This function adds a metric layer with custom symbology based on user-defined classes to a leaflet map.
+It allows you to specify custom parameters for the Web Map Service (WMS) request and customize the SLD (Styled Layer Descriptor) body for styling the layer.
 }

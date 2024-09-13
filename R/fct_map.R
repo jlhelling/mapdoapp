@@ -232,6 +232,8 @@ map_add_wms_overlayers <- function(map, params_wms) {
 #' @examples
 #' map %>%
 #' map_add_network(wms_params = params_wms()$network, cql_filter = "gid_region <> 11", style = "mapdo:classes_proposed_urban")
+#'
+#' @export
 map_add_network <- function(map, wms_params_network,
                             group,
                             cql_filter = "",
@@ -256,26 +258,53 @@ map_add_network <- function(map, wms_params_network,
 
 }
 
-#' Add a metric layer with custom symbology to a map.
+#' Add a metric layer with custom symbology to the map.
 #'
-#' This function adds a metric layer with custom symbology to a leaflet map. It allows you to specify custom parameters for the Web Map Service (WMS) request, apply a CQL (Common Query Language) filter, and provide a custom SLD (Styled Layer Descriptor) body for styling the layer. Additionally, you can specify the data axis to display on the map.
+#' This function adds a metric layer with custom symbology based on user-defined classes to a leaflet map.
+#' It allows you to specify custom parameters for the Web Map Service (WMS) request and customize the SLD (Styled Layer Descriptor) body for styling the layer.
 #'
 #' @param map A leaflet map object to which the metric layer will be added.
 #' @param wms_params A list containing WMS parameters for the metric layer. If not provided, default parameters are retrieved using the \code{\link{params_wms}} function.
-#' @param cql_filter A character string representing a CQL filter to apply to the metric layer.
-#' @param sld_body A character string representing the SLD (Styled Layer Descriptor) body for custom styling of the metric layer.
-#' @param data_axis A data axis to display on the map.
+#' @param breaks A numeric vector containing quantile breaks.
+#' @param colors A character vector of colors generated based on quantile breaks.
+#' @param metric The name of the selected metric.
+#' @param sld_legend A character string representing the SLD (Styled Layer Descriptor) body for creation of the legend.
+#' @param group The name of the group to which the metric layer will be added.
 #'
-#' @return A leaflet map object with the metric layer added.
+#' @return A leaflet map object with the metric layer and its legend added.
 #'
 #' @importFrom leaflet addWMSTiles clearGroup WMSTileOptions
+#' @importFrom leaflet.extras addWMSLegend
+#' @importFrom glue glue
 #'
 #' @export
-map_add_network_metric <- function(map, wms_params = globals$wms_params$metric,
-                                   sld_body = "", group = "Réseau hydrographique") {
+map_add_network_metric <- function(map,
+                                   wms_params = globals$wms_params$metric,
+                                   breaks = c(0.00, 531.39),
+                                   colors = c("#67A9CF", "#BDD1BA"),
+                                   metric = "talweg_elevation_min",
+                                   sld_legend = "",
+                                   group = "Réseau hydrographique") {
+
+
+
+  # Construct the `env` parameter with class names, breaks, colors, and opacities
+  env_params <- character(0)
+  for (i in 1:length(breaks)) {
+    if(i<length(breaks)) {
+    vars_i <- glue::glue('classname_{i}:{breaks[i]} - {breaks[i+1]};color_{i}:{colors[i]};break_{i}:{breaks[i]};opacity_{i}:1;')
+    }
+    # last class with different name
+    else {
+      vars_i <- glue::glue('classname_{i}: >= {breaks[i]};color_{i}:{colors[i]};break_{i}:{breaks[i]};opacity_{i}:1')
+    }
+    env_params <- paste0(env_params,vars_i)
+  }
+
   map %>%
     clearGroup(group) %>%
-    # add metric with custom symbology
+
+    # Add WMS tiles, referencing the style template and using the dynamic `env` parameter
     addWMSTiles(
       baseUrl = wms_params$url,
       layers = wms_params$layer,
@@ -284,12 +313,15 @@ map_add_network_metric <- function(map, wms_params = globals$wms_params$metric,
         format = wms_params$format,
         request = "GetMap",
         transparent = TRUE,
-        sld_body = sld_body,
+        styles = "mapdo:classes_manual",    # Reference your GeoServer style template here
+        env = env_params,       # Pass env parameters here
         zIndex = 90
       ),
       group = group
     ) %>%
-    addWMSLegend(uri = map_legend_metric(sld_body = sld_body, wms_params),
+
+    # Add WMS Legend
+    addWMSLegend(uri = map_legend_metric(sld_body = sld_legend, wms_params),
                  position = "bottomright",
                  layerId = "legend_metric")
 }

@@ -29,4 +29,5 @@ Adds the hydrographique network with a custom styling and regional constraint to
 \examples{
 map \%>\%
 map_add_network(wms_params = params_wms()$network, cql_filter = "gid_region <> 11", style = "mapdo:classes_proposed_urban")
+
 }
