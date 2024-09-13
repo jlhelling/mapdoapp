@@ -53,7 +53,8 @@ mod_explore_ui <- function(id){
                        mod_expl_classes_proposed_ui("expl_classes_proposed_1")
               ),
               tabPanel("Classification manuelle",
-                       mod_expl_classes_manual_ui("expl_classes_manual_1")
+                       div(style = "height: 450px; overflow-y: auto;",  # Set fixed height for this panel
+                           mod_expl_classes_manual_ui("expl_classes_manual_1"))
               ), type = "pills"
             ) #tabsetpanel
           ) #column

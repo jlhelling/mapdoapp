@@ -24,7 +24,7 @@ mod_expl_classes_manual_ui <- function(id){
     ),
     fluidRow(
       style = "margin-bottom: 0px; padding-bottom: 0px;",
-      uiOutput(ns("classificationUI"))
+        uiOutput(ns("classificationUI"))
     )
   )
 }
@@ -121,7 +121,7 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
         r_val_local$ui_metric = selectInput(ns("metric"), NULL,
                                             choices = globals$metric_choices,
                                             selected  = globals$metric_choices[1],
-                                            width = "100%")
+                                            width = "90%")
 
         # create classification UI
         r_val_local$classification_ui <- fluidRow(
