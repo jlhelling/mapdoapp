@@ -497,8 +497,8 @@ mod_mapdo_app_server <- function(id, con, r_val){
 
       # Site hydrométrique
       # if (any(input$map_groups %in% params_map_group()[["hydro_sites"]])) {
-      #   map_legend_vector_overlayer(layer_label = "Site hydrométrique",
-      #                               color = "#33B1FF")
+        # map_legend_vector_overlayer(layer_label = "Site hydrométrique",
+        #                             color = "#33B1FF")
       # }
     })
 

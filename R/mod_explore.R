@@ -127,6 +127,128 @@ mod_explore_server <- function(id, con, r_val, globals){
                                                       zoom = input$map_zoom)))
     )
 
+    #### Map Proxy ####
+    observe({
+      r_val$map_proxy <- leafletProxy("map")
+    })
+
+    #### Map Legends ####
+    observeEvent(input$map_groups, {
+
+      # landuse map
+      if (any(input$map_groups %in% globals$map_group_params$landuse)) {
+        r_val$map_proxy %>%
+          addWMSLegend(map_legend_wms_overlayer(wms_params = globals$wms_params$landuse),
+                       title = "Occupation du sol",
+                       position = "bottomright",
+                       layerId = "landuse")
+      } else {
+        r_val$map_proxy %>%
+          removeControl(layerId = "landuse")
+      }
+
+      # lateral continuity map
+      if (any(input$map_groups %in% globals$map_group_params$continuity)) {
+        r_val$map_proxy %>%
+          addWMSLegend(map_legend_wms_overlayer(wms_params = globals$wms_params$continuity),
+                       title = "Continuité latérale",
+                       position = "bottomright",
+                       layerId = "continuity")
+      } else {
+        r_val$map_proxy %>%
+          removeControl(layerId = "continuity")
+      }
+
+      # valley bottom map
+      if (any(input$map_groups %in% globals$map_group_params$valley_bottom)) {
+        r_val$map_proxy %>%
+          addWMSLegend(map_legend_wms_overlayer(wms_params = globals$wms_params$valley_bottom),
+                       title = "Fond de vallée",
+                       position = "bottomright",
+                       layerId = "valley_bottom")
+      } else {
+        r_val$map_proxy %>%
+          removeControl(layerId = "valley_bottom")
+      }
+
+      # zone inondable map
+      if (any(input$map_groups %in% globals$map_group_params$inondation)) {
+        r_val$map_proxy %>%
+          addWMSLegend(map_legend_wms_overlayer(wms_params = globals$wms_params$inondation),
+                       title = "Zone inondable centennale",
+                       position = "bottomright",
+                       layerId = "inondation")
+      } else {
+        r_val$map_proxy %>%
+          removeControl(layerId = "inondation")
+      }
+
+      # ouvrage de protection map
+      if (any(input$map_groups %in% globals$map_group_params[["ouvrage_protection"]])) {
+        r_val$map_proxy %>%
+          addWMSLegend(map_legend_wms_overlayer(wms_params = globals$wms_params$ouvrage_protection),
+                       position = "bottomright",
+                       layerId = "ouvrage_protection")
+      } else {
+        r_val$map_proxy %>%
+          removeControl(layerId = "ouvrage_protection")
+      }
+
+      # Custom legend HTML
+      # custom_legend <-
+
+        # ROE
+        if (any(input$map_groups %in% globals$map_group_params[["roe"]])) {
+          r_val$map_proxy %>%
+            addControl(
+              HTML("
+                <div style='display: flex; align-items: center;'>
+                  <div style='background-color: #323232; border-radius: 50%; width: 12px; height: 12px; margin-right: 8px;'></div>
+                  <div>Obstacles à l'Ecoulement (ROE)</div>
+                </div>"),
+              position = "bottomright", layerId = "roe"
+            )
+          # addLegend(
+          #   position = "bottomright",
+          #   colors = "#323232",
+          #   labels = "Obstacles à l'Ecoulement (ROE)",
+          #   layerId = "roe"
+          # )
+        } else {
+          leafletProxy("map") %>%
+            removeControl(layerId = "roe")
+        }
+
+      # Site hydrométrique
+      if (any(input$map_groups %in% globals$map_group_params[["hydro_sites"]])) {
+        r_val$map_proxy %>%
+          addControl(
+            HTML("
+                <div style='display: flex; align-items: center;'>
+                  <div style='background-color: #33B1FF; border-radius: 50%; width: 12px; height: 12px; margin-right: 8px;'></div>
+                  <div>Sites hydrométriques</div>
+                </div>"),
+            position = "bottomright", layerId = "hydro_sites"
+          )
+        # addLegend(
+        #   position = "bottomright",
+        #   colors = "#33B1FF",
+        #   labels = "Obstacles à l'Ecoulement (ROE)",
+        #   layerId = "hydro_sites"
+        # )
+      } else {
+        r_val$map_proxy %>%
+          removeControl(layerId = "hydro_sites")
+      }
+
+      # Site hydrométrique
+      # if (any(input$map_groups %in% globals$map_group_params[["hydro_sites"]])) {
+      #   map_legend_vector_overlayer(layer_label = "Site hydrométrique",
+      #                               color = "#33B1FF")
+      # }
+
+    })
+
     #### Description Text ####
 
     output$selection_textUI <- renderText({
@@ -138,10 +260,7 @@ mod_explore_server <- function(id, con, r_val, globals){
     })
 
 
-    #### Map Proxy ####
-    observe({
-      r_val$map_proxy <- leafletProxy("map")
-    })
+
 
     ### TABSET LISTENERS ####
     # save current tabs in reactive values

@@ -17,7 +17,7 @@ map_add_network(
 
 \item{cql_filter}{A CQL filter to apply to the WMS request.}
 
-\item{wms_params}{Netowrk-WMS parameters.}
+\item{wms_params}{list containing the specific network-WMS parameters.}
 }
 \value{
 An updated Leaflet map with WMS tiles of the styled network. Standard styling

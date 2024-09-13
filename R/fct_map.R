@@ -223,7 +223,7 @@ map_add_wms_overlayers <- function(map, params_wms) {
 #'
 #'
 #' @param map An existing Leaflet map to which WMS tiles will be added.
-#' @param wms_params Netowrk-WMS parameters.
+#' @param wms_params list containing the specific network-WMS parameters.
 #' @param cql_filter A CQL filter to apply to the WMS request.
 #'
 #' @return An updated Leaflet map with WMS tiles of the styled network. Standard styling
@@ -259,7 +259,7 @@ map_add_network <- function(map, wms_params_network,
   # Add WMS Legend
   addWMSLegend(uri = map_legend_class(style = style, wms_params_network),
                title = globals$classes_proposed[globals$classes_proposed$sld_style == sub("mapdo:", "", style),]$class_title,
-               position = "bottomright",
+               position = "bottomleft",
                layerId = "legend_metric")
 
 }
@@ -329,35 +329,16 @@ map_add_network_metric <- function(map,
     # Add WMS Legend
     addWMSLegend(uri = map_legend_metric(sld_body = sld_legend, wms_params),
                  title = "Classes",
-                 position = "bottomright",
+                 position = "bottomleft",
                  layerId = "legend_metric")
 }
 
 
-map_legend_class <- function(style, wms_params){
-
-  # Construct the query parameters for legend
-  query_params <- list(
-    REQUEST = "GetLegendGraphic",
-    VERSION = wms_params$version,
-    FORMAT = wms_params$format,
-    STYLE = style,
-    LAYER = wms_params$layer
-    # LEGEND_OPTIONS = "dpi:160"
-  )
-
-  # Build the legend URL
-  legend_url <- modify_url(wms_params$url, query = query_params)
-
-  return(legend_url)
-}
-
-
-#' Generate and display a legend for a map layer using a provided SLD (Styled Layer Descriptor) body.
+#' Generate and display a legend for a map layer using a pre-defined style
 #'
 #' This function constructs a legend for a map layer by sending a GetLegendGraphic request to a WMS (Web Map Service) server.
 #'
-#' @param sld_body A character string containing the SLD (Styled Layer Descriptor) body that defines the map layer's styling.
+#' @param style A character string containing the name of the predefined style that defines the map layer's styling.
 #'
 #' @return An HTML img tag representing the legend for the specified map layer.
 #'
@@ -383,6 +364,37 @@ map_legend_class <- function(style, wms_params){
 #' legend <- map_legend_metric(sld_body)
 #'
 #' @export
+map_legend_class <- function(style, wms_params){
+
+  # Construct the query parameters for legend
+  query_params <- list(
+    REQUEST = "GetLegendGraphic",
+    VERSION = wms_params$version,
+    FORMAT = wms_params$format,
+    STYLE = style,
+    LAYER = wms_params$layer,
+    LEGEND_OPTIONS = "dpi:80"
+  )
+
+  # Build the legend URL
+  legend_url <- modify_url(wms_params$url, query = query_params)
+
+  return(legend_url)
+}
+
+
+#' Generate and display a legend for a map layer using a provided SLD (Styled Layer Descriptor) body.
+#'
+#' This function constructs a legend for a map layer by sending a GetLegendGraphic request to a WMS (Web Map Service) server.
+#'
+#' @param sld_body A character string containing the SLD (Styled Layer Descriptor) body that defines the map layer's styling.
+#' @param wms_params list containing the specific network-WMS parameters.
+#'
+#' @return An HTML img tag representing the legend for the specified map layer.
+#'
+#' @importFrom httr modify_url
+#'
+#' @export
 map_legend_metric <- function(sld_body, wms_params){
 
   # Construct the query parameters for legend
@@ -391,7 +403,60 @@ map_legend_metric <- function(sld_body, wms_params){
     VERSION = wms_params$version,
     FORMAT = wms_params$format,
     SLD_BODY = sld_body,
-    LAYER = wms_params$layer
+    LAYER = wms_params$layer,
+    LEGEND_OPTIONS = "dpi:80"
+  )
+
+  # Build the legend URL
+  legend_url <- modify_url(wms_params$url, query = query_params)
+
+  return(legend_url)
+}
+
+#' Generate and display a legend for a WMS (Web Map Service) layer overlay using specified WMS parameters.
+#'
+#' This function constructs a legend for a WMS layer overlay by sending a GetLegendGraphic request to a WMS server.
+#'
+#' @param wms_params A list containing the following parameters for the WMS layer overlay:
+#'   \itemize{
+#'     \item \code{language} (character): The language to use for the legend.
+#'     \item \code{version} (character): The version of the WMS service.
+#'     \item \code{service} (character): The WMS service type (e.g., "WMS").
+#'     \item \code{sld_version} (character): The SLD (Styled Layer Descriptor) version.
+#'     \item \code{layer} (character): The name of the WMS layer for which the legend is generated.
+#'     \item \code{format} (character): The desired format of the legend image (e.g., "image/png").
+#'     \item \code{style} (character): The style to use for rendering the legend.
+#'     \item \code{url} (character): The URL of the WMS server.
+#'   }
+#'
+#' @return An HTML div element containing an img tag representing the legend for the specified WMS layer overlay.
+#'
+#' @importFrom httr modify_url
+#' @importFrom htmltools div
+#' @importFrom htmltools img
+#'
+#' @examples
+#' # Define WMS parameters for a layer overlay like
+#' wms_params <- params_wms()$inondation
+#'
+#' # Generate and display the legend for the WMS layer overlay
+#' legend <- map_legend_wms_overlayer(wms_params)
+#' print(legend)
+#'
+#' @export
+map_legend_wms_overlayer <- function(wms_params){
+
+  # Construct the query parameters for legend
+  query_params <- list(
+    LANGUAGE = wms_params$language,
+    VERSION = wms_params$version,
+    SERVICE = wms_params$service,
+    REQUEST = "GetLegendGraphic",
+    SLD_VERSION = wms_params$sld_version,
+    LAYER = wms_params$layer,
+    FORMAT = wms_params$format,
+    STYLE = wms_params$style,
+    LEGEND_OPTIONS = "dpi:80"
   )
 
   # Build the legend URL

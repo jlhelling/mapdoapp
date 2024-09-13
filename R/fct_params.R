@@ -94,18 +94,17 @@ params_wms <- function(){
                            basemap = TRUE,
                            overlayer = FALSE),
               # elevation = list(name = "Elévation IGN",
-              #                  url = 'https://data.geopf.fr/wms-r?REQUEST=GetTile&SERVICE=WMS&VERSION=1.3.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES&tilePixelRatio=0',
-              #                  language = "",
-              #                  service = "WMS",
-              #                  version = "",
-              #                  sld_version = "",
-              #                  layer = "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
-              #                  format = "image/jpeg",
-              #                  sld = "",
-              #                  style = "normal",
-              #                  attribution = "IGN-F/Géoportail",
-              #                  basemap = TRUE,
-              #                  overlayer = FALSE),
+              #     url = 'https://data.geopf.fr/wms-r?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap',
+              #   language = "",
+              #   service = "WMS",
+              #   version = "1.3.0",
+              #   layer = "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
+              #   format = "image/jpeg",
+              #   sld = "",
+              #   style = "hypso",  # Or another valid style
+              #   attribution = "IGN-F/Géoportail",
+              #   basemap = TRUE,
+              #   overlayer = FALSE),
               landuse = list(name = "Occupation du sol",
                              url = Sys.getenv("GEOSERVER"),
                              language = "",
@@ -260,7 +259,7 @@ params_classes <- function() {
 
   df <- tibble(
     class_title = c(
-      "Nombre de Strahler",
+      "Ordre de Strahler",
       "Topographie",
       "Utilisation dominante des sols",
       "Pression urbaine",
@@ -272,7 +271,7 @@ params_classes <- function() {
     ),
     description = c(
       # strahler
-      "Répresent la complexité du réseaux hydrographique. Le nombre de Strahler est de 1 pour tout cours d'eau entre sa source et sa première confluence et mont avec chaque confluence.",
+      "Répresent la complexité du réseaux hydrographique. L'ordre de Strahler est de 1 pour tout cours d'eau entre sa source et sa première confluence et mont avec chaque confluence.",
       # topographie
       "Classification simple basée sur la pente et la hauteur du cours de la rivière :
       - plaines de basse altitude (> 0 m & < 0.5 % pente)
