@@ -75,7 +75,7 @@ create_df_input <- function(variable_name, q_0025, q_0975, quantile = 95, no_cla
 #' @importFrom glue glue
 #'
 #' @export
-sld_get_style_legend <- function(breaks, colors, metric) {
+sld_get_style_legend <- function(breaks, colors, classnames, metric) {
   sld_begin <- glue::glue('<?xml version="1.0" encoding="UTF-8"?>
     <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:se="http://www.opengis.net/se" xmlns:ogc="http://www.opengis.net/ogc">
       <NamedLayer>
@@ -99,9 +99,9 @@ sld_get_style_legend <- function(breaks, colors, metric) {
     if (i < length(breaks)) {
       sld_rule <- glue::glue('
       <se:Rule>
-          <se:Name>{breaks[i]} - {breaks[i+1]}</se:Name>
+          <se:Name>{classnames[i]}</se:Name>
           <se:Description>
-            <se:Title>{breaks[i]} - {breaks[i+1]}</se:Title>
+            <se:Title>{classnames[i]}</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
             <ogc:And>
@@ -127,9 +127,9 @@ sld_get_style_legend <- function(breaks, colors, metric) {
     } else {
       sld_rule <- glue::glue('
       <se:Rule>
-          <se:Name> >= {breaks[i]}</se:Name>
+          <se:Name>{classnames[i]}</se:Name>
           <se:Description>
-            <se:Title> >= {breaks[i]}</se:Title>
+            <se:Title>{classnames[i]}</se:Title>
           </se:Description>
           <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
               <ogc:PropertyIsGreaterThanOrEqualTo>

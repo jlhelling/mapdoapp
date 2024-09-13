@@ -4,7 +4,7 @@
 \alias{sld_get_style_legend}
 \title{Get Styled Layer Descriptor (SLD) for legend of manually classified network_metrics layer}
 \usage{
-sld_get_style_legend(breaks, colors, metric)
+sld_get_style_legend(breaks, colors, classnames, metric)
 }
 \arguments{
 \item{breaks}{A numeric vector containing quantile breaks.}

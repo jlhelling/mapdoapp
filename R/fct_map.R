@@ -322,6 +322,7 @@ map_add_network_metric <- function(map,
 
     # Add WMS Legend
     addWMSLegend(uri = map_legend_metric(sld_body = sld_legend, wms_params),
+                 title = "Classes",
                  position = "bottomright",
                  layerId = "legend_metric")
 }

@@ -347,6 +347,7 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
         r_val$sld_body = sld_get_style_legend(
           breaks = classes$greaterthan,
           colors = classes$color,
+          classnames = classes$class,
           metric = classes$variable[1]
         )
 
