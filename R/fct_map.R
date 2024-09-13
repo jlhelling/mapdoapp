@@ -240,6 +240,7 @@ map_add_network <- function(map, wms_params_network,
                             style = "mapdo:classes_proposed_strahler") {
 
   map %>%
+    clearGroup(group) %>%
     addWMSTiles(
       baseUrl = wms_params_network$url,
       layers = wms_params_network$layer,
@@ -254,7 +255,12 @@ map_add_network <- function(map, wms_params_network,
         zIndex = 90
       ),
       group = group
-    )
+    ) %>%
+  # Add WMS Legend
+  addWMSLegend(uri = map_legend_class(style = style, wms_params_network),
+               title = globals$classes_proposed[globals$classes_proposed$sld_style == sub("mapdo:", "", style),]$class_title,
+               position = "bottomright",
+               layerId = "legend_metric")
 
 }
 
@@ -326,6 +332,26 @@ map_add_network_metric <- function(map,
                  position = "bottomright",
                  layerId = "legend_metric")
 }
+
+
+map_legend_class <- function(style, wms_params){
+
+  # Construct the query parameters for legend
+  query_params <- list(
+    REQUEST = "GetLegendGraphic",
+    VERSION = wms_params$version,
+    FORMAT = wms_params$format,
+    STYLE = style,
+    LAYER = wms_params$layer
+    # LEGEND_OPTIONS = "dpi:160"
+  )
+
+  # Build the legend URL
+  legend_url <- modify_url(wms_params$url, query = query_params)
+
+  return(legend_url)
+}
+
 
 #' Generate and display a legend for a map layer using a provided SLD (Styled Layer Descriptor) body.
 #'
