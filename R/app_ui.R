@@ -6,6 +6,18 @@
 #' @importFrom bslib bs_theme
 #' @noRd
 app_ui <- function(request){
+
+  tagList(
+    # Inject custom CSS into the app for tab styling
+    tags$style(
+      HTML("
+      /* Hover effect */
+      .nav-pills > li > a:hover {
+        background-color: #E3EBF7; /* Background color on hover */
+      }
+    ")
+    ),
+
     navbarPage(
       id = "navbarPage",
       title =
@@ -21,7 +33,8 @@ app_ui <- function(request){
                icon = icon("info"),
                mod_documentation_ui("documentation_1")
       ),
-      theme = bs_theme(version = 5, bootswatch = "simplex")
+      theme = bs_theme(version = 5, bootswatch = "simplex", primary = "#366EC0")
+    )
   )
 }
 
