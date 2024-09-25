@@ -25,10 +25,8 @@ mod_expl_plot_long_ui <- function(id){
           width = 2,
           style = "margin-top: 20px;",
           uiOutput(ns("profile_first_metricUI")),
-          uiOutput(ns("add_sec_axeUI"),
-                   style = "margin-top: 10px;"),
-          uiOutput(ns("profile_sec_metricUI"),
-                   style = "margin-left : 23px;"),
+          uiOutput(ns("profile_sec_metricUI")),
+          hr(),
           uiOutput(ns("profile_roeUI")),
           uiOutput(ns("profile_backgroundUI")),
           uiOutput(ns("profile_background_smoothUI")),
@@ -73,7 +71,6 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
       # second metric
       proxy_second_axe = NULL,
       profile_sec_metric = NULL, # second metric selection
-      add_sec_axe = NULL, # add second axis
       sec_metric_name = NULL, # title
       sec_metric_type = NULL, # metric type title
 
@@ -118,7 +115,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
           style = "display: flex; align-items: center",
           r_val_local$profile_sec_metric,
           span(
-            style = "margin-left: 10px; margin-top: -10px",
+            style = "margin-left: 10px; margin-top: 20px",
             popover(
               trigger = bsicons::bs_icon("info-circle"),
               "",
@@ -128,11 +125,6 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
           )
         )
       }
-    })
-
-    # button to add second axe
-    output$add_sec_axeUI <- renderUI({
-      r_val_local$add_sec_axe
     })
 
     # checkbox display ROE
@@ -170,18 +162,15 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
 
       if (!is.null(globals$axis_data()) & (r_val$axis_clicked == TRUE)) {
 
-        # build second axis input and add and remove buttons
+        # build second axis input selector
         r_val_local$profile_first_metric = selectInput(ns("profile_first_metric"), label = "Métrique :",
                                                        choices = globals$metric_choices,
                                                        selected  = globals$metric_choices[1])
 
-        # build second axis input and add and remove buttons
-        r_val_local$add_sec_axe = checkboxInput(ns("sec_axis"),
-                                                label = "Ajoutez 2éme métrique :",
-                                                value = FALSE)
-        r_val_local$profile_sec_metric = selectInput(ns("profile_sec_metric"), label = NULL,
-                                                     choices = globals$metric_choices,
-                                                     selected  = globals$metric_choices[[2]][1],
+        # build second axis input selector
+        r_val_local$profile_sec_metric = selectInput(ns("profile_sec_metric"), label = "2éme métrique :",
+                                                     choices = c("", globals$metric_choices),
+                                                     selected  = 1,
                                                      width = "100%")
       }
     })
@@ -202,9 +191,16 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
     observe({
       if (!is.null(input$profile_sec_metric)) {
         update_popover("popover_metric2",
-                       HTML(globals$metrics_params %>%
-                              filter(metric_name == input$profile_sec_metric) %>%
-                              pull(metric_description)))
+                       HTML(
+                         # check if no metric is selected
+                         if (input$profile_sec_metric == "") {
+                           "Choisissez une deuxième métrique"
+                         } else{
+                           globals$metrics_params %>%
+                             filter(metric_name == input$profile_sec_metric) %>%
+                             pull(metric_description)
+                         }
+                         ))
       }
     })
 
@@ -240,10 +236,10 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
 
     #### add / remove 2nd axis ####
 
-    observeEvent(c(input$sec_axis, input$profile_sec_metric), {
+    observeEvent(input$profile_sec_metric, {
 
       # add second axis
-      if (input$sec_axis == TRUE) {
+      if (!is.null(input$profile_sec_metric) && input$profile_sec_metric != "") {
         # get metric title and type
         r_val_local$sec_metric_name =
           globals$metrics_params |> filter(metric_name == input$profile_sec_metric) |> pull(metric_title)
