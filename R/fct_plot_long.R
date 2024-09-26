@@ -329,7 +329,7 @@ create_classes_background <- function(classified_axis) {
     }
 
     # set color
-    color <- classified_axis$color[i]
+    color <- unique(classified_axis$color[i])
 
     # create unique shape for each step
     shapes <- append(shapes, list(
