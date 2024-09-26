@@ -4,7 +4,7 @@
 \alias{lg_add_trace}
 \title{plotly add trace.}
 \usage{
-lg_add_trace(data, y, y_label, yaxis = "y1")
+lg_add_trace(data, y, y_label, yaxis = "y1", color = "#22223b")
 }
 \arguments{
 \item{data}{data frame containing the selected axis data.}

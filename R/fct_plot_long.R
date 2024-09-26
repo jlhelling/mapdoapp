@@ -32,48 +32,42 @@ lg_profile_empty <- function() {
   return(plot)
 }
 
-#' Create a longitudinal profile plot for selected axis data.
+#' Add first metric for longitudinal profile plot for selected axis data
 #'
-#' This function generates a longitudinal profile plot using the 'plot_ly'
-#' function from the 'plotly' package. It allows you to visualize a specific
-#' metric along the selected axis.
+#' This function adds the first metric trace to the plot
 #'
-#' @param data data frame containing the selected axis data.
-#' @param y text metric to be plotted on the y-axis.
-#' @param y_label text name of the metric plotted.
-#' @param y_label_category text metric category name.
+#' @param data A data frame containing the selected axis data.
+#' @param y The primary metric to be plotted on the left y-axis.
+#' @param y_label The name of the metric plotted.
+#' @param y_label_category The metric category name.
 #'
-#' @return plotly A longitudinal profile plot with the specified metric.
-#'
-#' @importFrom plotly plot_ly layout
+#' @return A dual-axis longitudinal profile plot with the specified metrics.
 #'
 #' @examples
-#' # Create a longitudinal profile plot for active channel width
-#' selected_axis_df <- as.data.frame(network_dgo)
-# profile_plot <- lg_profile_main(data = selected_axis_df, y = "active_channel_width",
-#                                  y_label = "Chenal actif",
-#                                  y_label_category = "Largeurs")
-# profile_plot
+#' \dontrun{
+#' # like lg_profile_update_main function, see example in documentation
+#'}
 #'
 #' @export
-lg_profile_main <- function(data, y, y_label, y_label_category) {
+lg_profile_first <- function(data, y, y_label, y_label_category){
 
-  plot <- plot_ly(x = data$measure, y = y, yaxis = 'y1',
-                  key = data$fid,  # the "id" column for hover text
-                  type = 'scatter', mode = 'lines', name = y_label,
-                  source = 'L', line = list(color = "#22223b")) %>%
-    layout(
-      xaxis = lg_xaxis_layout(data),
-      yaxis = lg_yaxis_layout(y_label_category, y_label),
-      # river name
-      annotations = lg_annotations_layout(data),
-      showlegend = TRUE,
-      legend = list(orientation = 'h'),
-      hovermode = "x unified",
-      # shapes = list(shapes = NULL),
-      margin = list(t = 20, b = 10, l = 50, r = 80)  # create space for the second y-axis title
-    )
-  return(plot)
+  proxy_trace <- lg_add_trace(data, y, y_label, yaxis = 'y1')
+
+  proxy_layout <- list(
+    xaxis = lg_xaxis_layout(data),
+    yaxis = lg_yaxis_layout(y_label_category, y_label),
+    # river name
+    annotations = lg_annotations_layout(data),
+    showlegend = TRUE,
+    legend = list(orientation = 'h'),
+    hovermode = "x unified",
+    # shapes = list(shapes = NULL),
+    margin = list(t = 20, b = 10, l = 50, r = 80),  # create space for the second y-axis title
+    title = NULL
+  )
+  proxy <- list("trace" = proxy_trace,
+                "layout" = proxy_layout)
+  return(proxy)
 }
 
 #' plotly xaxis layout.
@@ -151,7 +145,7 @@ lg_annotations_layout <- function(data){
 #' @export
 lg_profile_second <- function(data, y, y_label, y_label_category){
 
-  proxy_trace <- lg_add_trace(data, y, y_label, yaxis = 'y2')
+  proxy_trace <- lg_add_trace(data, y, y_label, yaxis = 'y2', color = "#7209b7")
 
   proxy_layout <- list(
     yaxis2 = list(
@@ -180,14 +174,14 @@ lg_profile_second <- function(data, y, y_label, y_label_category){
 #'
 #' @return list
 #' @export
-lg_add_trace <- function(data, y, y_label, yaxis = 'y1'){
+lg_add_trace <- function(data, y, y_label, yaxis = 'y1', color = "#22223b"){
   trace <- list(
     x = data$measure,
     y = y,
     key = data$fid,  # the "id" column for hover text
     type = 'scatter',
     mode = 'lines',
-    line = list(color = "#7209b7"),
+    line = list(color = color),
     name = y_label,
     yaxis = yaxis
   )

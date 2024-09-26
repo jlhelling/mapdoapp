@@ -64,6 +64,10 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
 
       # first metric
       profile_first_metric = NULL,
+      proxy_first_axe = NULL,
+      first_metric_name = NULL, # title
+      first_metric_type = NULL, # metric type title
+
 
       selected_profile_metric_title = NULL, # metric title to be displayed instead of pure variable name
       selected_profile_metric_type = NULL, # metric type title
@@ -169,7 +173,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
 
         # build second axis input selector
         r_val_local$profile_sec_metric = selectInput(ns("profile_sec_metric"), label = "2éme métrique :",
-                                                     choices = c("", globals$metric_choices),
+                                                     choices = c("aucun", globals$metric_choices),
                                                      selected  = 1,
                                                      width = "100%")
       }
@@ -205,41 +209,56 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
     })
 
     #### plot 1st metric ####
-    observeEvent(c(input$profile_first_metric, globals$axis_data()), {
+    observeEvent(c(!is.null(input$profile_first_metric), globals$axis_data()), {
 
       if (!is.null(input$profile_first_metric) & !is.null(globals$axis_data())) {
-        r_val_local$plot <-
-          lg_profile_main(
-            data = globals$axis_data(),
-            y = globals$axis_data()[[input$profile_first_metric]],
-            y_label = globals$metrics_params[globals$metrics_params$metric_name == input$profile_first_metric,]$metric_title,
-            y_label_category = globals$metrics_params[globals$metrics_params$metric_name == input$profile_first_metric,]$metric_type_title
-          ) %>%
-          event_register("plotly_hover")
 
-        # build ROE checkboxInput
-        r_val_local$ui_roe_profile = NULL # delete checkbox before creating new one
-        r_val_local$ui_roe_profile = checkboxInput(ns("roe_profile"),
-                                                   label = "Obstacles à l'Ecoulement",
-                                                   value = FALSE)
+        # get metric title and type
+        r_val_local$first_metric_name =
+          globals$metrics_params |> filter(metric_name == input$profile_first_metric) |> pull(metric_title)
+        r_val_local$first_metric_type =
+          globals$metrics_params |> filter(metric_name == input$profile_first_metric) |> pull(metric_type_title)
 
-        # build background classification checkboxInput
-        r_val_local$ui_background_profile = NULL # delete checkbox before creating new one
-        r_val_local$ui_background_profile = checkboxInput(ns("background_profile"),
-                                                          label = "Classifications en arrière-plan",
-                                                          value = FALSE)
+        # create the list to add trace and layout to change second axe plot
+        r_val_local$proxy_first_axe <- lg_profile_first(data = globals$axis_data(),
+                                                          y = globals$axis_data()[[input$profile_first_metric]],
+                                                          y_label = r_val_local$first_metric_name,
+                                                          y_label_category = r_val_local$first_metric_type)
+        # add second metric to plot
+        plotlyProxy("long_profile") %>%
+          plotlyProxyInvoke("deleteTraces", 0) %>%
+          plotlyProxyInvoke("addTraces", r_val_local$proxy_first_axe$trace, 0) %>%
+          plotlyProxyInvoke("relayout", r_val_local$proxy_first_axe$layout)
 
+        # build ROE and background checkboxInput
+        if (is.null(r_val_local$ui_roe_profile)) {
+          # build ROE checkboxInput
+          r_val_local$ui_roe_profile = NULL # delete checkbox before creating new one
+          r_val_local$ui_roe_profile = checkboxInput(ns("roe_profile"),
+                                                     label = "Obstacles à l'Ecoulement",
+                                                     value = FALSE)
+
+          # build background classification checkboxInput
+          r_val_local$ui_background_profile = NULL # delete checkbox before creating new one
+          r_val_local$ui_background_profile = checkboxInput(ns("background_profile"),
+                                                            label = "Classifications en arrière-plan",
+                                                            value = FALSE)
+        }
       } else {
-        r_val_local$plot = lg_profile_empty()
+        r_val_local$plot = plot = lg_profile_empty()
+        r_val_local$ui_roe_profile = NULL # delete checkbox
+        r_val_local$ui_background_profile = NULL # delete checkbox
       }
     })
 
+
     #### add / remove 2nd axis ####
 
-    observeEvent(input$profile_sec_metric, {
+    observeEvent(c(input$profile_sec_metric, input$profile_first_metric), {
+      req(globals$axis_data())  # Ensure data exists
 
       # add second axis
-      if (!is.null(input$profile_sec_metric) && input$profile_sec_metric != "") {
+      if (!is.null(input$profile_sec_metric) && input$profile_sec_metric != "aucun") {
         # get metric title and type
         r_val_local$sec_metric_name =
           globals$metrics_params |> filter(metric_name == input$profile_sec_metric) |> pull(metric_title)
@@ -452,15 +471,15 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
 
 
     # observe the combined shapes and update the plotly plot
-    observe({
+    observe( {
+      req(r_val_local$plot)
+      req(input$profile_first_metric)
 
       if (!is.null(combined_shapes())) {
 
-        shapes <- combined_shapes()
-
         # update profile with changed shapes
         plotlyProxy("long_profile") %>%
-          plotlyProxyInvoke("relayout", list(shapes = shapes))
+          plotlyProxyInvoke("relayout", list(shapes = combined_shapes()))
       }
     })
   })
