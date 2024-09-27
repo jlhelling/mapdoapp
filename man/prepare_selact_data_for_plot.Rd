@@ -6,6 +6,7 @@
 \usage{
 prepare_selact_data_for_plot(
   data,
+  classification_type = "classes",
   france_strahler = c(6:0),
   basin_id = NULL,
   region_id = NULL,

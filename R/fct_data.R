@@ -502,7 +502,168 @@ data_get_distr_class <- function(con, class_name) {
 
 }
 
+#' Get statistics on classes distributions for different levels (france, basin, region) and a specified class
+#'
+#' @param con Connection to Postgresql database.
+#' @param manual_classes_table Dataframe of manually defined classes, with 4 columns: variable, class, greaterthan, color
+#'
+#' @importFrom dplyr case_when
+#' @importFrom DBI dbGetQuery
+#'
+#' @return
+#' Dataframe which contains the statistics for the specified class for different entities: France, Basins, Regions available on the server
+data_get_distr_class_man <- function(con, manual_classes_table) {
 
+  if (!is.null(manual_classes_table)) {
+
+    # get upper bounds for each class
+    upper_bound <- c(manual_classes_table$greaterthan[-1], NA)
+
+    # create classification query
+    classification_query <- paste0(
+      "CASE \n",
+      paste0(if_else(!is.na(upper_bound),
+                     paste0("WHEN ", manual_classes_table$variable, " >= ", manual_classes_table$greaterthan, " AND ",
+                            manual_classes_table$variable, " < ", upper_bound, " THEN '", manual_classes_table$class, "'"),
+                     paste0("WHEN ", manual_classes_table$variable, " >= ", manual_classes_table$greaterthan, " THEN '", manual_classes_table$class, "'")
+      ),
+      collapse = "\n"
+      ),
+      "\n ELSE 'unvalid'
+      END AS class_name",
+      collapse = "\n"
+    )
+
+
+    query <- paste0(
+      "SELECT\n",
+      "'France (total)' AS level_type,\n",
+      "'France' AS level_name,\n",
+      "0 AS strahler, \n",
+      "class_name, \n",
+      "COUNT(class_name) AS class_count\n",
+      "FROM (\n",
+      "SELECT\n",
+      "'France (total)' AS level_type,\n",
+      "'France' AS level_name,\n",
+      "0 AS strahler, \n",
+      classification_query, "\n",
+      "FROM network_metrics\n",
+      "WHERE network_metrics.gid_region IS NOT NULL\n",
+      ") AS subquery\n",
+      "GROUP BY class_name",
+
+      "\nUNION ALL\n",
+
+      "SELECT\n",
+      "'France' AS level_type,\n",
+      "'France' AS level_name,\n",
+      "strahler,\n",
+      "class_name, \n",
+      "COUNT(class_name) AS class_count\n",
+      "FROM (\n",
+      "SELECT\n",
+      "'France' AS level_type,\n",
+      "'France' AS level_name,\n",
+      "network_metrics.strahler AS strahler,\n",
+      classification_query, "\n",
+      "FROM network_metrics\n",
+      "WHERE network_metrics.gid_region IS NOT NULL\n",
+      ") AS subquery\n",
+      "GROUP BY strahler, class_name",
+
+      "\nUNION ALL\n",
+
+      # Basins
+      "SELECT\n",
+      "'Basin (total)' AS level_type,\n",
+      "level_name,\n",
+      "0 AS strahler,\n",
+      "class_name, \n",
+      "COUNT(class_name) AS class_count\n",
+      "FROM (\n",
+      "SELECT\n",
+      "'Basin (total)' AS level_type,\n",
+      "region_hydrographique.cdbh AS level_name,\n",
+      "0 AS strahler,\n",
+      classification_query, "\n",
+      "FROM network_metrics\n",
+      "LEFT JOIN region_hydrographique ON region_hydrographique.gid = network_metrics.gid_region\n",
+      "WHERE network_metrics.gid_region IS NOT NULL\n",
+      ") AS subquery\n",
+      "GROUP BY level_name, class_name\n",
+
+      "\nUNION ALL\n",
+
+      "SELECT\n",
+      "'Basin' AS level_type,\n",
+      "level_name,\n",
+      "strahler,\n",
+      "class_name, \n",
+      "COUNT(class_name) AS class_count\n",
+      "FROM (\n",
+      "SELECT\n",
+      "'Basin' AS level_type,\n",
+      "region_hydrographique.cdbh AS level_name,\n",
+      "network_metrics.strahler AS strahler,\n",
+      classification_query, "\n",
+      "FROM network_metrics\n",
+      "LEFT JOIN region_hydrographique ON region_hydrographique.gid = network_metrics.gid_region\n",
+      "WHERE network_metrics.gid_region IS NOT NULL\n",
+      ") AS subquery\n",
+      "GROUP BY level_name, strahler, class_name\n",
+
+      "\nUNION ALL\n",
+
+      # Regions
+      "SELECT\n",
+      "'Région (total)' AS level_type,\n",
+      "level_name,\n",
+      "0 AS strahler,\n",
+      "class_name, \n",
+      "COUNT(class_name) AS class_count\n",
+      "FROM (\n",
+      "SELECT\n",
+      "'Région (total)' AS level_type,\n",
+      "CAST(network_metrics.gid_region as varchar(10)) AS level_name,\n",
+      "0 AS strahler,\n",
+      classification_query, "\n",
+      "FROM network_metrics\n",
+      "LEFT JOIN region_hydrographique ON region_hydrographique.gid = network_metrics.gid_region\n",
+      "WHERE network_metrics.gid_region IS NOT NULL\n",
+      ") AS subquery\n",
+      "GROUP BY level_name, class_name\n",
+
+      "\nUNION ALL\n",
+
+      "SELECT\n",
+      "'Région' AS level_type,\n",
+      "level_name,\n",
+      "strahler,\n",
+      "class_name, \n",
+      "COUNT(class_name) AS class_count\n",
+      "FROM (\n",
+      "SELECT\n",
+      "'Région' AS level_type,\n",
+      "CAST(network_metrics.gid_region as varchar(10)) AS level_name,\n",
+      "network_metrics.strahler AS strahler,\n",
+      classification_query, "\n",
+      "FROM network_metrics\n",
+      "LEFT JOIN region_hydrographique ON region_hydrographique.gid = network_metrics.gid_region\n",
+      "WHERE network_metrics.gid_region IS NOT NULL\n",
+      ") AS subquery\n",
+      "GROUP BY level_name, strahler, class_name;\n"
+    )
+
+    data <- DBI::dbGetQuery(conn = con, statement = query) %>%
+      na.omit()
+
+    return(data)
+  } else {
+    return(NULL)
+  }
+
+}
 
 # data_get_stats_classes_proposed <- function(con) {
 #

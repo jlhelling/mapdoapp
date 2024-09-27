@@ -24,7 +24,7 @@ mod_expl_classes_manual_ui <- function(id){
     ),
     fluidRow(
       style = "margin-bottom: 0px; padding-bottom: 0px;",
-        uiOutput(ns("classificationUI"))
+      uiOutput(ns("classificationUI"))
     )
   )
 }
@@ -125,24 +125,24 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
 
         # create classification UI
         r_val_local$classification_ui <- fluidRow(
-            page_sidebar(
-              sidebar = sidebar(
-                fluidRow(
-                  column(width = 7,
-                         numericInput(inputId = ns("man_grouping_quantile"),
-                                      "Incl. valeurs aberrantes [%]", value = 95, min = 0, max = 100)
-                  ),
-                  column(width = 5,
-                         numericInput(inputId = ns("man_grouping_no_classes"),
-                                      "No. classes", value = 4, min = 2, max = 10, step = 1)
-                  ),
-                  uiOutput(ns("scale_select_UI")),
-                  actionButton(inputId = ns("recalculate_classes_button"), "Recalculer classes")
-                ), open = "closed", width = 220, position = "right"
-              ),
-              uiOutput(ns("reactable_classes")),
-              actionButton(inputId = ns("apply_to_map_button"), "Ajouter à la carte")
-            ))
+          page_sidebar(
+            sidebar = sidebar(
+              fluidRow(
+                column(width = 7,
+                       numericInput(inputId = ns("man_grouping_quantile"),
+                                    "Incl. valeurs aberrantes [%]", value = 95, min = 0, max = 100)
+                ),
+                column(width = 5,
+                       numericInput(inputId = ns("man_grouping_no_classes"),
+                                    "No. classes", value = 4, min = 2, max = 10, step = 1)
+                ),
+                uiOutput(ns("scale_select_UI")),
+                actionButton(inputId = ns("recalculate_classes_button"), "Recalculer classes")
+              ), open = "closed", width = 220, position = "right"
+            ),
+            uiOutput(ns("reactable_classes")),
+            actionButton(inputId = ns("apply_to_map_button"), "Ajouter à la carte")
+          ))
 
         # create classes-table to initialize classes UI
         r_val_local$initial_classes_table = create_df_input(
@@ -302,7 +302,6 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
     })
 
 
-    # TODO
     #### apply-to-map button clicked ####
     observeEvent(input$apply_to_map_button,{
 
@@ -362,11 +361,13 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
       }
     })
 
+
+    # apply classification to current axis data
     observeEvent(c(globals$axis_data(), r_val$manual_classes_table), {
-      # proposed classification applied
+      # manual classification applied
       if (r_val$visualization == "manual" && !is.null(globals$axis_data())) {
         r_val$axis_data_classified = globals$axis_data() %>%
-        assign_classes_manual(classes = r_val$manual_classes_table)
+          assign_classes_manual(classes = r_val$manual_classes_table)
       }
     })
 

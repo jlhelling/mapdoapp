@@ -162,7 +162,7 @@ mod_analysis_server <- function(id, con, r_val, globals){
     observeEvent(c(globals$classes_stats(), r_val$basin_id, r_val$axis_strahler,
                    r_val$region_id, r_val$axis_data_classified, r_val$tab_page), {
 
-                     if (r_val$tab_page == "Analyse" && r_val$visualization == "classes") {
+                     if (r_val$tab_page == "Analyse") {
 
                        if (exists("classes_stats", where = globals) && exists("metric_stats", where = globals)) {
                          if (!is.null(globals$classes_stats()) && !is.null(globals$metric_stats())) {
@@ -188,14 +188,20 @@ mod_analysis_server <- function(id, con, r_val, globals){
                              scale_name = "Sélection"
                            )
 
-                           # current selection
-                           r_val_local$selact_plot = analysis_plot_classes_distr(
-                             df = prepare_selact_data_for_plot(globals$classes_stats(),
-                                                               basin_id = r_val$basin_id,
-                                                               region_id = r_val$region_id,
-                                                               strahler = strahler_sel,
-                                                               axis_data = r_val$axis_data_classified)
-                           )
+
+                           # create plot
+                           if (r_val$visualization == "classes") {
+                             r_val_local$selact_plot = analysis_plot_classes_distr(
+                               df = prepare_selact_data_for_plot(globals$classes_stats(),
+                                                                 basin_id = r_val$basin_id,
+                                                                 region_id = r_val$region_id,
+                                                                 strahler = strahler_sel,
+                                                                 axis_data = r_val$axis_data_classified)
+                             )
+                           } else {
+                             r_val$classes_man_stats <- data_get_distr_class_man(con = con, manual_classes_table = r_val$manual_classes_table)
+                           }
+
                          }
                        }
                      }
