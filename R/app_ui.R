@@ -29,6 +29,9 @@ app_ui <- function(request){
       tabPanel("Analyse",
                mod_analysis_ui("analysis_1")
       ),
+      tabPanel("Télechargement",
+               # mod_download_ui("download_1")
+      ),
       tabPanel("Documentation",
                icon = icon("info"),
                mod_documentation_ui("documentation_1")

@@ -1,3 +1,7 @@
+# Set limits for cache
+shinyOptions(cache = cachem::cache_mem(max_size = 4e9, # 4 GB memory cache limit
+                                       max_age = 86400)) # 1 day age cache limit
+
 #' The application server-side
 #'
 #' @param input,output,session Internal parameters for {shiny}.
@@ -20,33 +24,33 @@ app_server <- function(input, output, session) {
 
     # UI
     selection_text = "", # description text indicating basin, region, axis
-    visualization = "classes", # stating which visualization is currently active
-    classes_proposed_selected = NULL,
+    visualization = "classes", # stating which visualization is currently active ("classes" vs "manual")
+    classes_proposed_selected = NULL, # selected class in proposed classes tab
     tab_page = NULL, # selected tab in main navbarpage
     tab_classes = NULL, # selected tab in classes tabset
     tab_plots = NULL, # selected tab in plots tabset
 
     # map
-    map_proxy = NULL,
+    map_proxy = NULL, # proxy object for map
     opacity_basins = list(clickable = 0.01, not_clickable = 0.10), # opacity value to inform the user about available bassins and regions
     leaflet_hover_measure = NULL, # measure to be displayed in the leaflet hover
 
     # geo objects
-    basin_name = NULL,
-    basin_id = NULL,
-    region_name = NULL,
-    region_id = NULL,
-    axis_name = NULL,
-    axis_id = NULL,
-    axis_data = NULL,
-    axis_data_classified = NULL,
-    axis_strahler = NULL,
-    swath_id = NULL,
-    swath_data_section = NULL,
-    swath_data_dgo = NULL,
+    basin_name = NULL, # name of selected basin
+    basin_id = NULL, # id of selected basin
+    region_name = NULL, # name of selected region
+    region_id = NULL, # id of selected region
+    axis_name = NULL, # name of selected axis
+    axis_id = NULL, # id of selected axis
+    axis_data = NULL, # data of selected axis
+    axis_data_classified = NULL, # data of selected axis classified
+    axis_strahler = NULL, # strahler order of selected axis
+    swath_id = NULL, # id of selected swath
+    swath_data_section = NULL, # data of selected swath crosssection
+    swath_data_dgo = NULL, # data of selected swath dgo
 
     # first time clicked
-    axis_clicked = FALSE,
+    axis_clicked = FALSE, # if axis was clicked
 
     manual_classes_table = NULL, # values of classes and assigned colors from manual classification
   )
@@ -105,7 +109,6 @@ app_server <- function(input, output, session) {
     } else {
       NULL
     }
-
   }) %>%
     bindCache(globals$regions_gids_key, r_val$classes_proposed_selected)
 

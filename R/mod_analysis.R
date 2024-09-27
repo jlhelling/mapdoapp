@@ -92,6 +92,8 @@ mod_analysis_ui <- function(id){
                  )
                )
       ),
+      tabPanel("Analyse Bimetrique"
+               ),
       type = "pills"
     ) #tabsetpanel
   )
@@ -149,7 +151,8 @@ mod_analysis_server <- function(id, con, r_val, globals){
     # render regions plot
     output$regions_plotUI <- renderPlotly({
       r_val_local$regions_plot
-    })
+    })  %>%
+      bindCache(c(r_val_local$regions_plot, globals$regions_gids_key))
 
 
     ### Observers ####
