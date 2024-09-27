@@ -15,7 +15,7 @@
 #' @export
 cr_profile_empty <- function() {
   temp <- data.frame()
-  plot <- plot_ly(data = temp, source = "plot_pg") %>%
+  plot <- plot_ly(data = temp, source = "T", type = 'scatter', mode = 'lines+markers') %>%
     layout(
       title = list(
         text = "Sélectionnez un cours d'eau et un tronçon sur la carte pour afficher la section",
