@@ -162,7 +162,7 @@ mod_analysis_server <- function(id, con, r_val, globals){
     observeEvent(c(globals$classes_stats(), r_val$basin_id, r_val$axis_strahler,
                    r_val$region_id, r_val$axis_data_classified, r_val$tab_page), {
 
-                     if (r_val$tab_page == "Analyse") {
+                     if (r_val$tab_page == "Analyse" && r_val$visualization == "classes") {
 
                        if (exists("classes_stats", where = globals) && exists("metric_stats", where = globals)) {
                          if (!is.null(globals$classes_stats()) && !is.null(globals$metric_stats())) {
@@ -234,7 +234,7 @@ mod_analysis_server <- function(id, con, r_val, globals){
     ##### Regions tab ####
     # listen to opening of tab --> load stats if not already loaded, prepare them for reactable
     observe({
-      if (r_val$tab_page == "Analyse" && exists("metric_stats", where = globals)) {
+      if (r_val$tab_page == "Analyse" && exists("metric_stats", where = globals) && r_val$visualization == "classes") {
         # prepare stats for reactable
         r_val_local$region_stats_prep = prepare_regions_stats_for_table(globals$metric_stats(),
                                                                         region_names = globals$regions)
@@ -247,7 +247,7 @@ mod_analysis_server <- function(id, con, r_val, globals){
 
     # plot initialisation
     observeEvent(c(globals$classes_stats(), r_val$tab_page), {
-      if (r_val$tab_page == "Analyse" && !is.null(globals$classes_stats())) {
+      if (r_val$tab_page == "Analyse" && !is.null(globals$classes_stats()) && r_val$visualization == "classes") {
 
         # check if strahler order is selected or whole region should be shown
         if (is.null(input$regions_strahler_select) ) { strahler_sel <- 0 }
