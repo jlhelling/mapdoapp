@@ -23,6 +23,7 @@
 #' @export
 prepare_selact_data_for_plot <- function(data,
                                          classification_type = "classes",
+                                         manual_classes_table = NULL,
                                          france_strahler = c(6:0),
                                          basin_id = NULL,
                                          region_id = NULL, strahler = 0, region_names = NULL,
@@ -64,7 +65,8 @@ prepare_selact_data_for_plot <- function(data,
       ungroup() %>%
       rename(class_count = n) %>%
       rowwise() %>%
-      mutate(scale = "Axe", color = case_when(classification_type == "classes" ~ get_color_by_class(class_name, colors_list = params_classes_colors())))
+      mutate(scale = "Axe", color = case_when(classification_type == "classes" ~ get_color_by_class(class_name, colors_list = params_classes_colors()),
+                                              classification_type == "manual" ~ manual_classes_table %>% filter(class == class_name) %>% pull(color)))
   }
 
   # default and only France-scale stats
@@ -82,16 +84,33 @@ prepare_selact_data_for_plot <- function(data,
     ungroup()
 
   # create stats
-  df <- data %>%
-    filter(class_name != "unvalid") %>%
-    rowwise() %>%
-    mutate(color = case_when(classification_type == "classes" ~ get_color_by_class(class_name, colors_list = params_classes_colors()))) %>%
-    left_join(group_counts, by = join_by(level_type, level_name, strahler)) %>%
-    mutate(share = round(class_count/count_tot*100, 2)) %>%
-    tidyr::unite(scale, c("level_type", "level_name", "strahler")) %>%
-    filter(scale %in% filter) %>%
-    arrange(match(scale, filter)) %>%
-    select(-count_tot)
+
+  if (classification_type == "classes") {
+    df <- data %>%
+      filter(class_name != "unvalid") %>%
+      rowwise() %>%
+      mutate(color = get_color_by_class(class_name, colors_list = params_classes_colors())) %>%
+      left_join(group_counts, by = join_by(level_type, level_name, strahler)) %>%
+      mutate(share = round(class_count/count_tot*100, 2)) %>%
+      tidyr::unite(scale, c("level_type", "level_name", "strahler")) %>%
+      filter(scale %in% filter) %>%
+      arrange(match(scale, filter)) %>%
+      select(-count_tot)
+  }
+
+  # manual classification
+  else if (classification_type == "manual") {
+    df <- data %>%
+      filter(class_name != "unvalid") %>%
+      rowwise() %>%
+      mutate(color = manual_classes_table %>% filter(class == class_name) %>% pull(color)) %>%
+      left_join(group_counts, by = join_by(level_type, level_name, strahler)) %>%
+      mutate(share = round(class_count/count_tot*100, 2)) %>%
+      tidyr::unite(scale, c("level_type", "level_name", "strahler")) %>%
+      filter(scale %in% filter) %>%
+      arrange(match(scale, filter)) %>%
+      select(-count_tot)
+  }
 
   # add axis data if available
   if (!is.null(axis_data)) {

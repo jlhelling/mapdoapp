@@ -502,7 +502,7 @@ data_get_distr_class <- function(con, class_name) {
 
 }
 
-#' Get statistics on classes distributions for different levels (france, basin, region) and a specified class
+#' Get statistics on classes distributions for different levels (france, basin, region) and manually specified classes
 #'
 #' @param con Connection to Postgresql database.
 #' @param manual_classes_table Dataframe of manually defined classes, with 4 columns: variable, class, greaterthan, color

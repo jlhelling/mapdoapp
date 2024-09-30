@@ -2,7 +2,7 @@
 % Please edit documentation in R/fct_data.R
 \name{data_get_distr_class_man}
 \alias{data_get_distr_class_man}
-\title{Get statistics on classes distributions for different levels (france, basin, region) and a specified class}
+\title{Get statistics on classes distributions for different levels (france, basin, region) and manually specified classes}
 \usage{
 data_get_distr_class_man(con, manual_classes_table)
 }
@@ -15,5 +15,5 @@ data_get_distr_class_man(con, manual_classes_table)
 Dataframe which contains the statistics for the specified class for different entities: France, Basins, Regions available on the server
 }
 \description{
-Get statistics on classes distributions for different levels (france, basin, region) and a specified class
+Get statistics on classes distributions for different levels (france, basin, region) and manually specified classes
 }

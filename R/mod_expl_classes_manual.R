@@ -336,7 +336,6 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
           }
         }
 
-
         # sort classes
         classes <- r_val$manual_classes_table %>%
           dplyr::arrange(greaterthan) %>%
@@ -358,6 +357,7 @@ mod_expl_classes_manual_server <- function(id, con, r_val, globals){
                                  metric = classes$variable[1],
                                  sld_legend = r_val$sld_body,
                                  group = globals$map_group_params[["network"]])
+
       }
     })
 

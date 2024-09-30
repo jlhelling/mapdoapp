@@ -53,6 +53,7 @@ app_server <- function(input, output, session) {
     axis_clicked = FALSE, # if axis was clicked
 
     manual_classes_table = NULL, # values of classes and assigned colors from manual classification
+    classes_man_stats = NULL, # metric statistics for manual classes
   )
 
   ### GLOBALS ####
