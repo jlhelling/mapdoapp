@@ -5,7 +5,6 @@
 #' and generates color mappings.
 #'
 #' @param data A dataframe containing classified network data with regional and axis information.
-#' @param france_strahler Numeric vector representing Strahler orders for France. Default is c(6:0).
 #' @param basin_id Integer specifying the basin ID. Default is NULL.
 #' @param region_id Integer specifying the region ID. Default is NULL.
 #' @param strahler Integer for Strahler order. Default is 0.
@@ -24,23 +23,25 @@
 prepare_selact_data_for_plot <- function(data,
                                          classification_type = "classes",
                                          manual_classes_table = NULL,
-                                         france_strahler = c(6:0),
                                          basin_id = NULL,
                                          region_id = NULL, strahler = 0, region_names = NULL,
                                          axis_data = NULL) {
+
 
   # create filter to select scales ------------------------------------------
 
   # France-Basin scale stats
   if (!is.null(basin_id) & is.null(region_id) & is.null(axis_data)) {
-    filter <- c("France (total)_France_0",
+    filter <- c(paste0("France (total)_France_", strahler),
+                paste0("France_France_", strahler),
                 paste0("Basin (total)_", basin_id, "_", strahler),
                 paste0("Basin_", basin_id, "_", strahler))
   }
 
   # France-Basin-Region scale stats
   else if (!is.null(basin_id) & !is.null(region_id) & is.null(axis_data)) {
-    filter <- c("France (total)_France_0",
+    filter <- c(paste0("France (total)_France_", strahler),
+                paste0("France_France_", strahler),
                 paste0("Basin (total)_", basin_id, "_", strahler),
                 paste0("Basin_", basin_id, "_", strahler),
                 paste0("Région (total)_", region_id, "_", strahler),
@@ -50,29 +51,40 @@ prepare_selact_data_for_plot <- function(data,
   # France-Basin-Region-Axis scale stats
   else if (!is.null(basin_id) & !is.null(region_id) & !is.null(axis_data)) {
 
-    filter <- c("France (total)_France_0",
+    filter <- c(paste0("France (total)_France_", strahler),
+                paste0("France_France_", strahler),
                 paste0("Basin (total)_", basin_id, "_", strahler),
                 paste0("Basin_", basin_id, "_", strahler),
                 paste0("Région (total)_", region_id, "_", strahler),
                 paste0("Région_", region_id, "_", strahler),
                 "Axe")
 
-    # create axis stats
     axis_data <- axis_data %>%
       filter(class_name != "unvalid") %>%
       count(class_name) %>%
       mutate(share = round((n / sum(n) * 100), 2)) %>%
       ungroup() %>%
-      rename(class_count = n) %>%
-      rowwise() %>%
-      mutate(scale = "Axe", color = case_when(classification_type == "classes" ~ get_color_by_class(class_name, colors_list = params_classes_colors()),
-                                              classification_type == "manual" ~ manual_classes_table %>% filter(class == class_name) %>% pull(color)))
+      rename(class_count = n)
+
+    # create axis stats
+    if (classification_type == "classes") {
+      axis_data <- axis_data %>%
+        rowwise() %>%
+        mutate(scale = "Axe", color = get_color_by_class(class_name, colors_list = params_classes_colors()))
+    }
+
+    else if(classification_type == "manual") {
+      axis_data <- axis_data %>%
+        rowwise() %>%
+        mutate(scale = "Axe", color = manual_classes_table %>% filter(class == class_name) %>% pull(color))
+    }
+
   }
 
   # default and only France-scale stats
   else {
     filter <- c("France (total)_France_0",
-                paste0("France_France_", france_strahler))
+                paste0("France_France_", strahler))
   }
 
   # prepare data ------------------------------------------------------------

@@ -127,7 +127,7 @@ mod_analysis_server <- function(id, con, r_val, globals){
       basin_id = NULL,
       region_id = NULL,
       axis_id = NULL,
-      strahler_sel = NULL,
+      strahler_sel = 10,
       selact_metric_select = NULL,
 
     )
@@ -181,63 +181,89 @@ mod_analysis_server <- function(id, con, r_val, globals){
 
           if (!is.null(input$selact_strahler_select) && !is.null(input$selact_metric_select)) {
 
-            # check if data have not already been printed in table and plot
-            if (!identical(r_val$classes_proposed_selected, r_val_local$classes_proposed_selected) ||
-                !identical(r_val$manual_classes_table, r_val_local$manual_classes_table) ||
-                !identical(r_val$basin_id, r_val_local$basin_id) ||
-                !identical(r_val$region_id, r_val_local$region_id) ||
-                !identical(r_val$axis_id, r_val_local$axis_id) ||
-                input$selact_strahler_select != r_val_local$strahler_sel ||
-                input$selact_metric_select != r_val_local$selact_metric_select) {
+            browser()
+
+            # check for changes in variables
+
+            changes_table <- as.logical(
+              !utils_is_identical_or_null(r_val$basin_id, r_val_local$basin_id) ||
+                !utils_is_identical_or_null(r_val$region_id, r_val_local$region_id) ||
+                !utils_is_identical_or_null(r_val$axis_id, r_val_local$axis_id) ||
+                !utils_is_vector_identical(input$selact_strahler_select, r_val_local$strahler_sel) ||
+                !utils_is_vector_identical(input$selact_metric_select, r_val_local$selact_metric_select)
+            )
+
+            changes_plot <- as.logical(
+              !utils_is_identical_or_null(r_val$classes_proposed_selected, r_val_local$classes_proposed_selected) ||
+                !utils_is_vector_identical(r_val$manual_classes_table, r_val_local$manual_classes_table) ||
+                !utils_is_identical_or_null(r_val$basin_id, r_val_local$basin_id) ||
+                !utils_is_identical_or_null(r_val$region_id, r_val_local$region_id) ||
+                !utils_is_identical_or_null(r_val$axis_id, r_val_local$axis_id) ||
+                !utils_is_vector_identical(input$selact_strahler_select, r_val_local$strahler_sel)
+            )
+
+            # run code only when changes detected
+            if (changes_table || changes_plot) {
 
               if (!is.null(globals$classes_stats()) && !is.null(globals$metric_stats())) {
 
-                # check if strahler order is selected or whole dataset should be shown
-                if (!is.null(input$selact_strahler_select)  && !is.null(r_val$basin_id)) {
-                  r_val_local$strahler_sel <- input$selact_strahler_select }
-                else if (!is.null(input$selact_strahler_select) && is.null(r_val$basin_id)) {
-                  r_val_local$strahler_sel <- c("6", "5", "4", "3", "2", "1", "0") }
-                else { r_val_local$strahler_sel <- "0" }
 
-                # get dataset of actual selection
-                r_val_local$selact_stats_prep = prepare_selact_stats_for_table(globals$metric_stats(),
-                                                                               basin_id = r_val$basin_id,
-                                                                               region_id = r_val$region_id,
-                                                                               axis_data = r_val$axis_data_classified)
-
-                # create table
-                r_val_local$selact_table = create_analysis_table(
-                  r_val_local$selact_stats_prep  %>%
-                    filter(strahler %in% r_val_local$strahler_sel),
-                  input$selact_metric_select,
-                  scale_name = "Sélection"
-                )
+                # update reactive values with current selection
+                r_val_local$strahler_sel = input$selact_strahler_select
+                r_val_local$selact_metric_select = input$selact_metric_select
+                r_val_local$manual_classes_table = r_val$manual_classes_table
+                r_val_local$basin_id = r_val$basin_id
+                r_val_local$region_id = r_val$region_id
+                r_val_local$axis_id = r_val$axis_id
 
 
-                # create plot, either with proposed classes or with manual classes
-                if (r_val$visualization == "classes") {
-                  r_val_local$selact_plot = analysis_plot_classes_distr(
-                    df = prepare_selact_data_for_plot(globals$classes_stats(),
-                                                      basin_id = r_val$basin_id,
-                                                      region_id = r_val$region_id,
-                                                      strahler = r_val_local$strahler_sel,
-                                                      axis_data = r_val$axis_data_classified)
+
+                # change table only when changes that apply to them are detected
+                if (changes_table) {
+                  # get dataset of actual selection
+                  r_val_local$selact_stats_prep = prepare_selact_stats_for_table(globals$metric_stats(),
+                                                                                 basin_id = r_val_local$basin_id,
+                                                                                 region_id = r_val_local$region_id,
+                                                                                 axis_data = r_val$axis_data_classified)
+
+                  # create table
+                  r_val_local$selact_table = create_analysis_table(
+                    r_val_local$selact_stats_prep  %>%
+                      filter(strahler %in% r_val_local$strahler_sel | name == "Axe"),
+                    r_val_local$selact_metric_select,
+                    scale_name = "Sélection"
                   )
                 }
 
-                else if (r_val$visualization == "manual") {
 
-                  # obtain metric stats for manual classification
-                  r_val$classes_man_stats = data_get_distr_class_man(con = con, manual_classes_table = r_val$manual_classes_table)
-                  r_val_local$selact_plot = analysis_plot_classes_distr(
-                    df = prepare_selact_data_for_plot(r_val$classes_man_stats,
-                                                      classification_type = "manual",
-                                                      manual_classes_table = r_val$manual_classes_table,
-                                                      basin_id = r_val$basin_id,
-                                                      region_id = r_val$region_id,
-                                                      strahler = r_val_local$strahler_sel,
-                                                      axis_data = r_val$axis_data_classified)
-                  )
+                # change plot only when changes that apply to them are detected
+                if (changes_plot) {
+
+                  # create plot, either with proposed classes or with manual classes
+                  if (r_val$visualization == "classes") {
+                    r_val_local$selact_plot = analysis_plot_classes_distr(
+                      df = prepare_selact_data_for_plot(globals$classes_stats(),
+                                                        basin_id = r_val_local$basin_id,
+                                                        region_id = r_val_local$region_id,
+                                                        strahler = r_val_local$strahler_sel,
+                                                        axis_data = r_val$axis_data_classified)
+                    )
+                  }
+
+                  else if (r_val$visualization == "manual") {
+
+                    # obtain metric stats for manual classification
+                    r_val$classes_man_stats = data_get_distr_class_man(con = con, manual_classes_table = r_val_local$manual_classes_table)
+                    r_val_local$selact_plot = analysis_plot_classes_distr(
+                      df = prepare_selact_data_for_plot(r_val$classes_man_stats,
+                                                        classification_type = "manual",
+                                                        manual_classes_table = r_val_local$manual_classes_table,
+                                                        basin_id = r_val_local$basin_id,
+                                                        region_id = r_val_local$region_id,
+                                                        strahler = r_val_local$strahler_sel,
+                                                        axis_data = r_val$axis_data_classified)
+                    )
+                  }
                 }
               }
             }
@@ -247,35 +273,6 @@ mod_analysis_server <- function(id, con, r_val, globals){
         }
       }
     })
-
-
-    # # listen to actualization button --> create reactable with selected metric and strahler order
-    # observeEvent(c(input$selact_apply_button, r_val_local$selact_stats_prep),{
-    #
-    #   # check if stats are already loaded and if metric is selected
-    #   if (!is.null(r_val_local$selact_stats_prep) && !is.null(input$selact_metric_select)) {
-    #
-    #     # check if strahler order is selected or whole dataset should be shown
-    #     if (is.null(input$selact_strahler_select) ) { strahler_sel <- "0" }
-    #     else { strahler_sel <- input$selact_strahler_select}
-    #
-    #
-    #     # update reactable table and plot
-    #     r_val_local$selact_table = create_analysis_table(r_val_local$selact_stats_prep %>%
-    #                                                        filter(strahler %in% strahler_sel | name == "Axe"),
-    #                                                      input$selact_metric_select, scale_name = "Sélection")
-    #     # current selection
-    #     r_val_local$selact_plot = analysis_plot_classes_distr(
-    #       df = prepare_selact_data_for_plot(globals$classes_stats(),
-    #                                         basin_id = r_val$basin_id,
-    #                                         region_id = r_val$region_id,
-    #                                         strahler = strahler_sel,
-    #                                         axis_data = r_val$axis_data_classified)
-    #     )
-    #   }
-    #
-    # })
-
 
 
     ##### Regions tab ####

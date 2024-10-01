@@ -8,7 +8,6 @@ prepare_selact_data_for_plot(
   data,
   classification_type = "classes",
   manual_classes_table = NULL,
-  france_strahler = c(6:0),
   basin_id = NULL,
   region_id = NULL,
   strahler = 0,
@@ -18,8 +17,6 @@ prepare_selact_data_for_plot(
 }
 \arguments{
 \item{data}{A dataframe containing classified network data with regional and axis information.}
-
-\item{france_strahler}{Numeric vector representing Strahler orders for France. Default is c(6:0).}
 
 \item{basin_id}{Integer specifying the basin ID. Default is NULL.}
 
