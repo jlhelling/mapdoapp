@@ -15,7 +15,22 @@ app_ui <- function(request){
       .nav-pills > li > a:hover {
         background-color: #E3EBF7; /* Background color on hover */
       }
+
+      .help-btn {
+          position: absolute;
+          right: 10px;
+          top: 18px;
+          z-index: 1000; /* Make sure it's above other UI elements */
+        }
+        .navbar {
+          position: relative;
+        }
     ")
+    ),
+
+    # Define the help button outside of navbarPage, but position it inside with CSS
+    div(class = "help-btn",
+        mod_help_guide_ui("cicerone") # Use the cicerone UI module here
     ),
 
     navbarPage(
@@ -32,7 +47,7 @@ app_ui <- function(request){
       tabPanel("Télechargement",
                # mod_download_ui("download_1")
       ),
-      tabPanel("Documentation",
+      tabPanel("Informations",
                icon = icon("info"),
                mod_documentation_ui("documentation_1")
       ),
