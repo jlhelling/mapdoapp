@@ -176,8 +176,6 @@ mod_analysis_server <- function(id, con, r_val, globals){
       # check if Analysis-tab open
       if (r_val$tab_page == "Analyse") {
 
-        browser()
-
         # check if stats loaded
         if (exists("classes_stats", where = globals) && (exists("metric_stats", where = globals))) {
 
