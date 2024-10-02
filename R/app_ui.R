@@ -16,21 +16,23 @@ app_ui <- function(request){
         background-color: #E3EBF7; /* Background color on hover */
       }
 
+      /* Help-guide button placement */
       .help-btn {
           position: absolute;
           right: 10px;
           top: 18px;
           z-index: 1000; /* Make sure it's above other UI elements */
         }
-        .navbar {
-          position: relative;
-        }
+
+      .navbar {
+        position: relative;
+      }
     ")
     ),
 
     # Define the help button outside of navbarPage, but position it inside with CSS
     div(class = "help-btn",
-        mod_help_guide_ui("cicerone") # Use the cicerone UI module here
+        mod_help_guide_ui("help_guide_1") # Use the cicerone UI module here
     ),
 
     navbarPage(

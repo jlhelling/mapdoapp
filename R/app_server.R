@@ -124,6 +124,7 @@ app_server <- function(input, output, session) {
   mod_explore_server("explore_1", con, r_val, globals)
   mod_analysis_server("analysis_1", con, r_val, globals)
   mod_documentation_server("documentation_1")
+  mod_help_guide_server("help_guide_1", r_val)
 
   # tabs
   mod_expl_classes_proposed_server("expl_classes_proposed_1", r_val, globals)
