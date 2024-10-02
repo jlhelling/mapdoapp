@@ -21,26 +21,6 @@ utils_url_remonterletemps <- function(lng=6.869433,
 }
 
 
-#' Check if two objects are identical or if one is NULL
-#'
-#' This function compares two objects and returns `TRUE` if either is `NULL` or if both are identical.
-#'
-#' @param x First object to compare. Can be any R object.
-#' @param y Second object to compare. Can be any R object.
-#'
-#' @return A logical value (`TRUE` or `FALSE`). Returns `TRUE` if either `x` or `y` is `NULL` or if they are identical, otherwise `FALSE`.
-#' @export
-#'
-#' @examples
-#' is_identical_or_null(NULL, 1)       # TRUE
-#' is_identical_or_null(5, 5)          # TRUE
-#' is_identical_or_null(5, 6)          # FALSE
-#' is_identical_or_null(NULL, NULL)    # TRUE
-utils_is_identical_or_null <- function(x, y) {
-  is.null(x) || is.null(y) || identical(x, y)
-}
-
-
 #' Check if two vectors are identical in length and content
 #'
 #' This function compares two vectors and returns `TRUE` if they have the same length and the same elements (irrespective of order).

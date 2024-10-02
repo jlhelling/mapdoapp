@@ -6,6 +6,8 @@
 \usage{
 prepare_regions_data_for_plot(
   data,
+  classification_type = "classes",
+  manual_classes_table = NULL,
   region_id = NULL,
   region_strahler = 0,
   region_names = NULL

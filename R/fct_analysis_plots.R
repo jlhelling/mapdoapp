@@ -172,6 +172,8 @@ prepare_selact_data_for_plot <- function(data,
 #' }
 #' @export
 prepare_regions_data_for_plot <- function(data,
+                                          classification_type = "classes",
+                                          manual_classes_table = NULL,
                                           region_id = NULL, region_strahler = 0, region_names = NULL) {
 
   # create filter to select scales ------------------------------------------
@@ -195,16 +197,34 @@ prepare_regions_data_for_plot <- function(data,
     ungroup()
 
   # create stats
-  df <- data %>%
-    filter(class_name != "unvalid") %>%
-    rowwise() %>%
-    mutate(color = get_color_by_class(class_name, colors_list = params_classes_colors())) %>%
-    left_join(group_counts, by = join_by(level_type, level_name, strahler)) %>%
-    mutate(share = round(class_count/count_tot*100, 2)) %>%
-    tidyr::unite(scale, c("level_type", "level_name", "strahler")) %>%
-    filter(scale %in% filter) %>%
-    arrange(match(scale, filter)) %>%
-    select(-count_tot)
+  # create stats
+
+  if (classification_type == "classes") {
+    df <- data %>%
+      filter(class_name != "unvalid") %>%
+      rowwise() %>%
+      mutate(color = get_color_by_class(class_name, colors_list = params_classes_colors())) %>%
+      left_join(group_counts, by = join_by(level_type, level_name, strahler)) %>%
+      mutate(share = round(class_count/count_tot*100, 2)) %>%
+      tidyr::unite(scale, c("level_type", "level_name", "strahler")) %>%
+      filter(scale %in% filter) %>%
+      arrange(match(scale, filter)) %>%
+      select(-count_tot)
+  }
+
+  # manual classification
+  else if (classification_type == "manual") {
+    df <- data %>%
+      filter(class_name != "unvalid") %>%
+      rowwise() %>%
+      mutate(color = manual_classes_table %>% filter(class == class_name) %>% pull(color)) %>%
+      left_join(group_counts, by = join_by(level_type, level_name, strahler)) %>%
+      mutate(share = round(class_count/count_tot*100, 2)) %>%
+      tidyr::unite(scale, c("level_type", "level_name", "strahler")) %>%
+      filter(scale %in% filter) %>%
+      arrange(match(scale, filter)) %>%
+      select(-count_tot)
+  }
 
   # Rename scale levels -----------------------------------------------------
 
