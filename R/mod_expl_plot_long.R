@@ -16,6 +16,7 @@ mod_expl_plot_long_ui <- function(id){
   tagList(
     useShinyjs(),
     div(
+      id = ns("longitudinal_profile"),
       fluidRow(
         style = "margin-top: 10px;",
         column(width = 10,

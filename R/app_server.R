@@ -29,6 +29,7 @@ app_server <- function(input, output, session) {
     tab_page = NULL, # selected tab in main navbarpage
     tab_classes = NULL, # selected tab in classes tabset
     tab_plots = NULL, # selected tab in plots tabset
+    tab_analysis = NULL, # selected tab in analysis tabset
 
     # map
     map_proxy = NULL, # proxy object for map

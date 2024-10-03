@@ -281,7 +281,7 @@ mod_explore_server <- function(id, con, r_val, globals){
     observe({
 
       r_val$selection_text = dplyr::case_when(
-        !is.null(r_val$basin_name) & is.null(r_val$region_name) & is.null(r_val$axis_name) ~ paste0("Bassin : ", r_val$basin_name),
+        !is.null(r_val$basin_name) & is.null(r_val$region_name) & is.null(r_val$axis_name) ~ paste0("Bassin :", r_val$basin_name),
         !is.null(r_val$basin_name) & !is.null(r_val$region_name) & is.null(r_val$axis_name) ~ paste0("Bassin : ", r_val$basin_name,
                                                                                                      "  |  Région : ", r_val$region_name),
         !is.null(r_val$basin_name) & !is.null(r_val$region_name) & !is.null(r_val$axis_name) ~ paste0("Bassin : ", r_val$basin_name,

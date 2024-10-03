@@ -18,13 +18,16 @@ mod_expl_classes_manual_ui <- function(id){
   tagList(
     golem_add_external_resources(),
     useShinyjs(),
-    fluidRow(
-      style = "margin-top: 10px;",
-      uiOutput(ns("metric_selectUI"))
-    ),
-    fluidRow(
-      style = "margin-bottom: 0px; padding-bottom: 0px;",
-      uiOutput(ns("classificationUI"))
+    div(
+      id = ns("manual_classificationUI"),
+      fluidRow(
+        style = "margin-top: 10px;",
+        uiOutput(ns("metric_selectUI"))
+      ),
+      fluidRow(
+        style = "margin-bottom: 0px; padding-bottom: 0px;",
+        uiOutput(ns("classificationUI"))
+      )
     )
   )
 }

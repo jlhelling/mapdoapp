@@ -134,6 +134,11 @@ mod_analysis_server <- function(id, con, r_val, globals){
 
     )
 
+    # selected tab identifier
+    observeEvent(input$tabset, {
+      r_val$tab_analysis = input$tabset
+    })
+
     #### Description Text ####
 
     output$selection_textUI <- renderText({
