@@ -19,7 +19,7 @@ app_ui <- function(request){
       /* Help-guide button placement */
       .help-btn {
           position: absolute;
-          right: 10px;
+          right: 18px;
           top: 18px;
           z-index: 1000; /* Make sure it's above other UI elements */
         }

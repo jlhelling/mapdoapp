@@ -134,6 +134,7 @@ app_server <- function(input, output, session) {
   mod_expl_plot_long_server("expl_plot_long_1", r_val, globals)
   mod_expl_plot_crosssection_server("expl_plot_crosssection_1", r_val)
 
+  mod_analysis_bimetric_server("analysis_bimetric_1", r_val, globals)
 
   # mod_metric_overview_server("metric_overview_1", r_val)
   # mod_classes_distribution_server("classes_distribution_1", r_val)

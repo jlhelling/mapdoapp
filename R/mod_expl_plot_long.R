@@ -93,7 +93,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
       return(r_val_local$plot)
     })
 
-    # selectinput for metric
+    # selectinput for first metric
     output$profile_first_metricUI <- renderUI({
       if (!is.null(r_val_local$profile_first_metric)) {
         div(
@@ -112,7 +112,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
       }
     })
 
-    # add selectinput for additional metric
+    # add selectinput for second metric
     output$profile_sec_metricUI <- renderUI({
 
       if (!is.null(r_val_local$profile_sec_metric)) {

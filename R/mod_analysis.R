@@ -98,7 +98,8 @@ mod_analysis_ui <- function(id){
                  )
                )
       ),
-      tabPanel("Analyse Bimetrique"
+      tabPanel("Analyse Bimétrique",
+               mod_analysis_bimetric_ui("analysis_bimetric_1")
       ),
       type = "pills"
     ) #tabsetpanel
