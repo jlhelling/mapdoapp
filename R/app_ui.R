@@ -40,13 +40,13 @@ app_ui <- function(request){
       title =
         img(src = "www/logos_mapdo_evs_ofb.png"),
       windowTitle = "Mapd'O App",
-      tabPanel("Exploration",
+      tabPanel("Exploration", icon = icon("compass"), # find more icons here: https://fontawesome.com/search?q=info&o=r&m=free
                mod_explore_ui("explore_1")
       ),
-      tabPanel("Analyse",
+      tabPanel("Analyse", icon = icon("magnifying-glass-chart"),
                mod_analysis_ui("analysis_1")
       ),
-      tabPanel("Télechargement",
+      tabPanel("Télechargement", icon = icon("download"),
                # mod_download_ui("download_1")
       ),
       tabPanel("Informations",

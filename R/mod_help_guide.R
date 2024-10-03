@@ -13,7 +13,8 @@
 mod_help_guide_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    actionButton(ns("help_btn"), "Guide d'aide"),
+    actionButton(ns("help_btn"), " Guide d'aide",
+                 icon = icon("circle-question")),
     use_cicerone() # Load the cicerone dependencies
   )
 }
@@ -103,14 +104,48 @@ mod_help_guide_server <- function(id, r_val){
         }
       }
 
-      # ### Analyse-Tab tour ####
-      # if (r_val$tab_page == "Analyse") {
-      #
-      #   if (r_val$tab_analysis == "Comparaison Sélection actuelle") {
-      #
-      #   }
-      #
-      # }
+      ### Analyse-Tab tour ####
+      if (r_val$tab_page == "Analyse") {
+
+        # current selection analysis tab
+        if (r_val$tab_analysis == "Comparaison Sélection actuelle") {
+          if (r_val$selection_text != "") {
+            tour$step("analysis_1-selection_textUI", "Sélection actuelle", "Noms du bassin, de la région et de l'axe hydrographique actuellement sélectionnés.",
+                      position = "bottom")
+          }
+
+          tour$step("analysis_1-selact_tableUI", "Comparaison de métriques multi-échelles",
+                    description = "Ce tableau permet de comparer les valeurs moyennes et les distributions statistiques des indicateurs entre les entités hydrographiques sélectionnées. La valeur moyenne est imprimée pour chaque indicateur et en survolant les distributions statistiques, plus d'informations sur la médiane, les quantiles et les valeurs aberrantes sont imprimées. En cliquant sur les colonnes, il est possible de modifier l'ordre.",
+                    position = "right")
+
+          tour$step("analysis_1-selact_modifications", "Sélection de l'ordre de Strahler et de la métrique",
+                    description = "Sélectionnez les métriques que vous souhaitez comparer dans le tableau. Sélectionnez les ordres de Strahler pour subdiviser les distributions statistiques pour chaque entité hydrographique. ",
+                    position = "left")
+
+          tour$step("analysis_1-selact_plotUI", "Visualisation de la distribution des classes",
+                    description = "Visualisation de la distribution de la classification appliquée pour chaque entité hydrographique. Cliquez sur les classes individuelles dans la légende pour les activer/désactiver.",
+                    position = "top")
+        }
+
+        # regions analysis tab
+        if (r_val$tab_analysis == "Comparaison des Régions") {
+
+          tour$step("analysis_1-regions_table", "Comparaison de métriques entre les régions hydrographiques françaises",
+                    description = "Ce tableau permet de comparer les valeurs moyennes et les distributions statistiques des indicateurs entre les different régions hydrographiques de la France. La valeur moyenne est imprimée pour chaque indicateur et en survolant les distributions statistiques, plus d'informations sur la médiane, les quantiles et les valeurs aberrantes sont imprimées. En cliquant sur les colonnes, il est possible de modifier l'ordre.",
+                    position = "right")
+
+          tour$step("analysis_1-regions_modifications", "Sélection de l'ordre de Strahler et de la métrique",
+                    description = "Sélectionnez les métriques que vous souhaitez comparer dans le tableau. Sélectionnez les ordres de Strahler pour subdiviser les distributions statistiques pour chaque région. ",
+                    position = "left")
+
+          tour$step("analysis_1-regions_plotUI", "Visualisation de la distribution des classes",
+                    description = "Visualisation de la distribution de la classification appliquée pour chaque région. Cliquez sur les classes individuelles dans la légende pour les activer/désactiver.",
+                    position = "top")
+        }
+
+
+
+      }
 
       tour$init()$start() # Start the tour
     })

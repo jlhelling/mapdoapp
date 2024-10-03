@@ -45,21 +45,24 @@ mod_analysis_ui <- function(id){
                  ),
                  column(
                    width = 3,
-                   multiInput(
-                     inputId = ns("selact_metric_select"),
-                     label = "Métriques",
-                     choiceNames = params_metrics()$metric_title,
-                     choiceValues = params_metrics()$metric_name,
-                     selected = params_metrics()$metric_name[1:5]
-                   ),
-                   selectInput(
-                     inputId = ns("selact_strahler_select"),
-                     label = "Ordre de Strahler",
-                     choices = setNames(c(6,5,4,3,2,1,0), c("6","5","4","3","2","1","tous ensemble")),
-                     selected = 0,
-                     multiple = TRUE
-                   ),
-                   actionButton(inputId = ns("selact_apply_button"), "Actualiser")
+                   div(
+                     id = ns("selact_modifications"),
+                     multiInput(
+                       inputId = ns("selact_metric_select"),
+                       label = "Métriques",
+                       choiceNames = params_metrics()$metric_title,
+                       choiceValues = params_metrics()$metric_name,
+                       selected = params_metrics()$metric_name[1:5]
+                     ),
+                     selectInput(
+                       inputId = ns("selact_strahler_select"),
+                       label = "Ordre de Strahler",
+                       choices = setNames(c(6,5,4,3,2,1,0), c("6","5","4","3","2","1","tous ensemble")),
+                       selected = 0,
+                       multiple = TRUE
+                     ),
+                     actionButton(inputId = ns("selact_apply_button"), "Actualiser")
+                   )
                  ))),
       tabPanel("Comparaison des Régions",
                fluidRow(
@@ -74,21 +77,24 @@ mod_analysis_ui <- function(id){
                  ),
                  column(
                    width = 3,
-                   multiInput(
-                     inputId = ns("regions_metric_select"),
-                     label = "Métriques",
-                     choiceNames = params_metrics()$metric_title,
-                     choiceValues = params_metrics()$metric_name,
-                     selected = params_metrics()$metric_name[1:5]
-                   ),
-                   selectInput(
-                     inputId = ns("regions_strahler_select"),
-                     label = "Ordre de Strahler",
-                     choices = setNames(c(6,5,4,3,2,1,0), c("6","5","4","3","2","1","tous ensemble")),
-                     selected = 0,
-                     multiple = TRUE
-                   ),
-                   actionButton(inputId = ns("regions_apply_button"), "Actualiser")
+                   div(
+                     id = ns("regions_modifications"),
+                     multiInput(
+                       inputId = ns("regions_metric_select"),
+                       label = "Métriques",
+                       choiceNames = params_metrics()$metric_title,
+                       choiceValues = params_metrics()$metric_name,
+                       selected = params_metrics()$metric_name[1:5]
+                     ),
+                     selectInput(
+                       inputId = ns("regions_strahler_select"),
+                       label = "Ordre de Strahler",
+                       choices = setNames(c(6,5,4,3,2,1,0), c("6","5","4","3","2","1","tous ensemble")),
+                       selected = 0,
+                       multiple = TRUE
+                     ),
+                     actionButton(inputId = ns("regions_apply_button"), "Actualiser")
+                   )
                  )
                )
       ),
