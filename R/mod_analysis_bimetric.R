@@ -2,6 +2,10 @@
 #'
 #' @description A shiny Module.
 #'
+#' @import shiny
+#' @import shinyWidgets
+#' @importFrom echarts4r echarts4rOutput
+#'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
 #' @noRd
@@ -14,6 +18,7 @@ mod_analysis_bimetric_ui <- function(id) {
       style = "margin-top: 10px; margin-bottom: 10px; margin-left: 10px;",
       column(
         width = 9,
+        echarts4rOutput(ns("plot")),
       ),
       column(
         width = 3,
@@ -48,7 +53,8 @@ mod_analysis_bimetric_ui <- function(id) {
           )
         ),
         hr(),
-        uiOutput(ns("entity_baseUI"))
+        uiOutput(ns("entity_baseUI")),
+        actionButton(ns("create_plot"), "Créer graphe !", icon = icon("chart-line"))
       )
     )
   )
@@ -56,6 +62,8 @@ mod_analysis_bimetric_ui <- function(id) {
 
 #' analysis_bimetric Server Functions
 #'
+#' @import shiny
+#' @importFrom echarts4r renderEcharts4r e_charts_ e_scatter_
 #' @noRd
 mod_analysis_bimetric_server <- function(id, r_val, globals){
   moduleServer(id, function(input, output, session){
@@ -77,6 +85,11 @@ mod_analysis_bimetric_server <- function(id, r_val, globals){
     output$entity_baseUI <- renderUI({
       r_val_local$base
     })
+
+    output$plot <- renderEcharts4r({
+      r_val_local$plot
+    })
+
 
     ##### Metric info ####
 
@@ -115,21 +128,21 @@ mod_analysis_bimetric_server <- function(id, r_val, globals){
 
         }
         # France, Basin
-        else if (!is.null(r_val$basin_id)) {
+        else if (!is.null(r_val$basin_id) && is.null(r_val$region_id)) {
           r_val_local$base = selectInput(ns("base_select"),
                                                    "Base de classification",
                                                    choices = c("France", "Bassin"),
                                                    selected = "Bassin")
         }
         # France, basin, region
-        else if (!is.null(r_val$basin_id) && !is.null(r_val$region_id)) {
+        else if (!is.null(r_val$region_id) && is.null(r_val$axis_id)) {
           r_val_local$base = selectInput(ns("base_select"),
                                                    "Base de classification",
                                                    choices = c("France", "Bassin", "Région"),
                                                    selected = "Région")
         }
         # France, Basin, Region, Axis
-        else if (!is.null(r_val$basin_id) && !is.null(r_val$region_id) && !is.null(r_val$axis_id)) {
+        else if (!is.null(r_val$axis_id)) {
           r_val_local$base = selectInput(ns("base_select"),
                                                    "Base de classification",
                                                    choices = c("France", "Bassin", "Région", "Axe"),
@@ -138,11 +151,17 @@ mod_analysis_bimetric_server <- function(id, r_val, globals){
       }
     })
 
+    # create plot
+    observeEvent(input$create_plot, {
+
+      if (!is.null(r_val$axis_id)) {
+
+        r_val_local$plot <- globals$axis_data() %>%
+          na.omit() %>%
+          e_charts_(input$x_metric) %>%
+          e_scatter_(input$y_metric)
+      }
+    })
+
   })
 }
-
-## To be copied in the UI
-# mod_analysis_bimetric_ui("analysis_bimetric_1")
-
-## To be copied in the server
-# mod_analysis_bimetric_server("analysis_bimetric_1")
