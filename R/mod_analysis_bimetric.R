@@ -63,7 +63,7 @@ mod_analysis_bimetric_ui <- function(id) {
 #' analysis_bimetric Server Functions
 #'
 #' @import shiny
-#' @importFrom echarts4r renderEcharts4r e_charts_ e_scatter_
+#' @importFrom echarts4r renderEcharts4r e_charts_ e_scatter_ e_axis_labels e_legend e_tooltip e_visual_map
 #' @noRd
 mod_analysis_bimetric_server <- function(id, r_val, globals){
   moduleServer(id, function(input, output, session){
@@ -156,10 +156,16 @@ mod_analysis_bimetric_server <- function(id, r_val, globals){
 
       if (!is.null(r_val$axis_id)) {
 
+        metric_x_title <- globals$metrics_params |> filter(metric_name == input$x_metric) |> pull(metric_title)
+        metric_y_title <- globals$metrics_params |> filter(metric_name == input$y_metric) |> pull(metric_title)
+
         r_val_local$plot <- globals$axis_data() %>%
           na.omit() %>%
-          e_charts_(input$x_metric) %>%
-          e_scatter_(input$y_metric)
+          e_charts_(input$x_metric) %>% # initialize plot and set x metric
+          e_scatter_(input$y_metric, symbol_size = 2) %>% # add scatter points and set y metric
+          e_axis_labels(x = metric_x_title, y = metric_y_title) %>% # axis labels
+          e_legend(right = 0) %>% # move legend to the right
+          e_tooltip(trigger = "item")  # tooltip
       }
     })
 
