@@ -286,7 +286,7 @@ params_classes <- function() {
       - Forêt
       - Prairies (et sols nus)
       - Cultures
-      - Espaces construits (zones urbaines et infrastructures)
+      - Espace construit (zones urbaines et infrastructures)
       ",
       # urban areas
       "Indique le degré de couverture urbaine du fond de vallée du segment :
@@ -490,7 +490,7 @@ params_classes_colors <- function() {
 
   # LU DOMINANT
   df$class_lu_dominante <- c("#2d6a4f", "#99d98c", "#ffdd00", "#ba181b") %>%
-    setNames(c("forest_pc", "grassland_pc", "crops_pc", "built_environment_pc"))
+    setNames(c("Forêt", "Prairies et sols nus", "Cultures", "Espace construit"))
 
   # URBAN
   df$class_urban <- c("#6a040f", "#dc2f02", "#ffdd00", "#74c69d") %>%

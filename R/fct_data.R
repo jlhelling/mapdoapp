@@ -310,10 +310,10 @@ data_get_distr_class <- function(con, class_name) {
       class_name == "class_lu_dominante" ~
         "CASE
           WHEN forest_pc IS NULL OR grassland_pc IS NULL OR natural_open_pc IS NULL OR crops_pc IS NULL OR built_environment_pc IS NULL THEN 'unvalid'
-          WHEN forest_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'forest_pc'
-          WHEN grassland_pc + natural_open_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'grassland_pc'
-          WHEN crops_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'crops_pc'
-          WHEN built_environment_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'built_environment_pc'
+          WHEN forest_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'Forêt'
+          WHEN grassland_pc + natural_open_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'Prairies et sols nus'
+          WHEN crops_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'Cultures'
+          WHEN built_environment_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'Espace construit'
           ELSE 'unvalid'
         END AS class_name",
       class_name == "class_urban" ~
@@ -762,10 +762,10 @@ data_get_axis_dgos <- function(selected_axis_id, con) {
         -- Dominant Land Use Classification
         CASE
           WHEN forest_pc IS NULL OR grassland_pc IS NULL OR natural_open_pc IS NULL OR crops_pc IS NULL OR built_environment_pc IS NULL THEN 'unvalid'
-          WHEN forest_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'forest_pc'
-          WHEN grassland_pc + natural_open_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'grassland_pc'
-          WHEN crops_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'crops_pc'
-          WHEN built_environment_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'built_environment_pc'
+          WHEN forest_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'Forêt'
+          WHEN grassland_pc + natural_open_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'Prairies et sols nus'
+          WHEN crops_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'Cultures'
+          WHEN built_environment_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'Espace construit'
           ELSE 'unvalid'
         END AS class_lu_dominante,
 
