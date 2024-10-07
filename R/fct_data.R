@@ -842,6 +842,149 @@ data_get_axis_dgos <- function(selected_axis_id, con) {
   return(data)
 }
 
+
+#' Get Network Metrics Data for a Specific Region
+#'
+#' This function retrieves data about network metrics for a specific region based on its ID.
+#'
+#' @param selected_axis_id The ID of the selected region.
+#' @param con Connection to Postgresql database.
+#'
+#' @return A sf data frame containing information about network metrics for the specified region.
+#'
+#' @examples
+#' con <- db_con()
+#' network_metrics_data <- data_get_axis_dgos(selected_region_id = 33, con = con)
+#' DBI::dbDisconnect(con)
+#'
+#' @importFrom sf st_read
+#' @importFrom dplyr arrange
+#' @importFrom DBI sqlInterpolate
+#'
+#' @export
+data_get_axis_dgos_from_region <- function(selected_region_id, con) {
+
+  if (!is.null(selected_region_id)) {
+
+    sql <- "
+      SELECT
+        network_metrics.fid, network_metrics.gid_region, axis, measure, toponyme, strahler, talweg_elevation_min,
+        active_channel_width, natural_corridor_width,
+        connected_corridor_width, valley_bottom_width, talweg_slope, floodplain_slope,
+        water_channel, gravel_bars, natural_open, forest, grassland, crops,
+        diffuse_urban, dense_urban, infrastructures, active_channel, riparian_corridor,
+        semi_natural, reversible, disconnected, built_environment,
+        water_channel_pc, gravel_bars_pc, natural_open_pc, forest_pc, grassland_pc, crops_pc,
+        diffuse_urban_pc, dense_urban_pc, infrastructures_pc, active_channel_pc,
+        riparian_corridor_pc, semi_natural_pc, reversible_pc, disconnected_pc,
+        built_environment_pc, sum_area, idx_confinement, gid_region, network_metrics.geom,
+
+        -- Strahler Classification
+        CASE
+          WHEN strahler IS NULL THEN 'unvalid'
+          WHEN strahler = 1 THEN '1'
+          WHEN strahler = 2 THEN '2'
+          WHEN strahler = 3 THEN '3'
+          WHEN strahler = 4 THEN '4'
+          WHEN strahler = 5 THEN '5'
+          WHEN strahler = 6 THEN '6'
+          ELSE 'unvalid'
+        END AS class_strahler,
+
+        -- Topography Classification
+        CASE
+          WHEN talweg_elevation_min IS NULL OR talweg_slope IS NULL THEN 'unvalid'
+          WHEN talweg_elevation_min >= 1000 AND talweg_slope >= 0.05 THEN 'Pentes de montagne'
+          WHEN talweg_elevation_min >= 1000 AND talweg_slope < 0.05 THEN 'Plaines de montagne'
+          WHEN talweg_elevation_min >= 300 AND talweg_slope >= 0.05 THEN 'Pentes de moyenne altitude'
+          WHEN talweg_elevation_min >= 300 AND talweg_slope < 0.05 THEN 'Plaines de moyenne altitude'
+          WHEN talweg_elevation_min >= -50 AND talweg_slope >= 0.05 THEN 'Pentes de basse altitude'
+          WHEN talweg_elevation_min >= -50 AND talweg_slope < 0.05 THEN 'Plaines de basse altitude'
+          ELSE 'unvalid'
+        END AS class_topographie,
+
+        -- Dominant Land Use Classification
+        CASE
+          WHEN forest_pc IS NULL OR grassland_pc IS NULL OR natural_open_pc IS NULL OR crops_pc IS NULL OR built_environment_pc IS NULL THEN 'unvalid'
+          WHEN forest_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'Forêt'
+          WHEN grassland_pc + natural_open_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'Prairies et sols nus'
+          WHEN crops_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'Cultures'
+          WHEN built_environment_pc >= GREATEST(forest_pc, grassland_pc + natural_open_pc, crops_pc, built_environment_pc) THEN 'Espace construit'
+          ELSE 'unvalid'
+        END AS class_lu_dominante,
+
+        -- Urban Land Use Classification
+        CASE
+          WHEN built_environment_pc IS NULL THEN 'unvalid'
+          WHEN built_environment_pc >= 70 THEN 'fortement urbanisé'
+          WHEN built_environment_pc >= 40 THEN 'urbanisé'
+          WHEN built_environment_pc >= 10 THEN 'modérément urbanisé'
+          WHEN built_environment_pc >= 0 THEN 'Presque pas/pas urbanisé'
+          ELSE 'unvalid'
+        END AS class_urban,
+
+        -- Agricultural Land Use Classification
+        CASE
+          WHEN crops_pc IS NULL THEN 'unvalid'
+          WHEN crops_pc >= 70 THEN 'Forte impact agricole'
+          WHEN crops_pc >= 40 THEN 'Impact agricole élevé'
+          WHEN crops_pc >= 10 THEN 'Impact agricole modéré'
+          WHEN crops_pc >= 0 THEN 'Presque pas/pas d''impact agricole'
+          ELSE 'unvalid'
+        END AS class_agriculture,
+
+        -- Natural Land Use Classification
+        CASE
+          WHEN natural_open_pc IS NULL OR forest_pc IS NULL OR grassland_pc IS NULL THEN 'unvalid'
+          WHEN (natural_open_pc + forest_pc + grassland_pc) >= 70 THEN 'Très forte utilisation naturelle'
+          WHEN (natural_open_pc + forest_pc + grassland_pc) >= 40 THEN 'Forte utilisation naturelle'
+          WHEN (natural_open_pc + forest_pc + grassland_pc) >= 10 THEN 'Utilisation naturelle modérée'
+          WHEN (natural_open_pc + forest_pc + grassland_pc) >= 0 THEN 'Presque pas/pas naturelle'
+          ELSE 'unvalid'
+        END AS class_nature,
+
+        -- Gravel Bars Classification
+        CASE
+          WHEN gravel_bars IS NULL OR water_channel IS NULL THEN 'unvalid'
+          WHEN (gravel_bars / NULLIF(water_channel + gravel_bars, 0)) >= 0.5 THEN 'abundant'
+          WHEN (gravel_bars / NULLIF(water_channel + gravel_bars, 0)) > 0 THEN 'moyennement présente'
+          WHEN (gravel_bars / NULLIF(water_channel + gravel_bars, 0)) = 0 THEN 'absent'
+          ELSE 'unvalid'
+        END AS class_gravel,
+
+        -- Confinement Classification
+        CASE
+          WHEN idx_confinement IS NULL THEN 'unvalid'
+          WHEN idx_confinement >= 0.7 THEN 'espace abondant'
+          WHEN idx_confinement >= 0.4 THEN 'modérement espace'
+          WHEN idx_confinement >= 0.1 THEN 'confiné'
+          WHEN idx_confinement >= 0 THEN 'très confiné'
+          ELSE 'unvalid'
+        END AS class_confinement,
+
+        -- Habitat Classification
+        CASE
+          WHEN riparian_corridor_pc IS NULL OR semi_natural_pc IS NULL THEN 'unvalid'
+          WHEN (riparian_corridor_pc + semi_natural_pc) >= 70 THEN 'très bien connecté'
+          WHEN (riparian_corridor_pc + semi_natural_pc) >= 40 THEN 'bien connecté'
+          WHEN (riparian_corridor_pc + semi_natural_pc) >= 10 THEN 'moyen connecté'
+          WHEN (riparian_corridor_pc + semi_natural_pc) >= 0 THEN 'faible / absente'
+          ELSE 'unvalid'
+        END AS class_habitat
+      FROM network_metrics
+      WHERE  network_metrics.gid_region = ?selected_region_id"
+    query <- sqlInterpolate(con, sql, selected_region_id = selected_region_id)
+
+    data <- sf::st_read(dsn = con, query = query) %>%
+      dplyr::arrange(measure)
+  }
+  else {
+    data <- NULL
+  }
+
+
+  return(data)
+}
 #' Get the start and end coordinates of a spatial object's axis
 #'
 #' This function takes a spatial object with a LINESTRING geometry and returns

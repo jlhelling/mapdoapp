@@ -18,7 +18,10 @@ mod_analysis_bimetric_ui <- function(id) {
       style = "margin-top: 10px; margin-bottom: 10px; margin-left: 10px;",
       column(
         width = 9,
+        hr(),
         echarts4rOutput(ns("plot")),
+        hr(),
+        uiOutput(ns("linear_dependency_text"), style = "margin-top: 10px;  margin-left: 20px;")
       ),
       column(
         width = 3,
@@ -63,9 +66,9 @@ mod_analysis_bimetric_ui <- function(id) {
 #' analysis_bimetric Server Functions
 #'
 #' @import shiny
-#' @importFrom echarts4r renderEcharts4r e_charts_ e_scatter_ e_axis_labels e_legend e_tooltip e_visual_map
+#' @importFrom echarts4r renderEcharts4r
 #' @noRd
-mod_analysis_bimetric_server <- function(id, r_val, globals){
+mod_analysis_bimetric_server <- function(id, con, r_val, globals){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -74,6 +77,7 @@ mod_analysis_bimetric_server <- function(id, r_val, globals){
       entity_basis = NULL, # selected entity basis (basin, region, axis)
       plot = NULL, # plot object
       base = NULL, #
+      linear_dependency_text = "" # text describing linear dependency
     )
 
     #### UI ####
@@ -88,6 +92,10 @@ mod_analysis_bimetric_server <- function(id, r_val, globals){
 
     output$plot <- renderEcharts4r({
       r_val_local$plot
+    })
+
+    output$linear_dependency_text <- renderText({
+      r_val_local$linear_dependency_text
     })
 
 
@@ -120,32 +128,22 @@ mod_analysis_bimetric_server <- function(id, r_val, globals){
 
       if (r_val$tab_analysis == "Analyse Bimétrique") {
 
-        if (is.null(r_val$basin_id)) {
-          r_val_local$base = selectInput(ns("base_select"),
-                                                   "Base de classification",
-                                                   choices = c("France"),
-                                                   selected = "France")
+        if (is.null(r_val$region_id)) {
+          r_val_local$base = "Selectionnez une région oú axe"
 
-        }
-        # France, Basin
-        else if (!is.null(r_val$basin_id) && is.null(r_val$region_id)) {
-          r_val_local$base = selectInput(ns("base_select"),
-                                                   "Base de classification",
-                                                   choices = c("France", "Bassin"),
-                                                   selected = "Bassin")
         }
         # France, basin, region
         else if (!is.null(r_val$region_id) && is.null(r_val$axis_id)) {
           r_val_local$base = selectInput(ns("base_select"),
-                                                   "Base de classification",
-                                                   choices = c("France", "Bassin", "Région"),
+                                                   "Base",
+                                                   choices = c("Région"),
                                                    selected = "Région")
         }
         # France, Basin, Region, Axis
         else if (!is.null(r_val$axis_id)) {
           r_val_local$base = selectInput(ns("base_select"),
-                                                   "Base de classification",
-                                                   choices = c("France", "Bassin", "Région", "Axe"),
+                                                   "Base",
+                                                   choices = c("Région", "Axe"),
                                                    selected = "Axe")
         }
       }
@@ -154,18 +152,18 @@ mod_analysis_bimetric_server <- function(id, r_val, globals){
     # create plot
     observeEvent(input$create_plot, {
 
-      if (!is.null(r_val$axis_id)) {
+      if (!is.null(r_val$region_id)) {
 
-        metric_x_title <- globals$metrics_params |> filter(metric_name == input$x_metric) |> pull(metric_title)
-        metric_y_title <- globals$metrics_params |> filter(metric_name == input$y_metric) |> pull(metric_title)
+        if (input$base_select == "Région") {
 
-        r_val_local$plot <- globals$axis_data() %>%
-          na.omit() %>%
-          e_charts_(input$x_metric) %>% # initialize plot and set x metric
-          e_scatter_(input$y_metric, symbol_size = 2) %>% # add scatter points and set y metric
-          e_axis_labels(x = metric_x_title, y = metric_y_title) %>% # axis labels
-          e_legend(right = 0) %>% # move legend to the right
-          e_tooltip(trigger = "item")  # tooltip
+          r_val_local$plot <- create_analysis_biplot(df = globals$region_data(), metric_x = input$x_metric, metric_y = input$y_metric)
+        }
+
+        else if (input$base_select == "Axe") {
+
+          r_val_local$plot <- create_analysis_biplot(df = globals$axis_data(), metric_x = input$x_metric, metric_y = input$y_metric)
+        }
+
       }
     })
 

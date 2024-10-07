@@ -41,6 +41,7 @@ app_server <- function(input, output, session) {
     basin_id = NULL, # id of selected basin
     region_name = NULL, # name of selected region
     region_id = NULL, # id of selected region
+    region_data = NULL, # data of selected region
     axis_name = NULL, # name of selected axis
     axis_id = NULL, # id of selected axis
     axis_data = NULL, # data of selected axis
@@ -98,6 +99,12 @@ app_server <- function(input, output, session) {
   }) %>%
     bindCache(c(r_val$axis_id, globals$regions_gids_key))
 
+  #### Region data caching ####
+  globals$region_data <- reactive({
+    data_get_axis_dgos_from_region(selected_region_id = r_val$region_id, con)
+  }) %>%
+    bindCache(c(r_val$region_id, globals$regions_gids_key))
+
   #### Metric stats caching ####
   globals$metric_stats <- reactive({
     data_get_stats_metrics(con)
@@ -134,7 +141,7 @@ app_server <- function(input, output, session) {
   mod_expl_plot_long_server("expl_plot_long_1", r_val, globals)
   mod_expl_plot_crosssection_server("expl_plot_crosssection_1", r_val)
 
-  mod_analysis_bimetric_server("analysis_bimetric_1", r_val, globals)
+  mod_analysis_bimetric_server("analysis_bimetric_1", con, r_val, globals)
 
   # mod_metric_overview_server("metric_overview_1", r_val)
   # mod_classes_distribution_server("classes_distribution_1", r_val)
