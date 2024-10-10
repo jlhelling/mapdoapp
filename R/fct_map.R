@@ -104,7 +104,7 @@ map_initialize <- function(params_wms, params_map_group,
     map_add_axes(data_axis = axes_data, group = params_map_group[["axis"]]) %>%
     # add controller
     addLayersControl(
-      baseGroups = c("CartoDB Positron", unlist(sapply(params_wms, function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),
+      baseGroups = c("CartoDB Voyager", unlist(sapply(params_wms, function(x) if (x$basemap) x$name else NULL), use.names = FALSE)),
       options = layersControlOptions(collapsed = TRUE),
       overlayGroups = c(params_map_group[["bassin"]],
                         params_map_group[["region"]],
