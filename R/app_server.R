@@ -125,6 +125,7 @@ app_server <- function(input, output, session) {
   # main servers
   mod_explore_server("explore_1", con, r_val, globals)
   mod_analysis_server("analysis_1", con, r_val, globals)
+  mod_download_server("download_1" , con, r_val, globals)
   mod_documentation_server("documentation_1")
   mod_help_guide_server("help_guide_1", r_val)
 

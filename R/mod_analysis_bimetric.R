@@ -21,8 +21,7 @@ mod_analysis_bimetric_ui <- function(id) {
         hr(),
         textOutput(ns("warning")),
         div(style = "margin-top: 10px;"),
-        plotlyOutput(
-          ns("plot")),
+        plotlyOutput(ns("plot")),
         hr(),
         uiOutput(ns("linear_dependency_text"), style = "margin-top: 10px;  margin-left: 20px;")
       ),
@@ -152,7 +151,7 @@ mod_analysis_bimetric_server <- function(id, con, r_val, globals){
 
         }
         # Axis selected
-        else if (!is.null(r_val$axis_id)) {
+        else if (!is.null(input$plot)) {
           r_val_local$warning = NULL
         }
       }
