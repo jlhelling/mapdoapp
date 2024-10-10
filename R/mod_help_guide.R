@@ -143,6 +143,19 @@ mod_help_guide_server <- function(id, r_val){
                     position = "top")
         }
 
+        # regions analysis tab
+        if (r_val$tab_analysis == "Analyse Bimétrique") {
+
+          tour$step("analysis_bimetric_1-plot", "Graphique de la relation entre les métriques",
+                    description = "Ce graphique permet à l'utilisateur de comparer les tronçons de l'axe sélectionné en fonction de deux métriques. En survolant les points de données, on obtient des informations sur chaque tronçon, notamment la distance par rapport à l'exutoire de la rivière (position) et les valeurs des métriques. ",
+                    position = "right")
+
+          tour$step("analysis_bimetric_1-analysis_settings", "Paramètrage d'analyse",
+                    description = "Sélectionnez les métriques que vous souhaitez analyser. En outre, vous pouvez colorer les points de données selon la classification appliquée sélectionnée dans l'onglet « Exploration » et appliquer un modèle de relation linéaire entre les deux métriques, en l'ajoutant sous forme de ligne à la graphique. ",
+                    position = "left")
+
+        }
+
 
 
       }
