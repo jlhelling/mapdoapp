@@ -4,7 +4,7 @@
 #'
 #' @import shiny
 #' @import shinyWidgets
-#' @importFrom echarts4r echarts4rOutput
+#' @importFrom plotly plotlyOutput
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
@@ -19,7 +19,7 @@ mod_analysis_bimetric_ui <- function(id) {
       column(
         width = 9,
         hr(),
-        echarts4rOutput(ns("plot")),
+        plotlyOutput(ns("plot")),
         hr(),
         uiOutput(ns("linear_dependency_text"), style = "margin-top: 10px;  margin-left: 20px;")
       ),
@@ -55,7 +55,9 @@ mod_analysis_bimetric_ui <- function(id) {
             )
           )
         ),
+        checkboxInput(ns("apply_classes"), "Colorier par classification", value = FALSE),
         hr(),
+        checkboxInput(ns("apply_lm"), "Appliquer régression linéaire", value = FALSE),
         uiOutput(ns("entity_baseUI")),
         actionButton(ns("create_plot"), "Créer graphe !", icon = icon("chart-line"))
       )
@@ -82,16 +84,12 @@ mod_analysis_bimetric_server <- function(id, con, r_val, globals){
 
     #### UI ####
 
-    output$long_profile <- renderPlotly({
-      return(r_val_local$plot)
+    output$plot <- renderPlotly({
+      r_val_local$plot
     })
 
     output$entity_baseUI <- renderUI({
       r_val_local$base
-    })
-
-    output$plot <- renderEcharts4r({
-      r_val_local$plot
     })
 
     output$linear_dependency_text <- renderText({
@@ -135,16 +133,16 @@ mod_analysis_bimetric_server <- function(id, con, r_val, globals){
         # France, basin, region
         else if (!is.null(r_val$region_id) && is.null(r_val$axis_id)) {
           r_val_local$base = selectInput(ns("base_select"),
-                                                   "Base",
-                                                   choices = c("Région"),
-                                                   selected = "Région")
+                                         "Base",
+                                         choices = c("Région"),
+                                         selected = "Région")
         }
         # France, Basin, Region, Axis
         else if (!is.null(r_val$axis_id)) {
           r_val_local$base = selectInput(ns("base_select"),
-                                                   "Base",
-                                                   choices = c("Région", "Axe"),
-                                                   selected = "Axe")
+                                         "Base",
+                                         choices = c("Région", "Axe"),
+                                         selected = "Axe")
         }
       }
     })
@@ -154,14 +152,16 @@ mod_analysis_bimetric_server <- function(id, con, r_val, globals){
 
       if (!is.null(r_val$region_id)) {
 
+        browser()
+
         if (input$base_select == "Région") {
 
-          r_val_local$plot <- create_analysis_biplot(df = globals$region_data(), metric_x = input$x_metric, metric_y = input$y_metric)
+          r_val_local$plot <- create_analysis_biplot(df = globals$region_data(), metric_x = input$x_metric, metric_y = input$y_metric, classes = input$apply_classes, lm = input$apply_lm)
         }
 
         else if (input$base_select == "Axe") {
 
-          r_val_local$plot <- create_analysis_biplot(df = globals$axis_data(), metric_x = input$x_metric, metric_y = input$y_metric)
+          r_val_local$plot <- create_analysis_biplot(df = r_val$axis_data_classified, metric_x = input$x_metric, metric_y = input$y_metric, classes = input$apply_classes, lm = input$apply_lm)
         }
 
       }

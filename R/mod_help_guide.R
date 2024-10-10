@@ -108,7 +108,7 @@ mod_help_guide_server <- function(id, r_val){
       if (r_val$tab_page == "Analyse") {
 
         # current selection analysis tab
-        if (r_val$tab_analysis == "Comparaison Sélection actuelle") {
+        if (r_val$tab_analysis == "Caractérisation de la sélection") {
           if (r_val$selection_text != "") {
             tour$step("analysis_1-selection_textUI", "Sélection actuelle", "Noms du bassin, de la région et de l'axe hydrographique actuellement sélectionnés.",
                       position = "bottom")

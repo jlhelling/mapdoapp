@@ -320,12 +320,14 @@ get_color_by_class <- function(class_name, colors_list) {
 #' @param metric_x A string specifying the name of the x-axis metric (column in the dataframe).
 #' @param metric_y A string specifying the name of the y-axis metric (column in the dataframe).
 #'
-#' @importFrom echarts4r e_charts_ e_scatter_ e_line e_axis_labels e_x_axis e_y_axis e_legend e_tooltip e_text_g e_toolbox_feature e_show_loading
+#' @importFrom echarts4r e_charts_ e_scatter_ e_line e_axis_labels e_x_axis e_y_axis e_legend e_tooltip e_text_g e_toolbox_feature e_show_loading e_visual_map_
 #' @return An `echarts4r` plot object showing the biplot, regression line, and statistical annotations.
 #' @examples
-#' create_analysis_biplot(df = mtcars, metric_x = "mpg", metric_y = "wt")
+#' create_analysis_biplot_echarts(df = mtcars, metric_x = "mpg", metric_y = "wt")
 #' @export
-create_analysis_biplot <- function(df, metric_x, metric_y) {
+create_analysis_biplot_echarts <- function(df, metric_x, metric_y, classes = FALSE, lm = FALSE) {
+
+  browser()
 
   # Get metric titles
   metric_x_title <- globals$metrics_params |> filter(metric_name == metric_x) |> pull(metric_title)
@@ -334,57 +336,63 @@ create_analysis_biplot <- function(df, metric_x, metric_y) {
   # removing any rows with missing values (NA)
   data <- df %>% na.omit()
 
-  # Compute linear regression
-  lm_model <- lm(data[[metric_y]] ~ data[[metric_x]], data = data)
-  data$lm <- predict(lm_model)
+  if (lm) {
+    # Compute linear regression
+    lm_model <- lm(data[[metric_y]] ~ data[[metric_x]], data = data)
+    data$lm <- predict(lm_model)
 
-  # Compute correlation, R², and p-value
-  correlation <- cor.test(data[[metric_x]], data[[metric_y]])
-  r_value <- round(correlation$estimate, 2)
-  p_value <- round(correlation$p.value, 4)
-  r_squared <- round(r_value^2, 2)
+    # Compute correlation, R², and p-value
+    correlation <- cor.test(data[[metric_x]], data[[metric_y]])
+    r_value <- round(correlation$estimate, 2)
+    p_value <- round(correlation$p.value, 4)
+    r_squared <- round(r_value^2, 2)
 
-  # Extract the coefficients for the linear model and create the equation
-  coefficients <- coef(lm_model)
-  intercept <- round(coefficients[1], 2)  # Intercept (b)
-  slope <- round(coefficients[2], 2)      # Slope (m)
+    # Extract the coefficients for the linear model and create the equation
+    coefficients <- coef(lm_model)
+    intercept <- round(coefficients[1], 2)  # Intercept (b)
+    slope <- round(coefficients[2], 2)      # Slope (m)
 
-  # Format the formula as "y = mx + b"
-  formula_text <- sprintf("y = %sx + %s", slope, intercept)
-  linear_dependency_text <- sprintf("%s, R = %s, R² = %s, p-value = %s",
-                                    formula_text, r_value, r_squared, p_value)
+    # Format the formula as "y = mx + b"
+    formula_text <- sprintf("y = %sx + %s", slope, intercept)
 
-  # Create the biplot using echarts4r
-  plot <- data %>%
-    e_charts_(metric_x) %>%  # Initialize the plot and specify the x-axis metric
-    e_scatter_(metric_y, symbol_size = 6, itemStyle = list(color = "#1b263b"), legend = FALSE) %>%  # Add scatter plot with points
-    e_line(lm, name = "Modèle linéaire", lineStyle = list(color = "red"), symbol = 'none') %>%  # Add the linear regression line
+    linear_dependency_text <- sprintf("%s, R = %s, R² = %s, p-value = %s",
+                                      formula_text, r_value, r_squared, p_value)
+  }
+
+  # Create the biplot using echarts4r with either z-metric selected or not
+  if (classes) {
+
+    # proposition by chatgpt
+    plot <- data %>%
+      group_by(class_name) %>%  # Group by color to create separate series
+      e_charts_(metric_x) %>%  # Initialize the plot and specify the x-axis metric
+      # Add scatter series for each color group
+      e_scatter_(metric_y, bind = "measure", symbol_size = 6) %>%
+      e_color(color = rev(unique(unname(data$color))))
+
+  }
+
+  else {
+    plot <- data %>%
+      e_charts_(metric_x) %>%  # Initialize the plot and specify the x-axis metric
+      e_scatter_(metric_y, bind = "measure", symbol_size = 6, itemStyle = list(color = "#1b263b"), legend = FALSE)  # Add scatter plot with points
+  }
+
+  # Add axis labels and tooltips
+  plot <- plot %>%
     e_axis_labels(x = metric_x_title, y = metric_y_title) %>%  # Set axis labels using metric titles
     e_x_axis(nameLocation = "middle", nameGap = 30) %>%  # Center the x-axis title and move it below the axis
     e_y_axis(nameLocation = "middle", nameGap = 50) %>%  # Center the y-axis title and move it to the left
-    e_legend(show = TRUE, itemStyle = list(color = "transparent")) %>%  # Show legend (transparent)
     # Configure tooltips that display data points info on hover
     e_tooltip(
       trigger = "item",
       formatter = htmlwidgets::JS(
         sprintf("function(params) {
-                return('%s: ' + params.value[0].toFixed(2) + '<br/>' +
-                '%s: ' + params.value[1].toFixed(2)
+                return('<b>%s: </b>' + params.value[0].toFixed(2) + '<br/>' +
+                '<b>%s: </b>' + params.value[1].toFixed(2) + '<br/>' +
+                '<b>Position: </b>' + params.name + ' km'
                 );
               }", metric_x_title, metric_y_title)
-      )
-    ) %>%
-    # Add a floating text box with the statistical summary (R, R², p-value)
-    e_text_g(
-      left = "10%",               # Position text horizontally
-      top = "9%",                # Position text vertically
-      style = list(
-        text = linear_dependency_text,  # Display correlation text
-        fontSize = 12,                  # Font size for the text
-        z = 1000,                       # Set z-index to bring the text to the foreground
-        backgroundColor = "#ffccd5",    # Set background color of the text box
-        borderRadius = 5,               # Add rounded corners to the text box
-        padding = 5                     # Add padding around the text within the box
       )
     ) %>%
     #Add toolbox features (e.g., zooming, saving the plot)
@@ -392,5 +400,146 @@ create_analysis_biplot <- function(df, metric_x, metric_y) {
     # Show a loading animation while the plot is rendered
     e_show_loading()
 
+
+  # add lm elements to plot
+  if (lm) {
+    plot <- plot %>%
+      e_line(lm, name = "Modèle linéaire", lineStyle = list(color = "red"), symbol = 'none') %>%  # Add the linear regression line
+      e_legend(show = TRUE, itemStyle = list(color = "transparent")) %>%  # Show legend (transparent)
+      # Add a floating text box with the statistical summary (R, R², p-value)
+      e_text_g(
+        left = "10%",               # Position text horizontally
+        top = "9%",                # Position text vertically
+        style = list(
+          text = linear_dependency_text,  # Display correlation text
+          fontSize = 12,                  # Font size for the text
+          z = 1000,                       # Set z-index to bring the text to the foreground
+          backgroundColor = "#ffccd5",    # Set background color of the text box
+          borderRadius = 5,               # Add rounded corners to the text box
+          padding = 5                     # Add padding around the text within the box
+        )
+      )
+  }
+
+
+
   return(plot)
 }
+
+
+
+#' Create a Biplot with Linear Regression and Statistical Annotations
+#'
+#' This function creates a biplot using the `plotly` library that displays a scatterplot
+#' of two metrics from a given dataframe, fits a linear regression line, and shows key
+#' statistical measures (correlation, R², p-value) in a floating text box.
+#'
+#' @param df A data frame containing the metrics to be plotted.
+#' @param metric_x A string specifying the name of the x-axis metric (column in the dataframe).
+#' @param metric_y A string specifying the name of the y-axis metric (column in the dataframe).
+#' @param classes A boolean indicating whether to group the data by a categorical variable.
+#' @param lm A boolean indicating whether to add a linear regression line.
+#'
+#' @importFrom plotly plot_ly layout add_trace
+#'
+#' @return A `plotly` plot object showing the biplot, regression line, and statistical annotations.
+#' @examples
+#' create_analysis_biplot(df = mtcars, metric_x = "mpg", metric_y = "wt", classes = FALSE, lm = TRUE)
+#' @export
+create_analysis_biplot <- function(df, metric_x, metric_y, classes = FALSE, lm = FALSE) {
+
+  browser()
+
+  # Remove any rows with missing values (NA)
+  data <- na.omit(df)
+
+  # Get metric titles
+  metric_x_title <- globals$metrics_params |> filter(metric_name == metric_x) |> pull(metric_title)
+  metric_y_title <- globals$metrics_params |> filter(metric_name == metric_y) |> pull(metric_title)
+
+  # Prepare linear regression data if lm is TRUE
+  if (lm) {
+    # Compute linear regression
+    lm_model <- lm(as.formula(paste(metric_y, "~", metric_x)), data = data)
+    data$lm <- predict(lm_model)
+
+    # Compute correlation, R², and p-value
+    correlation <- cor.test(data[[metric_x]], data[[metric_y]])
+    r_value <- round(correlation$estimate, 2)
+    p_value <- round(correlation$p.value, 4)
+    r_squared <- round(r_value^2, 2)
+
+    # Extract coefficients and create the equation
+    coefficients <- coef(lm_model)
+    intercept <- round(coefficients[1], 2)  # Intercept (b)
+    slope <- round(coefficients[2], 2)      # Slope (m)
+
+    # Format the formula text
+    formula_text <- sprintf("y = %sx + %s", slope, intercept)
+
+    # Create the statistical summary text
+    linear_dependency_text <- sprintf("%s, <br>R = %s, R² = %s, p = %s",
+                                      formula_text, r_value, r_squared, p_value)
+  }
+
+
+  if (classes) {
+    # Create a named vector to map class_name to color
+    color_mapping <- setNames(unique(data$color), unique(data$class_name))
+
+    # Create the base plot
+    plot <- plot_ly(data, x = ~get(metric_x), y = ~get(metric_y),
+                    type = 'scatter', mode = 'markers', color = ~class_name,
+                    colors = color_mapping,
+                    marker = list(size = 6, opacity = 0.8),
+                    text = ~sprintf("<b>%s:</b> %.2f<br><b>%s:</b> %.2f<br><b>Position :</b> %.2f km<br><b>Classe :</b> %s",
+                                    metric_x_title, get(metric_x),
+                                    metric_y_title, get(metric_y),
+                                    measure / 1000, # Convert measure to kilometers
+                                    class_name),
+                    hoverinfo = 'text')
+  } else {
+    # Create the base plot
+    plot <- plot_ly(data, x = ~get(metric_x), y = ~get(metric_y),
+                    type = 'scatter', mode = 'markers',
+                    marker = list(size = 6, color = "#1b263b", opacity = 0.8),
+                    text = ~sprintf("<b>%s:</b> %.2f<br><b>%s:</b> %.2f<br><b>Position :</b> %.2f km",
+                                    metric_x_title, get(metric_x),
+                                    metric_y_title, get(metric_y),
+                                    measure / 1000), # Convert measure to kilometers
+                    hoverinfo = 'text')
+  }
+
+
+  # set layout
+  plot <- plot %>%
+    layout(title = "",
+           xaxis = list(title = metric_x_title),
+           yaxis = list(title = metric_y_title))
+
+  # Add linear regression line if specified
+  if (lm) {
+    plot <- plot %>%
+      add_trace(x = ~get(metric_x), y = ~lm,
+                        type = 'scatter', mode = 'lines', inherit = FALSE,
+                        line = list(color = 'red', width = 2), # Style of the line
+                        name = 'Modèle linéaire') %>% # Name for the legend
+      layout(annotations = list(
+        text = linear_dependency_text,
+        x = 1, y = 1, showarrow = FALSE,
+        xref = 'paper', yref = 'paper', # Use 'paper' units (relative to the plot)
+        bgcolor = "#ffccd5", bordercolor = "#000", borderwidth = 1,
+        font = list(size = 11)
+      ))
+  }
+
+  # Set axis labels and title
+  plot <- plot %>%
+    layout(title = "",
+           xaxis = list(title = metric_x_title),
+           yaxis = list(title = metric_y_title),
+           showlegend = TRUE)
+
+  return(plot)
+}
+

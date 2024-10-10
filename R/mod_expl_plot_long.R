@@ -198,7 +198,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
         update_popover("popover_metric2",
                        HTML(
                          # check if no metric is selected
-                         if (input$profile_sec_metric == "") {
+                         if (input$profile_sec_metric == "aucun") {
                            "Choisissez une deuxième métrique"
                          } else{
                            globals$metrics_params %>%

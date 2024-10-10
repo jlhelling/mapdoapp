@@ -28,7 +28,7 @@ mod_analysis_ui <- function(id){
 
     tabsetPanel(
       id = ns("tabset"),
-      tabPanel("Comparaison Sélection actuelle",
+      tabPanel("Caractérisation de la sélection",
                # show table with France, basin, region (+ same stats but just for the strahler order of selected axis),
                # stats together with selected axis
                # below show distribution plots of selection

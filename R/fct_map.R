@@ -25,7 +25,7 @@ map_initialize <- function(params_wms, params_map_group,
     addScaleBar(position = "bottomleft",
                 scaleBarOptions(metric = TRUE, imperial = FALSE)) %>%
     # background map
-    addProviderTiles(providers$CartoDB.Positron) %>%
+    addProviderTiles(providers$CartoDB.Voyager) %>%
     # search button
     addSearchOSM(options = leaflet.extras::searchOptions(hideMarkerOnCollapse = TRUE)) %>%
     # GPS location button
