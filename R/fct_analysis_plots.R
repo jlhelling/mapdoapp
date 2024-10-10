@@ -440,15 +440,13 @@ create_analysis_biplot_echarts <- function(df, metric_x, metric_y, classes = FAL
 #' @param classes A boolean indicating whether to group the data by a categorical variable.
 #' @param lm A boolean indicating whether to add a linear regression line.
 #'
-#' @importFrom plotly plot_ly layout add_trace
+#' @importFrom plotly plot_ly layout add_trace config
 #'
 #' @return A `plotly` plot object showing the biplot, regression line, and statistical annotations.
 #' @examples
 #' create_analysis_biplot(df = mtcars, metric_x = "mpg", metric_y = "wt", classes = FALSE, lm = TRUE)
 #' @export
-create_analysis_biplot <- function(df, metric_x, metric_y, classes = FALSE, lm = FALSE) {
-
-  browser()
+create_analysis_biplot <- function(df, metric_x, metric_y, classes = FALSE, lm = FALSE, axis_name) {
 
   # Remove any rows with missing values (NA)
   data <- na.omit(df)
@@ -458,7 +456,7 @@ create_analysis_biplot <- function(df, metric_x, metric_y, classes = FALSE, lm =
   metric_y_title <- globals$metrics_params |> filter(metric_name == metric_y) |> pull(metric_title)
 
   # Prepare linear regression data if lm is TRUE
-  if (lm) {
+  if (lm && metric_x != metric_y) {
     # Compute linear regression
     lm_model <- lm(as.formula(paste(metric_y, "~", metric_x)), data = data)
     data$lm <- predict(lm_model)
@@ -502,6 +500,7 @@ create_analysis_biplot <- function(df, metric_x, metric_y, classes = FALSE, lm =
     # Create the base plot
     plot <- plot_ly(data, x = ~get(metric_x), y = ~get(metric_y),
                     type = 'scatter', mode = 'markers',
+                    name = "Tronçons",
                     marker = list(size = 6, color = "#1b263b", opacity = 0.8),
                     text = ~sprintf("<b>%s:</b> %.2f<br><b>%s:</b> %.2f<br><b>Position :</b> %.2f km",
                                     metric_x_title, get(metric_x),
@@ -511,19 +510,22 @@ create_analysis_biplot <- function(df, metric_x, metric_y, classes = FALSE, lm =
   }
 
 
-  # set layout
+  # Set axis labels and title
   plot <- plot %>%
-    layout(title = "",
+    layout(title = paste0("Axe : ", axis_name),
            xaxis = list(title = metric_x_title),
-           yaxis = list(title = metric_y_title))
+           yaxis = list(title = metric_y_title),
+           modebar = list(remove = c("select2d", "lasso2d", "autoscale", "zoomIn2d", "zoomOut2d"))) %>% # Remove select and lasso tools
+    plotly::config(displaylogo = FALSE) # Remove plotly logo
 
   # Add linear regression line if specified
-  if (lm) {
+  if (lm && metric_x != metric_y) {
     plot <- plot %>%
       add_trace(x = ~get(metric_x), y = ~lm,
-                        type = 'scatter', mode = 'lines', inherit = FALSE,
-                        line = list(color = 'red', width = 2), # Style of the line
-                        name = 'Modèle linéaire') %>% # Name for the legend
+                type = 'scatter', mode = 'lines', inherit = FALSE,
+                line = list(color = 'red', width = 2), # Style of the line
+                name = 'Modèle linéaire', # Name for the legend
+                text = linear_dependency_text, hoverinfo = 'text') %>%
       layout(annotations = list(
         text = linear_dependency_text,
         x = 1, y = 1, showarrow = FALSE,
@@ -533,12 +535,6 @@ create_analysis_biplot <- function(df, metric_x, metric_y, classes = FALSE, lm =
       ))
   }
 
-  # Set axis labels and title
-  plot <- plot %>%
-    layout(title = "",
-           xaxis = list(title = metric_x_title),
-           yaxis = list(title = metric_y_title),
-           showlegend = TRUE)
 
   return(plot)
 }

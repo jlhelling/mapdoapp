@@ -4,7 +4,14 @@
 \alias{create_analysis_biplot}
 \title{Create a Biplot with Linear Regression and Statistical Annotations}
 \usage{
-create_analysis_biplot(df, metric_x, metric_y, classes = FALSE, lm = FALSE)
+create_analysis_biplot(
+  df,
+  metric_x,
+  metric_y,
+  classes = FALSE,
+  lm = FALSE,
+  axis_name
+)
 }
 \arguments{
 \item{df}{A data frame containing the metrics to be plotted.}

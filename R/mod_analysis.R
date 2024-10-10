@@ -8,7 +8,7 @@
 #' @importFrom shinyjs useShinyjs
 #' @importFrom shinyWidgets pickerInput pickerOptions multiInput materialSwitch
 #' @importFrom htmltools HTML div img
-#' @importFrom plotly plotlyOutput
+#' @importFrom plotly plotlyOutput renderPlotly
 #' @importFrom reactable reactableOutput
 #'
 #' @noRd

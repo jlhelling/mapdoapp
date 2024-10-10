@@ -19,6 +19,7 @@ mod_analysis_bimetric_ui <- function(id) {
       column(
         width = 9,
         hr(),
+        textOutput(ns("warning")),
         plotlyOutput(ns("plot")),
         hr(),
         uiOutput(ns("linear_dependency_text"), style = "margin-top: 10px;  margin-left: 20px;")
@@ -58,7 +59,6 @@ mod_analysis_bimetric_ui <- function(id) {
         checkboxInput(ns("apply_classes"), "Colorier par classification", value = FALSE),
         hr(),
         checkboxInput(ns("apply_lm"), "Appliquer régression linéaire", value = FALSE),
-        uiOutput(ns("entity_baseUI")),
         actionButton(ns("create_plot"), "Créer graphe !", icon = icon("chart-line"))
       )
     )
@@ -76,7 +76,7 @@ mod_analysis_bimetric_server <- function(id, con, r_val, globals){
 
     #### REACTIVES ####
     r_val_local <- reactiveValues(
-      entity_basis = NULL, # selected entity basis (basin, region, axis)
+      warning = "Selectionnez une axe hydrographique pour créer le graphe !", # warning message
       plot = NULL, # plot object
       base = NULL, #
       linear_dependency_text = "" # text describing linear dependency
@@ -88,8 +88,8 @@ mod_analysis_bimetric_server <- function(id, con, r_val, globals){
       r_val_local$plot
     })
 
-    output$entity_baseUI <- renderUI({
-      r_val_local$base
+    output$warning <- renderText({
+      r_val_local$warning
     })
 
     output$linear_dependency_text <- renderText({
@@ -119,30 +119,17 @@ mod_analysis_bimetric_server <- function(id, con, r_val, globals){
     })
 
     #### ENTITY BASE UI ####
-    observeEvent(c(r_val$basin_id, r_val$region_id, r_val$axis_id, r_val$tab_analysis), {
-
-      # france, basin, region, axis as basis possible !
-      # add info-button
+    observeEvent(c(r_val$axis_id, r_val$tab_analysis), {
 
       if (r_val$tab_analysis == "Analyse Bimétrique") {
 
-        if (is.null(r_val$region_id)) {
-          r_val_local$base = "Selectionnez une région oú axe"
+        if (is.null(r_val$axis_id)) {
+          r_val_local$warning = "Selectionnez une axe hydrographique et clickez sur 'Créer graphe !' pour afficher le graphe."
 
         }
-        # France, basin, region
-        else if (!is.null(r_val$region_id) && is.null(r_val$axis_id)) {
-          r_val_local$base = selectInput(ns("base_select"),
-                                         "Base",
-                                         choices = c("Région"),
-                                         selected = "Région")
-        }
-        # France, Basin, Region, Axis
+        # Axis selected
         else if (!is.null(r_val$axis_id)) {
-          r_val_local$base = selectInput(ns("base_select"),
-                                         "Base",
-                                         choices = c("Région", "Axe"),
-                                         selected = "Axe")
+          r_val_local$warning = NULL
         }
       }
     })
@@ -150,21 +137,15 @@ mod_analysis_bimetric_server <- function(id, con, r_val, globals){
     # create plot
     observeEvent(input$create_plot, {
 
-      if (!is.null(r_val$region_id)) {
+      if (!is.null(r_val$axis_data_classified)) {
 
-        browser()
-
-        if (input$base_select == "Région") {
-
-          r_val_local$plot <- create_analysis_biplot(df = globals$region_data(), metric_x = input$x_metric, metric_y = input$y_metric, classes = input$apply_classes, lm = input$apply_lm)
+          r_val_local$plot <- create_analysis_biplot(df = r_val$axis_data_classified,
+                                                     metric_x = input$x_metric,
+                                                     metric_y = input$y_metric,
+                                                     classes = input$apply_classes,
+                                                     lm = input$apply_lm,
+                                                     axis_name = r_val$axis_name)
         }
-
-        else if (input$base_select == "Axe") {
-
-          r_val_local$plot <- create_analysis_biplot(df = r_val$axis_data_classified, metric_x = input$x_metric, metric_y = input$y_metric, classes = input$apply_classes, lm = input$apply_lm)
-        }
-
-      }
     })
 
   })

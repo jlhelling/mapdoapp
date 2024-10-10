@@ -5,7 +5,7 @@
 #'
 #' @return An empty longitudinal profile plot with a specified title.
 #'
-#' @importFrom plotly plot_ly layout
+#' @importFrom plotly plot_ly layout config
 #'
 #' @examples
 #' # Create an empty longitudinal profile plot
@@ -28,7 +28,9 @@ cr_profile_empty <- function() {
       ),
       yaxis = list(
         zeroline = FALSE
-      ))
+      ),
+      modebar = list(remove = c("select2d", "lasso2d", "autoscale", "zoomIn2d", "zoomOut2d"))) %>% # Remove select and lasso tools
+    plotly::config(displaylogo = FALSE) %>% # Remove plotly logo)
   return(plot)
 }
 

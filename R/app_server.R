@@ -99,12 +99,6 @@ app_server <- function(input, output, session) {
   }) %>%
     bindCache(c(r_val$axis_id, globals$regions_gids_key))
 
-  #### Region data caching ####
-  globals$region_data <- reactive({
-    data_get_axis_dgos_from_region(selected_region_id = r_val$region_id, con)
-  }) %>%
-    bindCache(c(r_val$region_id, globals$regions_gids_key))
-
   #### Metric stats caching ####
   globals$metric_stats <- reactive({
     data_get_stats_metrics(con)
