@@ -45,37 +45,38 @@ mod_explore_ui <- function(id){
               div(class = "text-right",
                   uiOutput(ns("deselect_buttonUI"))))
           )),
-          column(
-            width = 4,
-            tabsetPanel(
-              id = ns("tabset_classes"),
-              tabPanel("Classes proposées",
-                       mod_expl_classes_proposed_ui("expl_classes_proposed_1")
-              ),
-              tabPanel("Classification manuelle",
-                       div(style = "height: 450px; overflow-y: auto;",  # Set fixed height for this panel
-                           mod_expl_classes_manual_ui("expl_classes_manual_1"))
-              ), type = "pills"
-            ) #tabsetpanel
-          ) #column
-        ), #row
-        fluidRow(
-          style = "margin-top: 10px;
-        margin-bottom: 10px;",
+        column(
+          width = 4,
           tabsetPanel(
-            id = ns("tabset_plots"),
-            tabPanel(
-              "Évolution longitudinale",
-              mod_expl_plot_long_ui("expl_plot_long_1")
+            id = ns("tabset_classes"),
+            tabPanel("Classes proposées",
+                     mod_expl_classes_proposed_ui("expl_classes_proposed_1")
             ),
-            tabPanel("Profil transversal",
-                     mod_expl_plot_crosssection_ui("expl_plot_crosssection_1")
+            tabPanel("Classification manuelle",
+                     div(style = "height: 450px; overflow-y: auto;",  # Set fixed height for this panel
+                         mod_expl_classes_manual_ui("expl_classes_manual_1"))
             ), type = "pills"
-          )
+          ) #tabsetpanel
+        ) #column
+      ), #row
+      hr(),
+      fluidRow(
+        style = "margin-top: 10px;
+        margin-bottom: 10px;",
+        tabsetPanel(
+          id = ns("tabset_plots"),
+          tabPanel(
+            "Évolution longitudinale",
+            mod_expl_plot_long_ui("expl_plot_long_1")
+          ),
+          tabPanel("Profil transversal",
+                   mod_expl_plot_crosssection_ui("expl_plot_crosssection_1")
+          ), type = "pills"
         )
-      ) #page
+      )
+    ) #page
 
-    )
+  )
 }
 
 
@@ -96,7 +97,7 @@ mod_explore_ui <- function(id){
 #' @importFrom sf st_write
 #' @importFrom shinyjs onclick runjs
 #' @noRd
-mod_explore_server <- function(id, con, r_val, globals){
+mod_explore_server <- function(id, con, r_val, globals, waitress){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -119,6 +120,8 @@ mod_explore_server <- function(id, con, r_val, globals){
       )
     }) %>%
       bindCache(globals$regions_gids_key)
+    waitress$inc(10)  # Increment progress 9
+    Sys.sleep(.3)
 
     # add remonter-le-temps-button functionality
     onclick(id = "logo_ign_remonterletemps", expr =
@@ -198,27 +201,27 @@ mod_explore_server <- function(id, con, r_val, globals){
       # Custom legend HTML
       # custom_legend <-
 
-        # ROE
-        if (any(input$map_groups %in% globals$map_group_params[["roe"]])) {
-          r_val$map_proxy %>%
-            addControl(
-              HTML("
+      # ROE
+      if (any(input$map_groups %in% globals$map_group_params[["roe"]])) {
+        r_val$map_proxy %>%
+          addControl(
+            HTML("
                 <div style='display: flex; align-items: center;'>
                   <div style='background-color: #323232; border-radius: 50%; width: 12px; height: 12px; margin-right: 8px;'></div>
                   <div>Obstacles à l'Ecoulement (ROE)</div>
                 </div>"),
-              position = "bottomright", layerId = "roe"
-            )
-          # addLegend(
-          #   position = "bottomright",
-          #   colors = "#323232",
-          #   labels = "Obstacles à l'Ecoulement (ROE)",
-          #   layerId = "roe"
-          # )
-        } else {
-          leafletProxy("map") %>%
-            removeControl(layerId = "roe")
-        }
+            position = "bottomright", layerId = "roe"
+          )
+        # addLegend(
+        #   position = "bottomright",
+        #   colors = "#323232",
+        #   labels = "Obstacles à l'Ecoulement (ROE)",
+        #   layerId = "roe"
+        # )
+      } else {
+        leafletProxy("map") %>%
+          removeControl(layerId = "roe")
+      }
 
       # Site hydrométrique
       if (any(input$map_groups %in% globals$map_group_params[["hydro_sites"]])) {

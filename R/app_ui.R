@@ -4,6 +4,8 @@
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @importFrom bslib bs_theme
+#' @importFrom waiter useWaitress
+#'
 #' @noRd
 app_ui <- function(request){
 
@@ -30,6 +32,8 @@ app_ui <- function(request){
     ")
     ),
 
+    useWaitress(color = "#366EC0"), # Add a loading screen to the app
+
     # Define the help button outside of navbarPage, but position it inside with CSS
     div(class = "help-btn",
         mod_help_guide_ui("help_guide_1") # Use the cicerone UI module here
@@ -40,7 +44,7 @@ app_ui <- function(request){
       title =
         img(src = "www/logos_mapdo_evs_ofb.png"),
       windowTitle = "Mapd'O App",
-      tabPanel("Exploration", icon = icon("compass"), # find more icons here: https://fontawesome.com/search?q=info&o=r&m=free
+      tabPanel("Exploration & Classification", icon = icon("compass"), # find more icons here: https://fontawesome.com/search?q=info&o=r&m=free
                mod_explore_ui("explore_1")
       ),
       tabPanel("Analyse", icon = icon("magnifying-glass-chart"),

@@ -142,7 +142,7 @@ mod_analysis_bimetric_server <- function(id, con, r_val, globals){
     })
 
     #### ENTITY BASE UI ####
-    observeEvent(c(r_val$axis_id, r_val$tab_analysis), {
+    observeEvent(c(input$plot, r_val$tab_analysis), {
 
       if (r_val$tab_analysis == "Analyse Bimétrique") {
 

@@ -57,7 +57,7 @@ mod_help_guide_server <- function(id, r_val){
 
 
       ### Exploration-Tab tour ####
-      if (r_val$tab_page == "Exploration") {
+      if (r_val$tab_page == "Exploration & Classification") {
         tour$
           step("explore_1-map", "Carte",
                description = "Vue d'ensemble du réseau fluvial disponible, avec différentes fonctionnalités : <p>
@@ -74,10 +74,6 @@ mod_help_guide_server <- function(id, r_val){
           tour$step("explore_1-selection_textUI", "Sélection actuelle", "Noms du bassin, de la région et de l'axe hydrographique actuellement sélectionnés.",
                     position = "right")
         }
-
-        # tour$step("explore_1-tabset_classes", "Classification",
-        #           description = "Application of classifications to the river network. Either proposed classes can be selected, or classes can be defined based on a single metric.",
-        #           position = "left",)
 
         if (r_val$tab_classes == "Classes proposées") {
           tour$step("expl_classes_proposed_1-table", "Classes proposées",
@@ -151,12 +147,25 @@ mod_help_guide_server <- function(id, r_val){
                     position = "right")
 
           tour$step("analysis_bimetric_1-analysis_settings", "Paramètrage d'analyse",
-                    description = "Sélectionnez les métriques que vous souhaitez analyser. En outre, vous pouvez colorer les points de données selon la classification appliquée sélectionnée dans l'onglet « Exploration » et appliquer un modèle de relation linéaire entre les deux métriques, en l'ajoutant sous forme de ligne à la graphique. ",
+                    description = "Sélectionnez les métriques que vous souhaitez analyser. En outre, vous pouvez colorer les points de données selon la classification appliquée sélectionnée dans l'onglet « Exploration & Classification » et appliquer un modèle de relation linéaire entre les deux métriques, en l'ajoutant sous forme de ligne à la graphique. ",
                     position = "left")
 
         }
+      }
 
+      ### Télechargement-Tab tour ####
+      if (r_val$tab_page == "Télechargement") {
+        tour$step("download_1-download_selection", "Sélection des données à télécharger",
+                  description = "",
+                  position = "right")
 
+        tour$step("download_1-download_info", "Informations sur le jeu de données et bouton de téléchargement",
+                  description = "",
+                  position = "left")
+
+        tour$step("download_1-table_data", "Aperçu des premières lignes de l'ensemble de données",
+                  description = "",
+                  position = "left")
 
       }
 

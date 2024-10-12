@@ -12,7 +12,7 @@ create_table_fluvialstyles <- function(params_styles) {
 
   table <- reactable(params_styles,
                      columns = list(
-                       class_title = colDef(name = "Style", sortable = FALSE),
+                       class_title = colDef(name = "Classification", sortable = FALSE),
                        description = colDef(show = FALSE),  # Hide column
                        class_name = colDef(show = FALSE),  # Hide column
                        # class_sld = colDef(show = FALSE),  # Hide column

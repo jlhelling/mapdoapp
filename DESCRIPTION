@@ -42,7 +42,8 @@ Imports:
     stringr,
     tibble,
     tidyr,
-    utils
+    utils,
+    waiter
 Suggests: 
     spelling,
     testthat (>= 3.0.0)

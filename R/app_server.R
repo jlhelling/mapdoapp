@@ -8,6 +8,7 @@ shinyOptions(cache = cachem::cache_mem(max_size = 4e9, # 4 GB memory cache limit
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @importFrom DBI dbDisconnect
+#' @importFrom waiter Waitress
 #'
 #'
 #' @noRd
@@ -18,6 +19,18 @@ app_server <- function(input, output, session) {
 
   ### DB connection ####
   con <- db_con()
+
+  ### WAITER SCREEN ####
+
+  # call the waitress
+  waitress <- Waitress$
+    new(theme = "overlay-percent")$
+    start(h3("Charger Mapd'O...")) # start
+
+  # Simulate the progress based on how many steps (reactive elements) you're loading
+  total_steps <- 10
+  step_progress <- 100 / total_steps  # Progress per step
+
 
   ### R_VAL ####
   r_val <- reactiveValues(
@@ -41,7 +54,8 @@ app_server <- function(input, output, session) {
     basin_id = NULL, # id of selected basin
     region_name = NULL, # name of selected region
     region_id = NULL, # id of selected region
-    region_data = NULL, # data of selected region
+    region_id_data = NULL,
+    region_data_classified = NULL, # data of selected region
     axis_name = NULL, # name of selected axis
     axis_id = NULL, # id of selected axis
     axis_data = NULL, # data of selected axis
@@ -57,6 +71,8 @@ app_server <- function(input, output, session) {
     manual_classes_table = NULL, # values of classes and assigned colors from manual classification
     classes_man_stats = NULL, # metric statistics for manual classes
   )
+  waitress$inc(step_progress)  # Increment progress 1
+  Sys.sleep(.3)
 
   ### GLOBALS ####
   # create empty list to store fixed global values which can be accessed by other modules
@@ -64,46 +80,60 @@ app_server <- function(input, output, session) {
 
   # load regions sf data
   globals$regions = data_get_regions(con, opacity = list(clickable = 0.01, not_clickable = 0.10))
+  waitress$inc(step_progress)  # Increment progress 2
+  Sys.sleep(.3)
 
   # Create a unique key based on the regions_gids content
   globals$regions_gids_key = paste(collapse = "_", sort(globals$regions$gid))
+  waitress$inc(step_progress)  # Increment progress 3
+  Sys.sleep(.3)
 
   # load basins sf data (cached)
   globals$basins <- reactive({
     data_get_basins(con, opacity = list(clickable = 0.01, not_clickable = 0.10))
   }) %>%
     bindCache(globals$regions_gids_key)
+  waitress$inc(step_progress)  # Increment progress 4
+  Sys.sleep(.3)
 
   # load axes sf data (cached)
   globals$axes <- reactive({
     data_get_axes(con)
   }) %>%
     bindCache(globals$regions_gids_key)
+  waitress$inc(step_progress)  # Increment progress 5
+  Sys.sleep(.3)
 
   # load roe sf data (cached)
   globals$roe_sites <- reactive({
     data_get_roe_sites(con)
   }) %>%
     bindCache(globals$regions_gids_key)
+  waitress$inc(step_progress)  # Increment progress 6
+  Sys.sleep(.3)
 
   # load discharge stations sf data (cached)
   globals$hydro_sites <- reactive({
     data_get_hydro_sites(con)
   }) %>%
     bindCache(globals$regions_gids_key)
+  waitress$inc(step_progress)  # Increment progress 7
+  Sys.sleep(.3)
 
-
-  #### Axis data caching ####
-  globals$axis_data <- reactive({
-    data_get_axis_dgos(selected_axis_id = r_val$axis_id, con)
-  }) %>%
-    bindCache(c(r_val$axis_id, globals$regions_gids_key))
 
   #### Metric stats caching ####
   globals$metric_stats <- reactive({
     data_get_stats_metrics(con)
   }) %>%
     bindCache(globals$regions_gids_key)
+  waitress$inc(step_progress)  # Increment progress 8
+  Sys.sleep(.3)
+
+  #### Axis data caching ####
+  globals$axis_data <- reactive({
+    data_get_axis_dgos(selected_axis_id = r_val$axis_id, con)
+  }) %>%
+    bindCache(c(r_val$axis_id, globals$regions_gids_key))
 
   #### Classes stats caching ####
   globals$classes_stats <- reactive({
@@ -115,15 +145,15 @@ app_server <- function(input, output, session) {
   }) %>%
     bindCache(globals$regions_gids_key, r_val$classes_proposed_selected)
 
-
   # navbarPage identifier
   observeEvent(input$navbarPage, {
     r_val$tab_page = input$navbarPage
   })
 
+
   ### Server activation ####
   # main servers
-  mod_explore_server("explore_1", con, r_val, globals)
+  mod_explore_server("explore_1", con, r_val, globals, waitress)
   mod_analysis_server("analysis_1", con, r_val, globals)
   mod_download_server("download_1" , con, r_val, globals)
   mod_documentation_server("documentation_1")
@@ -137,9 +167,21 @@ app_server <- function(input, output, session) {
   mod_expl_plot_crosssection_server("expl_plot_crosssection_1", r_val)
 
   mod_analysis_bimetric_server("analysis_bimetric_1", con, r_val, globals)
+  waitress$inc(step_progress)  # Increment progress 10
+  Sys.sleep(.3)
 
-  # mod_metric_overview_server("metric_overview_1", r_val)
-  # mod_classes_distribution_server("classes_distribution_1", r_val)
+
+  # All tasks are done, hide the loading screen
+  waitress$close()
+
+
+
+  #### Region data caching ####
+  # globals$region_data <- reactive({
+  #   data_get_axis_dgos_from_region(selected_region_id = r_val$region_id_data, con)
+  # }) %>%
+  #   bindCache(c(r_val$region_id_data, globals$regions_gids_key))
+
 
   ### DB disconnect when closing session ####
   onStop(function() {
