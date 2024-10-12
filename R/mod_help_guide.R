@@ -156,16 +156,20 @@ mod_help_guide_server <- function(id, r_val){
       ### Télechargement-Tab tour ####
       if (r_val$tab_page == "Télechargement") {
         tour$step("download_1-download_selection", "Sélection des données à télécharger",
-                  description = "",
+                  description = "Cette section vous permet de sélectionner le type de jeu de données à télécharger et l'échelle, notamment pour le bassin, la région ou l'axe sélectionné. ",
                   position = "right")
 
         tour$step("download_1-download_info", "Informations sur le jeu de données et bouton de téléchargement",
-                  description = "",
+                  description = "Les informations sur l'ensemble des données sélectionnées sont préparées ici. En cliquant sur le bouton, il est possible de télécharger les données au format csv.",
                   position = "left")
 
-        tour$step("download_1-table_data", "Aperçu des premières lignes de l'ensemble de données",
-                  description = "",
-                  position = "left")
+
+        if (!is.null(r_val$dataset_input)) {
+          tour$step("download_1-table_data", "Aperçu des données",
+                    description = "Aperçu des 10 premières lignes de l'ensemble de données avec toutes les colonnes disponibles.",
+                    position = "left")
+        }
+
 
       }
 

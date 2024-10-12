@@ -40,9 +40,9 @@ mod_download_ui <- function(id) {
       ),
       column(
         width = 9,
-        fluidRow(
-          div(
-            id = ns("download_info"),
+        div(
+          id = ns("download_info"),
+          fluidRow(
             column(
               width = 8,
 
@@ -56,9 +56,9 @@ mod_download_ui <- function(id) {
               div(style = "display: flex; justify-content: flex-end;",
                   downloadButton(ns("download_button"), "Télécharger les données", icon = icon("download")))
             )
-          )
+          ),
+          hr(),
         ),
-        hr(),
 
         # table
         div(style = 'overflow-x: auto; width: 100%;',  # Horizontal scroll and full-width div
@@ -85,7 +85,6 @@ mod_download_server <- function(id, con, r_val, globals){
     # reactive values ----
     r_val_local <- reactiveValues(
       scale = NULL, # scale selectInput
-      dataset_input = NULL, # dataset input to be download
       dataset_input_name = NULL # dataset input name
     )
 
@@ -181,7 +180,7 @@ mod_download_server <- function(id, con, r_val, globals){
         ### network ####
         if (input$select_type == "Réseau hydrographique") {
           if (input$select_scale == "Axe") {
-            r_val_local$dataset_input <- r_val$axis_data_classified
+            r_val$dataset_input <- r_val$axis_data_classified
             r_val_local$dataset_input_name <- paste0("axe_", r_val$axis_id, "_réseau_classifié")
             r_val_local$dataset_download_info <- paste0("Axe ", r_val$axis_id, ", ", r_val$axis_name)
           }
@@ -193,18 +192,17 @@ mod_download_server <- function(id, con, r_val, globals){
 
             # proposed classification applied
             if (r_val$visualization == "classes" && !is.null(r_val$regions_data)) {
-              r_val_local$dataset_input = r_val$regions_data %>%
+              r_val$dataset_input = r_val$regions_data %>%
                 assign_classes_proposed(proposed_class = globals$classes_proposed[r_val$classes_proposed_selected,]$class_name,
                                         colors_df = globals$classes_proposed_colors)
             }
 
             # manual classification applied
             else if (r_val$visualization == "manual" && !is.null(r_val$regions_data)) {
-              r_val_local$dataset_input = r_val$regions_data %>%
+              r_val$dataset_input = r_val$regions_data %>%
                 assign_classes_manual(classes = r_val$manual_classes_table)
             }
 
-            # r_val_local$dataset_input <- r_val$regions_data_classified
             r_val_local$dataset_input_name <- paste0("région_", r_val$region_id, "_réseau_classifié")
             r_val_local$dataset_download_info <- paste0("Région ", r_val$region_id, ", ", r_val$region_name)
           }
@@ -213,20 +211,20 @@ mod_download_server <- function(id, con, r_val, globals){
         ### ROE ####
         else if (input$select_type == "Obstacles à l'écoulement") {
           if (input$select_scale == "Axe") {
-            r_val_local$dataset_input <- globals$roe_sites() %>%
+            r_val$dataset_input <- globals$roe_sites() %>%
               filter(axis == r_val$axis_id)
-            r_val_local$dataset_input$geom_wkt <- st_as_text(r_val_local$dataset_input$geom)
-            r_val_local$dataset_input <- r_val_local$dataset_input %>%
+            r_val$dataset_input$geom_wkt <- st_as_text(r_val$dataset_input$geom)
+            r_val$dataset_input <- r_val$dataset_input %>%
               st_drop_geometry()
             r_val_local$dataset_input_name <- paste0("axe_", r_val$axis_id, "_roe")
             r_val_local$dataset_download_info <- paste0("Axe ", r_val$axis_id, ", ", r_val$axis_name)
           }
 
           else if (input$select_scale == "Région") {
-            r_val_local$dataset_input <- globals$roe_sites() %>%
+            r_val$dataset_input <- globals$roe_sites() %>%
               filter(gid_region == r_val$region_id)
-            r_val_local$dataset_input$geom_wkt <- st_as_text(r_val_local$dataset_input$geom)
-            r_val_local$dataset_input <- r_val_local$dataset_input %>%
+            r_val$dataset_input$geom_wkt <- st_as_text(r_val$dataset_input$geom)
+            r_val$dataset_input <- r_val$dataset_input %>%
               st_drop_geometry()
             r_val_local$dataset_input_name <- paste0("région_", r_val$region_id, "_roe")
             r_val_local$dataset_download_info <- paste0("Région ", r_val$region_id, ", ", r_val$region_name)
@@ -236,10 +234,10 @@ mod_download_server <- function(id, con, r_val, globals){
             # get region ids in basin
             region_ids_in_basin <- globals$regions |> filter(cdbh == r_val$basin_id) |> pull(gid)
 
-            r_val_local$dataset_input <- globals$roe_sites() %>%
+            r_val$dataset_input <- globals$roe_sites() %>%
               filter(gid_region %in% region_ids_in_basin)
-            r_val_local$dataset_input$geom_wkt <- st_as_text(r_val_local$dataset_input$geom)
-            r_val_local$dataset_input <- r_val_local$dataset_input %>%
+            r_val$dataset_input$geom_wkt <- st_as_text(r_val$dataset_input$geom)
+            r_val$dataset_input <- r_val$dataset_input %>%
               st_drop_geometry()
 
             r_val_local$dataset_input_name <- paste0("basin_", r_val$basin_id, "_roe")
@@ -251,10 +249,10 @@ mod_download_server <- function(id, con, r_val, globals){
         else if (input$select_type == "Sites hydrométriques") {
 
           if (input$select_scale == "Bassin") {
-            r_val_local$dataset_input <- globals$hydro_sites() |>
+            r_val$dataset_input <- globals$hydro_sites() |>
               sf::st_intersection(globals$basins() |> filter(cdbh == r_val$basin_id))
-            r_val_local$dataset_input$geom_wkt <- st_as_text(r_val_local$dataset_input$geom)
-            r_val_local$dataset_input <- r_val_local$dataset_input %>%
+            r_val$dataset_input$geom_wkt <- st_as_text(r_val$dataset_input$geom)
+            r_val$dataset_input <- r_val$dataset_input %>%
               st_drop_geometry()
 
             r_val_local$dataset_input_name <- paste0("bassin_", r_val$basin_id, "_hydrosites")
@@ -262,10 +260,10 @@ mod_download_server <- function(id, con, r_val, globals){
           }
 
           else if (input$select_scale == "Région") {
-            r_val_local$dataset_input <- globals$hydro_sites() |>
+            r_val$dataset_input <- globals$hydro_sites() |>
               sf::st_intersection(globals$regions |> filter(gid == r_val$region_id))
-            r_val_local$dataset_input$geom_wkt <- st_as_text(r_val_local$dataset_input$geom)
-            r_val_local$dataset_input <- r_val_local$dataset_input %>%
+            r_val$dataset_input$geom_wkt <- st_as_text(r_val$dataset_input$geom)
+            r_val$dataset_input <- r_val$dataset_input %>%
               st_drop_geometry()
 
             r_val_local$dataset_input_name <- paste0("région_", r_val$region_id, "_hydrosites")
