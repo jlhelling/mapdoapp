@@ -84,7 +84,7 @@ mod_analysis_bimetric_ui <- function(id) {
 #' analysis_bimetric Server Functions
 #'
 #' @import shiny
-#' @importFrom echarts4r renderEcharts4r
+#' @importFrom plotly renderPlotly
 #' @noRd
 mod_analysis_bimetric_server <- function(id, con, r_val, globals){
   moduleServer(id, function(input, output, session){

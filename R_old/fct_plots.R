@@ -161,3 +161,120 @@ create_plotly_violinplot <- function(data, var, var_title){
 
   return(plot)
 }
+
+
+#' Create a Biplot with Linear Regression and Statistical Annotations
+#'
+#' This function creates a biplot using the `echarts4r` library that displays a scatterplot
+#' of two metrics from a given dataframe, fits a linear regression line, and shows key
+#' statistical measures (correlation, R², p-value) in a floating text box.
+#'
+#' @param df A data frame containing the metrics to be plotted.
+#' @param metric_x A string specifying the name of the x-axis metric (column in the dataframe).
+#' @param metric_y A string specifying the name of the y-axis metric (column in the dataframe).
+#'
+#' @importFrom echarts4r e_charts_ e_scatter_ e_line e_axis_labels e_x_axis e_y_axis e_legend e_tooltip e_text_g e_toolbox_feature e_show_loading e_visual_map_
+#' @return An `echarts4r` plot object showing the biplot, regression line, and statistical annotations.
+#' @examples
+#' create_analysis_biplot_echarts(df = mtcars, metric_x = "mpg", metric_y = "wt")
+#' @export
+create_analysis_biplot_echarts <- function(df, metric_x, metric_y, classes = FALSE, lm = FALSE) {
+
+  browser()
+
+  # Get metric titles
+  metric_x_title <- globals$metrics_params |> filter(metric_name == metric_x) |> pull(metric_title)
+  metric_y_title <- globals$metrics_params |> filter(metric_name == metric_y) |> pull(metric_title)
+
+  # removing any rows with missing values (NA)
+  data <- df %>% na.omit()
+
+  if (lm) {
+    # Compute linear regression
+    lm_model <- lm(data[[metric_y]] ~ data[[metric_x]], data = data)
+    data$lm <- predict(lm_model)
+
+    # Compute correlation, R², and p-value
+    correlation <- cor.test(data[[metric_x]], data[[metric_y]])
+    r_value <- round(correlation$estimate, 2)
+    p_value <- round(correlation$p.value, 4)
+    r_squared <- round(r_value^2, 2)
+
+    # Extract the coefficients for the linear model and create the equation
+    coefficients <- coef(lm_model)
+    intercept <- round(coefficients[1], 2)  # Intercept (b)
+    slope <- round(coefficients[2], 2)      # Slope (m)
+
+    # Format the formula as "y = mx + b"
+    formula_text <- sprintf("y = %sx + %s", slope, intercept)
+
+    linear_dependency_text <- sprintf("%s, R = %s, R² = %s, p-value = %s",
+                                      formula_text, r_value, r_squared, p_value)
+  }
+
+  # Create the biplot using echarts4r with either z-metric selected or not
+  if (classes) {
+
+    # proposition by chatgpt
+    plot <- data %>%
+      group_by(class_name) %>%  # Group by color to create separate series
+      e_charts_(metric_x) %>%  # Initialize the plot and specify the x-axis metric
+      # Add scatter series for each color group
+      e_scatter_(metric_y, bind = "measure", symbol_size = 6) %>%
+      e_color(color = rev(unique(unname(data$color))))
+
+  }
+
+  else {
+    plot <- data %>%
+      e_charts_(metric_x) %>%  # Initialize the plot and specify the x-axis metric
+      e_scatter_(metric_y, bind = "measure", symbol_size = 6, itemStyle = list(color = "#1b263b"), legend = FALSE)  # Add scatter plot with points
+  }
+
+  # Add axis labels and tooltips
+  plot <- plot %>%
+    e_axis_labels(x = metric_x_title, y = metric_y_title) %>%  # Set axis labels using metric titles
+    e_x_axis(nameLocation = "middle", nameGap = 30) %>%  # Center the x-axis title and move it below the axis
+    e_y_axis(nameLocation = "middle", nameGap = 50) %>%  # Center the y-axis title and move it to the left
+    # Configure tooltips that display data points info on hover
+    e_tooltip(
+      trigger = "item",
+      formatter = htmlwidgets::JS(
+        sprintf("function(params) {
+                return('<b>%s: </b>' + params.value[0].toFixed(2) + '<br/>' +
+                '<b>%s: </b>' + params.value[1].toFixed(2) + '<br/>' +
+                '<b>Position: </b>' + params.name + ' km'
+                );
+              }", metric_x_title, metric_y_title)
+      )
+    ) %>%
+    #Add toolbox features (e.g., zooming, saving the plot)
+    e_toolbox_feature(feature = c("dataZoom", "saveAsImage")) %>%
+    # Show a loading animation while the plot is rendered
+    e_show_loading()
+
+
+  # add lm elements to plot
+  if (lm) {
+    plot <- plot %>%
+      e_line(lm, name = "Modèle linéaire", lineStyle = list(color = "red"), symbol = 'none') %>%  # Add the linear regression line
+      e_legend(show = TRUE, itemStyle = list(color = "transparent")) %>%  # Show legend (transparent)
+      # Add a floating text box with the statistical summary (R, R², p-value)
+      e_text_g(
+        left = "10%",               # Position text horizontally
+        top = "9%",                # Position text vertically
+        style = list(
+          text = linear_dependency_text,  # Display correlation text
+          fontSize = 12,                  # Font size for the text
+          z = 1000,                       # Set z-index to bring the text to the foreground
+          backgroundColor = "#ffccd5",    # Set background color of the text box
+          borderRadius = 5,               # Add rounded corners to the text box
+          padding = 5                     # Add padding around the text within the box
+        )
+      )
+  }
+
+
+
+  return(plot)
+}
