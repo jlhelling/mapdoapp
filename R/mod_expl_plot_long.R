@@ -349,7 +349,7 @@ mod_expl_plot_long_server <- function(id, r_val, globals){
             # selectinput
             r_val_local$ui_background_smooth_sel = selectInput(ns("background_smooth_sel"),
                                                                label = "supprimer les inégaux :",
-                                                               choices = c("singuliers", "en paires", "Automatique"),
+                                                               choices = c("singuliers", "en paires"),
                                                                selected = "1")
           }
 
